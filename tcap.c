@@ -13,9 +13,9 @@
 #define USE_BROKEN_OPTIMIZATION 0
 #define	termdef	1 /* Don't define "term" external. */
 
-#include <curses.h>
+#include <ncurses/curses.h>
 #include <stdio.h>
-#include <term.h>
+#include <ncurses/term.h>
 
 #include "estruct.h"
 #include "edef.h"

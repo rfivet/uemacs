@@ -48,6 +48,9 @@ endif
 ifeq ($(uname_S),Darwin)
  DEFINES=-DAUTOCONF -DPOSIX -DSYSV -D_DARWIN_C_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE -D_XOPEN_SOURCE=600
 endif
+ifeq ($(uname_S),CYGWIN_NT-6.1-WOW64)
+ DEFINES=-DAUTOCONF
+endif
 #DEFINES=-DAUTOCONF
 #LIBS=-ltermcap			# BSD
 LIBS=-lcurses			# SYSV
