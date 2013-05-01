@@ -64,6 +64,7 @@ void ttopen(void)
 
 	/* raw CR/NL etc input handling, but keep ISTRIP if we're on a 7-bit line */
 	ntermios.c_iflag &= ~(IGNBRK | BRKINT | IGNPAR | PARMRK
+				| IXON | IXOFF | IXANY
 			      | INPCK | INLCR | IGNCR | ICRNL);
 
 	/* raw CR/NR etc output handling */
