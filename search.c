@@ -739,6 +739,10 @@ static int replaces(int kind, int f, int n)
 	struct line *lastline;		/* position of last replace and */
 	int lastoff;		/* offset (for 'u' query option) */
 
+/* rfi */
+	lastline = NULL ;
+	lastoff = 0 ;
+
 	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
 		return rdonly();	/* we are in read only mode     */
 
