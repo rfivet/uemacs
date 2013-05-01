@@ -135,8 +135,8 @@ basic.o: basic.c estruct.h edef.h
 bind.o: bind.c estruct.h edef.h epath.h
 buffer.o: buffer.c estruct.h edef.h
 crypt.o: crypt.c estruct.h edef.h
-display.o: display.c estruct.h edef.h utf8.h
-eval.o: eval.c estruct.h edef.h evar.h
+display.o: display.c estruct.h edef.h utf8.h version.h
+eval.o: eval.c estruct.h edef.h evar.h version.h
 exec.o: exec.c estruct.h edef.h
 file.o: file.c estruct.h edef.h
 fileio.o: fileio.c estruct.h edef.h
@@ -145,7 +145,7 @@ input.o: input.c estruct.h edef.h
 isearch.o: isearch.c estruct.h edef.h
 line.o: line.c estruct.h edef.h
 lock.o: lock.c estruct.h edef.h
-main.o: main.c estruct.h efunc.h edef.h ebind.h
+main.o: main.c estruct.h efunc.h edef.h ebind.h version.h
 pklock.o: pklock.c estruct.h
 posix.o: posix.c estruct.h utf8.h
 random.o: random.c estruct.h edef.h

@@ -1,12 +1,13 @@
 #ifndef VERSION_H_
 #define VERSION_H_
 
-#define PROGRAM_NAME "em"
-#define PROGRAM_NAME_LONG "uEmacs/Pk"
+#define PROGRAM_NAME pname_s
+#define PROGRAM_NAME_LONG pnamel_s
 
-#define	VERSION	"4.0.15"
+#define	VERSION	version_s
 
-/* Print the version string. */
-void version(void);
+extern char *pname_s ;
+extern char *pnamel_s ;
+extern char *version_s ;
 
 #endif  /* VERSION_H_ */

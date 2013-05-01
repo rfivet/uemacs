@@ -1,7 +1,12 @@
-#include <stdio.h>
+/* version.c -- inplements version.h */
+
 #include "version.h"
 
-void version(void)
-{
-	printf("%s version %s\n", PROGRAM_NAME_LONG, VERSION);
-}
+#include <stdio.h>
+
+char *pname_s = "em" ;
+char *pnamel_s = "uEmacs/rf" ;
+
+char *version_s = "4.1.0" ;
+
+/* end of version.c */

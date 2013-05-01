@@ -49,6 +49,10 @@
  *
  * 4.0	Petri Kutvonen, 1-Sep-91
  *
+ * This modified version is now called uEmacs/rf.
+ *
+ * 4.1	Renaud Fivet, 1-May-13
+ *
  */
 
 #include <stdio.h>
@@ -88,17 +92,19 @@ extern void sizesignal(int);
 #endif
 #endif
 
-void usage(int status)
-{
-  printf("Usage: %s filename\n", PROGRAM_NAME);
-  printf("   or: %s [options]\n\n", PROGRAM_NAME);
-  fputs("      +          start at the end of file\n", stdout);
-  fputs("      +<n>       start at line <n>\n", stdout);
-  fputs("      -g[G]<n>   go to line <n>\n", stdout);
-  fputs("      --help     display this help and exit\n", stdout);
-  fputs("      --version  output version information and exit\n", stdout);
+static void version( void) {
+    printf( "%s version %s\n", PROGRAM_NAME_LONG, VERSION) ;
+}
 
-  exit(status);
+
+static void usage( void) {
+    printf( "Usage: %s filename\n", PROGRAM_NAME) ;
+    printf( "   or: %s [options]\n\n", PROGRAM_NAME) ;
+    fputs(  "      +          start at the end of file\n", stdout) ;
+    fputs(  "      +<n>       start at line <n>\n", stdout) ;
+    fputs(  "      -g[G]<n>   go to line <n>\n", stdout) ;
+    fputs(  "      --help     display this help and exit\n", stdout) ;
+    fputs(  "      --version  output version information and exit\n", stdout) ;
 }
 
 int main(int argc, char **argv)
@@ -139,13 +145,15 @@ int main(int argc, char **argv)
 	signal(SIGWINCH, sizesignal);
 #endif
 #endif
-	if (argc == 2) {
-		if (strcmp(argv[1], "--help") == 0) {
-			usage(EXIT_FAILURE);
+	if( argc == 2) {
+		if( strcmp( argv[ 1], "--help") == 0) {
+			usage() ;
+			exit( EXIT_SUCCESS) ;
 		}
-		if (strcmp(argv[1], "--version") == 0) {
-			version();
-			exit(EXIT_SUCCESS);
+
+		if( strcmp( argv[ 1], "--version") == 0) {
+			version() ;
+			exit( EXIT_SUCCESS) ;
 		}
 	}
 
