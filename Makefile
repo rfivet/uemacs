@@ -19,13 +19,13 @@ PROGRAM=em
 SRC=basic.c bind.c buffer.c crypt.c display.c eval.c exec.c \
 	file.c fileio.c input.c isearch.c line.c lock.c main.c \
 	pklock.c posix.c random.c region.c search.c spawn.c tcap.c \
-	termio.c window.c word.c names.c globals.c version.c \
+	window.c word.c names.c globals.c version.c \
 	usage.c wrapper.c utf8.c
 
 OBJ=basic.o bind.o buffer.o crypt.o display.o eval.o exec.o \
 	file.o fileio.o input.o isearch.o line.o lock.o main.o \
 	pklock.o posix.o random.o region.o search.o spawn.o tcap.o \
-	termio.o window.o word.o names.o globals.o version.o \
+	window.o word.o names.o globals.o version.o \
 	usage.o wrapper.o utf8.o
 
 HDR=ebind.h edef.h efunc.h epath.h estruct.h evar.h util.h version.h
@@ -49,7 +49,7 @@ ifeq ($(uname_S),Darwin)
  DEFINES=-DAUTOCONF -DPOSIX -DSYSV -D_DARWIN_C_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE -D_XOPEN_SOURCE=600
 endif
 ifeq ($(uname_S),CYGWIN_NT-6.1-WOW64)
- DEFINES=-DAUTOCONF
+ DEFINES=-DAUTOCONF -DCYGWIN -DPOSIX
 endif
 #DEFINES=-DAUTOCONF
 #LIBS=-ltermcap			# BSD

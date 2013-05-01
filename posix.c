@@ -31,6 +31,12 @@
 #define XCASE 0000004
 #endif
 
+#ifdef CYGWIN
+#define XCASE 0
+#define ECHOPRT 0
+#define PENDIN 0
+#endif
+
 static int kbdflgs;			/* saved keyboard fd flags      */
 static int kbdpoll;			/* in O_NDELAY mode             */
 
