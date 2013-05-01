@@ -154,11 +154,14 @@ search.o: search.c estruct.h edef.h
 spawn.o: spawn.c estruct.h edef.h
 tcap.o: tcap.c estruct.h edef.h
 termio.o: termio.c estruct.h edef.h
+usage.o: usage.c usage.h
 utf8.o: utf8.c utf8.h
+version.o: version.c version.h
 vmsvt.o: vmsvt.c estruct.h edef.h
 vt52.o: vt52.c estruct.h edef.h
 window.o: window.c estruct.h edef.h
 word.o: word.c estruct.h edef.h
+wrapper.o: wrapper.c wrapper.h usage.h
 
 # DEPENDENCIES MUST END AT END OF FILE
 # IF YOU PUT STUFF HERE IT WILL GO AWAY
