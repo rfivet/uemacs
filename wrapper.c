@@ -2,10 +2,14 @@
 
 #include "wrapper.h"
 
-#include "usage.h"
-
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+static void die( const char *err) {
+	fprintf( stderr, "fatal: %s\n", err) ;
+	exit( EXIT_FAILURE) ;
+}
 
 /* Function copyright: git */
 void xmkstemp( char *template) {

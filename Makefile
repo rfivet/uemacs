@@ -20,13 +20,13 @@ SRC=basic.c bind.c buffer.c crypt.c display.c eval.c exec.c \
 	file.c fileio.c input.c isearch.c line.c lock.c main.c \
 	pklock.c posix.c random.c region.c search.c spawn.c tcap.c \
 	window.c word.c names.c globals.c version.c \
-	usage.c wrapper.c utf8.c
+	wrapper.c utf8.c
 
 OBJ=basic.o bind.o buffer.o crypt.o display.o eval.o exec.o \
 	file.o fileio.o input.o isearch.o line.o lock.o main.o \
 	pklock.o posix.o random.o region.o search.o spawn.o tcap.o \
 	window.o word.o names.o globals.o version.o \
-	usage.o wrapper.o utf8.o
+	wrapper.o utf8.o
 
 HDR=ebind.h edef.h efunc.h epath.h estruct.h evar.h util.h version.h
 
@@ -161,7 +161,7 @@ vmsvt.o: vmsvt.c estruct.h edef.h
 vt52.o: vt52.c estruct.h edef.h
 window.o: window.c estruct.h edef.h
 word.o: word.c estruct.h edef.h
-wrapper.o: wrapper.c wrapper.h usage.h
+wrapper.o: wrapper.c wrapper.h
 
 # DEPENDENCIES MUST END AT END OF FILE
 # IF YOU PUT STUFF HERE IT WILL GO AWAY
