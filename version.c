@@ -2,8 +2,6 @@
 
 #include "version.h"
 
-#include <stdio.h>
-
 char *pname_s = "em" ;
 char *pnamel_s = "uEmacs/rf" ;
 
