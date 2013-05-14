@@ -2,8 +2,8 @@
 
 #include "version.h"
 
-char *pname_s = "em" ;
-char *pnamel_s = "uEmacs/rf" ;
+const char *pname_s = "em" ;
+char *pnamel_s = "uEMACS" ;
 
 char *version_s = "4.1.0" ;
 

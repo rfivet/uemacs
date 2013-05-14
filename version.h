@@ -6,7 +6,7 @@
 
 #define	VERSION	version_s
 
-extern char *pname_s ;
+extern const char *pname_s ;
 extern char *pnamel_s ;
 extern char *version_s ;
 
