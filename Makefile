@@ -28,7 +28,7 @@ OBJ=basic.o bind.o buffer.o crypt.o display.o eval.o exec.o \
 	termio.o window.o word.o names.o globals.o \
 	wrapper.o utf8.o
 
-HDR=ebind.h edef.h efunc.h estruct.h evar.h version.h
+HDR=ebind.h edef.h efunc.h estruct.h version.h
 
 # DO NOT ADD OR MODIFY ANY LINES ABOVE THIS -- make source creates them
 
@@ -136,7 +136,7 @@ bind.o: bind.c estruct.h edef.h
 buffer.o: buffer.c estruct.h edef.h
 crypt.o: crypt.c estruct.h edef.h
 display.o: display.c estruct.h edef.h utf8.h version.h
-eval.o: eval.c estruct.h edef.h evar.h version.h
+eval.o: eval.c estruct.h edef.h version.h
 exec.o: exec.c estruct.h edef.h
 file.o: file.c estruct.h edef.h
 fileio.o: fileio.c estruct.h edef.h
