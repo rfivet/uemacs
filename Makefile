@@ -132,11 +132,11 @@ depend: ${SRC}
 
 ansi.o: ansi.c estruct.h edef.h
 basic.o: basic.c estruct.h edef.h
-bind.o: bind.c estruct.h edef.h epath.h
+bind.o: bind.c estruct.h edef.h epath.h util.h
 buffer.o: buffer.c estruct.h edef.h
 crypt.o: crypt.c estruct.h edef.h
 display.o: display.c estruct.h edef.h utf8.h version.h
-eval.o: eval.c estruct.h edef.h evar.h version.h
+eval.o: eval.c estruct.h edef.h evar.h version.h util.h
 exec.o: exec.c estruct.h edef.h
 file.o: file.c estruct.h edef.h
 fileio.o: fileio.c estruct.h edef.h
