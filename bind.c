@@ -12,9 +12,41 @@
 #include "estruct.h"
 #include "edef.h"
 #include "efunc.h"
-#include "epath.h"
 #include "line.h"
-#include "util.h"
+
+
+/*	possible names and paths of help files under different OSs	*/
+static const char *pathname[] = {
+#if	MSDOS
+	"emacs.rc",
+	"emacs.hlp",
+	"\\sys\\public\\",
+	"\\usr\\bin\\",
+	"\\bin\\",
+	"\\",
+	""
+#endif
+
+#if	V7 | BSD | USG
+	".emacsrc",
+	"emacs.hlp",
+#if	PKCODE
+	"/usr/global/lib/", "/usr/local/bin/", "/usr/local/lib/",
+#endif
+	"/usr/local/", "/usr/lib/", ""
+#endif
+
+#if	VMS
+{
+	"emacs.rc", "emacs.hlp", "",
+#if	PKCODE
+	"sys$login:", "emacs_dir:",
+#endif
+	"sys$sysdevice:[vmstools]"
+#endif
+};
+
+#define PATHNAME_SIZE (sizeof pathname / sizeof pathname[ 0])
 
 int help(int f, int n)
 {				/* give me some help!!!!
@@ -536,7 +568,7 @@ char *flook( const char *fname, int hflag)
 #endif
 
 	/* look it up via the old table method */
-	for (i = 2; i < ARRAY_SIZE(pathname); i++) {
+	for( i = 2; i < PATHNAME_SIZE ; i++) {
 		strcpy(fspec, pathname[i]);
 		strcat(fspec, fname);
 

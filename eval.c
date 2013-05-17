@@ -13,10 +13,11 @@
 #include "efunc.h"
 #include "evar.h"
 #include "line.h"
-#include "util.h"
 #include "version.h"
 
 #define	MAXVARS	255
+
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
 /* User variables */
 static struct user_variable uv[MAXVARS + 1];
