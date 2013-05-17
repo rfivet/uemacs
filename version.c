@@ -2,7 +2,7 @@
 
 #include "version.h"
 
-const char *pname_s = "em" ;
+const char *pname_s = "ue" ;
 char *pnamel_s = "uEMACS" ;
 
 char *version_s = "4.1.0" ;

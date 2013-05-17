@@ -14,7 +14,7 @@ export E Q
 
 uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
 
-PROGRAM=em
+PROGRAM=ue
 
 SRC=basic.c bind.c buffer.c crypt.c display.c eval.c exec.c \
 	file.c fileio.c input.c isearch.c line.c lock.c main.c \
@@ -76,10 +76,10 @@ clean:
 
 install: $(PROGRAM)
 	strip $(PROGRAM)
-	cp em ${BINDIR}
+	cp $(PROGRAM) ${BINDIR}
 	cp emacs.hlp ${LIBDIR}
 	cp emacs.rc ${LIBDIR}/.emacsrc
-	chmod 755 ${BINDIR}/em
+	chmod 755 ${BINDIR}/$(PROGRAM)
 	chmod 644 ${LIBDIR}/emacs.hlp ${LIBDIR}/.emacsrc
 
 lint:	${SRC}
@@ -89,7 +89,7 @@ lint:	${SRC}
 
 errs:
 	@rm -f makeout
-	make em >makeout
+	make $(PROGRAM) >makeout
 
 tags:	${SRC}
 	@rm -f tags
