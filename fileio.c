@@ -1,3 +1,7 @@
+/* fileio.c -- implements fileio.h */
+
+#include "fileio.h"
+
 /*	FILEIO.C
  *
  * The routines in this file read and write ASCII files from the disk. All of
@@ -6,9 +10,9 @@
  *	modified by Petri Kutvonen
  */
 
-#include        <stdio.h>
+#include	<stdio.h>
 #include	"estruct.h"
-#include        "edef.h"
+#include	"edef.h"
 #include	"efunc.h"
 
 static FILE *ffp;			/* File pointer, all functions. */
@@ -19,7 +23,7 @@ static int eofflag;			/* end-of-file flag */
  */
 int ffropen( const char *fn)
 {
-	if ((ffp = fopen(fn, "r")) == NULL)
+	if ((ffp = fopen(fn, "rt")) == NULL)
 		return FIOFNF;
 	eofflag = FALSE;
 	return FIOSUC;
@@ -29,7 +33,7 @@ int ffropen( const char *fn)
  * Open a file for writing. Return TRUE if all is well, and FALSE on error
  * (cannot create).
  */
-int ffwopen(char *fn)
+int ffwopen( const char *fn)
 {
 #if     VMS
 	int fd;
@@ -205,7 +209,7 @@ int ffgetline(void)
  *
  * char *fname;		file to check for existance
  */
-int fexist(char *fname)
+int fexist( const char *fname)
 {
 	FILE *fp;
 

@@ -221,12 +221,7 @@ extern int filename(int f, int n);
 extern int ifile(char *fname);
 
 /* fileio.c */
-int ffropen( const char *fn) ;
-extern int ffwopen(char *fn);
-extern int ffclose(void);
-extern int ffputline(char *buf, int nbuf);
-extern int ffgetline(void);
-extern int fexist(char *fname);
+#include "fileio.h"
 
 /* exec.c */
 extern int namedcmd(int f, int n);
