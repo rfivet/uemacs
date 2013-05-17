@@ -17,7 +17,7 @@ static int eofflag;			/* end-of-file flag */
 /*
  * Open a file for reading.
  */
-int ffropen(char *fn)
+int ffropen( const char *fn)
 {
 	if ((ffp = fopen(fn, "r")) == NULL)
 		return FIOFNF;

@@ -1,4 +1,4 @@
-/*	spaw.c
+/*	spawn.c
  *
  *	Various operating system access commands.
  *
@@ -571,7 +571,7 @@ int execprog(char *cmd)
 		char *fcb1;	/* 4 byte pointer to FCB at PSP+5Ch */
 		char *fcb2;	/* 4 byte pointer to FCB at PSP+6Ch */
 	} pblock;
-	char *flook();
+	char *flook( const char *fname, int hflag) ;
 
 	/* parse the command name from the command line */
 	sp = prog;

@@ -474,7 +474,7 @@ int startup(char *sfname)
  * char *fname;		base file name to search for
  * int hflag;		Look in the HOME environment variable first?
  */
-char *flook(char *fname, int hflag)
+char *flook( const char *fname, int hflag)
 {
 	char *home;	/* path to home directory */
 	char *path;	/* environmental PATH variable */
@@ -502,9 +502,10 @@ char *flook(char *fname, int hflag)
 #endif
 
 	/* always try the current directory first */
-	if (ffropen(fname) == FIOSUC) {
-		ffclose();
-		return fname;
+	strcpy( fspec, fname) ;
+	if( ffropen( fspec) == FIOSUC) {
+		ffclose() ;
+		return fspec ;
 	}
 #if	ENVFUNC
 	/* get the PATH variable */

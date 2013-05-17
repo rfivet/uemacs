@@ -9,7 +9,7 @@
 #define EPATH_H_
 
 /*	possible names and paths of help files under different OSs	*/
-static char *pathname[] =
+static const char *pathname[] =
 #if	MSDOS
 {
 	"emacs.rc",

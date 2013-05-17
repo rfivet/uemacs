@@ -180,7 +180,7 @@ extern int buildlist(int type, char *mstring);
 extern int strinc(char *source, char *sub);
 extern unsigned int getckey(int mflag);
 extern int startup(char *sfname);
-extern char *flook(char *fname, int hflag);
+char *flook( const char *fname, int hflag) ;
 extern void cmdstr(int c, char *seq);
 extern fn_t getbind(int c);
 extern char *getfname(fn_t);
@@ -221,7 +221,7 @@ extern int filename(int f, int n);
 extern int ifile(char *fname);
 
 /* fileio.c */
-extern int ffropen(char *fn);
+int ffropen( const char *fn) ;
 extern int ffwopen(char *fn);
 extern int ffclose(void);
 extern int ffputline(char *buf, int nbuf);
