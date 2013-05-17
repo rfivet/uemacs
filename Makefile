@@ -154,7 +154,6 @@ search.o: search.c estruct.h edef.h
 spawn.o: spawn.c estruct.h edef.h
 tcap.o: tcap.c estruct.h edef.h
 termio.o: termio.c estruct.h edef.h
-usage.o: usage.c usage.h
 utf8.o: utf8.c utf8.h
 vmsvt.o: vmsvt.c estruct.h edef.h
 vt52.o: vt52.c estruct.h edef.h
