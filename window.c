@@ -1,3 +1,7 @@
+/* window.c -- inplements window.h */
+
+#include "window.h"
+
 /*	window.c
  *
  *      Window management. Some of the functions are internal, and some are
