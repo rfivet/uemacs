@@ -1,3 +1,7 @@
+/* display.c -- implements display.h */
+
+#include "display.h"
+
 /*	display.c
  *
  *      The functions in this file handle redisplay. There are two halves, the

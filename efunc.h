@@ -120,24 +120,7 @@ extern int unarg(int f, int n);
 extern int cexit(int status);
 
 /* display.c */
-extern void vtinit(void);
-extern void vtfree(void);
-extern void vttidy(void);
-extern void vtmove(int row, int col);
-extern int upscreen(int f, int n);
-extern int update(int force);
-extern void updpos(void);
-extern void upddex(void);
-extern void updgar(void);
-extern int updupd(int force);
-extern void upmode(void);
-extern void movecursor(int row, int col);
-extern void mlerase(void);
-extern void mlwrite(const char *fmt, ...);
-extern void mlforce(char *s);
-extern void mlputs(char *s);
-extern void getscreensize(int *widthp, int *heightp);
-extern void sizesignal(int signr);
+#include "display.h"
 
 /* region.c */
 extern int killregion(int f, int n);
