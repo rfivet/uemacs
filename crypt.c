@@ -9,10 +9,11 @@
  *	written by Dana Hoggatt and Daniel Lawrence
  */
 
-#include	<stdio.h>
-#include	"estruct.h"
-#include	"edef.h"
-#include    "efunc.h"
+#include <stdio.h>
+#include "display.h"
+#include "estruct.h"
+#include "edef.h"
+#include "input.h"
 
 #if	CRYPT
 

@@ -1,3 +1,6 @@
+#ifndef _ESTRUCT_H_
+#define _ESTRUCT_H_
+
 /*      ESTRUCT.H
  *
  *      Structure and preprocessor defines
@@ -678,3 +681,5 @@ struct magic_replacement {
 };
 
 #endif  /* MAGIC */
+
+#endif

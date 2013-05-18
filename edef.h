@@ -10,6 +10,8 @@
 #ifndef EDEF_H_
 #define EDEF_H_
 
+#include "estruct.h"
+
 #include <stdlib.h>
 #include <string.h>
 

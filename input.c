@@ -1,3 +1,7 @@
+/* input.c -- implements input.h */
+
+#include "input.h"
+
 /*	input.c
  *
  *	Various input routines
