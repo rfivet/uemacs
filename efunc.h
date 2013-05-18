@@ -220,9 +220,6 @@ extern int writeout(char *fn);
 extern int filename(int f, int n);
 extern int ifile(char *fname);
 
-/* fileio.c */
-#include "fileio.h"
-
 /* exec.c */
 extern int namedcmd(int f, int n);
 extern int execcmd(int f, int n);
