@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include "crypt.h"
 #include "estruct.h"
 #include "edef.h"
 #include "efunc.h"

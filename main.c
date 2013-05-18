@@ -60,6 +60,7 @@
 /* Make global definitions not external. */
 #define	maindef
 
+#include "crypt.h"
 #include "estruct.h" /* Global structures and defines. */
 #include "edef.h"    /* Global definitions. */
 #include "efunc.h"   /* Function declarations and name table. */

@@ -8,6 +8,7 @@
 #ifndef EBIND_H_
 #define EBIND_H_
 
+#include "crypt.h"
 #include "line.h"
 
 /*
