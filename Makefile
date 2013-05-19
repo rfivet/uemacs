@@ -28,8 +28,8 @@ OBJ=basic.o bind.o buffer.o crypt.o display.o eval.o exec.o \
 	termio.o window.o word.o names.o globals.o \
 	wrapper.o utf8.o
 
-HDR=crypt.h display.h ebind.h edef.h efunc.h estruct.h fileio.h input.h \
-	version.h window.h
+HDR=basic.h crypt.h display.h ebind.h edef.h efunc.h estruct.h fileio.h \
+	input.h line.h main.h version.h window.h wrapper.h
 
 # DO NOT ADD OR MODIFY ANY LINES ABOVE THIS -- make source creates them
 
@@ -132,7 +132,7 @@ depend: ${SRC}
 # DO NOT DELETE THIS LINE -- make depend uses it
 
 ansi.o: ansi.c estruct.h edef.h
-basic.o: basic.c estruct.h edef.h
+basic.o: basic.c basic.h estruct.h edef.h
 bind.o: bind.c estruct.h edef.h fileio.h
 buffer.o: buffer.c estruct.h edef.h
 crypt.o: crypt.c crypt.h display.h estruct.h edef.h input.h
@@ -146,7 +146,7 @@ input.o: input.c input.h estruct.h edef.h
 isearch.o: isearch.c estruct.h edef.h
 line.o: line.c estruct.h edef.h
 lock.o: lock.c estruct.h edef.h
-main.o: main.c estruct.h crypt.h efunc.h edef.h ebind.h version.h
+main.o: main.c main.h estruct.h crypt.h efunc.h edef.h ebind.h version.h
 names.o: names.c estruct.h crypt.h edef.h efunc.h line.h
 pklock.o: pklock.c estruct.h
 posix.o: posix.c estruct.h utf8.h
@@ -159,7 +159,7 @@ termio.o: termio.c estruct.h edef.h
 utf8.o: utf8.c utf8.h
 vmsvt.o: vmsvt.c estruct.h edef.h
 vt52.o: vt52.c estruct.h edef.h
-window.o: window.c window.h estruct.h edef.h
+window.o: window.c window.h estruct.h edef.h basic.h display.h main.h line.h wrapper.h
 word.o: word.c estruct.h edef.h
 wrapper.o: wrapper.c wrapper.h
 

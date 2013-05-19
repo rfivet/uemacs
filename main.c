@@ -1,3 +1,6 @@
+/* main.c -- implements main.h */
+#include "main.h"
+
 /*
  *	main.c
 

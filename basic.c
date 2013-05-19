@@ -1,3 +1,7 @@
+/* basic.c -- implements basic.h */
+
+#include "basic.h"
+
 /*	basic.c
  *
  * The routines in this file move the cursor around on the screen. They

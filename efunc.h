@@ -30,21 +30,7 @@ extern int wordcount(int f, int n);
 #include "window.h"
 
 /* basic.c */
-extern int gotobol(int f, int n);
-extern int backchar(int f, int n);
-extern int gotoeol(int f, int n);
-extern int forwchar(int f, int n);
-extern int gotoline(int f, int n);
-extern int gotobob(int f, int n);
-extern int gotoeob(int f, int n);
-extern int forwline(int f, int n);
-extern int backline(int f, int n);
-extern int gotobop(int f, int n);
-extern int gotoeop(int f, int n);
-extern int forwpage(int f, int n);
-extern int backpage(int f, int n);
-extern int setmark(int f, int n);
-extern int swapmark(int f, int n);
+#include "basic.h"
 
 /* random.c */
 extern int tabsize;  /* Tab size (0: use real tabs). */
@@ -82,21 +68,7 @@ extern int istring(int f, int n);
 extern int ovstring(int f, int n);
 
 /* main.c */
-extern void edinit(char *bname);
-extern int execute(int c, int f, int n);
-extern int quickexit(int f, int n);
-extern int quit(int f, int n);
-extern int ctlxlp(int f, int n);
-extern int ctlxrp(int f, int n);
-extern int ctlxe(int f, int n);
-extern int ctrlg(int f, int n);
-extern int rdonly(void);
-extern int resterr(void);
-extern int nullproc(int f, int n);
-extern int metafn(int f, int n);
-extern int cex(int f, int n);
-extern int unarg(int f, int n);
-extern int cexit(int status);
+#include "main.h"
 
 /* display.c */
 #include "display.h"
