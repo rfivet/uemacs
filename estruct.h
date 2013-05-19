@@ -11,6 +11,10 @@
  *	modified by Petri Kutvonen
  */
 
+
+#include "line.h"
+
+
 #define MAXCOL	500
 #define MAXROW	500
 

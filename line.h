@@ -25,23 +25,23 @@ struct line {
 #define lputc(lp, n, c) ((lp)->l_text[(n)]=(c))
 #define llength(lp)     ((lp)->l_used)
 
-extern void lfree(struct line *lp);
-extern void lchange(int flag);
-extern int insspace(int f, int n);
-extern int linstr(char *instr);
-extern int linsert(int n, int c);
-extern int lowrite(int c);
-extern int lover(char *ostr);
-extern int lnewline(void);
-extern int ldelete(long n, int kflag);
-extern int ldelchar(long n, int kflag);
-extern int lgetchar(unicode_t *);
-extern char *getctext(void);
-extern int putctext(char *iline);
-extern int ldelnewline(void);
-extern void kdelete(void);
-extern int kinsert(int c);
-extern int yank(int f, int n);
-extern struct line *lalloc(int);  /* Allocate a line. */
+void lfree( struct line *lp) ;
+void lchange( int flag) ;
+int insspace( int f, int n) ;
+int linstr( char *instr) ;
+int linsert( int n, int c) ;
+int lowrite( int c) ;
+int lover( char *ostr) ;
+int lnewline( void) ;
+int ldelete( long n, int kflag) ;
+int ldelchar( long n, int kflag) ;
+int lgetchar( unicode_t *) ;
+char *getctext( void) ;
+int putctext( char *iline) ;
+int ldelnewline( void) ;
+void kdelete( void) ;
+int kinsert( int c) ;
+int yank( int f, int n) ;
+struct line *lalloc( int) ;  /* Allocate a line. */
 
 #endif  /* LINE_H_ */
