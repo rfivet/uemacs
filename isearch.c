@@ -1,3 +1,5 @@
+#include "isearch.h"
+
 /*	isearch.c
  *
  * The functions in this file implement commands that perform incremental

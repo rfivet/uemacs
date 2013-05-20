@@ -1,3 +1,6 @@
+/* word.c -- implements word.h */
+#include "word.h"
+
 /*	word.c
  *
  *      The routines in this file implement commands that work word or a

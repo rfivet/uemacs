@@ -1,3 +1,6 @@
+/* exec.c -- implements exec.h */
+#include "exec.h"
+
 /*	exec.c
  *
  *	This file is for functions dealing with execution of

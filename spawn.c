@@ -1,3 +1,6 @@
+/* spawn.c -- implements spawn.h */
+#include "spawn.h"
+
 /*	spawn.c
  *
  *	Various operating system access commands.

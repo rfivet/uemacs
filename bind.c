@@ -1,3 +1,6 @@
+/* bind.c -- implements bind.h */
+#include "bind.h"
+
 /*	bind.c
  *
  *	This file is for functions having to do with key bindings,

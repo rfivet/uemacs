@@ -1,3 +1,6 @@
+/* buffer.c -- implements buffer.h */
+#include "buffer.h"
+
 /*	buffer.c
  *
  *	Buffer management.

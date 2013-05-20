@@ -1,3 +1,6 @@
+/* region.c -- implements region.h */
+#include "region.h"
+
 /*	region.c
  *
  *      The routines in this file deal with the region, that magic space

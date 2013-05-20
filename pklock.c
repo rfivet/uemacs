@@ -1,3 +1,5 @@
+#include "pklock.h"
+
 /*	PKLOCK.C
  *
  *	locking routines as modified by Petri Kutvonen

@@ -1,3 +1,5 @@
+#include "lock.h"
+
 /*	LOCK.C
  *
  *	File locking command routines

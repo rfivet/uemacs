@@ -28,8 +28,10 @@ OBJ=basic.o bind.o buffer.o crypt.o display.o eval.o exec.o \
 	termio.o window.o word.o names.o globals.o \
 	wrapper.o utf8.o
 
-HDR=basic.h crypt.h display.h ebind.h edef.h efunc.h estruct.h file.h fileio.h \
-	input.h line.h main.h version.h window.h wrapper.h
+HDR=basic.h bind.h buffer.h crypt.h display.h ebind.h edef.h efunc.h \
+	estruct.h eval.h exec.h file.h fileio.h input.h isearch.h line.h \
+	lock.h main.h pklock.h posix.h random.h region.h search.h spawn.h \
+	utf8.h version.h window.h word.h wrapper.h
 
 # DO NOT ADD OR MODIFY ANY LINES ABOVE THIS -- make source creates them
 
@@ -133,34 +135,34 @@ depend: ${SRC}
 
 ansi.o: ansi.c estruct.h edef.h
 basic.o: basic.c basic.h estruct.h edef.h
-bind.o: bind.c estruct.h edef.h fileio.h
-buffer.o: buffer.c estruct.h edef.h
+bind.o: bind.c bind.h estruct.h edef.h fileio.h
+buffer.o: buffer.c buffer.h estruct.h edef.h
 crypt.o: crypt.c crypt.h display.h estruct.h edef.h input.h
 display.o: display.c display.h estruct.h edef.h utf8.h version.h window.h
-eval.o: eval.c estruct.h edef.h version.h fileio.h
-exec.o: exec.c estruct.h edef.h
+eval.o: eval.c eval.h estruct.h edef.h version.h fileio.h
+exec.o: exec.c exec.h estruct.h edef.h
 file.o: file.c file.h crypt.h estruct.h edef.h fileio.h
 fileio.o: fileio.c fileio.h crypt.h display.h estruct.h edef.h
 ibmpc.o: ibmpc.c estruct.h edef.h
 input.o: input.c input.h estruct.h edef.h
-isearch.o: isearch.c estruct.h edef.h
-line.o: line.c estruct.h edef.h
-lock.o: lock.c estruct.h edef.h
+isearch.o: isearch.c isearch.h estruct.h edef.h
+line.o: line.c line.h estruct.h edef.h
+lock.o: lock.c lock.h estruct.h edef.h
 main.o: main.c main.h estruct.h crypt.h efunc.h edef.h ebind.h version.h
 names.o: names.c estruct.h crypt.h edef.h efunc.h line.h
-pklock.o: pklock.c estruct.h
-posix.o: posix.c estruct.h utf8.h
-random.o: random.c estruct.h edef.h
-region.o: region.c estruct.h edef.h
-search.o: search.c estruct.h edef.h
-spawn.o: spawn.c estruct.h edef.h
+pklock.o: pklock.c pklock.h estruct.h
+posix.o: posix.c posix.h estruct.h utf8.h
+random.o: random.c random.h estruct.h edef.h
+region.o: region.c region.h estruct.h edef.h
+search.o: search.c search.h estruct.h edef.h
+spawn.o: spawn.c spawn.h estruct.h edef.h
 tcap.o: tcap.c estruct.h edef.h
 termio.o: termio.c estruct.h edef.h
 utf8.o: utf8.c utf8.h
 vmsvt.o: vmsvt.c estruct.h edef.h
 vt52.o: vt52.c estruct.h edef.h
 window.o: window.c window.h estruct.h edef.h basic.h display.h main.h line.h wrapper.h
-word.o: word.c estruct.h edef.h
+word.o: word.c word.h estruct.h edef.h
 wrapper.o: wrapper.c wrapper.h
 
 # DEPENDENCIES MUST END AT END OF FILE

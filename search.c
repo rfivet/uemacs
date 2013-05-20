@@ -1,3 +1,6 @@
+/* search.c -- implements search.h */
+#include "search.h"
+
 /*	search.c
  *
  * The functions in this file implement commands that search in the forward

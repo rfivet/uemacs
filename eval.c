@@ -1,3 +1,5 @@
+#include "eval.h"
+
 /*	eval.c
  *
  *	Expression evaluation functions
