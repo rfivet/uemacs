@@ -1,3 +1,4 @@
+#include "termio.h"
 
 /*	TERMIO.C
  *
@@ -273,7 +274,7 @@ void ttclose(void)
  * On CPM terminal I/O unbuffered, so we just write the byte out. Ditto on
  * MS-DOS (use the very very raw console output routine).
  */
-void ttputc( int c) {
+int ttputc( int c) {
 #if     VMS
 	if (nobuf >= NOBUF)
 		ttflush();
@@ -287,6 +288,7 @@ void ttputc( int c) {
 #if     V7 | USG | BSD
 	fputc(c, stdout);
 #endif
+	return 0 ;
 }
 
 /*

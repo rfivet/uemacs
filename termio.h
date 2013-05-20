@@ -1,5 +1,5 @@
-#ifndef _POSIX_H_
-#define _POSIX_H_
+#ifndef _TERMIO_H_
+#define _TERMIO_H_
 
 void ttopen( void) ;
 void ttclose( void) ;

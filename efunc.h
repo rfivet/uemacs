@@ -36,7 +36,7 @@
 #include "region.h"
 
 /* posix.c */
-#include "posix.h"
+#include "termio.h"
 
 /* input.c */
 #include "input.h"

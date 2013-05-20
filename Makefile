@@ -30,8 +30,8 @@ OBJ=basic.o bind.o buffer.o crypt.o display.o eval.o exec.o \
 
 HDR=basic.h bind.h buffer.h crypt.h display.h ebind.h edef.h efunc.h \
 	estruct.h eval.h exec.h file.h fileio.h input.h isearch.h line.h \
-	lock.h main.h pklock.h posix.h random.h region.h search.h spawn.h \
-	utf8.h version.h window.h word.h wrapper.h
+	lock.h main.h pklock.h random.h region.h search.h spawn.h \
+	termio.h utf8.h version.h window.h word.h wrapper.h
 
 # DO NOT ADD OR MODIFY ANY LINES ABOVE THIS -- make source creates them
 
@@ -151,13 +151,13 @@ lock.o: lock.c lock.h estruct.h edef.h
 main.o: main.c main.h estruct.h crypt.h efunc.h edef.h ebind.h version.h
 names.o: names.c estruct.h crypt.h edef.h efunc.h line.h
 pklock.o: pklock.c pklock.h estruct.h
-posix.o: posix.c posix.h estruct.h utf8.h
+posix.o: posix.c termio.h estruct.h utf8.h
 random.o: random.c random.h estruct.h edef.h
 region.o: region.c region.h estruct.h edef.h
 search.o: search.c search.h estruct.h edef.h
 spawn.o: spawn.c spawn.h estruct.h edef.h
 tcap.o: tcap.c estruct.h edef.h
-termio.o: termio.c estruct.h edef.h
+termio.o: termio.c termio.h estruct.h edef.h
 utf8.o: utf8.c utf8.h
 vmsvt.o: vmsvt.c estruct.h edef.h
 vt52.o: vt52.c estruct.h edef.h

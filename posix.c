@@ -1,5 +1,5 @@
-/* posix.c -- implements posix.h */
-#include "posix.h"
+/* posix.c -- implements termio.h */
+#include "termio.h"
 
 /*	posix.c
  *
