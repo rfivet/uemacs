@@ -5,6 +5,7 @@
  * function.
 */
 
+#include "exec.h"
 #include "crypt.h"
 #include "estruct.h"
 #include "edef.h"

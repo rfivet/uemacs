@@ -16,6 +16,7 @@
 #include "estruct.h"
 #include "edef.h"
 #include "efunc.h"
+#include "exec.h"
 #include "wrapper.h"
 
 #if	PKCODE

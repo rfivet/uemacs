@@ -13,6 +13,7 @@
 #include "estruct.h"
 #include "edef.h"
 #include "efunc.h"
+#include "exec.h"
 #include "fileio.h"
 #include "line.h"
 #include "version.h"

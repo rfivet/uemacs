@@ -15,6 +15,7 @@
 #include "estruct.h"
 #include "edef.h"
 #include "efunc.h"
+#include "exec.h"
 #include "file.h"
 #include "fileio.h"
 #include "line.h"

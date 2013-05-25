@@ -47,9 +47,6 @@
 /* buffer.c */
 #include "buffer.h"
 
-/* exec.c */
-#include "exec.h"
-
 /* spawn.c */
 #include "spawn.h"
 

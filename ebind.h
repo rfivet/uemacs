@@ -9,6 +9,7 @@
 #define EBIND_H_
 
 #include "crypt.h"
+#include "exec.h"
 #include "file.h"
 #include "line.h"
 
