@@ -12,6 +12,7 @@
 #include "efunc.h"
 #include "file.h"
 #include "line.h"
+#include "spawn.h"
 
 struct name_bind names[] = {
 	{"abort-command", ctrlg},

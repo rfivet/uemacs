@@ -12,6 +12,7 @@
 #include "exec.h"
 #include "file.h"
 #include "line.h"
+#include "spawn.h"
 
 /*
  * Command table.

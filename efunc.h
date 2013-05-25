@@ -47,9 +47,6 @@
 /* buffer.c */
 #include "buffer.h"
 
-/* spawn.c */
-#include "spawn.h"
-
 /* search.c */
 #include "search.h"
 
