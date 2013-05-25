@@ -14,6 +14,7 @@
 #include "estruct.h"
 #include "edef.h"
 #include "efunc.h"
+#include "file.h"
 
 #if     VMS
 #define EFN     0		/* Event flag.          */

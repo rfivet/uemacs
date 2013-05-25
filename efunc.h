@@ -47,9 +47,6 @@
 /* buffer.c */
 #include "buffer.h"
 
-/* file.c */
-#include "file.h"
-
 /* exec.c */
 #include "exec.h"
 
