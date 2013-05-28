@@ -15,6 +15,7 @@
 
 #include <stdio.h>
 
+#include "display.h"
 #include "estruct.h"
 #include "edef.h"
 #include "efunc.h"

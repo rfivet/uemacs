@@ -64,6 +64,7 @@
 #define	maindef
 
 #include "crypt.h"
+#include "display.h"
 #include "estruct.h" /* Global structures and defines. */
 #include "edef.h"    /* Global definitions. */
 #include "efunc.h"   /* Function declarations and name table. */

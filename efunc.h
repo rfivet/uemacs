@@ -17,9 +17,6 @@
 /* basic.c */
 #include "basic.h"
 
-/* display.c */
-#include "display.h"
-
 /* posix.c */
 #include "termio.h"
 
