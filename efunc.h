@@ -47,9 +47,6 @@
 /* buffer.c */
 #include "buffer.h"
 
-/* isearch.c */
-#include "isearch.h"
-
 /* eval.c */
 #include "eval.h"
 

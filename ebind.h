@@ -11,6 +11,7 @@
 #include "crypt.h"
 #include "exec.h"
 #include "file.h"
+#include "isearch.h"
 #include "line.h"
 #include "search.h"
 #include "spawn.h"

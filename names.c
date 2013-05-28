@@ -11,6 +11,7 @@
 #include "edef.h"
 #include "efunc.h"
 #include "file.h"
+#include "isearch.h"
 #include "line.h"
 #include "search.h"
 #include "spawn.h"
