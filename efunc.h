@@ -14,9 +14,6 @@
 
 /* External function declarations. */
 
-/* word.c */
-#include "word.h"
-
 /* window.c */
 #include "window.h"
 

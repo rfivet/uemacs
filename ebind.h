@@ -16,6 +16,7 @@
 #include "random.h"
 #include "search.h"
 #include "spawn.h"
+#include "word.h"
 
 /*
  * Command table.

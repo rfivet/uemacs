@@ -21,6 +21,7 @@
 #include "line.h"
 #include "random.h"
 #include "utf8.h"
+#include "word.h"
 
 /*
  * This routine, given a pointer to a struct line, and the current cursor goal
