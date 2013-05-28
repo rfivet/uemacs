@@ -5,6 +5,7 @@
  * function.
 */
 
+#include "bind.h"
 #include "exec.h"
 #include "crypt.h"
 #include "estruct.h"

@@ -29,9 +29,6 @@
 /* input.c */
 #include "input.h"
 
-/* bind.c */
-#include "bind.h"
-
 /* buffer.c */
 #include "buffer.h"
 

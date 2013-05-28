@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 
+#include "bind.h"
 #include "estruct.h"
 #include "edef.h"
 #include "efunc.h"

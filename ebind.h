@@ -8,6 +8,7 @@
 #ifndef EBIND_H_
 #define EBIND_H_
 
+#include "bind.h"
 #include "crypt.h"
 #include "exec.h"
 #include "file.h"
