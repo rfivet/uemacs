@@ -26,9 +26,6 @@
 /* input.c */
 #include "input.h"
 
-/* buffer.c */
-#include "buffer.h"
-
 /* eval.c */
 #include "eval.h"
 

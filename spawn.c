@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include "buffer.h"
 #include "estruct.h"
 #include "edef.h"
 #include "efunc.h"

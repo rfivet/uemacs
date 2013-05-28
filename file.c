@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include "buffer.h"
 #include "crypt.h"
 #include "display.h"
 #include "estruct.h"

@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 
+#include "buffer.h"
 #include "bind.h"
 #include "estruct.h"
 #include "edef.h"

@@ -5,6 +5,7 @@
  * function.
 */
 
+#include "buffer.h"
 #include "bind.h"
 #include "exec.h"
 #include "crypt.h"
