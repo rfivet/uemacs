@@ -15,7 +15,6 @@
 #include "display.h"
 #include "estruct.h"
 #include "edef.h"
-#include "efunc.h"
 #include "file.h"
 #include "input.h"
 #include "main.h"

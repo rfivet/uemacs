@@ -24,7 +24,6 @@
 
 #include "estruct.h"
 #include "edef.h"
-#include "efunc.h"
 #include "utf8.h"
 
 /* Since Mac OS X's termios.h doesn't have the following 2 macros, define them.

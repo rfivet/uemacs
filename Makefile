@@ -148,8 +148,8 @@ input.o: input.c input.h estruct.h edef.h
 isearch.o: isearch.c isearch.h estruct.h edef.h
 line.o: line.c line.h estruct.h edef.h
 lock.o: lock.c lock.h estruct.h edef.h
-main.o: main.c main.h estruct.h crypt.h efunc.h edef.h ebind.h version.h
-names.o: names.c estruct.h crypt.h edef.h efunc.h line.h
+main.o: main.c main.h estruct.h crypt.h edef.h ebind.h version.h
+names.o: names.c estruct.h crypt.h edef.h line.h
 pklock.o: pklock.c pklock.h estruct.h
 posix.o: posix.c termio.h estruct.h utf8.h
 random.o: random.c random.h estruct.h edef.h

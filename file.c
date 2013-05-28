@@ -19,7 +19,6 @@
 #include "display.h"
 #include "estruct.h"
 #include "edef.h"
-#include "efunc.h"
 #include "fileio.h"
 #include "input.h"
 #include "line.h"

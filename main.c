@@ -67,7 +67,6 @@
 #include "display.h"
 #include "estruct.h" /* Global structures and defines. */
 #include "edef.h"    /* Global definitions. */
-#include "efunc.h"   /* Function declarations and name table. */
 #include "ebind.h"   /* Default key bindings. */
 #include "input.h"
 #include "termio.h"

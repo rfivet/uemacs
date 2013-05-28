@@ -12,7 +12,6 @@
 #include "display.h"
 #include "estruct.h"
 #include "edef.h"
-#include "efunc.h"
 #include "input.h"
 
 #if (FILOCK && BSD) || SVR4
