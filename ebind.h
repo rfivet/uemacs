@@ -11,6 +11,7 @@
 #include "bind.h"
 #include "buffer.h"
 #include "crypt.h"
+#include "eval.h"
 #include "exec.h"
 #include "file.h"
 #include "isearch.h"

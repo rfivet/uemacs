@@ -17,6 +17,7 @@
 #include "estruct.h"
 #include "edef.h"
 #include "efunc.h"
+#include "eval.h"
 #include "file.h"
 #include "line.h"
 

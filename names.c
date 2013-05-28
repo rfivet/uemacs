@@ -7,6 +7,7 @@
 
 #include "buffer.h"
 #include "bind.h"
+#include "eval.h"
 #include "exec.h"
 #include "crypt.h"
 #include "estruct.h"

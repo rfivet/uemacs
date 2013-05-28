@@ -26,9 +26,6 @@
 /* input.c */
 #include "input.h"
 
-/* eval.c */
-#include "eval.h"
-
 #if	BSD | SVR4
 /* lock.c */
 #include "lock.h"
