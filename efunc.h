@@ -23,9 +23,6 @@
 /* basic.c */
 #include "basic.h"
 
-/* random.c */
-#include "random.h"
-
 /* main.c */
 #include "main.h"
 

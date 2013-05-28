@@ -13,6 +13,7 @@
 #include "file.h"
 #include "isearch.h"
 #include "line.h"
+#include "random.h"
 #include "search.h"
 #include "spawn.h"
 
