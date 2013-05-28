@@ -15,6 +15,7 @@
 #include "isearch.h"
 #include "line.h"
 #include "random.h"
+#include "region.h"
 #include "search.h"
 #include "spawn.h"
 #include "window.h"

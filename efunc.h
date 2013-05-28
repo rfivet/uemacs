@@ -20,9 +20,6 @@
 /* display.c */
 #include "display.h"
 
-/* region.c */
-#include "region.h"
-
 /* posix.c */
 #include "termio.h"
 
