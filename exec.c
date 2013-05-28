@@ -19,6 +19,7 @@
 #include "efunc.h"
 #include "eval.h"
 #include "file.h"
+#include "input.h"
 #include "line.h"
 
 /*

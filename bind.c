@@ -19,6 +19,7 @@
 #include "exec.h"
 #include "file.h"
 #include "fileio.h"
+#include "input.h"
 #include "line.h"
 #include "main.h"
 #include "window.h"

@@ -68,6 +68,7 @@
 #include "edef.h"    /* Global definitions. */
 #include "efunc.h"   /* Function declarations and name table. */
 #include "ebind.h"   /* Default key bindings. */
+#include "input.h"
 #include "version.h"
 
 /* For MSDOS, increase the default stack space. */

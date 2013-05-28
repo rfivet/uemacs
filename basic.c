@@ -18,6 +18,7 @@
 #include "estruct.h"
 #include "edef.h"
 #include "efunc.h"
+#include "input.h"
 #include "line.h"
 #include "random.h"
 #include "utf8.h"

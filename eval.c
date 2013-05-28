@@ -17,6 +17,7 @@
 #include "efunc.h"
 #include "exec.h"
 #include "fileio.h"
+#include "input.h"
 #include "line.h"
 #include "random.h"
 #include "search.h"

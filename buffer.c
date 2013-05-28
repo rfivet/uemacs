@@ -18,6 +18,7 @@
 #include "edef.h"
 #include "efunc.h"
 #include "file.h"
+#include "input.h"
 #include "line.h"
 #include "window.h"
 

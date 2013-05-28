@@ -23,9 +23,6 @@
 /* posix.c */
 #include "termio.h"
 
-/* input.c */
-#include "input.h"
-
 #if	BSD | SVR4
 /* lock.c */
 #include "lock.h"
