@@ -16,6 +16,7 @@
 #include "random.h"
 #include "search.h"
 #include "spawn.h"
+#include "window.h"
 #include "word.h"
 
 /*

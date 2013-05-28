@@ -23,6 +23,7 @@
 #include "input.h"
 #include "line.h"
 #include "main.h"
+#include "window.h"
 
 #if defined(PKCODE)
 /* Max number of lines from one file. */

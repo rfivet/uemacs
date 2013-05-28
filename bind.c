@@ -19,6 +19,7 @@
 #include "file.h"
 #include "fileio.h"
 #include "line.h"
+#include "window.h"
 
 
 /*	possible names and paths of help files under different OSs	*/

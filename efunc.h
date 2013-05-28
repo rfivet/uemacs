@@ -14,9 +14,6 @@
 
 /* External function declarations. */
 
-/* window.c */
-#include "window.h"
-
 /* basic.c */
 #include "basic.h"
 

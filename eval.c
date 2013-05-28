@@ -19,6 +19,7 @@
 #include "random.h"
 #include "search.h"
 #include "version.h"
+#include "window.h"
 
 #define	MAXVARS	255
 

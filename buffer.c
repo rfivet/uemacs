@@ -19,6 +19,7 @@
 #include "efunc.h"
 #include "file.h"
 #include "line.h"
+#include "window.h"
 
 /*
  * Attach a buffer to a window. The
