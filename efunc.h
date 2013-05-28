@@ -17,11 +17,6 @@
 #if	BSD | SVR4
 /* lock.c */
 #include "lock.h"
-
-#if (FILOCK && BSD) || SVR4
-/* pklock.c */
-#include "pklock.h"
-#endif
 #endif
 
 #endif

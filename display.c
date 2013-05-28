@@ -20,6 +20,7 @@
 #include "estruct.h"
 #include "edef.h"
 #include "line.h"
+#include "termio.h"
 #include "version.h"
 #include "wrapper.h"
 #include "utf8.h"

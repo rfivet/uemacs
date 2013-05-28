@@ -8,9 +8,16 @@
  */
 
 #include <stdio.h>
+
+#include "display.h"
 #include "estruct.h"
 #include "edef.h"
 #include "efunc.h"
+#include "input.h"
+
+#if (FILOCK && BSD) || SVR4
+#include "pklock.h"
+#endif
 
 #if	BSD | SVR4
 #include <sys/errno.h>
