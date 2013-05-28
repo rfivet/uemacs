@@ -16,6 +16,7 @@
 #include "exec.h"
 #include "fileio.h"
 #include "line.h"
+#include "search.h"
 #include "version.h"
 
 #define	MAXVARS	255

@@ -30,6 +30,7 @@
 #include "edef.h"
 #include "efunc.h"
 #include "line.h"
+#include "search.h"
 
 #if	ISRCH
 
