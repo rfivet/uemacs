@@ -17,9 +17,6 @@
 /* basic.c */
 #include "basic.h"
 
-/* main.c */
-#include "main.h"
-
 /* display.c */
 #include "display.h"
 

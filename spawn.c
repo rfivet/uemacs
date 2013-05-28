@@ -15,6 +15,7 @@
 #include "edef.h"
 #include "efunc.h"
 #include "file.h"
+#include "main.h"
 #include "window.h"
 
 #if     VMS

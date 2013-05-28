@@ -16,6 +16,7 @@
 #include "edef.h"
 #include "efunc.h"
 #include "line.h"
+#include "main.h"
 #include "random.h"
 
 /* Word wrap on n-spaces. Back-over whatever precedes the point on the current

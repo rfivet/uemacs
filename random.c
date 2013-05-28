@@ -15,6 +15,7 @@
 #include "edef.h"
 #include "efunc.h"
 #include "line.h"
+#include "main.h"
 #include "search.h"
 
 int tabsize; /* Tab size (0: use real tabs) */
