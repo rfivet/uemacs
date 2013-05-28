@@ -14,9 +14,6 @@
 
 /* External function declarations. */
 
-/* basic.c */
-#include "basic.h"
-
 /* posix.c */
 #include "termio.h"
 

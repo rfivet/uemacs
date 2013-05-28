@@ -5,8 +5,9 @@
  * function.
 */
 
-#include "buffer.h"
+#include "basic.h"
 #include "bind.h"
+#include "buffer.h"
 #include "display.h"
 #include "eval.h"
 #include "exec.h"

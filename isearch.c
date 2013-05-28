@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 
+#include "basic.h"
 #include "display.h"
 #include "estruct.h"
 #include "edef.h"

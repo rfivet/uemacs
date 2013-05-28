@@ -10,8 +10,9 @@
 
 #include <stdio.h>
 
-#include "buffer.h"
+#include "basic.h"
 #include "bind.h"
+#include "buffer.h"
 #include "display.h"
 #include "estruct.h"
 #include "edef.h"
