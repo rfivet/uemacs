@@ -14,9 +14,6 @@
 
 /* External function declarations. */
 
-/* posix.c */
-#include "termio.h"
-
 #if	BSD | SVR4
 /* lock.c */
 #include "lock.h"

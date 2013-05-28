@@ -70,6 +70,7 @@
 #include "efunc.h"   /* Function declarations and name table. */
 #include "ebind.h"   /* Default key bindings. */
 #include "input.h"
+#include "termio.h"
 #include "version.h"
 
 /* For MSDOS, increase the default stack space. */
