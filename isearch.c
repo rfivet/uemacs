@@ -34,6 +34,17 @@
 #include "line.h"
 #include "search.h"
 
+
+static int isearch( int f, int n) ;
+static int checknext( char chr, char *patrn, int dir) ;
+static int scanmore( char *patrn, int dir) ;
+static int match_pat( char *patrn) ;
+static int promptpattern( char *prompt) ;
+static int get_char( void) ;
+static int uneat( void) ;
+static void reeat( int c) ;
+
+
 #if	ISRCH
 
 static int echo_char(int c, int col);
@@ -143,7 +154,7 @@ int fisearch(int f, int n)
  * exists (or until the search is aborted).
  */
 
-int isearch(int f, int n)
+static int isearch(int f, int n)
 {
 	int status;		/* Search status */
 	int col;		/* prompt column */
@@ -283,7 +294,7 @@ int isearch(int f, int n)
  * char *patrn;		The entire search string (incl chr)
  * int dir;		Search direction
  */
-int checknext(char chr, char *patrn, int dir)	/* Check next character in search string */
+static int checknext(char chr, char *patrn, int dir)	/* Check next character in search string */
 {
 	struct line *curline;	/* current line during scan           */
 	int curoff;	/* position within current line       */
@@ -327,7 +338,7 @@ int checknext(char chr, char *patrn, int dir)	/* Check next character in search 
  * char *patrn;			string to scan for
  * int dir;			direction to search
  */
-int scanmore(char *patrn, int dir)	/* search forward or back for a pattern           */
+static int scanmore(char *patrn, int dir)	/* search forward or back for a pattern           */
 {
 	int sts;		/* search status                      */
 
@@ -356,7 +367,7 @@ int scanmore(char *patrn, int dir)	/* search forward or back for a pattern      
  *
  * char *patrn;			String to match to buffer
  */
-int match_pat(char *patrn)	/* See if the pattern string matches string at "."   */
+static int match_pat(char *patrn)	/* See if the pattern string matches string at "."   */
 {
 	int i;		/* Generic loop index/offset          */
 	int buffchar;	/* character at current position      */
@@ -388,7 +399,7 @@ int match_pat(char *patrn)	/* See if the pattern string matches string at "."   
 /*
  * Routine to prompt for I-Search string.
  */
-int promptpattern(char *prompt)
+static int promptpattern(char *prompt)
 {
 	char tpat[NPAT + 20];
 
@@ -455,7 +466,7 @@ static int echo_char(int c, int col)
  * Otherwise, we must be re-executing the command string, so just return the
  * next character.
  */
-int get_char(void)
+static int get_char(void)
 {
 	int c;			/* A place to get a character         */
 
@@ -486,7 +497,7 @@ int get_char(void)
 
 /* Come here on the next term.t_getchar call: */
 
-int uneat(void)
+static int uneat(void)
 {
 	int c;
 
@@ -496,7 +507,7 @@ int uneat(void)
 	return c;		/* and return the last char           */
 }
 
-void reeat(int c)
+static void reeat(int c)
 {
 	if (eaten_char != -1)	/* If we've already been here             */
 		return /*(NULL) */ ;	/* Don't do it again                  */
