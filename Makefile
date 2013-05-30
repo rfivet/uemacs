@@ -16,19 +16,19 @@ uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
 
 PROGRAM=ue
 
-SRC=basic.c bind.c buffer.c crypt.c display.c eval.c exec.c \
+SRC=basic.c bind.c buffer.c crypt.c display.c ebind.c eval.c exec.c \
 	file.c fileio.c input.c isearch.c line.c lock.c main.c \
 	pklock.c posix.c random.c region.c search.c spawn.c tcap.c \
 	termio.c window.c word.c names.c globals.c \
 	wrapper.c utf8.c
 
-OBJ=basic.o bind.o buffer.o crypt.o display.o eval.o exec.o \
+OBJ=basic.o bind.o buffer.o crypt.o display.o ebind.o eval.o exec.o \
 	file.o fileio.o input.o isearch.o line.o lock.o main.o \
 	pklock.o posix.o random.o region.o search.o spawn.o tcap.o \
 	termio.o window.o word.o names.o globals.o \
 	wrapper.o utf8.o
 
-HDR=basic.h bind.h buffer.h crypt.h display.h ebind.h edef.h efunc.h \
+HDR=basic.h bind.h buffer.h crypt.h display.h edef.h efunc.h \
 	estruct.h eval.h exec.h file.h fileio.h input.h isearch.h line.h \
 	lock.h main.h pklock.h random.h region.h search.h spawn.h \
 	termio.h utf8.h version.h window.h word.h wrapper.h
@@ -148,7 +148,7 @@ input.o: input.c input.h estruct.h edef.h
 isearch.o: isearch.c isearch.h estruct.h edef.h
 line.o: line.c line.h estruct.h edef.h
 lock.o: lock.c lock.h estruct.h edef.h
-main.o: main.c main.h estruct.h crypt.h edef.h ebind.h version.h
+main.o: main.c main.h estruct.h crypt.h edef.h version.h
 names.o: names.c estruct.h crypt.h edef.h line.h
 pklock.o: pklock.c pklock.h estruct.h
 posix.o: posix.c termio.h estruct.h utf8.h

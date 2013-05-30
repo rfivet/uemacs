@@ -1,22 +1,21 @@
-/*	ebind.h
+/*	ebind.c
  *
  *	Initial default key to function bindings
  *
  *	Modified by Petri Kutvonen
  */
 
-#ifndef EBIND_H_
-#define EBIND_H_
-
 #include "basic.h"
 #include "bind.h"
 #include "buffer.h"
 #include "crypt.h"
+#include "estruct.h"
 #include "eval.h"
 #include "exec.h"
 #include "file.h"
 #include "isearch.h"
 #include "line.h"
+#include "main.h"
 #include "random.h"
 #include "region.h"
 #include "search.h"
@@ -435,5 +434,3 @@ struct key_tab keytab[NBINDS] = {
 
 	{0, NULL}
 };
-
-#endif  /* EBIND_H_ */

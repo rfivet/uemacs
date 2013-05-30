@@ -67,10 +67,17 @@
 #include "display.h"
 #include "estruct.h" /* Global structures and defines. */
 #include "edef.h"    /* Global definitions. */
-#include "ebind.h"   /* Default key bindings. */
 #include "input.h"
 #include "termio.h"
 #include "version.h"
+
+#include "basic.h"
+#include "bind.h"
+#include "buffer.h"
+#include "eval.h"
+#include "file.h"
+#include "random.h"
+#include "search.h"
 
 /* For MSDOS, increase the default stack space. */
 #if MSDOS & TURBO
