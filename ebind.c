@@ -12,7 +12,6 @@
 #include "bind.h"
 #include "buffer.h"
 #include "crypt.h"
-#include "estruct.h"
 #include "eval.h"
 #include "exec.h"
 #include "file.h"

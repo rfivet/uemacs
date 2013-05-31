@@ -15,8 +15,6 @@
 
 #include "bind.h"
 #include "display.h"
-#include "estruct.h"
-#include "edef.h"
 #include "exec.h"
 #include "main.h"
 #include "names.h"
