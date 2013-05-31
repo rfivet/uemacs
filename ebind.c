@@ -1,3 +1,6 @@
+/* ebind.c -- implements ebind.h */
+#include "ebind.h"
+
 /*	ebind.c
  *
  *	Initial default key to function bindings

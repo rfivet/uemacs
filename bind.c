@@ -14,6 +14,7 @@
 
 #include "buffer.h"
 #include "display.h"
+#include "ebind.h"
 #include "estruct.h"
 #include "edef.h"
 #include "exec.h"

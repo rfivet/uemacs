@@ -561,12 +561,6 @@ struct terminal {
 #define	TTbacg		(*term.t_setback)
 #endif
 
-/* Structure for the table of initial key bindings. */
-struct key_tab {
-	int k_code;		 /* Key code */
-	int (*k_fp)(int, int);	 /* Routine to handle it */
-};
-
 /* Structure for the name binding table. */
 struct name_bind {
 	char *n_name;		 /* name of function key */

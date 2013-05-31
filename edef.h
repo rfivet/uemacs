@@ -33,7 +33,6 @@ extern int flickcode;		/* do flicker supression?       */
 extern char *modename[];	/* text names of modes          */
 extern char *mode2name[];	/* text names of modes          */
 extern char modecode[];		/* letters to represent modes   */
-extern struct key_tab keytab[];	/* key bind to functions table  */
 extern struct name_bind names[];/* name to function table */
 extern int gmode;		/* global editor mode           */
 extern int gflags;		/* global control flag          */
