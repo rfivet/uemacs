@@ -23,6 +23,7 @@
 #include "input.h"
 #include "line.h"
 #include "main.h"
+#include "names.h"
 #include "window.h"
 
 

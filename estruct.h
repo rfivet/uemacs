@@ -561,12 +561,6 @@ struct terminal {
 #define	TTbacg		(*term.t_setback)
 #endif
 
-/* Structure for the name binding table. */
-struct name_bind {
-	char *n_name;		 /* name of function key */
-	int (*n_func)(int, int); /* function name is bound to */
-};
-
 /* The editor holds deleted text chunks in the struct kill buffer. The
  * kill buffer is logically a stream of ascii characters, however
  * due to its unpredicatable size, it gets implemented as a linked

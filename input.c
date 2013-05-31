@@ -19,6 +19,7 @@
 #include "edef.h"
 #include "exec.h"
 #include "main.h"
+#include "names.h"
 #include "wrapper.h"
 
 #if	PKCODE

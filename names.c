@@ -1,7 +1,10 @@
+/* names.c -- implements names.h */
+#include "names.h"
+
 /* Name to function binding table.
  *
  * This table gives the names of all the bindable functions
- * end their C function address. These are used for the bind-to-key
+ * and their C function address. These are used for the bind-to-key
  * function.
 */
 
@@ -12,8 +15,6 @@
 #include "eval.h"
 #include "exec.h"
 #include "crypt.h"
-#include "estruct.h"
-#include "edef.h"
 #include "file.h"
 #include "isearch.h"
 #include "line.h"
