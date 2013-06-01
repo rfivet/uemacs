@@ -105,6 +105,8 @@ extern void sizesignal(int);
 #endif
 #endif
 
+static void edinit( char *bname) ;
+
 static void version( void) {
     fputs( PROGRAM_NAME_LONG " version " VERSION "\n", stdout) ;
 }
@@ -454,7 +456,7 @@ int main(int argc, char **argv)
  * as an argument, because the main routine may have been told to read in a
  * file by default, and we want the buffer name to be right.
  */
-void edinit(char *bname)
+static void edinit(char *bname)
 {
 	struct buffer *bp;
 	struct window *wp;
