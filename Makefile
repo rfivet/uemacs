@@ -28,9 +28,9 @@ OBJ=basic.o bind.o buffer.o crypt.o display.o ebind.o eval.o exec.o \
 	termio.o window.o word.o names.o globals.o \
 	wrapper.o utf8.o
 
-HDR=basic.h bind.h buffer.h crypt.h display.h ebind.h edef.h efunc.h \
+HDR=basic.h bind.h buffer.h crypt.h display.h edef.h efunc.h \
 	estruct.h eval.h exec.h file.h fileio.h input.h isearch.h line.h \
-	lock.h main.h names.h pklock.h random.h region.h search.h spawn.h \
+	lock.h main.h pklock.h random.h region.h search.h spawn.h \
 	termio.h utf8.h version.h window.h word.h wrapper.h
 
 # DO NOT ADD OR MODIFY ANY LINES ABOVE THIS -- make source creates them
@@ -110,12 +110,7 @@ source:
 
 depend: ${SRC}
 	@for i in ${SRC}; do\
-	    cc ${DEFINES} -M $$i | sed -e 's, \./, ,' | grep -v '/usr/include' | \
-	    awk '{ if ($$1 != prev) { if (rec != "") print rec; \
-		rec = $$0; prev = $$1; } \
-		else { if (length(rec $$2) > 78) { print rec; rec = $$0; } \
-		else rec = rec " " $$2 } } \
-		END { print rec }'; done >makedep
+	    cc ${DEFINES} -MM $$i ; done >makedep
 	@echo '/^# DO NOT DELETE THIS LINE/+2,$$d' >eddep
 	@echo '$$r ./makedep' >>eddep
 	@echo 'w' >>eddep
@@ -127,44 +122,73 @@ depend: ${SRC}
 	@echo '# IF YOU PUT STUFF HERE IT WILL GO AWAY' >>makefile
 	@echo '# see make depend above' >>makefile
 
+#	@for i in ${SRC}; do\
+#	    cc ${DEFINES} -M $$i | sed -e 's, \./, ,' | grep -v '/usr/include' | \
+#	    awk '{ if ($$1 != prev) { if (rec != "") print rec; \
+#		rec = $$0; prev = $$1; } \
+#		else { if (length(rec $$2) > 78) { print rec; rec = $$0; } \
+#		else rec = rec " " $$2 } } \
+#		END { print rec }'; done >makedep
+
 .c.o:
 	$(E) "  CC      " $@
 	$(Q) ${CC} ${CFLAGS} ${DEFINES} -c $*.c
 
 # DO NOT DELETE THIS LINE -- make depend uses it
 
-ansi.o: ansi.c estruct.h edef.h
-basic.o: basic.c basic.h estruct.h edef.h
-bind.o: bind.c bind.h ebind.h fileio.h names.h
-buffer.o: buffer.c buffer.h estruct.h edef.h
-crypt.o: crypt.c crypt.h display.h estruct.h edef.h input.h
-display.o: display.c display.h estruct.h edef.h utf8.h version.h window.h
-ebind.c: ebind.h
-eval.o: eval.c eval.h estruct.h edef.h version.h fileio.h
-exec.o: exec.c exec.h estruct.h edef.h
-file.o: file.c file.h crypt.h estruct.h edef.h fileio.h
-fileio.o: fileio.c fileio.h crypt.h display.h estruct.h edef.h
-ibmpc.o: ibmpc.c estruct.h edef.h
-input.o: input.c input.h estruct.h edef.h
-isearch.o: isearch.c isearch.h estruct.h edef.h
-line.o: line.c line.h estruct.h edef.h
-lock.o: lock.c lock.h estruct.h edef.h
-main.o: main.c main.h estruct.h crypt.h edef.h version.h
-names.o: names.c names.h crypt.h line.h
-pklock.o: pklock.c pklock.h estruct.h
-posix.o: posix.c termio.h estruct.h utf8.h
-random.o: random.c random.h estruct.h edef.h
-region.o: region.c region.h estruct.h edef.h
-search.o: search.c search.h estruct.h edef.h
-spawn.o: spawn.c spawn.h estruct.h edef.h
-tcap.o: tcap.c estruct.h edef.h
-termio.o: termio.c termio.h estruct.h edef.h
-utf8.o: utf8.c utf8.h
-vmsvt.o: vmsvt.c estruct.h edef.h
-vt52.o: vt52.c estruct.h edef.h
-window.o: window.c window.h estruct.h edef.h basic.h display.h main.h line.h wrapper.h
-word.o: word.c word.h estruct.h edef.h
+basic.o: basic.c basic.h display.h estruct.h line.h utf8.h edef.h input.h \
+  random.h word.h
+bind.o: bind.c bind.h edef.h estruct.h line.h utf8.h buffer.h display.h \
+  ebind.h exec.h file.h fileio.h input.h main.h names.h window.h
+buffer.o: buffer.c buffer.h estruct.h line.h utf8.h display.h edef.h \
+  file.h input.h window.h
+crypt.o: crypt.c crypt.h display.h estruct.h line.h utf8.h edef.h input.h
+display.o: display.c display.h estruct.h line.h utf8.h edef.h termio.h \
+  version.h wrapper.h window.h
+ebind.o: ebind.c ebind.h basic.h bind.h edef.h estruct.h line.h utf8.h \
+  buffer.h crypt.h eval.h exec.h file.h isearch.h main.h random.h \
+  region.h search.h spawn.h window.h word.h
+eval.o: eval.c eval.h estruct.h line.h utf8.h basic.h bind.h edef.h \
+  buffer.h display.h exec.h fileio.h input.h random.h search.h termio.h \
+  version.h window.h
+exec.o: exec.c exec.h estruct.h line.h utf8.h buffer.h bind.h edef.h \
+  display.h eval.h file.h input.h
+file.o: file.c file.h buffer.h estruct.h line.h utf8.h crypt.h display.h \
+  edef.h fileio.h input.h main.h window.h
+fileio.o: fileio.c fileio.h crypt.h display.h estruct.h line.h utf8.h \
+  edef.h
+input.o: input.c input.h edef.h estruct.h line.h utf8.h bind.h display.h \
+  exec.h main.h names.h wrapper.h
+isearch.o: isearch.c isearch.h basic.h display.h estruct.h line.h utf8.h \
+  edef.h input.h search.h
+line.o: line.c line.h utf8.h basic.h display.h estruct.h edef.h main.h \
+  random.h
+lock.o: lock.c lock.h display.h estruct.h line.h utf8.h edef.h input.h
+main.o: main.c main.h crypt.h display.h estruct.h line.h utf8.h edef.h \
+  input.h termio.h version.h basic.h bind.h buffer.h eval.h file.h \
+  random.h search.h
+pklock.o: pklock.c pklock.h estruct.h line.h utf8.h edef.h
+posix.o: posix.c termio.h
+random.o: random.c random.h basic.h display.h estruct.h line.h utf8.h \
+  edef.h input.h main.h search.h
+region.o: region.c region.h estruct.h line.h utf8.h display.h edef.h \
+  main.h
+search.o: search.c search.h estruct.h line.h utf8.h basic.h display.h \
+  edef.h input.h main.h
+spawn.o: spawn.c spawn.h buffer.h estruct.h line.h utf8.h display.h \
+  edef.h file.h input.h main.h window.h
+tcap.o: tcap.c display.h estruct.h line.h utf8.h edef.h termio.h
+termio.o: termio.c termio.h estruct.h line.h utf8.h edef.h
+window.o: window.c window.h estruct.h line.h utf8.h basic.h display.h \
+  edef.h main.h wrapper.h
+word.o: word.c word.h basic.h display.h estruct.h line.h utf8.h edef.h \
+  main.h random.h region.h
+names.o: names.c names.h basic.h bind.h edef.h estruct.h line.h utf8.h \
+  buffer.h display.h eval.h exec.h crypt.h file.h isearch.h main.h \
+  region.h random.h search.h spawn.h window.h word.h
+globals.o: globals.c estruct.h line.h utf8.h edef.h
 wrapper.o: wrapper.c wrapper.h
+utf8.o: utf8.c utf8.h
 
 # DEPENDENCIES MUST END AT END OF FILE
 # IF YOU PUT STUFF HERE IT WILL GO AWAY
