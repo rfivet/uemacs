@@ -1,4 +1,10 @@
-# makefile for emacs, updated Sun Apr 28 17:59:07 EET DST 1996
+# makefile for emacs, updated Sat, Jun 01, 2013 11:49:18 AM
+
+SRC=ansi.c basic.c bind.c buffer.c crypt.c display.c ebind.c eval.c exec.c file.c fileio.c globals.c ibmpc.c input.c isearch.c line.c lock.c main.c names.c pklock.c posix.c random.c region.c search.c spawn.c tcap.c termio.c utf8.c vmsvt.c vt52.c window.c word.c wrapper.c
+OBJ=ansi.o basic.o bind.o buffer.o crypt.o display.o ebind.o eval.o exec.o file.o fileio.o globals.o ibmpc.o input.o isearch.o line.o lock.o main.o names.o pklock.o posix.o random.o region.o search.o spawn.o tcap.o termio.o utf8.o vmsvt.o vt52.o window.o word.o wrapper.o
+HDR=basic.h bind.h buffer.h crypt.h display.h ebind.h edef.h efunc.h estruct.h eval.h exec.h file.h fileio.h input.h isearch.h line.h lock.h main.h names.h pklock.h random.h region.h search.h spawn.h termio.h utf8.h version.h window.h word.h wrapper.h
+
+# DO NOT ADD OR MODIFY ANY LINES ABOVE THIS -- make source creates them
 
 # Make the build silent by default
 V =
@@ -15,25 +21,6 @@ export E Q
 uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
 
 PROGRAM=ue
-
-SRC=basic.c bind.c buffer.c crypt.c display.c ebind.c eval.c exec.c \
-	file.c fileio.c input.c isearch.c line.c lock.c main.c \
-	pklock.c posix.c random.c region.c search.c spawn.c tcap.c \
-	termio.c window.c word.c names.c globals.c \
-	wrapper.c utf8.c
-
-OBJ=basic.o bind.o buffer.o crypt.o display.o ebind.o eval.o exec.o \
-	file.o fileio.o input.o isearch.o line.o lock.o main.o \
-	pklock.o posix.o random.o region.o search.o spawn.o tcap.o \
-	termio.o window.o word.o names.o globals.o \
-	wrapper.o utf8.o
-
-HDR=basic.h bind.h buffer.h crypt.h display.h edef.h efunc.h \
-	estruct.h eval.h exec.h file.h fileio.h input.h isearch.h line.h \
-	lock.h main.h pklock.h random.h region.h search.h spawn.h \
-	termio.h utf8.h version.h window.h word.h wrapper.h
-
-# DO NOT ADD OR MODIFY ANY LINES ABOVE THIS -- make source creates them
 
 CC=gcc
 WARNINGS=-Wall -Wstrict-prototypes
@@ -136,6 +123,7 @@ depend: ${SRC}
 
 # DO NOT DELETE THIS LINE -- make depend uses it
 
+ansi.o: ansi.c estruct.h line.h utf8.h edef.h
 basic.o: basic.c basic.h display.h estruct.h line.h utf8.h edef.h input.h \
   random.h word.h
 bind.o: bind.c bind.h edef.h estruct.h line.h utf8.h buffer.h display.h \
@@ -157,6 +145,8 @@ file.o: file.c file.h buffer.h estruct.h line.h utf8.h crypt.h display.h \
   edef.h fileio.h input.h main.h window.h
 fileio.o: fileio.c fileio.h crypt.h display.h estruct.h line.h utf8.h \
   edef.h
+globals.o: globals.c estruct.h line.h utf8.h edef.h
+ibmpc.o: ibmpc.c estruct.h line.h utf8.h edef.h
 input.o: input.c input.h edef.h estruct.h line.h utf8.h bind.h display.h \
   exec.h main.h names.h wrapper.h
 isearch.o: isearch.c isearch.h basic.h display.h estruct.h line.h utf8.h \
@@ -167,6 +157,9 @@ lock.o: lock.c lock.h display.h estruct.h line.h utf8.h edef.h input.h
 main.o: main.c main.h crypt.h display.h estruct.h line.h utf8.h edef.h \
   input.h termio.h version.h basic.h bind.h buffer.h eval.h file.h \
   random.h search.h
+names.o: names.c names.h basic.h bind.h edef.h estruct.h line.h utf8.h \
+  buffer.h display.h eval.h exec.h crypt.h file.h isearch.h main.h \
+  region.h random.h search.h spawn.h window.h word.h
 pklock.o: pklock.c pklock.h estruct.h line.h utf8.h edef.h
 posix.o: posix.c termio.h
 random.o: random.c random.h basic.h display.h estruct.h line.h utf8.h \
@@ -179,16 +172,14 @@ spawn.o: spawn.c spawn.h buffer.h estruct.h line.h utf8.h display.h \
   edef.h file.h input.h main.h window.h
 tcap.o: tcap.c display.h estruct.h line.h utf8.h edef.h termio.h
 termio.o: termio.c termio.h estruct.h line.h utf8.h edef.h
+utf8.o: utf8.c utf8.h
+vmsvt.o: vmsvt.c estruct.h line.h utf8.h edef.h
+vt52.o: vt52.c estruct.h line.h utf8.h edef.h
 window.o: window.c window.h estruct.h line.h utf8.h basic.h display.h \
   edef.h main.h wrapper.h
 word.o: word.c word.h basic.h display.h estruct.h line.h utf8.h edef.h \
   main.h random.h region.h
-names.o: names.c names.h basic.h bind.h edef.h estruct.h line.h utf8.h \
-  buffer.h display.h eval.h exec.h crypt.h file.h isearch.h main.h \
-  region.h random.h search.h spawn.h window.h word.h
-globals.o: globals.c estruct.h line.h utf8.h edef.h
 wrapper.o: wrapper.c wrapper.h
-utf8.o: utf8.c utf8.h
 
 # DEPENDENCIES MUST END AT END OF FILE
 # IF YOU PUT STUFF HERE IT WILL GO AWAY
