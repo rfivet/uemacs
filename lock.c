@@ -24,6 +24,8 @@
 static char *lname[NLOCKS];		/* names of all locked files */
 static int numlocks;			/* # of current locks active */
 
+static void lckerror(char *errstr) ;
+
 /*
  * lockchk:
  *	check a file for locking and add it to the list

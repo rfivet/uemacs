@@ -76,6 +76,7 @@
 #include "buffer.h"
 #include "eval.h"
 #include "file.h"
+#include "lock.h"
 #include "random.h"
 #include "search.h"
 
