@@ -21,7 +21,6 @@
 #include "display.h"
 #include "estruct.h"
 #include "edef.h"
-#include "main.h"
 #include "random.h"
 #include "utf8.h"
 

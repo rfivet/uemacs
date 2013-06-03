@@ -720,24 +720,6 @@ int ctrlg(int f, int n)
 	return ABORT;
 }
 
-/*
- * tell the user that this command is illegal while we are in
- * VIEW (read-only) mode
- */
-int rdonly(void)
-{
-	TTbeep();
-	mlwrite("(Key illegal in VIEW mode)");
-	return FALSE;
-}
-
-int resterr(void)
-{
-	TTbeep();
-	mlwrite("(That command is RESTRICTED)");
-	return FALSE;
-}
-
 /* user function that does NOTHING */
 int nullproc(int f, int n)
 {

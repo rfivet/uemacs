@@ -16,7 +16,6 @@
 #include "estruct.h"
 #include "edef.h"
 #include "line.h"
-#include "main.h"
 
 /*
  * Kill the region. Ask "getregion"

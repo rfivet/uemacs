@@ -17,7 +17,6 @@
 #include "edef.h"
 #include "file.h"
 #include "input.h"
-#include "main.h"
 #include "window.h"
 
 #if     VMS

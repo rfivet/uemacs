@@ -8,8 +8,6 @@ int ctlxlp( int f, int n) ;
 int ctlxrp( int f, int n) ;
 int ctlxe( int f, int n) ;
 int ctrlg( int f, int n) ;
-int rdonly( void) ;
-int resterr( void) ;
 int nullproc( int f, int n) ;
 int metafn( int f, int n) ;
 int cex( int f, int n) ;
