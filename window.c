@@ -15,8 +15,8 @@
 #include "display.h"
 #include "estruct.h"
 #include "edef.h"
+#include "execute.h"
 #include "line.h"
-#include "main.h"
 #include "wrapper.h"
 
 /*

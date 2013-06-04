@@ -1,8 +1,8 @@
-# makefile for emacs, updated Mon, Jun 03, 2013 12:05:22 PM
+# makefile for emacs, updated Tue, Jun 04, 2013 11:39:09 AM
 
-SRC=ansi.c basic.c bind.c buffer.c crypt.c display.c ebind.c eval.c exec.c file.c fileio.c globals.c ibmpc.c input.c isearch.c line.c lock.c main.c names.c pklock.c posix.c random.c region.c search.c spawn.c tcap.c termio.c utf8.c vmsvt.c vt52.c window.c word.c wrapper.c
-OBJ=ansi.o basic.o bind.o buffer.o crypt.o display.o ebind.o eval.o exec.o file.o fileio.o globals.o ibmpc.o input.o isearch.o line.o lock.o main.o names.o pklock.o posix.o random.o region.o search.o spawn.o tcap.o termio.o utf8.o vmsvt.o vt52.o window.o word.o wrapper.o
-HDR=basic.h bind.h buffer.h crypt.h display.h ebind.h edef.h efunc.h estruct.h eval.h exec.h file.h fileio.h input.h isearch.h line.h lock.h main.h names.h pklock.h random.h region.h search.h spawn.h termio.h utf8.h version.h window.h word.h wrapper.h
+SRC=ansi.c basic.c bind.c buffer.c crypt.c display.c ebind.c eval.c exec.c execute.c file.c fileio.c globals.c ibmpc.c input.c isearch.c line.c lock.c main.c names.c pklock.c posix.c random.c region.c search.c spawn.c tcap.c termio.c utf8.c vmsvt.c vt52.c window.c word.c wrapper.c
+OBJ=ansi.o basic.o bind.o buffer.o crypt.o display.o ebind.o eval.o exec.o execute.o file.o fileio.o globals.o ibmpc.o input.o isearch.o line.o lock.o main.o names.o pklock.o posix.o random.o region.o search.o spawn.o tcap.o termio.o utf8.o vmsvt.o vt52.o window.o word.o wrapper.o
+HDR=basic.h bind.h buffer.h crypt.h display.h ebind.h edef.h efunc.h estruct.h eval.h exec.h execute.h file.h fileio.h input.h isearch.h line.h lock.h main.h names.h pklock.h random.h region.h search.h spawn.h termio.h utf8.h version.h window.h word.h wrapper.h
 
 # DO NOT ADD OR MODIFY ANY LINES ABOVE THIS -- make source creates them
 
@@ -141,8 +141,10 @@ eval.o: eval.c eval.h estruct.h line.h utf8.h basic.h bind.h edef.h \
   version.h window.h
 exec.o: exec.c exec.h estruct.h line.h utf8.h buffer.h bind.h edef.h \
   display.h eval.h file.h input.h
+execute.o: execute.c edef.h estruct.h line.h utf8.h bind.h random.h \
+  display.h file.h
 file.o: file.c file.h buffer.h estruct.h line.h utf8.h crypt.h display.h \
-  edef.h fileio.h input.h lock.h main.h window.h
+  edef.h execute.h fileio.h input.h lock.h window.h
 fileio.o: fileio.c fileio.h crypt.h display.h estruct.h line.h utf8.h \
   edef.h
 globals.o: globals.c estruct.h line.h utf8.h edef.h
@@ -154,15 +156,15 @@ isearch.o: isearch.c isearch.h basic.h display.h estruct.h line.h utf8.h \
 line.o: line.c line.h utf8.h basic.h display.h estruct.h edef.h random.h
 lock.o: lock.c lock.h estruct.h line.h utf8.h display.h edef.h input.h
 main.o: main.c main.h crypt.h display.h estruct.h line.h utf8.h edef.h \
-  input.h termio.h version.h basic.h bind.h buffer.h eval.h file.h lock.h \
-  random.h search.h
+  input.h termio.h version.h basic.h bind.h buffer.h eval.h execute.h \
+  file.h lock.h random.h search.h
 names.o: names.c names.h basic.h bind.h edef.h estruct.h line.h utf8.h \
   buffer.h display.h eval.h exec.h crypt.h file.h isearch.h main.h \
   region.h random.h search.h spawn.h window.h word.h
 pklock.o: pklock.c pklock.h estruct.h line.h utf8.h edef.h
 posix.o: posix.c termio.h
 random.o: random.c random.h basic.h display.h estruct.h line.h utf8.h \
-  edef.h input.h main.h search.h
+  edef.h execute.h input.h search.h
 region.o: region.c region.h estruct.h line.h utf8.h display.h edef.h
 search.o: search.c search.h estruct.h line.h utf8.h basic.h display.h \
   edef.h input.h
@@ -174,7 +176,7 @@ utf8.o: utf8.c utf8.h
 vmsvt.o: vmsvt.c estruct.h line.h utf8.h edef.h
 vt52.o: vt52.c estruct.h line.h utf8.h edef.h
 window.o: window.c window.h estruct.h line.h utf8.h basic.h display.h \
-  edef.h main.h wrapper.h
+  edef.h execute.h wrapper.h
 word.o: word.c word.h basic.h display.h estruct.h line.h utf8.h edef.h \
   random.h region.h
 wrapper.o: wrapper.c wrapper.h

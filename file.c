@@ -19,11 +19,11 @@
 #include "display.h"
 #include "estruct.h"
 #include "edef.h"
+#include "execute.h"
 #include "fileio.h"
 #include "input.h"
 #include "line.h"
 #include "lock.h"
-#include "main.h"
 #include "window.h"
 
 #if defined(PKCODE)

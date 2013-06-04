@@ -1,7 +1,6 @@
 #ifndef _MAIN_H_
 #define _MAIN_H_
 
-int execute( int c, int f, int n) ;
 int quickexit( int f, int n) ;
 int quit( int f, int n) ;
 int ctlxlp( int f, int n) ;

@@ -15,9 +15,9 @@
 #include "display.h"
 #include "estruct.h"
 #include "edef.h"
+#include "execute.h"
 #include "input.h"
 #include "line.h"
-#include "main.h"
 #include "search.h"
 
 int tabsize; /* Tab size (0: use real tabs) */
