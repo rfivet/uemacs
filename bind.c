@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 
+#include "bindable.h"
 #include "buffer.h"
 #include "display.h"
 #include "ebind.h"
@@ -20,7 +21,6 @@
 #include "fileio.h"
 #include "input.h"
 #include "line.h"
-#include "main.h"
 #include "names.h"
 #include "window.h"
 

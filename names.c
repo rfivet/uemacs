@@ -10,6 +10,7 @@
 
 #include "basic.h"
 #include "bind.h"
+#include "bindable.h"
 #include "buffer.h"
 #include "display.h"
 #include "eval.h"
@@ -18,7 +19,6 @@
 #include "file.h"
 #include "isearch.h"
 #include "line.h"
-#include "main.h"
 #include "region.h"
 #include "random.h"
 #include "search.h"

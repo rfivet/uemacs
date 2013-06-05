@@ -14,9 +14,9 @@
 #include <unistd.h>
 
 #include "bind.h"
+#include "bindable.h"
 #include "display.h"
 #include "exec.h"
-#include "main.h"
 #include "names.h"
 #include "wrapper.h"
 
