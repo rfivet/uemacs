@@ -286,7 +286,11 @@ int ttputc( int c) {
 #endif
 
 #if     V7 | USG | BSD
-	fputc(c, stdout);
+	char utf8[6];
+	int bytes;
+
+	bytes = unicode_to_utf8(c, utf8);
+	fwrite(utf8, 1, bytes, stdout);
 #endif
 	return 0 ;
 }
