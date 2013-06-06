@@ -26,6 +26,8 @@
 
 #define	BLOCK_SIZE 16 /* Line block chunk size. */
 
+static int ldelnewline( void) ;
+
 /*
  * This routine allocates a block of memory large enough to hold a struct line
  * containing "used" characters. The block is always rounded up a bit. Return
@@ -265,7 +267,7 @@ int linsert(int n, int c)
  *
  * int c;	character to overwrite on current position
  */
-int lowrite(int c)
+static int lowrite(int c)
 {
 	if (curwp->w_doto < curwp->w_dotp->l_used &&
 	    (lgetc(curwp->w_dotp, curwp->w_doto) != '\t' ||
@@ -515,7 +517,7 @@ int putctext(char *iline)
  * about in memory. Return FALSE on error and TRUE if all looks ok. Called by
  * "ldelete" only.
  */
-int ldelnewline(void)
+static int ldelnewline(void)
 {
 	char *cp1;
 	char *cp2;
