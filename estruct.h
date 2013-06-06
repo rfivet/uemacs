@@ -403,6 +403,8 @@
 
 #if	CLEAN
 #define	exit(a)	cexit(a)
+
+int cexit( int status) ;
 #endif
 
 /*

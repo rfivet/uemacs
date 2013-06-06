@@ -1,6 +1,3 @@
-/* main.c -- implements main.h */
-#include "main.h"
-
 /*
  *	main.c
 
@@ -60,27 +57,23 @@
 
 #include <stdio.h>
 
-/* Make global definitions not external. */
-#define	maindef
-
-#include "crypt.h"
-#include "display.h"
-#include "estruct.h" /* Global structures and defines. */
-#include "edef.h"    /* Global definitions. */
-#include "input.h"
-#include "termio.h"
-#include "version.h"
-
 #include "basic.h"
 #include "bind.h"
 #include "bindable.h"
 #include "buffer.h"
+#include "crypt.h"
+#include "display.h"
+#include "edef.h"    /* Global definitions. */
+#include "estruct.h" /* Global structures and defines. */
 #include "eval.h"
 #include "execute.h"
 #include "file.h"
+#include "input.h"
 #include "lock.h"
 #include "random.h"
 #include "search.h"
+#include "termio.h"
+#include "version.h"
 
 /* For MSDOS, increase the default stack space. */
 #if MSDOS & TURBO
@@ -93,7 +86,6 @@ extern unsigned _stklen = 32766;
 
 #if UNIX
 #include <signal.h>
-static void emergencyexit(int);
 #ifdef SIGWINCH
 extern void sizesignal(int);
 #endif
