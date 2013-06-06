@@ -119,16 +119,6 @@ char *patmatch = NULL;
 struct line *matchline = NULL;
 int matchoff = 0;
 
-/* directive name table:
-	This holds the names of all the directives....	*/
-
-char *dname[] = {
-	"if", "else", "endif",
-	"goto", "return", "endm",
-	"while", "endwhile", "break",
-	"force"
-};
-
 #if	DEBUGM
 /*	vars needed for macro debugging output	*/
 char outline[NSTRING];		/* global string to hold debug line text */

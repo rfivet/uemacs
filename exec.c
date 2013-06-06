@@ -22,6 +22,16 @@
 #include "input.h"
 #include "line.h"
 
+/* directive name table:
+	This holds the names of all the directives....	*/
+
+static const char *dname[] = {
+	"if", "else", "endif",
+	"goto", "return", "endm",
+	"while", "endwhile", "break",
+	"force"
+};
+
 /*
  * Execute a named command even if it is not bound.
  */
