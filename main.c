@@ -105,13 +105,20 @@ static void version( void) {
 
 
 static void usage( void) {
-    fputs( "Usage: " PROGRAM_NAME " filename\n"
-           "   or: " PROGRAM_NAME " [options]\n\n"
-           "      +          start at the end of file\n"
-           "      +<n>       start at line <n>\n"
-           "      -g[G]<n>   go to line <n>\n"
-           "      --help     display this help and exit\n"
-           "      --version  output version information and exit\n", stdout) ;
+    fputs( "Usage: " PROGRAM_NAME " [OPTION].. [FILE]..\n\n"
+           "      +             start at the end of file\n"
+           "      +<n>          start at line <n>\n"
+           "      --help        display this help and exit\n"
+           "      --version     output version information and exit\n"
+           "      -a|A          process error file\n"
+           "      -e|E          edit file\n"
+           "      -g|G<n>       go to line <n>\n"
+           "      -k|K<key>     use code key\n"
+           "      -n|N          accept null chars\n"
+           "      -r|R          restrictive use\n"
+           "      -s|S<string>  search string\n"
+           "      -v|V          view file\n"
+           , stdout) ;
 }
 
 
