@@ -2,12 +2,12 @@
 
 #include "fileio.h"
 
-/*	FILEIO.C
+/*  FILEIO.C
  *
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- *	modified by Petri Kutvonen
+ *  modified by Petri Kutvonen
  */
 
 #include <stdio.h>
@@ -16,18 +16,21 @@
 #include "estruct.h"
 #include "edef.h"
 
-static FILE *ffp;			/* File pointer, all functions. */
-static int eofflag;			/* end-of-file flag */
+static FILE *ffp;           /* File pointer, all functions. */
+static int eofflag;         /* end-of-file flag */
+
+int ftype ;
 
 /*
  * Open a file for reading.
  */
 int ffropen( const char *fn)
 {
-	if ((ffp = fopen(fn, "rt")) == NULL)
-		return FIOFNF;
-	eofflag = FALSE;
-	return FIOSUC;
+    if ((ffp = fopen(fn, "r")) == NULL)
+        return FIOFNF;
+    eofflag = FALSE;
+    ftype = FTYPE_NONE ;
+    return FIOSUC;
 }
 
 /*
@@ -37,17 +40,17 @@ int ffropen( const char *fn)
 int ffwopen( const char *fn)
 {
 #if     VMS
-	int fd;
+    int fd;
 
-	if ((fd = creat(fn, 0666, "rfm=var", "rat=cr")) < 0
-	    || (ffp = fdopen(fd, "w")) == NULL) {
+    if ((fd = creat(fn, 0666, "rfm=var", "rat=cr")) < 0
+        || (ffp = fdopen(fd, "w")) == NULL) {
 #else
-	if ((ffp = fopen(fn, "w")) == NULL) {
+    if ((ffp = fopen(fn, "w")) == NULL) {
 #endif
-		mlwrite("Cannot open file for writing");
-		return FIOERR;
-	}
-	return FIOSUC;
+        mlwrite("Cannot open file for writing");
+        return FIOERR;
+    }
+    return FIOSUC;
 }
 
 /*
@@ -55,26 +58,27 @@ int ffwopen( const char *fn)
  */
 int ffclose(void)
 {
-	/* free this since we do not need it anymore */
-	if (fline) {
-		free(fline);
-		fline = NULL;
-	}
-	eofflag = FALSE;
+    /* free this since we do not need it anymore */
+    if (fline) {
+        free(fline);
+        fline = NULL;
+    }
+    eofflag = FALSE;
+    ftype = FTYPE_NONE ;
 
-#if	MSDOS & CTRLZ
-	fputc(26, ffp);		/* add a ^Z at the end of the file */
+#if MSDOS & CTRLZ
+    fputc(26, ffp);     /* add a ^Z at the end of the file */
 #endif
 
 #if     V7 | USG | BSD | (MSDOS & (MSC | TURBO))
-	if (fclose(ffp) != FALSE) {
-		mlwrite("Error closing file");
-		return FIOERR;
-	}
-	return FIOSUC;
+    if (fclose(ffp) != FALSE) {
+        mlwrite("Error closing file");
+        return FIOERR;
+    }
+    return FIOSUC;
 #else
-	fclose(ffp);
-	return FIOSUC;
+    fclose(ffp);
+    return FIOSUC;
 #endif
 }
 
@@ -85,32 +89,33 @@ int ffclose(void)
  */
 int ffputline(char *buf, int nbuf)
 {
-	int i;
-#if	CRYPT
-	char c;			/* character to translate */
+    int i;
+#if CRYPT
+    char c;         /* character to translate */
 
-	if (cryptflag) {
-		for (i = 0; i < nbuf; ++i) {
-			c = buf[i] & 0xff;
-			myencrypt(&c, 1);
-			fputc(c, ffp);
-		}
-	} else
-		for (i = 0; i < nbuf; ++i)
-			fputc(buf[i] & 0xFF, ffp);
+    if (cryptflag) {
+        for (i = 0; i < nbuf; ++i) {
+            c = buf[i] & 0xff;
+            myencrypt(&c, 1);
+            fputc(c, ffp);
+        }
+    } else
+        for (i = 0; i < nbuf; ++i)
+            fputc(buf[i] & 0xFF, ffp);
 #else
-	for (i = 0; i < nbuf; ++i)
-		fputc(buf[i] & 0xFF, ffp);
+    for (i = 0; i < nbuf; ++i)
+        fputc(buf[i] & 0xFF, ffp);
 #endif
 
-	fputc('\n', ffp);
+    fputc( '\r', ffp) ;
+    fputc('\n', ffp);
 
-	if (ferror(ffp)) {
-		mlwrite("Write I/O error");
-		return FIOERR;
-	}
+    if (ferror(ffp)) {
+        mlwrite("Write I/O error");
+        return FIOERR;
+    }
 
-	return FIOSUC;
+    return FIOSUC;
 }
 
 /*
@@ -121,107 +126,115 @@ int ffputline(char *buf, int nbuf)
  */
 int ffgetline(void)
 {
-	int c;		/* current character read */
-	int i;		/* current index into fline */
-	char *tmpline;	/* temp storage for expanding line */
+    int c;      /* current character read */
+    int i;      /* current index into fline */
+    char *tmpline;  /* temp storage for expanding line */
 
-	/* if we are at the end...return it */
-	if (eofflag)
-		return FIOEOF;
+    /* if we are at the end...return it */
+    if (eofflag)
+        return FIOEOF;
 
-	/* dump fline if it ended up too big */
-	if (flen > NSTRING) {
-		free(fline);
-		fline = NULL;
-	}
+    /* dump fline if it ended up too big */
+    if (flen > NSTRING) {
+        free(fline);
+        fline = NULL;
+    }
 
-	/* if we don't have an fline, allocate one */
-	if (fline == NULL)
-		if ((fline = malloc(flen = NSTRING)) == NULL)
-			return FIOMEM;
+    /* if we don't have an fline, allocate one */
+    if (fline == NULL)
+        if ((fline = malloc(flen = NSTRING)) == NULL)
+            return FIOMEM;
 
-	/* read the line in */
-#if	PKCODE
-	if (!nullflag) {
-		if (fgets(fline, NSTRING, ffp) == (char *) NULL) {	/* EOF ? */
-			i = 0;
-			c = EOF;
-		} else {
-			i = strlen(fline);
-			c = 0;
-			if (i > 0) {
-				c = fline[i - 1];
-				i--;
-			}
-		}
-	} else {
-		i = 0;
-		c = fgetc(ffp);
-	}
-	while (c != EOF && c != '\n') {
+    /* read the line in */
+#if 0 /* PKCODE */
+    if (!nullflag) {
+        if (fgets(fline, NSTRING, ffp) == (char *) NULL) {  /* EOF ? */
+            i = 0;
+            c = EOF;
+        } else {
+            i = strlen(fline);
+            c = 0;
+            if (i > 0) {
+                c = fline[i - 1];
+                i--;
+            }
+        }
+    } else {
+        i = 0;
+        c = fgetc(ffp);
+    }
+    while (c != EOF && c != '\n') {
 #else
-	i = 0;
-	while ((c = fgetc(ffp)) != EOF && c != '\n') {
+    i = 0;
+    while ((c = fgetc(ffp)) != EOF && c != '\r' && c != '\n') {
 #endif
-#if	PKCODE
-		if (c) {
+#if 0 /* PKCODE */
+        if (c) {
 #endif
-			fline[i++] = c;
-			/* if it's longer, get more room */
-			if (i >= flen) {
-				if ((tmpline =
-				     malloc(flen + NSTRING)) == NULL)
-					return FIOMEM;
-				strncpy(tmpline, fline, flen);
-				flen += NSTRING;
-				free(fline);
-				fline = tmpline;
-			}
-#if	PKCODE
-		}
-		c = fgetc(ffp);
+            fline[i++] = c;
+            /* if it's longer, get more room */
+            if (i >= flen) {
+                if ((tmpline =
+                     malloc(flen + NSTRING)) == NULL)
+                    return FIOMEM;
+                strncpy(tmpline, fline, flen);
+                flen += NSTRING;
+                free(fline);
+                fline = tmpline;
+            }
+#if 0 /* PKCODE */
+        }
+        c = fgetc(ffp);
 #endif
-	}
+    }
 
-	/* test for any errors that may have occured */
-	if (c == EOF) {
-		if (ferror(ffp)) {
-			mlwrite("File read error");
-			return FIOERR;
-		}
+    /* test for any errors that may have occured */
+    if (c == EOF) {
+        if (ferror(ffp)) {
+            mlwrite("File read error");
+            return FIOERR;
+        }
 
-		if (i != 0)
-			eofflag = TRUE;
-		else
-			return FIOEOF;
-	}
+        if (i != 0)
+            eofflag = TRUE;
+        else
+            return FIOEOF;
+    } else if( c == '\r') {
+        c = fgetc( ffp) ;
+        if( c != '\n') {
+            ftype |= FTYPE_MAC ;
+            ungetc( c, ffp) ;
+        } else
+	    ftype |= FTYPE_DOS ;
+    } else /* c == '\n' */
+	ftype |= FTYPE_UNIX ;
 
-	/* terminate and decrypt the string */
-	fline[i] = 0;
-#if	CRYPT
-	if (cryptflag)
-		myencrypt(fline, strlen(fline));
+    /* terminate and decrypt the string */
+    fline[i] = 0;
+#if CRYPT
+    if (cryptflag)
+        myencrypt(fline, strlen(fline));
 #endif
-	return FIOSUC;
+    return FIOSUC;
 }
 
 /*
  * does <fname> exist on disk?
  *
- * char *fname;		file to check for existance
+ * char *fname;     file to check for existance
  */
 int fexist( const char *fname)
 {
-	FILE *fp;
+    FILE *fp;
 
-	/* try to open the file for reading */
-	fp = fopen(fname, "r");
+    /* try to open the file for reading */
+    fp = fopen(fname, "r");
 
-	/* if it fails, just return false! */
-	if (fp == NULL)
-		return FALSE;
+    /* if it fails, just return false! */
+    if (fp == NULL)
+        return FALSE;
 
-	/* otherwise, close it and report true */
-	fclose(fp);
-	return TRUE;
+    /* otherwise, close it and report true */
+    fclose(fp);
+    return TRUE;
 }

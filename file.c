@@ -231,6 +231,7 @@ int readin(char *fname, int lockfl)
     struct window *wp;
     struct buffer *bp;
     int s;
+    int eoltype ;
     int nbytes;
     int nline;
     char mesg[NSTRING];
@@ -294,6 +295,7 @@ int readin(char *fname, int lockfl)
             lputc(lp1, i, fline[i]);
         ++nline;
     }
+    eoltype = ftype ;
     ffclose();      /* Ignore errors.       */
     strcpy(mesg, "(");
     if (s == FIOERR) {
@@ -307,6 +309,25 @@ int readin(char *fname, int lockfl)
     sprintf(&mesg[strlen(mesg)], "Read %d line", nline);
     if (nline != 1)
         strcat(mesg, "s");
+
+    strcat( mesg, ", eol = ") ;
+    switch( eoltype) {
+    case FTYPE_DOS:
+    	strcat( mesg, "DOS") ;
+    	break ;
+    case FTYPE_UNIX:
+    	strcat( mesg, "UNIX") ;
+    	break ;
+    case FTYPE_MAC:
+    	strcat( mesg, "MAC") ;
+    	break ;
+    case FTYPE_NONE:
+    	strcat( mesg, "NONE") ;
+    	break ;
+    default:
+    	strcat( mesg, "MIXED") ;
+    }
+
     strcat(mesg, ")");
     mlwrite(mesg);
 
