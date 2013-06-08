@@ -110,6 +110,7 @@ static void usage( void) {
            "      +<n>          start at line <n>\n"
            "      --help        display this help and exit\n"
            "      --version     output version information and exit\n"
+           "      @cmdfile      execute command file\n"
            "      -a|A          process error file\n"
            "      -e|E          edit file\n"
            "      -g|G<n>       go to line <n>\n"
