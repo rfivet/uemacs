@@ -78,8 +78,6 @@ char falsem[] = "FALSE";	/* false litereal               */
 int cmdstatus = TRUE;		/* last command status          */
 char palstr[49] = "";		/* palette string               */
 int saveflag = 0;		/* Flags, saved with the $target var */
-char *fline = NULL;		/* dynamic return line */
-int flen = 0;			/* current length of fline */
 int rval = 0;			/* return value of a subprocess */
 #if	PKCODE
 int nullflag = FALSE;		/* accept null characters */
