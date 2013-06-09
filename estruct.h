@@ -289,13 +289,6 @@
 #define	FORWARD	0		/* forward direction            */
 #define REVERSE	1		/* backwards direction          */
 
-#define FIOSUC  0		/* File I/O, success.           */
-#define FIOFNF  1		/* File I/O, file not found.    */
-#define FIOEOF  2		/* File I/O, end of file.       */
-#define FIOERR  3		/* File I/O, error.             */
-#define	FIOMEM	4		/* File I/O, out of memory      */
-#define	FIOFUN	5		/* File I/O, eod of file/bad line */
-
 #define CFCPCN  0x0001		/* Last command was C-P, C-N    */
 #define CFKILL  0x0002		/* Last command was a kill      */
 
