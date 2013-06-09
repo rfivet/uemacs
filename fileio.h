@@ -11,7 +11,7 @@ extern int ftype ;
 int fexist( const char *fname) ;
 int ffclose( void) ;
 int ffgetline( void) ;
-int ffputline( char *buf, int nbuf) ;
+int ffputline( char *buf, int nbuf, int dosflag) ;
 int ffropen( const char *fn) ;
 int ffwopen( const char *fn) ;
 

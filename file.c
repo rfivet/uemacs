@@ -296,6 +296,9 @@ int readin(char *fname, int lockfl)
         ++nline;
     }
     eoltype = ftype ;
+    if( ftype == FTYPE_DOS)
+    	curbp->b_mode |= MDDOS ;
+
     ffclose();      /* Ignore errors.       */
     strcpy(mesg, "(");
     if (s == FIOERR) {
@@ -512,7 +515,8 @@ int writeout(char *fn)
     lp = lforw(curbp->b_linep); /* First line.          */
     nline = 0;      /* Number of lines.     */
     while (lp != curbp->b_linep) {
-        if ((s = ffputline(&lp->l_text[0], llength(lp))) != FIOSUC)
+        s = ffputline( &lp->l_text[0], llength(lp), curbp->b_mode & MDDOS) ;
+        if( s != FIOSUC)
             break;
         ++nline;
         lp = lforw(lp);

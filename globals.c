@@ -11,15 +11,15 @@ int execlevel = 0;		/* execution IF level           */
 int eolexist = TRUE;		/* does clear to EOL exist      */
 int revexist = FALSE;		/* does reverse video exist?    */
 int flickcode = FALSE;		/* do flicker supression?       */
-char *modename[] = {		/* name of modes                */
+const char *modename[] = {	/* name of modes                */
 	"WRAP", "CMODE", "SPELL", "EXACT", "VIEW", "OVER",
-	"MAGIC", "CRYPT", "ASAVE", "UTF-8"
+	"MAGIC", "CRYPT", "ASAVE", "UTF-8", "DOS"
 };
-char *mode2name[] = {		/* name of modes                */
+const char *mode2name[] = {	/* name of modes                */
 	"Wrap", "Cmode", "Spell", "Exact", "View", "Over",
-	"Magic", "Crypt", "Asave", "utf-8"
+	"Magic", "Crypt", "Asave", "utf-8", "Dos"
 };
-char modecode[] = "WCSEVOMYAU";	/* letters to represent modes   */
+const char modecode[] = "WCSEVOMYAUD"; /* letters to represent modes   */
 int gmode = 0;			/* global editor mode           */
 int gflags = GFREAD;		/* global control flag          */
 #if	PKCODE & IBMPC

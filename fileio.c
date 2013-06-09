@@ -87,7 +87,7 @@ int ffclose(void)
  * and the "nbuf" is its length, less the free newline. Return the status.
  * Check only at the newline.
  */
-int ffputline(char *buf, int nbuf)
+int ffputline( char *buf, int nbuf, int dosflag)
 {
     int i;
 #if CRYPT
@@ -107,7 +107,9 @@ int ffputline(char *buf, int nbuf)
         fputc(buf[i] & 0xFF, ffp);
 #endif
 
-    fputc( '\r', ffp) ;
+    if( dosflag)
+	fputc( '\r', ffp) ;
+
     fputc('\n', ffp);
 
     if (ferror(ffp)) {
