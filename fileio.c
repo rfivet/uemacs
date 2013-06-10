@@ -25,8 +25,9 @@ boolean	is_crypted ;		/* currently encrypting?   */
 #endif
 
 char	*fline = NULL ;		/* dynamic return line     */
-int		flen = 0 ;			/* current length of fline */
+int		flen = 0 ;			/* current allocated length of fline */
 int		ftype ;
+int		fpayload ;			/* actual length of fline content */
 
 
 static FILE		*ffp ;		/* File pointer, all functions. */
@@ -139,7 +140,6 @@ fio_code ffgetline(void)
 {
     int c;      /* current character read */
     int i;      /* current index into fline */
-    char *tmpline;  /* temp storage for expanding line */
 
     /* if we are at the end...return it */
     if (eofflag)
@@ -157,47 +157,26 @@ fio_code ffgetline(void)
             return FIOMEM;
 
     /* read the line in */
-#if 0 /* PKCODE */
-    if (!nullflag) {
-        if (fgets(fline, NSTRING, ffp) == (char *) NULL) {  /* EOF ? */
-            i = 0;
-            c = EOF;
-        } else {
-            i = strlen(fline);
-            c = 0;
-            if (i > 0) {
-                c = fline[i - 1];
-                i--;
-            }
-        }
-    } else {
-        i = 0;
-        c = fgetc(ffp);
-    }
-    while (c != EOF && c != '\n') {
-#else
     i = 0;
     while ((c = fgetc(ffp)) != EOF && c != '\r' && c != '\n') {
-#endif
-#if 0 /* PKCODE */
-        if (c) {
-#endif
-            fline[i++] = c;
-            /* if it's longer, get more room */
-            if (i >= flen) {
-                if ((tmpline =
-                     malloc(flen + NSTRING)) == NULL)
-                    return FIOMEM;
-                strncpy(tmpline, fline, flen);
-                flen += NSTRING;
-                free(fline);
-                fline = tmpline;
-            }
-#if 0 /* PKCODE */
+		fline[i++] = c;
+        /* if it's longer, get more room */
+        if (i >= flen) {
+		    char *tmpline;  /* temp storage for expanding line */
+			    
+	        fpayload = i ;
+            tmpline = malloc(flen + NSTRING) ;
+            if( tmpline == NULL)
+    	        return FIOMEM ;
+
+            memcpy( tmpline, fline, flen) ;
+            flen += NSTRING;
+            free(fline);
+            fline = tmpline;
         }
-        c = fgetc(ffp);
-#endif
     }
+
+	fpayload = i ;
 
     /* test for any errors that may have occured */
     if (c == EOF) {
@@ -224,7 +203,7 @@ fio_code ffgetline(void)
     fline[i] = 0;
 #if CRYPT
     if( is_crypted)
-        myencrypt(fline, strlen(fline));
+        myencrypt( fline, fpayload);
 #endif
     return FIOSUC;
 }

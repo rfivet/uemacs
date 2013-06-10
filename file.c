@@ -275,7 +275,7 @@ int readin(char *fname, int lockfl)
     mlwrite("(Reading file)");
     nline = 0;
     while ((s = ffgetline()) == FIOSUC) {
-        nbytes = strlen(fline);
+        nbytes = fpayload ;
         if ((lp1 = lalloc(nbytes)) == NULL) {
             s = FIOMEM; /* Keep message on the  */
             break;  /* display.             */
@@ -610,7 +610,7 @@ int ifile(char *fname)
 
     nline = 0;
     while ((s = ffgetline()) == FIOSUC) {
-        nbytes = strlen(fline);
+        nbytes = fpayload ;
         if ((lp1 = lalloc(nbytes)) == NULL) {
             s = FIOMEM; /* Keep message on the  */
             break;  /* display.             */

@@ -23,8 +23,9 @@ extern boolean	is_crypted ;	/* currently encrypting?   */
 #endif
 
 extern char		*fline ;		/* dynamic return line     */
-extern int 		flen ;			/* current length of fline */
+extern int 		flen ;			/* current allocated length of fline */
 extern int 		ftype ;
+extern int		fpayload ;		/* actual length of fline content */
 
 boolean fexist( const char *fname) ;
 fio_code ffclose( void) ;
