@@ -11,17 +11,27 @@
  */
 
 #include <stdio.h>
-#include "crypt.h"
-#include "display.h"
+#include <stdlib.h>
+#include <string.h>
+
 #include "estruct.h"
-#include "edef.h"
+#include "display.h"
 
-static FILE *ffp;           /* File pointer, all functions. */
-static boolean eofflag ;    /* end-of-file flag */
 
-char *fline = NULL;		/* dynamic return line */
-int flen = 0;			/* current length of fline */
-int ftype ;
+#if CRYPT
+#include "crypt.h"
+
+boolean	is_crypted ;		/* currently encrypting?   */
+#endif
+
+char	*fline = NULL ;		/* dynamic return line     */
+int		flen = 0 ;			/* current length of fline */
+int		ftype ;
+
+
+static FILE		*ffp ;		/* File pointer, all functions. */
+static boolean	eofflag ;	/* end-of-file flag */
+
 
 /*
  * Open a file for reading.
@@ -91,7 +101,7 @@ fio_code ffclose(void)
  */
 fio_code ffputline( unsigned char *buf, int nbuf, int dosflag) {
 #if CRYPT
-	if( cryptflag) {
+	if( is_crypted) {
 		int i ;
 
 		for( i = 0 ; i < nbuf ; i++) {
@@ -213,7 +223,7 @@ fio_code ffgetline(void)
     /* terminate and decrypt the string */
     fline[i] = 0;
 #if CRYPT
-    if (cryptflag)
+    if( is_crypted)
         myencrypt(fline, strlen(fline));
 #endif
     return FIOSUC;

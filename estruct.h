@@ -491,7 +491,9 @@ struct buffer {
 #define	MDVIEW	0x0010		/* read-only buffer             */
 #define MDOVER	0x0020		/* overwrite mode               */
 #define MDMAGIC	0x0040		/* regular expresions in search */
+#if CRYPT
 #define	MDCRYPT	0x0080		/* encrytion mode active        */
+#endif
 #define	MDASAVE	0x0100		/* auto-save mode               */
 #define MDUTF8	0x0200		/* utf8 mode                    */
 #define MDDOS	0x0400		/* CRLF eol mode                */

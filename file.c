@@ -124,7 +124,7 @@ static int resetkey(void)
     int s;      /* return status */
 
     /* turn off the encryption flag */
-    cryptflag = FALSE;
+    is_crypted = FALSE;
 
     /* if we are in crypt mode */
     if (curbp->b_mode & MDCRYPT) {
@@ -135,7 +135,7 @@ static int resetkey(void)
         }
 
         /* let others know... */
-        cryptflag = TRUE;
+        is_crypted = TRUE;
 
         /* and set up the key to be used! */
         /* de-encrypt it */

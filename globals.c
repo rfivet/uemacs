@@ -13,13 +13,28 @@ int revexist = FALSE;		/* does reverse video exist?    */
 int flickcode = FALSE;		/* do flicker supression?       */
 const char *modename[] = {	/* name of modes                */
 	"WRAP", "CMODE", "SPELL", "EXACT", "VIEW", "OVER",
-	"MAGIC", "CRYPT", "ASAVE", "UTF-8", "DOS"
+	"MAGIC",
+#if CRYPT
+	"CRYPT",
+#else
+	"",
+#endif
+	"ASAVE", "UTF-8", "DOS"
 };
+
 const char *mode2name[] = {	/* name of modes                */
 	"Wrap", "Cmode", "Spell", "Exact", "View", "Over",
-	"Magic", "Crypt", "Asave", "utf-8", "Dos"
+	"Magic",
+#if CRYPT
+	"Crypt",
+#else
+	"",
+#endif
+	"Asave", "utf-8", "Dos"
 };
+
 const char modecode[] = "WCSEVOMYAUD"; /* letters to represent modes   */
+
 int gmode = 0;			/* global editor mode           */
 int gflags = GFREAD;		/* global control flag          */
 #if	PKCODE & IBMPC
@@ -62,7 +77,6 @@ struct kill *kbufp = NULL;		/* current kill buffer chunk pointer    */
 struct kill *kbufh = NULL;		/* kill buffer header pointer           */
 int kused = KBLOCK;		/* # of bytes used in kill buffer       */
 struct window *swindow = NULL;	/* saved window pointer                 */
-int cryptflag = FALSE;		/* currently encrypting?                */
 int *kbdptr;			/* current position in keyboard buf */
 int *kbdend = &kbdm[0];		/* ptr to end of the keyboard */
 int kbdmode = STOP;		/* current keyboard macro mode  */

@@ -114,7 +114,9 @@ static void usage( void) {
            "      -a|A          process error file\n"
            "      -e|E          edit file\n"
            "      -g|G<n>       go to line <n>\n"
+#if CRYPT
            "      -k|K<key>     use code key\n"
+#endif
            "      -n|N          accept null chars\n"
            "      -r|R          restrictive use\n"
            "      -s|S<string>  search string\n"

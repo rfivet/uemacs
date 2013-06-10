@@ -18,9 +18,13 @@ typedef enum {
 #define FTYPE_MAC   4
 /*      FTYPE_MIXED [ 3, 5, 6, 7] */
 
-extern char *fline ;	/* dynamic return line */
-extern int flen ;	/* current length of fline */
-extern int ftype ;
+#if CRYPT
+extern boolean	is_crypted ;	/* currently encrypting?   */
+#endif
+
+extern char		*fline ;		/* dynamic return line     */
+extern int 		flen ;			/* current length of fline */
+extern int 		ftype ;
 
 boolean fexist( const char *fname) ;
 fio_code ffclose( void) ;

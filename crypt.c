@@ -221,8 +221,5 @@ static int mod95(int val)
 		val += 95;
 	return val;
 }
-#else
-static void myennocrypt(void)
-{
-}
+
 #endif
