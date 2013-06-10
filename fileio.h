@@ -27,7 +27,6 @@ extern int 		flen ;			/* current allocated length of fline */
 extern int 		ftype ;
 extern int		fpayload ;		/* actual length of fline content */
 
-boolean fexist( const char *fname) ;
 fio_code ffclose( void) ;
 fio_code ffgetline( void) ;
 fio_code ffputline( unsigned char *buf, int nbuf, int dosflag) ;

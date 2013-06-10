@@ -18,45 +18,14 @@
 #include "ebind.h"
 #include "exec.h"
 #include "file.h"
-#include "fileio.h"
+#include "flook.h"
 #include "input.h"
 #include "line.h"
 #include "names.h"
 #include "window.h"
 
 
-/*	possible names and paths of help files under different OSs	*/
-static const char *pathname[] = {
-#if	MSDOS
-	"emacs.rc",
-	"emacs.hlp",
-	"\\sys\\public\\",
-	"\\usr\\bin\\",
-	"\\bin\\",
-	"\\",
-	""
-#endif
-
-#if	V7 | BSD | USG
-	".emacsrc",
-	"emacs.hlp",
-#if	PKCODE
-	"/usr/global/lib/", "/usr/local/bin/", "/usr/local/lib/",
-#endif
-	"/usr/local/", "/usr/lib/", ""
-#endif
-
-#if	VMS
-{
-	"emacs.rc", "emacs.hlp", "",
-#if	PKCODE
-	"sys$login:", "emacs_dir:",
-#endif
-	"sys$sysdevice:[vmstools]"
-#endif
-};
-
-#define PATHNAME_SIZE (sizeof pathname / sizeof pathname[ 0])
+static char *getfname( fn_t) ;
 
 int help(int f, int n)
 {				/* give me some help!!!!
@@ -509,90 +478,6 @@ int startup(char *sfname)
 }
 
 /*
- * Look up the existance of a file along the normal or PATH
- * environment variable. Look first in the HOME directory if
- * asked and possible
- *
- * char *fname;		base file name to search for
- * int hflag;		Look in the HOME environment variable first?
- */
-char *flook( const char *fname, int hflag)
-{
-	char *home;	/* path to home directory */
-	char *path;	/* environmental PATH variable */
-	char *sp;	/* pointer into path spec */
-	int i;		/* index */
-	static char fspec[NSTRING];	/* full path spec to search */
-
-#if	ENVFUNC
-
-	if (hflag) {
-		home = getenv("HOME");
-		if (home != NULL) {
-			/* build home dir file spec */
-			strcpy(fspec, home);
-			strcat(fspec, "/");
-			strcat(fspec, fname);
-
-			/* and try it out */
-			if (ffropen(fspec) == FIOSUC) {
-				ffclose();
-				return fspec;
-			}
-		}
-	}
-#endif
-
-	/* always try the current directory first */
-	strcpy( fspec, fname) ;
-	if( ffropen( fspec) == FIOSUC) {
-		ffclose() ;
-		return fspec ;
-	}
-#if	ENVFUNC
-	/* get the PATH variable */
-	path = getenv("PATH");
-	if (path != NULL)
-		while (*path) {
-
-			/* build next possible file spec */
-			sp = fspec;
-			while (*path && (*path != PATHCHR))
-				*sp++ = *path++;
-
-			/* add a terminating dir separator if we need it */
-			if (sp != fspec)
-				*sp++ = '/';
-			*sp = 0;
-			strcat(fspec, fname);
-
-			/* and try it out */
-			if (ffropen(fspec) == FIOSUC) {
-				ffclose();
-				return fspec;
-			}
-
-			if (*path == PATHCHR)
-				++path;
-		}
-#endif
-
-	/* look it up via the old table method */
-	for( i = 2; i < PATHNAME_SIZE ; i++) {
-		strcpy(fspec, pathname[i]);
-		strcat(fspec, fname);
-
-		/* and try it out */
-		if (ffropen(fspec) == FIOSUC) {
-			ffclose();
-			return fspec;
-		}
-	}
-
-	return NULL;		/* no such luck */
-}
-
-/*
  * change a key command to a string we can print out
  *
  * int c;		sequence to translate
@@ -659,7 +544,7 @@ int (*getbind(int c))(int, int)
  *	This function takes a ptr to function and gets the name
  *	associated with it.
  */
-char *getfname(fn_t func)
+static char *getfname(fn_t func)
 {
 	struct name_bind *nptr;	/* pointer into the name binding table */
 

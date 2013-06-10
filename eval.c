@@ -17,7 +17,7 @@
 #include "estruct.h"
 #include "edef.h"
 #include "exec.h"
-#include "fileio.h"
+#include "flook.h"
 #include "input.h"
 #include "line.h"
 #include "random.h"

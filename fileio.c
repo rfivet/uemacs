@@ -207,24 +207,3 @@ fio_code ffgetline(void)
 #endif
     return FIOSUC;
 }
-
-/*
- * does <fname> exist on disk?
- *
- * char *fname;     file to check for existance
- */
-boolean fexist( const char *fname)
-{
-    FILE *fp;
-
-    /* try to open the file for reading */
-    fp = fopen(fname, "r");
-
-    /* if it fails, just return false! */
-    if (fp == NULL)
-        return FALSE;
-
-    /* otherwise, close it and report true */
-    fclose(fp);
-    return TRUE;
-}
