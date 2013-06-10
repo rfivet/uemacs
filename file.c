@@ -227,7 +227,6 @@ int readin(char *fname, int lockfl)
 {
     struct line *lp1;
     struct line *lp2;
-    int i;
     struct window *wp;
     struct buffer *bp;
     int s;
@@ -276,23 +275,22 @@ int readin(char *fname, int lockfl)
     nline = 0;
     while ((s = ffgetline()) == FIOSUC) {
         nbytes = fpayload ;
-        if ((lp1 = lalloc(nbytes)) == NULL) {
-            s = FIOMEM; /* Keep message on the  */
-            break;  /* display.             */
-        }
 #if PKCODE
         if (nline > MAXNLINE) {
             s = FIOMEM;
             break;
         }
 #endif
+        if ((lp1 = lalloc(nbytes)) == NULL) {
+            s = FIOMEM; /* Keep message on the  */
+            break;  /* display.             */
+        }
         lp2 = lback(curbp->b_linep);
         lp2->l_fp = lp1;
         lp1->l_fp = curbp->b_linep;
         lp1->l_bp = lp2;
         curbp->b_linep->l_bp = lp1;
-        for (i = 0; i < nbytes; ++i)
-            lputc(lp1, i, fline[i]);
+		memcpy( lp1->l_text, fline, nbytes) ;
         ++nline;
     }
     eoltype = ftype ;
@@ -579,7 +577,6 @@ int ifile(char *fname)
     struct line *lp0;
     struct line *lp1;
     struct line *lp2;
-    int i;
     struct buffer *bp;
     int s;
     int nbytes;
@@ -626,8 +623,7 @@ int ifile(char *fname)
 
         /* and advance and write out the current line */
         curwp->w_dotp = lp1;
-        for (i = 0; i < nbytes; ++i)
-            lputc(lp1, i, fline[i]);
+		memcpy( lp1->l_text, fline, nbytes) ;
         ++nline;
     }
     ffclose();      /* Ignore errors.       */
