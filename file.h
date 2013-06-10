@@ -1,6 +1,11 @@
 #ifndef _FILE_H_
 #define _FILE_H_
 
+#if CRYPT
+void cryptbufferkey( struct buffer *bp) ;
+int  set_encryption_key( int f, int n) ;
+#endif
+
 int fileread( int f, int n) ;
 int insfile( int f, int n) ;
 int filefind( int f, int n) ;

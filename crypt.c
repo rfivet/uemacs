@@ -9,47 +9,12 @@
  *	written by Dana Hoggatt and Daniel Lawrence
  */
 
-#include <stdio.h>
-#include "display.h"
-#include "estruct.h"
-#include "edef.h"
-#include "input.h"
-
 #if	CRYPT
+#include <stdio.h>
+
 
 static int mod95(int);
 
-/*
- * reset encryption key of current buffer
- *
- * int f;		default flag
- * int n;		numeric argument
- */
-int set_encryption_key(int f, int n)
-{
-	int status;	/* return status */
-	int odisinp;		/* original vlaue of disinp */
-	char key[NPAT];		/* new encryption string */
-
-	/* turn command input echo off */
-	odisinp = disinp;
-	disinp = FALSE;
-
-	/* get the string to use as an encrytion string */
-	status = mlreply("Encryption String: ", key, NPAT - 1);
-	disinp = odisinp;
-	if (status != TRUE)
-		return status;
-
-	/* and encrypt it */
-	myencrypt((char *) NULL, 0);
-	myencrypt(key, strlen(key));
-
-	/* and save it off */
-	strcpy(curbp->b_key, key);
-	mlwrite(" ");		/* clear it off the bottom line */
-	return TRUE;
-}
 
 /**********
  *

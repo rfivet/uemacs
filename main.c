@@ -61,7 +61,6 @@
 #include "bind.h"
 #include "bindable.h"
 #include "buffer.h"
-#include "crypt.h"
 #include "display.h"
 #include "edef.h"    /* Global definitions. */
 #include "estruct.h" /* Global structures and defines. */
@@ -269,9 +268,8 @@ int main(int argc, char **argv)
 #if	CRYPT
 			if (cryptflag) {
 				bp->b_mode |= MDCRYPT;
-				myencrypt((char *) NULL, 0);
-				myencrypt(ekey, strlen(ekey));
-				strncpy(bp->b_key, ekey, NPAT);
+				strncpy( bp->b_key, ekey, NPAT) ;
+				cryptbufferkey( bp) ;
 			}
 #endif
 		}

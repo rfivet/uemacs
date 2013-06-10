@@ -15,7 +15,6 @@
 #include "display.h"
 #include "eval.h"
 #include "exec.h"
-#include "crypt.h"
 #include "file.h"
 #include "isearch.h"
 #include "line.h"

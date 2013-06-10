@@ -119,6 +119,41 @@ int viewfile(int f, int n)
 }
 
 #if CRYPT
+void cryptbufferkey( struct buffer *bp) {
+        myencrypt( (char *) NULL, 0) ;
+        myencrypt( bp->b_key, strlen( bp->b_key)) ;
+}
+
+/*
+ * reset encryption key of current buffer
+ *
+ * int f;		default flag
+ * int n;		numeric argument
+ */
+int set_encryption_key(int f, int n)
+{
+	int status;	/* return status */
+	int odisinp;		/* original vlaue of disinp */
+	char key[NPAT];		/* new encryption string */
+
+	/* turn command input echo off */
+	odisinp = disinp;
+	disinp = FALSE;
+
+	/* get the string to use as an encrytion string */
+	status = mlreply("Encryption String: ", key, NPAT - 1);
+	disinp = odisinp;
+	if (status != TRUE)
+		return status;
+
+	/* save it off and encrypt it*/
+	strcpy(curbp->b_key, key);
+	cryptbufferkey( curbp) ;
+	
+	mlwrite(" ");		/* clear it off the bottom line */
+	return TRUE;
+}
+
 static int resetkey(void)
 {               /* reset the encryption key if needed */
     int s;      /* return status */
@@ -139,12 +174,10 @@ static int resetkey(void)
 
         /* and set up the key to be used! */
         /* de-encrypt it */
-        myencrypt((char *) NULL, 0);
-        myencrypt(curbp->b_key, strlen(curbp->b_key));
+		cryptbufferkey( curbp) ;
 
         /* re-encrypt it...seeding it to start */
-        myencrypt((char *) NULL, 0);
-        myencrypt(curbp->b_key, strlen(curbp->b_key));
+		cryptbufferkey( curbp) ;
     }
 
     return TRUE;
