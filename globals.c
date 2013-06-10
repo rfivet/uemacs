@@ -94,7 +94,6 @@ char palstr[49] = "";		/* palette string               */
 int saveflag = 0;		/* Flags, saved with the $target var */
 int rval = 0;			/* return value of a subprocess */
 #if	PKCODE
-int nullflag = FALSE;		/* accept null characters */
 int justflag = FALSE;		/* justify, don't fill */
 #endif
 int overlap = 0;		/* line overlap in forw/back page */

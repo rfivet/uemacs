@@ -82,7 +82,6 @@ extern char palstr[];		/* palette string               */
 extern int saveflag;		/* Flags, saved with the $target var */
 extern int rval;		/* return value of a subprocess */
 #if	PKCODE
-extern int nullflag;
 extern int justflag;		/* justify, don't fill */
 #endif
 extern int overlap;		/* line overlap in forw/back page */

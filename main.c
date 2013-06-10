@@ -117,7 +117,6 @@ static void usage( void) {
 #if CRYPT
            "      -k|K<key>     use code key\n"
 #endif
-           "      -n|N          accept null chars\n"
            "      -r|R          restrictive use\n"
            "      -s|S<string>  search string\n"
            "      -v|V          view file\n"
@@ -220,12 +219,6 @@ int main(int argc, char **argv)
 			case 'K':
 				cryptflag = TRUE;
 				strcpy(ekey, &argv[carg][2]);
-				break;
-#endif
-#if	PKCODE
-			case 'n':	/* -n accept null chars */
-			case 'N':
-				nullflag = TRUE;
 				break;
 #endif
 			case 'r':	/* -r restrictive use */
