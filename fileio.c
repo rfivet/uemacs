@@ -89,37 +89,34 @@ fio_code ffclose(void)
  * and the "nbuf" is its length, less the free newline. Return the status.
  * Check only at the newline.
  */
-fio_code ffputline( char *buf, int nbuf, int dosflag)
-{
-    int i;
+fio_code ffputline( unsigned char *buf, int nbuf, int dosflag) {
 #if CRYPT
-    char c;         /* character to translate */
+	if( cryptflag) {
+		int i ;
 
-    if (cryptflag) {
-        for (i = 0; i < nbuf; ++i) {
-            c = buf[i] & 0xff;
-            myencrypt(&c, 1);
-            fputc(c, ffp);
-        }
-    } else
-        for (i = 0; i < nbuf; ++i)
-            fputc(buf[i] & 0xFF, ffp);
-#else
-    for (i = 0; i < nbuf; ++i)
-        fputc(buf[i] & 0xFF, ffp);
+		for( i = 0 ; i < nbuf ; i++) {
+			unsigned char c ;
+			
+			c = buf[ i] ;
+			myencrypt( &c, 1) ;
+			fputc( c, ffp) ;
+		}
+	} else
 #endif
 
-    if( dosflag)
-	fputc( '\r', ffp) ;
+	fwrite( buf, 1, nbuf, ffp) ;
+	
+	if( dosflag)
+		fputc( '\r', ffp) ;
 
-    fputc('\n', ffp);
+    fputc( '\n', ffp) ;
 
-    if (ferror(ffp)) {
-        mlwrite("Write I/O error");
-        return FIOERR;
+    if( ferror( ffp)) {
+        mlwrite( "Write I/O error") ;
+        return FIOERR ;
     }
 
-    return FIOSUC;
+    return FIOSUC ;
 }
 
 /*
