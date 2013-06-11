@@ -326,6 +326,10 @@ int readin(char *fname, int lockfl)
 		memcpy( lp1->l_text, fline, nbytes) ;
         ++nline;
     }
+    
+	if( s == FIOERR)
+		mlwrite( "File read error") ;
+
     eoltype = ftype ;
     if( ftype == FTYPE_DOS)
     	curbp->b_mode |= MDDOS ;
@@ -540,6 +544,7 @@ int writeout(char *fn)
 #endif
 
     if ((s = ffwopen(fn)) != FIOSUC) {  /* Open writes message. */
+        mlwrite( "Cannot open file for writing") ;
         return FALSE;
     }
     mlwrite("(Writing...)");    /* tell us were writing */
@@ -547,8 +552,11 @@ int writeout(char *fn)
     nline = 0;      /* Number of lines.     */
     while (lp != curbp->b_linep) {
         s = ffputline( &lp->l_text[0], llength(lp), curbp->b_mode & MDDOS) ;
-        if( s != FIOSUC)
+        if( s != FIOSUC) {
+	        mlwrite( "Write I/O error") ;
             break;
+        }
+        
         ++nline;
         lp = lforw(lp);
     }
@@ -559,7 +567,8 @@ int writeout(char *fn)
                 mlwrite("(Wrote 1 line)");
             else
                 mlwrite("(Wrote %d lines)", nline);
-        }
+        } else
+			mlwrite( "Error closing file") ;
     } else          /* Ignore close error   */
         ffclose();  /* if a write error.    */
     if (s != FIOSUC)    /* Some sort of error.  */

@@ -15,7 +15,6 @@
 #include <string.h>
 
 #include "estruct.h"
-#include "display.h"
 
 
 #if CRYPT
@@ -56,13 +55,12 @@ fio_code ffwopen( const char *fn)
     int fd;
 
     if ((fd = creat(fn, 0666, "rfm=var", "rat=cr")) < 0
-        || (ffp = fdopen(fd, "w")) == NULL) {
+        || (ffp = fdopen(fd, "w")) == NULL)
 #else
-    if ((ffp = fopen(fn, "w")) == NULL) {
+    if ((ffp = fopen(fn, "w")) == NULL)
 #endif
-        mlwrite("Cannot open file for writing");
         return FIOERR;
-    }
+
     return FIOSUC;
 }
 
@@ -84,10 +82,9 @@ fio_code ffclose(void)
 #endif
 
 #if     V7 | USG | BSD | (MSDOS & (MSC | TURBO))
-    if (fclose(ffp) != FALSE) {
-        mlwrite("Error closing file");
+    if (fclose(ffp) != FALSE)
         return FIOERR;
-    }
+
     return FIOSUC;
 #else
     fclose(ffp);
@@ -122,10 +119,8 @@ fio_code ffputline( char *buf, int nbuf, int dosflag) {
 
     fputc( '\n', ffp) ;
 
-    if( ferror( ffp)) {
-        mlwrite( "Write I/O error") ;
+    if( ferror( ffp))
         return FIOERR ;
-    }
 
     return FIOSUC ;
 }
@@ -180,10 +175,8 @@ fio_code ffgetline(void)
 
     /* test for any errors that may have occured */
     if (c == EOF) {
-        if (ferror(ffp)) {
-            mlwrite("File read error");
-            return FIOERR;
-        }
+        if( ferror( ffp))
+            return FIOERR ;
 
         if (i != 0)
             eofflag = TRUE;
