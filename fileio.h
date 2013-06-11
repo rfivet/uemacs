@@ -29,7 +29,7 @@ extern int		fpayload ;		/* actual length of fline content */
 
 fio_code ffclose( void) ;
 fio_code ffgetline( void) ;
-fio_code ffputline( unsigned char *buf, int nbuf, int dosflag) ;
+fio_code ffputline( char *buf, int nbuf, int dosflag) ;
 fio_code ffropen( const char *fn) ;
 fio_code ffwopen( const char *fn) ;
 
