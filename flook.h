@@ -1,6 +1,9 @@
 #include "estruct.h"
 
 
+#define rcfname		pathname[ 0]
+#define hlpfname	pathname[ 1]
+
 extern const char *pathname[] ;
 
 

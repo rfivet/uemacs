@@ -36,10 +36,10 @@ int help(int f, int n)
 	char *fname = NULL;	/* ptr to file returned by flook() */
 
 	/* first check if we are already here */
-	bp = bfind("emacs.hlp", FALSE, BFINVS);
+	bp = bfind( hlpfname, FALSE, BFINVS);
 
 	if (bp == NULL) {
-		fname = flook(pathname[1], FALSE);
+		fname = flook( hlpfname, FALSE);
 		if (fname == NULL) {
 			mlwrite("(Help file is not online)");
 			return FALSE;
@@ -467,7 +467,7 @@ int startup(char *sfname)
 	if (*sfname != 0)
 		fname = flook(sfname, TRUE);
 	else
-		fname = flook(pathname[0], TRUE);
+		fname = flook( rcfname, TRUE);
 
 	/* if it isn't around, don't sweat it */
 	if (fname == NULL)

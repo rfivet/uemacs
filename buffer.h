@@ -17,6 +17,6 @@ int anycb( void) ;
 int bclear( struct buffer *bp) ;
 int unmark( int f, int n) ;
 /* Lookup a buffer by name. */
-struct buffer *bfind( char *bname, int cflag, int bflag) ;
+struct buffer *bfind( const char *bname, int cflag, int bflag) ;
 
 #endif

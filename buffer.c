@@ -451,7 +451,7 @@ int anycb(void)
  * and the "cflag" is TRUE, create it. The "bflag" is
  * the settings for the flags in in buffer.
  */
-struct buffer *bfind(char *bname, int cflag, int bflag)
+struct buffer *bfind( const char *bname, int cflag, int bflag)
 {
 	struct buffer *bp;
 	struct buffer *sb;	/* buffer to insert after */
