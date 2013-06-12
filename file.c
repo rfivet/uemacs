@@ -26,7 +26,7 @@
 #include "lock.h"
 #include "window.h"
 
-#if defined(PKCODE)
+#if PKCODE
 /* Max number of lines from one file. */
 #define MAXNLINE 10000000
 #endif
