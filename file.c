@@ -31,6 +31,22 @@
 #define MAXNLINE 10000000
 #endif
 
+typedef enum {
+	EOL_NONE,
+	EOL_UNIX,
+	EOL_DOS,
+	EOL_MAC,
+	EOL_MIXED
+} eoltype ;
+
+static const char *eolname[] = {
+	"NONE",
+	"UNIX",
+	"DOS",
+	"MAC",
+	"MIXED"
+} ;
+
 /*
  * Read a file into the current
  * buffer. This is really easy; all you do it
@@ -263,7 +279,7 @@ int readin(char *fname, int lockfl)
     struct window *wp;
     struct buffer *bp;
     int s;
-    int eoltype ;
+    eoltype found_eol ;
     int nbytes;
     int nline;
     char mesg[NSTRING];
@@ -330,9 +346,25 @@ int readin(char *fname, int lockfl)
 	if( s == FIOERR)
 		mlwrite( "File read error") ;
 
-    eoltype = ftype ;
-    if( ftype == FTYPE_DOS)
+	switch( ftype) {
+    case FTYPE_DOS:
+    	found_eol = EOL_DOS ;
     	curbp->b_mode |= MDDOS ;
+    	break ;
+    case FTYPE_UNIX:
+    	found_eol = EOL_UNIX ;
+    	break ;
+    case FTYPE_MAC:
+    	found_eol = EOL_MAC ;
+    	break ;
+    case FTYPE_NONE:
+    	found_eol = EOL_NONE ;
+    	break ;
+    default:
+    	found_eol = EOL_MIXED ;
+		curbp->b_mode |= MDVIEW ;	/* add view mode as we have lost
+									** information */
+	}
 
     ffclose();      /* Ignore errors.       */
     strcpy(mesg, "(");
@@ -349,23 +381,7 @@ int readin(char *fname, int lockfl)
         strcat(mesg, "s");
 
     strcat( mesg, ", eol = ") ;
-    switch( eoltype) {
-    case FTYPE_DOS:
-    	strcat( mesg, "DOS") ;
-    	break ;
-    case FTYPE_UNIX:
-    	strcat( mesg, "UNIX") ;
-    	break ;
-    case FTYPE_MAC:
-    	strcat( mesg, "MAC") ;
-    	break ;
-    case FTYPE_NONE:
-    	strcat( mesg, "NONE") ;
-    	break ;
-    default:
-    	strcat( mesg, "MIXED") ;
-    }
-
+    strcat( mesg, eolname[ found_eol]) ;
     strcat(mesg, ")");
     mlwrite(mesg);
 
