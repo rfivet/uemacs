@@ -22,6 +22,12 @@
 #include "line.h"
 #include "window.h"
 
+
+static int makelist( int iflag) ;
+static int addline( char *text) ;
+static void ltoa( char *buf, int width, long num) ;
+
+
 /*
  * Attach a buffer to a window. The
  * values of dot and mark come from the buffer
@@ -273,7 +279,7 @@ int listbuffers(int f, int n)
  * int iflag;		list hidden buffer flag
  */
 #define MAXLINE	MAXCOL
-int makelist(int iflag)
+static int makelist( int iflag)
 {
 	char *cp1;
 	char *cp2;
@@ -381,7 +387,7 @@ int makelist(int iflag)
 	return TRUE;		/* All done             */
 }
 
-void ltoa(char *buf, int width, long num)
+static void ltoa(char *buf, int width, long num)
 {
 	buf[width] = 0;		/* End of string.       */
 	while (num >= 10) {	/* Conditional digits.  */
@@ -400,7 +406,7 @@ void ltoa(char *buf, int width, long num)
  * on the end. Return TRUE if it worked and
  * FALSE if you ran out of room.
  */
-int addline(char *text)
+static int addline( char *text)
 {
 	struct line *lp;
 	int i;
