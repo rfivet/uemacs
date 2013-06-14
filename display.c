@@ -952,8 +952,10 @@ static int updateline(int row, struct video *vp1, struct video *vp2)
 	unicode_t *cp4;
 	unicode_t *cp5;
 	int nbflag;	/* non-blanks to the right flag? */
-	int rev;		/* reverse video flag */
-	int req;		/* reverse video request flag */
+#if REVSTA
+	int rev;			/* reverse video flag */
+#endif
+	int req = FALSE ;	/* reverse video request flag */
 
 
 	/* set up pointers to virtual and physical lines */
@@ -1098,7 +1100,7 @@ static void modeline(struct window *wp)
 #endif
 	vtmove(n, 0);		/* Seek to right line. */
 	if (wp == curwp)	/* mark the current buffer */
-#if	PKCODE
+#if	PKCODE && REVSTA
 		lchar = '-';
 #else
 		lchar = '=';
