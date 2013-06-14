@@ -25,6 +25,9 @@ struct line {
 #define lputc(lp, n, c) ((lp)->l_text[(n)]=(c))
 #define llength(lp)     ((lp)->l_used)
 
+int backchar( int f, int n) ;
+int forwchar( int f, int n) ;
+
 void lfree( struct line *lp) ;
 void lchange( int flag) ;
 int insspace( int f, int n) ;
@@ -36,7 +39,6 @@ int ldelete( long n, int kflag) ;
 int ldelchar( long n, int kflag) ;
 int lgetchar( unicode_t *) ;
 char *getctext( void) ;
-int putctext( char *iline) ;
 void kdelete( void) ;
 int kinsert( int c) ;
 int yank( int f, int n) ;

@@ -229,6 +229,31 @@ static struct {
 /* User variables */
 static struct user_variable uv[MAXVARS + 1];
 
+
+/*
+ * putctext:
+ *	replace the current line with the passed in text
+ *
+ * char *iline;			contents of new line
+ */
+static int putctext( char *iline)
+{
+	int status;
+
+	/* delete the current line */
+	curwp->w_doto = 0;	/* starting at the beginning of the line */
+	if ((status = killtext(TRUE, 1)) != TRUE)
+		return status;
+
+	/* insert the new line */
+	if ((status = linstr(iline)) != TRUE)
+		return status;
+	status = lnewline();
+	backline(TRUE, 1);
+	return status;
+}
+
+
 /* Initialize the user variable list. */
 void varinit(void)
 {

@@ -17,16 +17,77 @@
 
 #include <stdio.h>
 
-#include "basic.h"
 #include "display.h"
 #include "estruct.h"
 #include "edef.h"
-#include "random.h"
 #include "utf8.h"
 
 #define	BLOCK_SIZE 16 /* Line block chunk size. */
 
 static int ldelnewline( void) ;
+
+/*
+ * Move the cursor backwards by "n" characters. If "n" is less than zero call
+ * "forwchar" to actually do the move. Otherwise compute the new cursor
+ * location. Error if you try and move out of the buffer. Set the flag if the
+ * line pointer for dot changes.
+ */
+int backchar(int f, int n)
+{
+	struct line *lp;
+
+	if (n < 0)
+		return forwchar(f, -n);
+	while (n--) {
+		if (curwp->w_doto == 0) {
+			if ((lp = lback(curwp->w_dotp)) == curbp->b_linep)
+				return FALSE;
+			curwp->w_dotp = lp;
+			curwp->w_doto = llength(lp);
+			curwp->w_flag |= WFMOVE;
+		} else {
+			do {
+				unsigned char c;
+				curwp->w_doto--;
+				c = lgetc(curwp->w_dotp, curwp->w_doto);
+				if (is_beginning_utf8(c))
+					break;
+			} while (curwp->w_doto);
+		}
+	}
+	return TRUE;
+}
+
+/*
+ * Move the cursor forwards by "n" characters. If "n" is less than zero call
+ * "backchar" to actually do the move. Otherwise compute the new cursor
+ * location, and move ".". Error if you try and move off the end of the
+ * buffer. Set the flag if the line pointer for dot changes.
+ */
+int forwchar(int f, int n)
+{
+	if (n < 0)
+		return backchar(f, -n);
+	while (n--) {
+		int len = llength(curwp->w_dotp);
+		if (curwp->w_doto == len) {
+			if (curwp->w_dotp == curbp->b_linep)
+				return FALSE;
+			curwp->w_dotp = lforw(curwp->w_dotp);
+			curwp->w_doto = 0;
+			curwp->w_flag |= WFMOVE;
+		} else {
+			do {
+				unsigned char c;
+				curwp->w_doto++;
+				c = lgetc(curwp->w_dotp, curwp->w_doto);
+				if (is_beginning_utf8(c))
+					break;
+			} while (curwp->w_doto < len);
+		}
+	}
+	return TRUE;
+}
 
 /*
  * This routine allocates a block of memory large enough to hold a struct line
@@ -483,29 +544,6 @@ char *getctext(void)
 		*dp++ = *sp++;
 	*dp = 0;
 	return rline;
-}
-
-/*
- * putctext:
- *	replace the current line with the passed in text
- *
- * char *iline;			contents of new line
- */
-int putctext(char *iline)
-{
-	int status;
-
-	/* delete the current line */
-	curwp->w_doto = 0;	/* starting at the beginning of the line */
-	if ((status = killtext(TRUE, 1)) != TRUE)
-		return status;
-
-	/* insert the new line */
-	if ((status = linstr(iline)) != TRUE)
-		return status;
-	status = lnewline();
-	backline(TRUE, 1);
-	return status;
 }
 
 /*

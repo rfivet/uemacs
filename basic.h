@@ -2,9 +2,7 @@
 #define _BASIC_H_
 
 int gotobol( int f, int n) ;
-int backchar( int f, int n) ;
 int gotoeol( int f, int n) ;
-int forwchar( int f, int n) ;
 int gotoline( int f, int n) ;
 int gotobob( int f, int n) ;
 int gotoeob( int f, int n) ;

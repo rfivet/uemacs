@@ -70,74 +70,11 @@ int gotobol(int f, int n)
 }
 
 /*
- * Move the cursor backwards by "n" characters. If "n" is less than zero call
- * "forwchar" to actually do the move. Otherwise compute the new cursor
- * location. Error if you try and move out of the buffer. Set the flag if the
- * line pointer for dot changes.
- */
-int backchar(int f, int n)
-{
-	struct line *lp;
-
-	if (n < 0)
-		return forwchar(f, -n);
-	while (n--) {
-		if (curwp->w_doto == 0) {
-			if ((lp = lback(curwp->w_dotp)) == curbp->b_linep)
-				return FALSE;
-			curwp->w_dotp = lp;
-			curwp->w_doto = llength(lp);
-			curwp->w_flag |= WFMOVE;
-		} else {
-			do {
-				unsigned char c;
-				curwp->w_doto--;
-				c = lgetc(curwp->w_dotp, curwp->w_doto);
-				if (is_beginning_utf8(c))
-					break;
-			} while (curwp->w_doto);
-		}
-	}
-	return TRUE;
-}
-
-/*
  * Move the cursor to the end of the current line. Trivial. No errors.
  */
 int gotoeol(int f, int n)
 {
 	curwp->w_doto = llength(curwp->w_dotp);
-	return TRUE;
-}
-
-/*
- * Move the cursor forwards by "n" characters. If "n" is less than zero call
- * "backchar" to actually do the move. Otherwise compute the new cursor
- * location, and move ".". Error if you try and move off the end of the
- * buffer. Set the flag if the line pointer for dot changes.
- */
-int forwchar(int f, int n)
-{
-	if (n < 0)
-		return backchar(f, -n);
-	while (n--) {
-		int len = llength(curwp->w_dotp);
-		if (curwp->w_doto == len) {
-			if (curwp->w_dotp == curbp->b_linep)
-				return FALSE;
-			curwp->w_dotp = lforw(curwp->w_dotp);
-			curwp->w_doto = 0;
-			curwp->w_flag |= WFMOVE;
-		} else {
-			do {
-				unsigned char c;
-				curwp->w_doto++;
-				c = lgetc(curwp->w_dotp, curwp->w_doto);
-				if (is_beginning_utf8(c))
-					break;
-			} while (curwp->w_doto < len);
-		}
-	}
 	return TRUE;
 }
 
