@@ -69,6 +69,7 @@
 #include "file.h"
 #include "input.h"
 #include "lock.h"
+#include "log.h"
 #include "random.h"
 #include "search.h"
 #include "termio.h"
@@ -175,6 +176,7 @@ int main(int argc, char **argv)
 
 	/* Initialize the editor. */
 	vtinit();		/* Display */
+	logwrite = mlwrite ;
 	edinit("main");		/* Buffers, windows */
 	varinit();		/* user variables */
 

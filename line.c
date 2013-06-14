@@ -20,6 +20,7 @@
 #include "display.h"
 #include "estruct.h"
 #include "edef.h"
+#include "log.h"
 #include "utf8.h"
 
 #define	BLOCK_SIZE 16 /* Line block chunk size. */
@@ -104,7 +105,7 @@ struct line *lalloc(int used)
 	if (size == 0)	/* Assume that is an empty. */
 		size = BLOCK_SIZE;  /* Line is for type-in. */
 	if ((lp = (struct line *)malloc(sizeof(struct line) + size)) == NULL) {
-		mlwrite("(OUT OF MEMORY)");
+		logwrite( "(OUT OF MEMORY)") ;
 		return NULL;
 	}
 	lp->l_size = size;
@@ -209,7 +210,7 @@ int linstr(char *instr)
 
 			/* Insertion error? */
 			if (status != TRUE) {
-				mlwrite("%%Out of memory while inserting");
+				logwrite( "%%Out of memory while inserting") ;
 				break;
 			}
 			instr++;
@@ -244,7 +245,7 @@ static int linsert_byte(int n, int c)
 	lp1 = curwp->w_dotp;	/* Current line         */
 	if (lp1 == curbp->b_linep) {	/* At the end: special  */
 		if (curwp->w_doto != 0) {
-			mlwrite("bug: linsert");
+			logwrite( "bug: linsert") ;
 			return FALSE;
 		}
 		if ((lp2 = lalloc(n)) == NULL)	/* Allocate new line        */
@@ -352,8 +353,7 @@ int lover(char *ostr)
 
 			/* Insertion error? */
 			if (status != TRUE) {
-				mlwrite
-				    ("%%Out of memory while overwriting");
+				logwrite( "%%Out of memory while overwriting") ;
 				break;
 			}
 			ostr++;

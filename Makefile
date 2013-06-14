@@ -1,8 +1,8 @@
-# makefile for emacs, updated Tue, Jun 11, 2013 11:00:52 AM
+# makefile for emacs, updated Fri, Jun 14, 2013  5:12:57 PM
 
-SRC=ansi.c basic.c bind.c bindable.c buffer.c crypt.c display.c ebind.c eval.c exec.c execute.c file.c fileio.c flook.c globals.c ibmpc.c input.c isearch.c line.c lock.c main.c names.c pklock.c posix.c random.c region.c search.c spawn.c tcap.c termio.c utf8.c vmsvt.c vt52.c window.c word.c wrapper.c
-OBJ=ansi.o basic.o bind.o bindable.o buffer.o crypt.o display.o ebind.o eval.o exec.o execute.o file.o fileio.o flook.o globals.o ibmpc.o input.o isearch.o line.o lock.o main.o names.o pklock.o posix.o random.o region.o search.o spawn.o tcap.o termio.o utf8.o vmsvt.o vt52.o window.o word.o wrapper.o
-HDR=basic.h bind.h bindable.h buffer.h crypt.h display.h ebind.h edef.h efunc.h estruct.h eval.h exec.h execute.h file.h fileio.h flook.h input.h isearch.h line.h lock.h names.h pklock.h random.h region.h search.h spawn.h termio.h utf8.h version.h window.h word.h wrapper.h
+SRC=ansi.c basic.c bind.c bindable.c buffer.c crypt.c display.c ebind.c eval.c exec.c execute.c file.c fileio.c flook.c globals.c ibmpc.c input.c isearch.c line.c lock.c log.c main.c names.c pklock.c posix.c random.c region.c search.c spawn.c tcap.c termio.c utf8.c vmsvt.c vt52.c window.c word.c wrapper.c
+OBJ=ansi.o basic.o bind.o bindable.o buffer.o crypt.o display.o ebind.o eval.o exec.o execute.o file.o fileio.o flook.o globals.o ibmpc.o input.o isearch.o line.o lock.o log.o main.o names.o pklock.o posix.o random.o region.o search.o spawn.o tcap.o termio.o utf8.o vmsvt.o vt52.o window.o word.o wrapper.o
+HDR=basic.h bind.h bindable.h buffer.h crypt.h display.h ebind.h edef.h efunc.h estruct.h eval.h exec.h execute.h file.h fileio.h flook.h input.h isearch.h line.h lock.h log.h names.h pklock.h random.h region.h search.h spawn.h termio.h utf8.h version.h window.h word.h wrapper.h
 
 # DO NOT ADD OR MODIFY ANY LINES ABOVE THIS -- make source creates them
 
@@ -155,11 +155,12 @@ input.o: input.c input.h edef.h estruct.h line.h utf8.h bind.h bindable.h \
   display.h exec.h names.h wrapper.h
 isearch.o: isearch.c isearch.h basic.h display.h estruct.h line.h utf8.h \
   edef.h input.h search.h
-line.o: line.c line.h utf8.h display.h estruct.h edef.h
+line.o: line.c line.h utf8.h display.h estruct.h edef.h log.h
 lock.o: lock.c lock.h estruct.h line.h utf8.h display.h edef.h input.h
+log.o: log.c log.h
 main.o: main.c basic.h bind.h edef.h estruct.h line.h utf8.h bindable.h \
-  buffer.h display.h eval.h execute.h file.h input.h lock.h random.h \
-  search.h termio.h version.h
+  buffer.h display.h eval.h execute.h file.h input.h lock.h log.h \
+  random.h search.h termio.h version.h
 names.o: names.c names.h basic.h bind.h edef.h estruct.h line.h utf8.h \
   bindable.h buffer.h display.h eval.h exec.h file.h isearch.h region.h \
   random.h search.h spawn.h window.h word.h
