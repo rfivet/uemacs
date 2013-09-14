@@ -56,8 +56,6 @@ static int displaying = TRUE;
 #include <sys/ioctl.h>
 /* for window size changes */
 int chg_width, chg_height;
-
-static int newscreensize(int h, int w);
 #endif
 
 static int reframe(struct window *wp);
@@ -73,6 +71,7 @@ static void modeline(struct window *wp);
 static void mlputi(int i, int r);
 static void mlputli(long l, int r);
 static void mlputf(int s);
+static int newscreensize(int h, int w);
 
 #if RAINBOW
 static void putline(int row, int col, char *buf);

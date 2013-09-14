@@ -75,15 +75,15 @@ boolean fexist( const char *fname)
  */
 char *flook( const char *fname, int hflag)
 {
+	char *home;	/* path to home directory */
+	char *path;	/* environmental PATH variable */
+	char *sp;	/* pointer into path spec */
 	int i;		/* index */
 	static char fspec[NSTRING];	/* full path spec to search */
 
 #if	ENVFUNC
-	char *path;	/* environmental PATH variable */
 
 	if (hflag) {
-		char *home;	/* path to home directory */
-
 		home = getenv("HOME");
 		if (home != NULL) {
 			/* build home dir file spec */
@@ -108,7 +108,6 @@ char *flook( const char *fname, int hflag)
 	path = getenv("PATH");
 	if (path != NULL)
 		while (*path) {
-			char *sp;	/* pointer into path spec */
 
 			/* build next possible file spec */
 			sp = fspec;
