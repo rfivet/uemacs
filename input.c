@@ -345,9 +345,9 @@ int getcmd(void)
 
 #if VT220
       proc_metac:
-#endif
 	if (c == 128+27)		/* CSI */
 		goto handle_CSI;
+#endif
 	/* process META prefix */
 	if (c == (CONTROL | '[')) {
 		c = get1key();
