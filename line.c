@@ -15,6 +15,7 @@
 
 #include "line.h"
 
+#include <assert.h>
 #include <stdio.h>
 
 #include "display.h"
@@ -239,8 +240,11 @@ static int linsert_byte(int n, int c)
 	int i;
 	struct window *wp;
 
+	assert( (curbp->b_mode & MDVIEW) == 0) ;
+#if 0
 	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
 		return rdonly();	/* we are in read only mode     */
+#endif
 	lchange(WFEDIT);
 	lp1 = curwp->w_dotp;	/* Current line         */
 	if (lp1 == curbp->b_linep) {	/* At the end: special  */
@@ -309,8 +313,13 @@ static int linsert_byte(int n, int c)
 int linsert(int n, int c)
 {
 	char utf8[6];
-	int bytes = unicode_to_utf8(c, utf8), i;
+	int bytes, i ;
 
+	assert( n > 0) ;
+	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+		return rdonly();	/* we are in read only mode     */
+
+	bytes = unicode_to_utf8(c, utf8) ;
 	if (bytes == 1)
 		return linsert_byte(n, (unsigned char) utf8[0]);
 	for (i = 0; i < n; i++) {
@@ -564,8 +573,11 @@ static int ldelnewline(void)
 	struct line *lp3;
 	struct window *wp;
 
+	assert( (curbp->b_mode & MDVIEW) == 0) ;
+#if 0
 	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
 		return rdonly();	/* we are in read only mode     */
+#endif
 	lp1 = curwp->w_dotp;
 	lp2 = lp1->l_fp;
 	if (lp2 == curbp->b_linep) {	/* At the buffer end.   */
