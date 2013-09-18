@@ -148,8 +148,8 @@ exec.o: exec.c exec.h estruct.h line.h utf8.h buffer.h bind.h edef.h \
  display.h eval.h file.h flook.h input.h
 execute.o: execute.c edef.h estruct.h line.h utf8.h bind.h random.h \
  display.h file.h
-file.o: file.c file.h buffer.h estruct.h line.h utf8.h crypt.h display.h \
- edef.h execute.h fileio.h input.h lock.h window.h
+file.o: file.c file.h buffer.h estruct.h line.h utf8.h crypt.h edef.h \
+ execute.h fileio.h input.h lock.h log.h window.h
 fileio.o: fileio.c fileio.h estruct.h line.h utf8.h crypt.h
 flook.o: flook.c flook.h estruct.h line.h utf8.h fileio.h
 globals.o: globals.c estruct.h line.h utf8.h edef.h
@@ -170,12 +170,12 @@ names.o: names.c names.h basic.h bind.h edef.h estruct.h line.h utf8.h \
 pklock.o: pklock.c pklock.h estruct.h line.h utf8.h edef.h
 posix.o: posix.c termio.h
 random.o: random.c random.h basic.h display.h estruct.h line.h utf8.h \
- edef.h execute.h input.h search.h
-region.o: region.c region.h estruct.h line.h utf8.h display.h edef.h
+ edef.h execute.h input.h log.h search.h
+region.o: region.c region.h estruct.h line.h utf8.h edef.h log.h
 search.o: search.c search.h estruct.h line.h utf8.h basic.h display.h \
- edef.h input.h
+ edef.h input.h log.h
 spawn.o: spawn.c spawn.h buffer.h estruct.h line.h utf8.h display.h \
- edef.h file.h input.h window.h
+ edef.h file.h input.h log.h window.h
 tcap.o: tcap.c display.h estruct.h line.h utf8.h edef.h termio.h
 termio.o: termio.c termio.h estruct.h line.h utf8.h edef.h
 utf8.o: utf8.c utf8.h
@@ -183,7 +183,7 @@ vmsvt.o: vmsvt.c estruct.h line.h utf8.h edef.h
 vt52.o: vt52.c estruct.h line.h utf8.h edef.h
 window.o: window.c window.h estruct.h line.h utf8.h basic.h display.h \
  edef.h execute.h wrapper.h
-word.o: word.c word.h basic.h display.h estruct.h line.h utf8.h edef.h \
+word.o: word.c word.h basic.h estruct.h line.h utf8.h edef.h log.h \
  random.h region.h
 wrapper.o: wrapper.c wrapper.h
 

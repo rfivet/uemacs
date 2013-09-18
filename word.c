@@ -13,10 +13,10 @@
 #include <stdio.h>
 
 #include "basic.h"
-#include "display.h"
 #include "estruct.h"
 #include "edef.h"
 #include "line.h"
+#include "log.h"
 #include "random.h"
 #include "region.h"
 
@@ -419,7 +419,7 @@ int fillpara(int f, int n)
 	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
 		return rdonly();	/* we are in read only mode     */
 	if (fillcol == 0) {	/* no fill column set */
-		mlwrite("No fill column set");
+		logwrite("No fill column set");
 		return FALSE;
 	}
 #if	PKCODE
@@ -518,14 +518,14 @@ int justpara(int f, int n)
 	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
 		return rdonly();	/* we are in read only mode     */
 	if (fillcol == 0) {	/* no fill column set */
-		mlwrite("No fill column set");
+		logwrite("No fill column set");
 		return FALSE;
 	}
 	justflag = TRUE;
 	leftmarg = curwp->w_doto;
 	if (leftmarg + 10 > fillcol) {
 		leftmarg = 0;
-		mlwrite("Column too narrow");
+		logwrite("Column too narrow");
 		return FALSE;
 	}
 
@@ -710,7 +710,7 @@ int wordcount(int f, int n)
 	else
 		avgch = 0;
 
-	mlwrite("Words %D Chars %D Lines %d Avg chars/word %f",
+	logwrite("Words %D Chars %D Lines %d Avg chars/word %f",
 		nwords, nchars, nlines + 1, avgch);
 	return TRUE;
 }

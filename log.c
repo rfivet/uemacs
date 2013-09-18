@@ -28,3 +28,14 @@ int rdonly(void)
 }
 
 
+
+int resterr(void)
+{
+/*	TTbeep();
+	mlwrite("(That command is RESTRICTED)");
+	return FALSE;
+*/
+	return logger( FALSE, TRUE, "(That command is RESTRICTED)");
+}
+
+

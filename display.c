@@ -1552,11 +1552,3 @@ static int newscreensize(int h, int w)
 }
 
 #endif
-
-int resterr(void)
-{
-	TTbeep();
-	mlwrite("(That command is RESTRICTED)");
-	return FALSE;
-}
-

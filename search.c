@@ -68,6 +68,7 @@
 #include "edef.h"
 #include "input.h"
 #include "line.h"
+#include "log.h"
 
 #if defined(MAGIC)
 /*

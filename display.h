@@ -20,7 +20,4 @@ void mlputs( char *s) ;
 void getscreensize( int *widthp, int *heightp) ;
 void sizesignal( int signr) ;
 
-int rdonly( void) ;
-int resterr( void) ;
-
 #endif
