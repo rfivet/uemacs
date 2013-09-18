@@ -18,7 +18,6 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "display.h"
 #include "estruct.h"
 #include "edef.h"
 #include "log.h"
@@ -199,24 +198,23 @@ int insspace(int f, int n)
  * linstr -- Insert a string at the current point
  */
 
-int linstr(char *instr)
-{
-	int status = TRUE;
-	char tmpc;
+int linstr( char *instr) {
+	int status = TRUE ;
 
-	if (instr != NULL)
-		while ((tmpc = *instr) && status == TRUE) {
+	if( instr != NULL) {
+		char tmpc ;
+
+		while( (tmpc = *instr++)) {
 			status =
-			    (tmpc == '\n' ? lnewline() : linsert(1, tmpc));
+			    (tmpc == '\n' ? lnewline() : linsert( 1, tmpc)) ;
 
 			/* Insertion error? */
-			if (status != TRUE) {
-				logwrite( "%%Out of memory while inserting") ;
-				break;
-			}
-			instr++;
+			if( status != TRUE)
+				return logger( status, FALSE, "%%Out of memory while inserting") ;
 		}
-	return status;
+	}
+
+	return status ;
 }
 
 /*
@@ -350,24 +348,23 @@ static int lowrite(int c)
 /*
  * lover -- Overwrite a string at the current point
  */
-int lover(char *ostr)
-{
-	int status = TRUE;
-	char tmpc;
+int lover( char *ostr) {
+	int status = TRUE ;
 
-	if (ostr != NULL)
-		while ((tmpc = *ostr) && status == TRUE) {
+	if (ostr != NULL) {
+		char tmpc ;
+
+		while( (tmpc = *ostr++)) {
 			status =
 			    (tmpc == '\n' ? lnewline() : lowrite(tmpc));
 
 			/* Insertion error? */
-			if (status != TRUE) {
-				logwrite( "%%Out of memory while overwriting") ;
-				break;
-			}
-			ostr++;
+			if( status != TRUE)
+				return logger( status, FALSE, "%%Out of memory while overwriting") ;
 		}
-	return status;
+	}
+	
+	return status ;
 }
 
 /*

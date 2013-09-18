@@ -124,6 +124,14 @@ static void usage( void) {
 }
 
 
+static int mllog( int retcode, int beep_f, const char *buf, ...) {
+	if( beep_f)
+		TTbeep() ;
+
+	mlwrite( buf) ;
+	return retcode ;
+}
+
 int main(int argc, char **argv)
 {
 	int c = -1;	/* command character */
@@ -177,6 +185,7 @@ int main(int argc, char **argv)
 	/* Initialize the editor. */
 	vtinit();		/* Display */
 	logwrite = mlwrite ;
+	logger = mllog ;
 	edinit("main");		/* Buffers, windows */
 	varinit();		/* user variables */
 

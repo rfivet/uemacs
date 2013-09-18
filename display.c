@@ -1553,17 +1553,6 @@ static int newscreensize(int h, int w)
 
 #endif
 
-/*
- * tell the user that this command is illegal while we are in
- * VIEW (read-only) mode
- */
-int rdonly(void)
-{
-	TTbeep();
-	mlwrite("(Key illegal in VIEW mode)");
-	return FALSE;
-}
-
 int resterr(void)
 {
 	TTbeep();

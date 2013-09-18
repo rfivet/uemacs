@@ -158,9 +158,9 @@ input.o: input.c input.h edef.h estruct.h line.h utf8.h bind.h bindable.h \
  display.h exec.h names.h wrapper.h
 isearch.o: isearch.c isearch.h basic.h display.h estruct.h line.h utf8.h \
  edef.h input.h search.h
-line.o: line.c line.h utf8.h display.h estruct.h edef.h log.h
+line.o: line.c line.h utf8.h estruct.h edef.h log.h
 lock.o: lock.c lock.h estruct.h line.h utf8.h display.h edef.h input.h
-log.o: log.c log.h
+log.o: log.c log.h estruct.h line.h utf8.h
 main.o: main.c basic.h bind.h edef.h estruct.h line.h utf8.h bindable.h \
  buffer.h display.h eval.h execute.h file.h input.h lock.h log.h random.h \
  search.h termio.h version.h
