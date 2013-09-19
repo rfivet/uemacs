@@ -205,9 +205,9 @@ static int resetkey(void)
  * getfile()
  *
  * char fname[];    file name to find
- * int lockfl;      check the file for locks?
+ * boolean lockfl;      check the file for locks?
  */
-int getfile(char *fname, int lockfl)
+int getfile( const char *fname, boolean lockfl)
 {
     struct buffer *bp;
     struct line *lp;
@@ -271,9 +271,9 @@ int getfile(char *fname, int lockfl)
  * and before it is read.
  *
  * char fname[];    name of file to read
- * int lockfl;      check for file locks?
+ * boolean lockfl;      check for file locks?
  */
-int readin(char *fname, int lockfl)
+int readin(const char *fname, boolean lockfl)
 {
     struct line *lp1;
     struct line *lp2;
@@ -409,9 +409,9 @@ int readin(char *fname, int lockfl)
  * I suppose that this information could be put in
  * a better place than a line of code.
  */
-void makename(char *bname, char *fname)
+void makename(char *bname, const char *fname)
 {
-    char *cp1;
+    const char *cp1;
     char *cp2;
 
     cp1 = &fname[0];
@@ -548,7 +548,7 @@ int filesave(int f, int n)
  * a macro for this. Most of the grief is error
  * checking of some sort.
  */
-int writeout(char *fn)
+int writeout( const char *fn)
 {
     int s;
     struct line *lp;
@@ -631,7 +631,7 @@ int filename(int f, int n)
  * buffer, Called by insert file command. Return the final
  * status of the read.
  */
-int ifile(char *fname)
+int ifile( const char *fname)
 {
     struct line *lp0;
     struct line *lp1;
