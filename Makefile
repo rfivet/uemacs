@@ -178,7 +178,7 @@ region.o: region.c region.h estruct.h line.h utf8.h retcode.h edef.h \
 search.o: search.c search.h estruct.h line.h utf8.h retcode.h basic.h \
  display.h edef.h input.h log.h
 spawn.o: spawn.c spawn.h buffer.h estruct.h line.h utf8.h retcode.h \
- display.h edef.h file.h input.h log.h window.h
+ display.h edef.h file.h flook.h input.h log.h window.h
 tcap.o: tcap.c display.h estruct.h line.h utf8.h retcode.h edef.h \
  termio.h
 termio.o: termio.c termio.h estruct.h line.h utf8.h retcode.h edef.h

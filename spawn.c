@@ -16,6 +16,7 @@
 #include "estruct.h"
 #include "edef.h"
 #include "file.h"
+#include "flook.h"
 #include "input.h"
 #include "log.h"
 #include "window.h"
@@ -579,7 +580,6 @@ int execprog(char *cmd)
 		char *fcb1;	/* 4 byte pointer to FCB at PSP+5Ch */
 		char *fcb2;	/* 4 byte pointer to FCB at PSP+6Ch */
 	} pblock;
-	char *flook( const char *fname, int hflag) ;
 
 	/* parse the command name from the command line */
 	sp = prog;

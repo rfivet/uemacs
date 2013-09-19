@@ -72,9 +72,9 @@ boolean fexist( const char *fname)
  * asked and possible
  *
  * char *fname;		base file name to search for
- * int hflag;		Look in the HOME environment variable first?
+ * boolean hflag;		Look in the HOME environment variable first?
  */
-char *flook( const char *fname, int hflag)
+char *flook( const char *fname, boolean hflag)
 {
 	int i;		/* index */
 	static char fspec[NSTRING];	/* full path spec to search */
