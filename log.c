@@ -1,6 +1,6 @@
 #include "log.h"
 
-#include "estruct.h"
+#include "retcode.h"
 
 
 static void logdump( const char *buf, ...) {
