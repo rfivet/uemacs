@@ -241,12 +241,12 @@ int macarg(char *tok)
  * nextarg:
  *	get the next argument
  *
- * char *prompt;		prompt to use if we must be interactive
+ * const char *prompt;		prompt to use if we must be interactive
  * char *buffer;		buffer to put token into
  * int size;			size of the buffer
  * int terminator;		terminating char to be used on interactive fetch
  */
-int nextarg(char *prompt, char *buffer, int size, int terminator)
+int nextarg(const char *prompt, char *buffer, int size, int terminator)
 {
 	/* if we are interactive, go get it! */
 	if (clexec == FALSE)

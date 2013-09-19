@@ -8,7 +8,7 @@ int execcmd( int f, int n) ;
 int docmd( char *cline) ;
 char *token( char *src, char *tok, int size) ;
 int macarg( char *tok) ;
-int nextarg( char *prompt, char *buffer, int size, int terminator) ;
+int nextarg( const char *prompt, char *buffer, int size, int terminator) ;
 int storemac( int f, int n) ;
 int storeproc( int f, int n) ;
 int execproc( int f, int n) ;

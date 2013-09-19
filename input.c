@@ -37,7 +37,7 @@
  * ABORT. The ABORT status is returned if the user bumps out of the question
  * with a ^G. Used any time a confirmation is required.
  */
-int mlyesno(char *prompt)
+int mlyesno( const char *prompt)
 {
 	char c;			/* input character */
 	char buf[NPAT];		/* prompt to user */
@@ -70,12 +70,12 @@ int mlyesno(char *prompt)
  * return. Handle erase, kill, and abort keys.
  */
 
-int mlreply(char *prompt, char *buf, int nbuf)
+int mlreply( const char *prompt, char *buf, int nbuf)
 {
 	return nextarg(prompt, buf, nbuf, ctoec('\n'));
 }
 
-int mlreplyt(char *prompt, char *buf, int nbuf, int eolchar)
+int mlreplyt(const char *prompt, char *buf, int nbuf, int eolchar)
 {
 	return nextarg(prompt, buf, nbuf, eolchar);
 }
@@ -444,11 +444,11 @@ handle_CSI:
 	to specify the proper terminator. If the terminator is not
 	a return ('\n') it will echo as "<NL>"
 							*/
-int getstring(char *prompt, char *buf, int nbuf, int eolchar)
+int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
 {
 	int cpos;	/* current character position in string */
 	int c;
-	int quotef;	/* are we quoting the next char? */
+	boolean quotef ;	/* are we quoting the next char? */
 #if	COMPLC
 	int ffile, ocpos, nskip = 0, didtry = 0;
 #if     MSDOS
