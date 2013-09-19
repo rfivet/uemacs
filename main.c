@@ -124,7 +124,7 @@ static void usage( void) {
 }
 
 
-static int mllog( int retcode, int beep_f, const char *buf, ...) {
+static boolean mllog( boolean retcode, boolean beep_f, const char *buf, ...) {
 	if( beep_f)
 		TTbeep() ;
 
