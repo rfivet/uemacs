@@ -1,4 +1,4 @@
-#include "estruct.h"
+#include "retcode.h"
 
 
 #define rcfname		pathname[ 0]

@@ -7,6 +7,7 @@
 #include <string.h>
 
 
+#include "estruct.h"
 #include "fileio.h"
 
 

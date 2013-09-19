@@ -151,8 +151,8 @@ execute.o: execute.c edef.h estruct.h line.h utf8.h retcode.h bind.h \
  random.h display.h file.h
 file.o: file.c file.h buffer.h estruct.h line.h utf8.h retcode.h crypt.h \
  edef.h execute.h fileio.h input.h lock.h log.h window.h
-fileio.o: fileio.c fileio.h estruct.h line.h utf8.h retcode.h crypt.h
-flook.o: flook.c flook.h estruct.h line.h utf8.h retcode.h fileio.h
+fileio.o: fileio.c fileio.h retcode.h estruct.h line.h utf8.h crypt.h
+flook.o: flook.c flook.h retcode.h estruct.h line.h utf8.h fileio.h
 globals.o: globals.c estruct.h line.h utf8.h retcode.h edef.h
 ibmpc.o: ibmpc.c estruct.h line.h utf8.h retcode.h edef.h
 input.o: input.c input.h edef.h estruct.h line.h utf8.h retcode.h bind.h \

@@ -1,7 +1,7 @@
 #ifndef _FILEIO_H_
 #define _FILEIO_H_
 
-#include "estruct.h"
+#include "retcode.h"
 
 typedef enum {
 	FIOSUC,	/* File I/O, success.             */
