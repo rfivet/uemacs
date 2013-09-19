@@ -18,7 +18,9 @@ typedef enum {
 #define FTYPE_MAC   4
 /*      FTYPE_MIXED [ 3, 5, 6, 7] */
 
-#if CRYPT
+#ifndef CRYPT
+#error CRYPT should be defined.
+#elif CRYPT
 extern boolean	is_crypted ;	/* currently encrypting?   */
 #endif
 

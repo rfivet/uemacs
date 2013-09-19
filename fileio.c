@@ -1,5 +1,6 @@
 /* fileio.c -- implements fileio.h */
 
+#include "estruct.h"
 #include "fileio.h"
 
 /*  FILEIO.C

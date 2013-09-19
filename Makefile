@@ -136,7 +136,7 @@ bindable.o: bindable.c bindable.h buffer.h estruct.h line.h utf8.h \
  retcode.h display.h edef.h file.h input.h
 buffer.o: buffer.c buffer.h estruct.h line.h utf8.h retcode.h display.h \
  edef.h file.h input.h window.h
-crypt.o: crypt.c crypt.h estruct.h line.h utf8.h retcode.h
+crypt.o: crypt.c estruct.h line.h utf8.h retcode.h crypt.h
 display.o: display.c display.h estruct.h line.h utf8.h retcode.h edef.h \
  termio.h version.h wrapper.h window.h
 ebind.o: ebind.c ebind.h basic.h bind.h edef.h estruct.h line.h utf8.h \
@@ -149,9 +149,9 @@ exec.o: exec.c exec.h estruct.h line.h utf8.h retcode.h buffer.h bind.h \
  edef.h display.h eval.h file.h flook.h input.h
 execute.o: execute.c edef.h estruct.h line.h utf8.h retcode.h bind.h \
  random.h display.h file.h
-file.o: file.c file.h buffer.h estruct.h line.h utf8.h retcode.h crypt.h \
+file.o: file.c estruct.h line.h utf8.h retcode.h file.h buffer.h crypt.h \
  edef.h execute.h fileio.h input.h lock.h log.h window.h
-fileio.o: fileio.c fileio.h retcode.h estruct.h line.h utf8.h crypt.h
+fileio.o: fileio.c estruct.h line.h utf8.h retcode.h fileio.h crypt.h
 flook.o: flook.c flook.h retcode.h estruct.h line.h utf8.h fileio.h
 globals.o: globals.c estruct.h line.h utf8.h retcode.h edef.h
 ibmpc.o: ibmpc.c estruct.h line.h utf8.h retcode.h edef.h

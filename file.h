@@ -1,7 +1,9 @@
 #ifndef _FILE_H_
 #define _FILE_H_
 
-#if CRYPT
+#ifndef CRYPT
+#error CRYPT should be defined.
+#elif CRYPT
 void cryptbufferkey( struct buffer *bp) ;
 int  set_encryption_key( int f, int n) ;
 #endif

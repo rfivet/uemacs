@@ -1,5 +1,7 @@
 /* crypt.c -- implements crypt.h */
 
+#include "estruct.h"
+
 #include "crypt.h"
 
 /*	CRYPT.C

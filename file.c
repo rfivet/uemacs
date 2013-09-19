@@ -1,5 +1,6 @@
 /* file.c -- implements file.h */
 
+#include "estruct.h"
 #include "file.h"
 
 /*  file.c
