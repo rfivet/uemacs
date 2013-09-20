@@ -12,6 +12,7 @@
 #include <stdio.h>
 
 #include "basic.h"
+#include "buffer.h"
 #include "display.h"
 #include "estruct.h"
 #include "edef.h"
@@ -20,6 +21,7 @@
 #include "line.h"
 #include "log.h"
 #include "search.h"
+#include "window.h"
 
 int tabsize; /* Tab size (0: use real tabs) */
 

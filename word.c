@@ -13,12 +13,14 @@
 #include <stdio.h>
 
 #include "basic.h"
+#include "buffer.h"
 #include "estruct.h"
 #include "edef.h"
 #include "line.h"
 #include "log.h"
 #include "random.h"
 #include "region.h"
+#include "window.h"
 
 /* Word wrap on n-spaces. Back-over whatever precedes the point on the current
  * line and stop on the first word-break or the beginning of the line. If we

@@ -1,6 +1,7 @@
 #ifndef _EXEC_H_
 #define _EXEC_H_
 
+#include "buffer.h"
 #include "estruct.h"
 
 int namedcmd( int f, int n) ;

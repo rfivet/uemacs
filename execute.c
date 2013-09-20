@@ -3,6 +3,7 @@
 #include "random.h"
 #include "display.h"
 #include "file.h"
+#include "window.h"
 
 /*
  * This is the general command execution routine. It handles the fake binding

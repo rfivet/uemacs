@@ -1,8 +1,5 @@
 #include "log.h"
 
-#include "retcode.h"
-
-
 static void logdump( const char *buf, ...) {
 }
 

@@ -158,7 +158,9 @@
 #define	ISRCH	1  /* Incremental searches like ITS EMACS          */
 #define	WORDPRO	1  /* Advanced word processing features            */
 #define	APROP	1  /* Add code for Apropos command                 */
+#if 0
 #define	CRYPT	1  /* file encryption enabled?                     */
+#endif
 #define MAGIC	1  /* include regular expression matching?         */
 #define	AEDIT	1  /* advanced editing options: en/detabbing       */
 #define	PROC	1  /* named procedures                             */
@@ -251,9 +253,11 @@
 
 #include "retcode.h"
 
+#if 0
 #define	STOP	0		/* keyboard macro not in use    */
 #define	PLAY	1		/*                playing       */
 #define	RECORD	2		/*                recording     */
+#endif
 
 /*	Directive definitions	*/
 
@@ -383,96 +387,6 @@
 
 int cexit( int status) ;
 #endif
-
-/*
- * There is a window structure allocated for every active display window. The
- * windows are kept in a big list, in top to bottom screen order, with the
- * listhead at "wheadp". Each window contains its own values of dot and mark.
- * The flag field contains some bits that are set by commands to guide
- * redisplay. Although this is a bit of a compromise in terms of decoupling,
- * the full blown redisplay is just too expensive to run for every input
- * character.
- */
-struct window {
-	struct window *w_wndp;	/* Next window                  */
-	struct buffer *w_bufp;	/* Buffer displayed in window   */
-	struct line *w_linep;	/* Top line in the window       */
-	struct line *w_dotp;	/* Line containing "."          */
-	struct line *w_markp;	/* Line containing "mark"       */
-	int w_doto;		/* Byte offset for "."          */
-	int w_marko;		/* Byte offset for "mark"       */
-	char w_toprow;		/* Origin 0 top row of window   */
-	char w_ntrows;		/* # of rows of text in window  */
-	char w_force;		/* If NZ, forcing row.          */
-	char w_flag;		/* Flags.                       */
-#if	COLOR
-	char w_fcolor;		/* current forground color      */
-	char w_bcolor;		/* current background color     */
-#endif
-};
-
-#define WFFORCE 0x01		/* Window needs forced reframe  */
-#define WFMOVE  0x02		/* Movement from line to line   */
-#define WFEDIT  0x04		/* Editing within a line        */
-#define WFHARD  0x08		/* Better to a full display     */
-#define WFMODE  0x10		/* Update mode line.            */
-#define	WFCOLR	0x20		/* Needs a color change         */
-
-#if SCROLLCODE
-#define WFKILLS 0x40		/* something was deleted        */
-#define WFINS   0x80		/* something was inserted       */
-#endif
-
-
-/*
- * Text is kept in buffers. A buffer header, described below, exists for every
- * buffer in the system. The buffers are kept in a big list, so that commands
- * that search for a buffer by name can find the buffer header. There is a
- * safe store for the dot and mark in the header, but this is only valid if
- * the buffer is not being displayed (that is, if "b_nwnd" is 0). The text for
- * the buffer is kept in a circularly linked list of lines, with a pointer to
- * the header line in "b_linep".
- * 	Buffers may be "Inactive" which means the files associated with them
- * have not been read in yet. These get read in at "use buffer" time.
- */
-struct buffer {
-        struct buffer *b_bufp;	/* Link to next struct buffer   */
-	struct line *b_dotp;	/* Link to "." struct line structure   */
-	struct line *b_markp;	/* The same as the above two,   */
-	struct line *b_linep;	/* Link to the header struct line      */
-	int b_doto;		/* Offset of "." in above struct line  */
-	int b_marko;		/* but for the "mark"           */
-	int b_mode;		/* editor mode of this buffer   */
-	char b_active;		/* window activated flag        */
-	char b_nwnd;		/* Count of windows on buffer   */
-	char b_flag;		/* Flags                        */
-	char b_fname[NFILEN];	/* File name                    */
-	char b_bname[NBUFN];	/* Buffer name                  */
-#if	CRYPT
-	char b_key[NPAT];	/* current encrypted key        */
-#endif
-};
-
-#define BFINVS  0x01		/* Internal invisable buffer    */
-#define BFCHG   0x02		/* Changed since last write     */
-#define	BFTRUNC	0x04		/* buffer was truncated when read */
-
-/*	mode flags	*/
-#define	NUMMODES	11	/* # of defined modes           */
-
-#define	MDWRAP	0x0001		/* word wrap                    */
-#define	MDCMOD	0x0002		/* C indentation and fence match */
-#define	MDSPELL	0x0004		/* spell error parcing          */
-#define	MDEXACT	0x0008		/* Exact matching for searches  */
-#define	MDVIEW	0x0010		/* read-only buffer             */
-#define MDOVER	0x0020		/* overwrite mode               */
-#define MDMAGIC	0x0040		/* regular expresions in search */
-#if CRYPT
-#define	MDCRYPT	0x0080		/* encrytion mode active        */
-#endif
-#define	MDASAVE	0x0100		/* auto-save mode               */
-#define MDUTF8	0x0200		/* utf8 mode                    */
-#define MDDOS	0x0400		/* CRLF eol mode                */
 
 /*
  * The starting position of a region, and the size of the region in

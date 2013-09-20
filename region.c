@@ -12,10 +12,12 @@
 
 #include <stdio.h>
 
+#include "buffer.h"
 #include "estruct.h"
 #include "edef.h"
 #include "line.h"
 #include "log.h"
+#include "window.h"
 
 /*
  * Kill the region. Ask "getregion"

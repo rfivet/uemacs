@@ -27,13 +27,14 @@
 #include <stdio.h>
 
 #include "basic.h"
+#include "buffer.h"
 #include "display.h"
 #include "estruct.h"
 #include "edef.h"
 #include "input.h"
 #include "line.h"
 #include "search.h"
-
+#include "window.h"
 
 static int isearch( int f, int n) ;
 static int checknext( char chr, char *patrn, int dir) ;

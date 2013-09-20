@@ -1,6 +1,5 @@
 /* file.c -- implements file.h */
 
-#include "estruct.h"
 #include "file.h"
 
 /*  file.c
@@ -17,6 +16,7 @@
 
 #include "buffer.h"
 #include "crypt.h"
+#include "defines.h"
 #include "estruct.h"
 #include "edef.h"
 #include "execute.h"

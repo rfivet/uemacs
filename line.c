@@ -18,8 +18,10 @@
 #include <assert.h>
 #include <stdio.h>
 
+#include "buffer.h"
 #include "edef.h"
 #include "log.h"
+#include "window.h"
 
 #define	BLOCK_SIZE 16 /* Line block chunk size. */
 

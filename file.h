@@ -1,11 +1,12 @@
 #ifndef _FILE_H_
 #define _FILE_H_
 
+#include "crypt.h"
 #include "retcode.h"
 
-#ifndef CRYPT
-#error CRYPT should be defined.
-#elif CRYPT
+#if CRYPT
+#include "buffer.h"
+
 void cryptbufferkey( struct buffer *bp) ;
 int  set_encryption_key( int f, int n) ;
 #endif

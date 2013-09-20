@@ -1,9 +1,9 @@
 #ifndef _CRYPT_H_
 #define _CRYPT_H_
 
-#ifndef CRYPT
-#error CRYPT should be defined
-#elif CRYPT
+#define	CRYPT 1	/* file encryption enabled? */
+
+#if CRYPT
 void myencrypt( char *bptr, unsigned len) ;
 #endif
 

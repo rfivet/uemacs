@@ -1,6 +1,5 @@
 /* fileio.c -- implements fileio.h */
 
-#include "defines.h"
 #include "fileio.h"
 
 /*  FILEIO.C
@@ -15,9 +14,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if CRYPT
-#include "crypt.h"
+#include "defines.h"
 
+#if CRYPT
 boolean	is_crypted ;		/* currently encrypting?   */
 #endif
 

@@ -15,6 +15,7 @@
 
 #include <stdio.h>
 
+#include "buffer.h"
 #include "display.h"
 #include "estruct.h"
 #include "edef.h"
@@ -22,6 +23,7 @@
 #include "line.h"
 #include "random.h"
 #include "utf8.h"
+#include "window.h"
 #include "word.h"
 
 /*

@@ -63,12 +63,14 @@
 #include <stdio.h>
 
 #include "basic.h"
+#include "buffer.h"
 #include "display.h"
 #include "estruct.h"
 #include "edef.h"
 #include "input.h"
 #include "line.h"
 #include "log.h"
+#include "window.h"
 
 #if defined(MAGIC)
 /*

@@ -74,6 +74,7 @@
 #include "search.h"
 #include "termio.h"
 #include "version.h"
+#include "window.h"
 
 /* For MSDOS, increase the default stack space. */
 #if MSDOS & TURBO

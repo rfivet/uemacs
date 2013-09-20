@@ -22,6 +22,7 @@
 #include "flook.h"
 #include "input.h"
 #include "line.h"
+#include "window.h"
 
 /* directive name table:
 	This holds the names of all the directives....	*/

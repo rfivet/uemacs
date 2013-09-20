@@ -1,7 +1,7 @@
 #ifndef _FILEIO_H_
 #define _FILEIO_H_
 
-#include "retcode.h"
+#include "crypt.h"
 
 typedef enum {
 	FIOSUC,	/* File I/O, success.             */
@@ -18,9 +18,9 @@ typedef enum {
 #define FTYPE_MAC   4
 /*      FTYPE_MIXED [ 3, 5, 6, 7] */
 
-#ifndef CRYPT
-#error CRYPT should be defined.
-#elif CRYPT
+#if CRYPT
+#include "retcode.h"
+
 extern boolean	is_crypted ;	/* currently encrypting?   */
 #endif
 

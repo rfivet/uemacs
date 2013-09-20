@@ -1,4 +1,7 @@
-#include "estruct.h"
+#include "crypt.h"
+#include "defines.h"
+
+/* #include "estruct.h" */
 #include "edef.h"
 
 /* initialized global definitions */
@@ -79,7 +82,7 @@ int kused = KBLOCK;		/* # of bytes used in kill buffer       */
 struct window *swindow = NULL;	/* saved window pointer                 */
 int *kbdptr;			/* current position in keyboard buf */
 int *kbdend = &kbdm[0];		/* ptr to end of the keyboard */
-int kbdmode = STOP;		/* current keyboard macro mode  */
+kbdstate kbdmode = STOP;		/* current keyboard macro mode  */
 int kbdrep = 0;			/* number of repetitions        */
 int restflag = FALSE;		/* restricted use?              */
 int lastkey = 0;		/* last keystoke                */

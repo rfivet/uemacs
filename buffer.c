@@ -14,12 +14,12 @@
 
 #include        <stdio.h>
 
+#include "defines.h"
 #include "display.h"
-#include "estruct.h"
+/* #include "estruct.h" */
 #include "edef.h"
 #include "file.h"
 #include "input.h"
-#include "line.h"
 #include "window.h"
 
 

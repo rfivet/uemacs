@@ -10,6 +10,7 @@
 #ifndef EDEF_H_
 #define EDEF_H_
 
+#include "buffer.h"
 #include "estruct.h"
 
 #include <stdlib.h>
@@ -67,7 +68,17 @@ extern int kused;		/* # of bytes used in KB        */
 extern struct window *swindow;	/* saved window pointer         */
 extern int *kbdptr;		/* current position in keyboard buf */
 extern int *kbdend;		/* ptr to end of the keyboard */
-extern int kbdmode;		/* current keyboard macro mode  */
+
+#if 0
+#define	STOP	0		/* keyboard macro not in use    */
+#define	PLAY	1		/*                playing       */
+#define	RECORD	2		/*                recording     */
+#endif
+
+typedef enum {
+	STOP, PLAY, RECORD
+} kbdstate ;
+extern kbdstate kbdmode ;		/* current keyboard macro mode  */
 extern int kbdrep;		/* number of repetitions        */
 extern int restflag;		/* restricted use?              */
 extern int lastkey;		/* last keystoke                */

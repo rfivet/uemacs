@@ -17,6 +17,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 
+#include "buffer.h"
 #include "estruct.h"
 #include "edef.h"
 #include "line.h"
