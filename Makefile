@@ -1,8 +1,8 @@
-# makefile for emacs, updated Thu, Sep 19, 2013 12:14:27 PM
+# makefile for emacs, updated Fri, Sep 20, 2013 10:43:27 AM
 
 SRC=ansi.c basic.c bind.c bindable.c buffer.c crypt.c display.c ebind.c eval.c exec.c execute.c file.c fileio.c flook.c globals.c ibmpc.c input.c isearch.c line.c lock.c log.c main.c names.c pklock.c posix.c random.c region.c search.c spawn.c tcap.c termio.c utf8.c vmsvt.c vt52.c window.c word.c wrapper.c
 OBJ=ansi.o basic.o bind.o bindable.o buffer.o crypt.o display.o ebind.o eval.o exec.o execute.o file.o fileio.o flook.o globals.o ibmpc.o input.o isearch.o line.o lock.o log.o main.o names.o pklock.o posix.o random.o region.o search.o spawn.o tcap.o termio.o utf8.o vmsvt.o vt52.o window.o word.o wrapper.o
-HDR=basic.h bind.h bindable.h buffer.h crypt.h display.h ebind.h edef.h efunc.h estruct.h eval.h exec.h execute.h file.h fileio.h flook.h input.h isearch.h line.h lock.h log.h names.h pklock.h random.h region.h retcode.h search.h spawn.h termio.h utf8.h version.h window.h word.h wrapper.h
+HDR=basic.h bind.h bindable.h buffer.h crypt.h defines.h display.h ebind.h edef.h efunc.h estruct.h eval.h exec.h execute.h file.h fileio.h flook.h input.h isearch.h line.h lock.h log.h names.h pklock.h random.h region.h retcode.h search.h spawn.h termio.h utf8.h version.h window.h word.h wrapper.h
 
 # DO NOT ADD OR MODIFY ANY LINES ABOVE THIS -- make source creates them
 
@@ -136,7 +136,7 @@ bindable.o: bindable.c bindable.h buffer.h estruct.h line.h utf8.h \
  retcode.h display.h edef.h file.h input.h
 buffer.o: buffer.c buffer.h estruct.h line.h utf8.h retcode.h display.h \
  edef.h file.h input.h window.h
-crypt.o: crypt.c estruct.h line.h utf8.h retcode.h crypt.h
+crypt.o: crypt.c defines.h crypt.h
 display.o: display.c display.h estruct.h line.h utf8.h retcode.h edef.h \
  termio.h version.h wrapper.h window.h
 ebind.o: ebind.c ebind.h basic.h bind.h edef.h estruct.h line.h utf8.h \
@@ -151,15 +151,15 @@ execute.o: execute.c edef.h estruct.h line.h utf8.h retcode.h bind.h \
  random.h display.h file.h
 file.o: file.c estruct.h line.h utf8.h retcode.h file.h buffer.h crypt.h \
  edef.h execute.h fileio.h input.h lock.h log.h window.h
-fileio.o: fileio.c estruct.h line.h utf8.h retcode.h fileio.h crypt.h
-flook.o: flook.c flook.h retcode.h estruct.h line.h utf8.h fileio.h
+fileio.o: fileio.c defines.h fileio.h retcode.h crypt.h
+flook.o: flook.c flook.h retcode.h defines.h fileio.h
 globals.o: globals.c estruct.h line.h utf8.h retcode.h edef.h
 ibmpc.o: ibmpc.c estruct.h line.h utf8.h retcode.h edef.h
 input.o: input.c input.h edef.h estruct.h line.h utf8.h retcode.h bind.h \
  bindable.h display.h exec.h names.h wrapper.h
 isearch.o: isearch.c isearch.h basic.h display.h estruct.h line.h utf8.h \
  retcode.h edef.h input.h search.h
-line.o: line.c line.h utf8.h estruct.h retcode.h edef.h log.h
+line.o: line.c line.h utf8.h edef.h estruct.h retcode.h log.h
 lock.o: lock.c lock.h estruct.h line.h utf8.h retcode.h display.h edef.h \
  input.h
 log.o: log.c log.h retcode.h

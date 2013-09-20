@@ -285,12 +285,6 @@
 #define	BELL	0x07		/* a bell character             */
 #define	TAB	0x09		/* a tab character              */
 
-#if	V7 | USG | BSD
-#define	PATHCHR	':'
-#else
-#define	PATHCHR	';'
-#endif
-
 #define	INTWIDTH	sizeof(int) * 3
 
 /*	Macro argument token types					*/

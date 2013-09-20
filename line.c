@@ -18,10 +18,8 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "estruct.h"
 #include "edef.h"
 #include "log.h"
-#include "utf8.h"
 
 #define	BLOCK_SIZE 16 /* Line block chunk size. */
 

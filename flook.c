@@ -7,7 +7,7 @@
 #include <string.h>
 
 
-#include "estruct.h"
+#include "defines.h"
 #include "fileio.h"
 
 
@@ -105,6 +105,12 @@ char *flook( const char *fname, boolean hflag)
 		return fspec ;
 
 #if	ENVFUNC
+#if	V7 | USG | BSD
+#define	PATHCHR	':'
+#else
+#define	PATHCHR	';'
+#endif
+
 	/* get the PATH variable */
 	path = getenv("PATH");
 	if (path != NULL)

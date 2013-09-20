@@ -1,6 +1,6 @@
 /* fileio.c -- implements fileio.h */
 
-#include "estruct.h"
+#include "defines.h"
 #include "fileio.h"
 
 /*  FILEIO.C
@@ -14,9 +14,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "estruct.h"
-
 
 #if CRYPT
 #include "crypt.h"
@@ -85,12 +82,10 @@ fio_code ffclose(void)
 #if     V7 | USG | BSD | (MSDOS & (MSC | TURBO))
     if (fclose(ffp) != FALSE)
         return FIOERR;
-
-    return FIOSUC;
 #else
     fclose(ffp);
-    return FIOSUC;
 #endif
+    return FIOSUC;
 }
 
 /*
