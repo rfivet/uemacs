@@ -1,4 +1,4 @@
-# makefile for emacs, updated Fri, Sep 20, 2013 10:43:27 AM
+# makefile for emacs, updated Fri, Sep 20, 2013  3:09:46 PM
 
 SRC=ansi.c basic.c bind.c bindable.c buffer.c crypt.c display.c ebind.c eval.c exec.c execute.c file.c fileio.c flook.c globals.c ibmpc.c input.c isearch.c line.c lock.c log.c main.c names.c pklock.c posix.c random.c region.c search.c spawn.c tcap.c termio.c utf8.c vmsvt.c vt52.c window.c word.c wrapper.c
 OBJ=ansi.o basic.o bind.o bindable.o buffer.o crypt.o display.o ebind.o eval.o exec.o execute.o file.o fileio.o flook.o globals.o ibmpc.o input.o isearch.o line.o lock.o log.o main.o names.o pklock.o posix.o random.o region.o search.o spawn.o tcap.o termio.o utf8.o vmsvt.o vt52.o window.o word.o wrapper.o
@@ -126,69 +126,77 @@ depend: ${SRC}
 
 # DO NOT DELETE THIS LINE -- make depend uses it
 
-ansi.o: ansi.c estruct.h line.h utf8.h retcode.h edef.h
-basic.o: basic.c basic.h display.h estruct.h line.h utf8.h retcode.h \
- edef.h input.h random.h word.h
-bind.o: bind.c bind.h edef.h estruct.h line.h utf8.h retcode.h bindable.h \
- buffer.h display.h ebind.h exec.h file.h flook.h input.h names.h \
- window.h
-bindable.o: bindable.c bindable.h buffer.h estruct.h line.h utf8.h \
- retcode.h display.h edef.h file.h input.h
-buffer.o: buffer.c buffer.h estruct.h line.h utf8.h retcode.h display.h \
- edef.h file.h input.h window.h
-crypt.o: crypt.c defines.h crypt.h
-display.o: display.c display.h estruct.h line.h utf8.h retcode.h edef.h \
- termio.h version.h wrapper.h window.h
-ebind.o: ebind.c ebind.h basic.h bind.h edef.h estruct.h line.h utf8.h \
- retcode.h bindable.h buffer.h eval.h exec.h file.h isearch.h random.h \
- region.h search.h spawn.h window.h word.h
+ansi.o: ansi.c estruct.h line.h utf8.h retcode.h edef.h buffer.h crypt.h
+basic.o: basic.c basic.h buffer.h crypt.h line.h utf8.h display.h \
+ estruct.h retcode.h edef.h input.h random.h window.h defines.h word.h
+bind.o: bind.c bind.h edef.h buffer.h crypt.h line.h utf8.h estruct.h \
+ retcode.h bindable.h display.h ebind.h exec.h file.h flook.h input.h \
+ names.h window.h defines.h
+bindable.o: bindable.c bindable.h defines.h buffer.h crypt.h line.h \
+ utf8.h display.h edef.h estruct.h retcode.h file.h input.h
+buffer.o: buffer.c buffer.h crypt.h line.h utf8.h defines.h display.h \
+ edef.h estruct.h retcode.h file.h input.h window.h
+crypt.o: crypt.c crypt.h
+display.o: display.c display.h buffer.h crypt.h line.h utf8.h estruct.h \
+ retcode.h edef.h termio.h version.h wrapper.h window.h defines.h
+ebind.o: ebind.c ebind.h basic.h bind.h edef.h buffer.h crypt.h line.h \
+ utf8.h estruct.h retcode.h bindable.h eval.h exec.h file.h isearch.h \
+ random.h region.h search.h spawn.h window.h defines.h word.h
 eval.o: eval.c eval.h estruct.h line.h utf8.h retcode.h basic.h bind.h \
- edef.h buffer.h display.h exec.h flook.h input.h random.h search.h \
- termio.h version.h window.h
-exec.o: exec.c exec.h estruct.h line.h utf8.h retcode.h buffer.h bind.h \
- edef.h display.h eval.h file.h flook.h input.h
-execute.o: execute.c edef.h estruct.h line.h utf8.h retcode.h bind.h \
- random.h display.h file.h
-file.o: file.c estruct.h line.h utf8.h retcode.h file.h buffer.h crypt.h \
- edef.h execute.h fileio.h input.h lock.h log.h window.h
-fileio.o: fileio.c defines.h fileio.h retcode.h crypt.h
-flook.o: flook.c flook.h retcode.h defines.h fileio.h
-globals.o: globals.c estruct.h line.h utf8.h retcode.h edef.h
-ibmpc.o: ibmpc.c estruct.h line.h utf8.h retcode.h edef.h
-input.o: input.c input.h edef.h estruct.h line.h utf8.h retcode.h bind.h \
- bindable.h display.h exec.h names.h wrapper.h
-isearch.o: isearch.c isearch.h basic.h display.h estruct.h line.h utf8.h \
- retcode.h edef.h input.h search.h
-line.o: line.c line.h utf8.h edef.h estruct.h retcode.h log.h
+ edef.h buffer.h crypt.h display.h exec.h flook.h input.h random.h \
+ search.h termio.h version.h window.h defines.h
+exec.o: exec.c exec.h buffer.h crypt.h line.h utf8.h estruct.h retcode.h \
+ bind.h edef.h display.h eval.h file.h flook.h input.h window.h defines.h
+execute.o: execute.c edef.h buffer.h crypt.h line.h utf8.h estruct.h \
+ retcode.h bind.h random.h display.h file.h window.h defines.h
+file.o: file.c file.h crypt.h retcode.h buffer.h line.h utf8.h defines.h \
+ estruct.h edef.h execute.h fileio.h input.h lock.h log.h window.h
+fileio.o: fileio.c fileio.h crypt.h retcode.h defines.h
+flook.o: flook.c flook.h retcode.h defines.h fileio.h crypt.h
+globals.o: globals.c crypt.h defines.h edef.h buffer.h line.h utf8.h \
+ estruct.h retcode.h
+ibmpc.o: ibmpc.c estruct.h line.h utf8.h retcode.h edef.h buffer.h \
+ crypt.h
+input.o: input.c input.h edef.h buffer.h crypt.h line.h utf8.h estruct.h \
+ retcode.h bind.h bindable.h display.h exec.h names.h wrapper.h
+isearch.o: isearch.c isearch.h basic.h buffer.h crypt.h line.h utf8.h \
+ display.h estruct.h retcode.h edef.h input.h search.h window.h defines.h
+line.o: line.c line.h utf8.h buffer.h crypt.h edef.h estruct.h retcode.h \
+ log.h window.h defines.h
 lock.o: lock.c lock.h estruct.h line.h utf8.h retcode.h display.h edef.h \
- input.h
+ buffer.h crypt.h input.h
 log.o: log.c log.h retcode.h
-main.o: main.c basic.h bind.h edef.h estruct.h line.h utf8.h retcode.h \
- bindable.h buffer.h display.h eval.h execute.h file.h input.h lock.h \
- log.h random.h search.h termio.h version.h
-names.o: names.c names.h basic.h bind.h edef.h estruct.h line.h utf8.h \
- retcode.h bindable.h buffer.h display.h eval.h exec.h file.h isearch.h \
- region.h random.h search.h spawn.h window.h word.h
-pklock.o: pklock.c pklock.h estruct.h line.h utf8.h retcode.h edef.h
+main.o: main.c basic.h bind.h edef.h buffer.h crypt.h line.h utf8.h \
+ estruct.h retcode.h bindable.h display.h eval.h execute.h file.h input.h \
+ lock.h log.h random.h search.h termio.h version.h window.h defines.h
+names.o: names.c names.h basic.h bind.h edef.h buffer.h crypt.h line.h \
+ utf8.h estruct.h retcode.h bindable.h display.h eval.h exec.h file.h \
+ isearch.h region.h random.h search.h spawn.h window.h defines.h word.h
+pklock.o: pklock.c pklock.h estruct.h line.h utf8.h retcode.h edef.h \
+ buffer.h crypt.h
 posix.o: posix.c termio.h
-random.o: random.c random.h basic.h display.h estruct.h line.h utf8.h \
- retcode.h edef.h execute.h input.h log.h search.h
-region.o: region.c region.h estruct.h line.h utf8.h retcode.h edef.h \
- log.h
+random.o: random.c random.h basic.h buffer.h crypt.h line.h utf8.h \
+ display.h estruct.h retcode.h edef.h execute.h input.h log.h search.h \
+ window.h defines.h
+region.o: region.c region.h estruct.h line.h utf8.h retcode.h buffer.h \
+ crypt.h edef.h log.h window.h defines.h
 search.o: search.c search.h estruct.h line.h utf8.h retcode.h basic.h \
- display.h edef.h input.h log.h
-spawn.o: spawn.c spawn.h buffer.h estruct.h line.h utf8.h retcode.h \
- display.h edef.h file.h flook.h input.h log.h window.h
+ buffer.h crypt.h display.h edef.h input.h log.h window.h defines.h
+spawn.o: spawn.c spawn.h defines.h buffer.h crypt.h line.h utf8.h \
+ display.h estruct.h retcode.h edef.h file.h flook.h input.h log.h \
+ window.h
 tcap.o: tcap.c display.h estruct.h line.h utf8.h retcode.h edef.h \
- termio.h
-termio.o: termio.c termio.h estruct.h line.h utf8.h retcode.h edef.h
+ buffer.h crypt.h termio.h
+termio.o: termio.c termio.h estruct.h line.h utf8.h retcode.h edef.h \
+ buffer.h crypt.h
 utf8.o: utf8.c utf8.h
-vmsvt.o: vmsvt.c estruct.h line.h utf8.h retcode.h edef.h
-vt52.o: vt52.c estruct.h line.h utf8.h retcode.h edef.h
-window.o: window.c window.h estruct.h line.h utf8.h retcode.h basic.h \
- display.h edef.h execute.h wrapper.h
-word.o: word.c word.h basic.h estruct.h line.h utf8.h retcode.h edef.h \
- log.h random.h region.h
+vmsvt.o: vmsvt.c estruct.h line.h utf8.h retcode.h edef.h buffer.h \
+ crypt.h
+vt52.o: vt52.c estruct.h line.h utf8.h retcode.h edef.h buffer.h crypt.h
+window.o: window.c window.h defines.h buffer.h crypt.h line.h utf8.h \
+ basic.h display.h edef.h estruct.h retcode.h execute.h wrapper.h
+word.o: word.c word.h basic.h buffer.h crypt.h line.h utf8.h estruct.h \
+ retcode.h edef.h log.h random.h region.h window.h defines.h
 wrapper.o: wrapper.c wrapper.h
 
 # DEPENDENCIES MUST END AT END OF FILE
