@@ -5,10 +5,10 @@
 
 #if	BSD | SVR4
 
-int lockchk( char *fname) ;
+int lockchk( const char *fname) ;
 int lockrel( void) ;
-int lock( char *fname) ;
-int unlock( char *fname) ;
+int lock( const char *fname) ;
+int unlock( const char *fname) ;
 
 #endif
 

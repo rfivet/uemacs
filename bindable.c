@@ -7,6 +7,7 @@
 #include "edef.h"
 #include "file.h"
 #include "input.h"
+#include "lock.h"
 
 #if VMS
 #include <ssdef.h>

@@ -30,9 +30,9 @@ static void lckerror(char *errstr) ;
  * lockchk:
  *	check a file for locking and add it to the list
  *
- * char *fname;			file to check for a lock
+ * const char *fname;			file to check for a lock
  */
-int lockchk(char *fname)
+int lockchk( const char *fname)
 {
 	int i;		/* loop indexes */
 	int status;	/* return status */
@@ -98,9 +98,9 @@ int lockrel(void)
  *		FALSE = file was locked and overridden
  *		ABORT = file was locked, abort command
  *
- * char *fname;		file name to lock
+ * const char *fname;		file name to lock
  */
-int lock(char *fname)
+int lock( const char *fname)
 {
 	char *locker;	/* lock error message */
 	int status;	/* return status */
@@ -133,9 +133,9 @@ int lock(char *fname)
  *	Unlock a file
  *	this only warns the user if it fails
  *
- * char *fname;		file to unlock
+ * const char *fname;		file to unlock
  */
-int unlock(char *fname)
+int unlock( const char *fname)
 {
 	char *locker;	/* undolock return string */
 

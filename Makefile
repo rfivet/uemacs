@@ -1,4 +1,4 @@
-# makefile for emacs, updated Fri, Sep 20, 2013  3:09:46 PM
+# Makefile for emacs, updated Fri, Sep 20, 2013  3:09:46 PM
 
 SRC=ansi.c basic.c bind.c bindable.c buffer.c crypt.c display.c ebind.c eval.c exec.c execute.c file.c fileio.c flook.c globals.c ibmpc.c input.c isearch.c line.c lock.c log.c main.c names.c pklock.c posix.c random.c region.c search.c spawn.c tcap.c termio.c utf8.c vmsvt.c vt52.c window.c word.c wrapper.c
 OBJ=ansi.o basic.o bind.o bindable.o buffer.o crypt.o display.o ebind.o eval.o exec.o execute.o file.o fileio.o flook.o globals.o ibmpc.o input.o isearch.o line.o lock.o log.o main.o names.o pklock.o posix.o random.o region.o search.o spawn.o tcap.o termio.o utf8.o vmsvt.o vt52.o window.o word.o wrapper.o
@@ -65,7 +65,7 @@ sparse:
 
 clean:
 	$(E) "  CLEAN"
-	$(Q) rm -f $(PROGRAM) core lintout makeout tags makefile.bak *.o
+	$(Q) rm -f $(PROGRAM) core lintout makeout tags Makefile.bak *.o
 
 install: $(PROGRAM)
 	strip $(PROGRAM)
@@ -89,14 +89,14 @@ tags:	${SRC}
 	ctags ${SRC}
 
 source:
-	@mv makefile makefile.bak
-	@echo "# makefile for emacs, updated `date`" >makefile
-	@echo '' >>makefile
-	@echo SRC=`ls *.c` >>makefile
-	@echo OBJ=`ls *.c | sed s/c$$/o/` >>makefile
-	@echo HDR=`ls *.h` >>makefile
-	@echo '' >>makefile
-	@sed -n -e '/^# DO NOT ADD OR MODIFY/,$$p' <makefile.bak >>makefile
+	@mv Makefile Makefile.bak
+	@echo "# Makefile for emacs, updated `date`" >Makefile
+	@echo '' >>Makefile
+	@echo SRC=`ls *.c` >>Makefile
+	@echo OBJ=`ls *.c | sed s/c$$/o/` >>Makefile
+	@echo HDR=`ls *.h` >>Makefile
+	@echo '' >>Makefile
+	@sed -n -e '/^# DO NOT ADD OR MODIFY/,$$p' <Makefile.bak >>Makefile
 
 depend: ${SRC}
 	@for i in ${SRC}; do\
@@ -104,13 +104,13 @@ depend: ${SRC}
 	@echo '/^# DO NOT DELETE THIS LINE/+2,$$d' >eddep
 	@echo '$$r ./makedep' >>eddep
 	@echo 'w' >>eddep
-	@cp makefile makefile.bak
-	@ed - makefile <eddep
+	@cp Makefile Makefile.bak
+	@ed - Makefile <eddep
 	@rm eddep makedep
-	@echo '' >>makefile
-	@echo '# DEPENDENCIES MUST END AT END OF FILE' >>makefile
-	@echo '# IF YOU PUT STUFF HERE IT WILL GO AWAY' >>makefile
-	@echo '# see make depend above' >>makefile
+	@echo '' >>Makefile
+	@echo '# DEPENDENCIES MUST END AT END OF FILE' >>Makefile
+	@echo '# IF YOU PUT STUFF HERE IT WILL GO AWAY' >>Makefile
+	@echo '# see make depend above' >>Makefile
 
 #	@for i in ${SRC}; do\
 #	    cc ${DEFINES} -M $$i | sed -e 's, \./, ,' | grep -v '/usr/include' | \
@@ -133,7 +133,7 @@ bind.o: bind.c bind.h edef.h buffer.h crypt.h line.h utf8.h estruct.h \
  retcode.h bindable.h display.h ebind.h exec.h file.h flook.h input.h \
  names.h window.h defines.h
 bindable.o: bindable.c bindable.h defines.h buffer.h crypt.h line.h \
- utf8.h display.h edef.h estruct.h retcode.h file.h input.h
+ utf8.h display.h edef.h estruct.h retcode.h file.h input.h lock.h
 buffer.o: buffer.c buffer.h crypt.h line.h utf8.h defines.h display.h \
  edef.h estruct.h retcode.h file.h input.h window.h
 crypt.o: crypt.c crypt.h
@@ -164,7 +164,7 @@ isearch.o: isearch.c isearch.h basic.h buffer.h crypt.h line.h utf8.h \
 line.o: line.c line.h utf8.h buffer.h crypt.h edef.h estruct.h retcode.h \
  log.h window.h defines.h
 lock.o: lock.c lock.h estruct.h line.h utf8.h retcode.h display.h edef.h \
- buffer.h crypt.h input.h
+ buffer.h crypt.h input.h pklock.h
 log.o: log.c log.h retcode.h
 main.o: main.c basic.h bind.h edef.h buffer.h crypt.h line.h utf8.h \
  estruct.h retcode.h bindable.h display.h eval.h execute.h file.h input.h \
@@ -174,7 +174,8 @@ names.o: names.c names.h basic.h bind.h edef.h buffer.h crypt.h line.h \
  isearch.h region.h random.h search.h spawn.h window.h defines.h word.h
 pklock.o: pklock.c pklock.h estruct.h line.h utf8.h retcode.h edef.h \
  buffer.h crypt.h
-posix.o: posix.c termio.h
+posix.o: posix.c termio.h estruct.h line.h utf8.h retcode.h edef.h \
+ buffer.h crypt.h
 random.o: random.c random.h basic.h buffer.h crypt.h line.h utf8.h \
  display.h estruct.h retcode.h edef.h execute.h input.h log.h search.h \
  window.h defines.h
@@ -187,8 +188,7 @@ spawn.o: spawn.c spawn.h defines.h buffer.h crypt.h line.h utf8.h \
  window.h
 tcap.o: tcap.c display.h estruct.h line.h utf8.h retcode.h edef.h \
  buffer.h crypt.h termio.h
-termio.o: termio.c termio.h estruct.h line.h utf8.h retcode.h edef.h \
- buffer.h crypt.h
+termio.o: termio.c termio.h
 utf8.o: utf8.c utf8.h
 vmsvt.o: vmsvt.c estruct.h line.h utf8.h retcode.h edef.h buffer.h \
  crypt.h
