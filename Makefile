@@ -164,7 +164,7 @@ isearch.o: isearch.c isearch.h basic.h buffer.h crypt.h line.h utf8.h \
 line.o: line.c line.h utf8.h buffer.h crypt.h edef.h estruct.h retcode.h \
  log.h window.h defines.h
 lock.o: lock.c lock.h estruct.h line.h utf8.h retcode.h display.h edef.h \
- buffer.h crypt.h input.h pklock.h
+ buffer.h crypt.h input.h
 log.o: log.c log.h retcode.h
 main.o: main.c basic.h bind.h edef.h buffer.h crypt.h line.h utf8.h \
  estruct.h retcode.h bindable.h display.h eval.h execute.h file.h input.h \
@@ -174,8 +174,7 @@ names.o: names.c names.h basic.h bind.h edef.h buffer.h crypt.h line.h \
  isearch.h region.h random.h search.h spawn.h window.h defines.h word.h
 pklock.o: pklock.c pklock.h estruct.h line.h utf8.h retcode.h edef.h \
  buffer.h crypt.h
-posix.o: posix.c termio.h estruct.h line.h utf8.h retcode.h edef.h \
- buffer.h crypt.h
+posix.o: posix.c termio.h
 random.o: random.c random.h basic.h buffer.h crypt.h line.h utf8.h \
  display.h estruct.h retcode.h edef.h execute.h input.h log.h search.h \
  window.h defines.h
@@ -188,7 +187,8 @@ spawn.o: spawn.c spawn.h defines.h buffer.h crypt.h line.h utf8.h \
  window.h
 tcap.o: tcap.c display.h estruct.h line.h utf8.h retcode.h edef.h \
  buffer.h crypt.h termio.h
-termio.o: termio.c termio.h
+termio.o: termio.c termio.h estruct.h line.h utf8.h retcode.h edef.h \
+ buffer.h crypt.h
 utf8.o: utf8.c utf8.h
 vmsvt.o: vmsvt.c estruct.h line.h utf8.h retcode.h edef.h buffer.h \
  crypt.h
