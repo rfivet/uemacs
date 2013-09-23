@@ -1,8 +1,12 @@
 #ifndef _EXEC_H_
 #define _EXEC_H_
 
-#include "buffer.h"
-#include "estruct.h"
+#define	PROC	1	/* named procedures  */
+
+#if PROC
+int storeproc( int f, int n) ;
+int execproc( int f, int n) ;
+#endif
 
 int namedcmd( int f, int n) ;
 int execcmd( int f, int n) ;
@@ -11,11 +15,7 @@ char *token( char *src, char *tok, int size) ;
 int macarg( char *tok) ;
 int nextarg( const char *prompt, char *buffer, int size, int terminator) ;
 int storemac( int f, int n) ;
-int storeproc( int f, int n) ;
-int execproc( int f, int n) ;
 int execbuf( int f, int n) ;
-int dobuf( struct buffer *bp) ;
-void freewhile( struct while_block *wp) ;
 int execfile( int f, int n) ;
 int dofile( char *fname) ;
 int cbuf( int f, int n, int bufnum) ;

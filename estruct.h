@@ -160,7 +160,9 @@
 #define MAGIC	1  /* include regular expression matching?         */
 #endif
 #define	AEDIT	1  /* advanced editing options: en/detabbing       */
+#if 0
 #define	PROC	1  /* named procedures                             */
+#endif
 #define	CLEAN	0  /* de-alloc memory on exit                      */
 
 #define ASCII	1  /* always using ASCII char sequences for now    */
@@ -249,27 +251,6 @@
 #define	SPEC	0x80000000	/* special key (function keys)  */
 
 #include "retcode.h"
-
-#if 0
-#define	STOP	0		/* keyboard macro not in use    */
-#define	PLAY	1		/*                playing       */
-#define	RECORD	2		/*                recording     */
-#endif
-
-/*	Directive definitions	*/
-
-#define	DIF		0
-#define DELSE		1
-#define DENDIF		2
-#define DGOTO		3
-#define DRETURN		4
-#define DENDM		5
-#define DWHILE		6
-#define	DENDWHILE	7
-#define	DBREAK		8
-#define DFORCE		9
-
-#define NUMDIRS		10
 
 /*
  * PTBEG, PTEND, FORWARD, and REVERSE are all toggle-able values for
@@ -464,21 +445,6 @@ struct variable_description {
 	int v_type;  /* Type of variable. */
 	int v_num;   /* Ordinal pointer to variable in list. */
 };
-
-/* The !WHILE directive in the execution language needs to
- * stack references to pending whiles. These are stored linked
- * to each currently open procedure via a linked list of
- * the following structure.
-*/
-struct while_block {
-	struct line *w_begin;        /* ptr to !while statement */
-	struct line *w_end;          /* ptr to the !endwhile statement */
-	int w_type;		     /* block type */
-	struct while_block *w_next;  /* next while */
-};
-
-#define	BTWHILE		1
-#define	BTBREAK		2
 
 /*
  * Incremental search defines.

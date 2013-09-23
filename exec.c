@@ -24,6 +24,36 @@
 #include "line.h"
 #include "window.h"
 
+/*	Directive definitions	*/
+
+#define	DIF		0
+#define DELSE		1
+#define DENDIF		2
+#define DGOTO		3
+#define DRETURN		4
+#define DENDM		5
+#define DWHILE		6
+#define	DENDWHILE	7
+#define	DBREAK		8
+#define DFORCE		9
+
+#define NUMDIRS		10
+
+/* The !WHILE directive in the execution language needs to
+ * stack references to pending whiles. These are stored linked
+ * to each currently open procedure via a linked list of
+ * the following structure.
+*/
+struct while_block {
+	struct line *w_begin;        /* ptr to !while statement */
+	struct line *w_end;          /* ptr to the !endwhile statement */
+	int w_type;		     /* block type */
+	struct while_block *w_next;  /* next while */
+};
+
+#define	BTWHILE		1
+#define	BTBREAK		2
+
 /* directive name table:
 	This holds the names of all the directives....	*/
 
@@ -33,6 +63,9 @@ static const char *dname[] = {
 	"while", "endwhile", "break",
 	"force"
 };
+
+static int dobuf( struct buffer *bp) ;
+static void freewhile( struct while_block *wp) ;
 
 /*
  * Execute a named command even if it is not bound.
@@ -436,7 +469,7 @@ int execbuf(int f, int n)
  *
  * struct buffer *bp;		buffer to execute
  */
-int dobuf(struct buffer *bp)
+static int dobuf(struct buffer *bp)
 {
 	int status;	/* status return */
 	struct line *lp;	/* pointer to line to execute */
@@ -853,7 +886,7 @@ int dobuf(struct buffer *bp)
  *
  * struct while_block *wp;		head of structure to free
  */
-void freewhile(struct while_block *wp)
+static void freewhile(struct while_block *wp)
 {
 	if (wp == NULL)
 		return;

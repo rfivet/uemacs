@@ -145,8 +145,9 @@ ebind.o: ebind.c ebind.h basic.h bind.h edef.h buffer.h crypt.h line.h \
 eval.o: eval.c eval.h estruct.h retcode.h basic.h bind.h edef.h buffer.h \
  crypt.h line.h utf8.h display.h exec.h flook.h input.h random.h search.h \
  termio.h version.h window.h defines.h
-exec.o: exec.c exec.h buffer.h crypt.h line.h utf8.h estruct.h retcode.h \
- bind.h edef.h display.h eval.h file.h flook.h input.h window.h defines.h
+exec.o: exec.c exec.h buffer.h crypt.h line.h utf8.h bind.h edef.h \
+ estruct.h retcode.h display.h eval.h file.h flook.h input.h window.h \
+ defines.h
 execute.o: execute.c edef.h buffer.h crypt.h line.h utf8.h estruct.h \
  retcode.h bind.h random.h display.h file.h window.h defines.h
 file.o: file.c file.h crypt.h retcode.h buffer.h line.h utf8.h defines.h \
