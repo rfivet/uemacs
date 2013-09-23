@@ -152,7 +152,9 @@
 
 #endif /* Autoconf. */
 
+#if 0
 #define	ISRCH	1  /* Incremental searches like ITS EMACS          */
+#endif
 #define	WORDPRO	1  /* Advanced word processing features            */
 #define	APROP	1  /* Add code for Apropos command                 */
 #if 0
@@ -436,38 +438,5 @@ struct kill {
 	struct kill *d_next;   /* Link to next chunk, NULL if last. */
 	char d_chunk[KBLOCK];  /* Deleted text. */
 };
-
-/* When emacs' command interpetor needs to get a variable's name,
- * rather than it's value, it is passed back as a variable description
- * structure. The v_num field is a index into the appropriate variable table.
- */
-struct variable_description {
-	int v_type;  /* Type of variable. */
-	int v_num;   /* Ordinal pointer to variable in list. */
-};
-
-/*
- * Incremental search defines.
- */
-#if	ISRCH
-
-#define	CMDBUFLEN	256	/* Length of our command buffer */
-
-#define	IS_ABORT	0x07	/* Abort the isearch */
-#define IS_BACKSP	0x08	/* Delete previous char */
-#define	IS_TAB		0x09	/* Tab character (allowed search char) */
-#define IS_NEWLINE	0x0D	/* New line from keyboard (Carriage return) */
-#define	IS_QUOTE	0x11	/* Quote next character */
-#define IS_REVERSE	0x12	/* Search backward */
-#define	IS_FORWARD	0x13	/* Search forward */
-#define	IS_VMSQUOTE	0x16	/* VMS quote character */
-#define	IS_VMSFORW	0x18	/* Search forward for VMS */
-#define	IS_QUIT		0x1B	/* Exit the search */
-#define	IS_RUBOUT	0x7F	/* Delete previous character */
-
-/* IS_QUIT is no longer used, the variable metac is used instead */
-
-#endif
-
 
 #endif

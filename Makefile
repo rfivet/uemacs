@@ -142,9 +142,9 @@ display.o: display.c display.h buffer.h crypt.h line.h utf8.h estruct.h \
 ebind.o: ebind.c ebind.h basic.h bind.h edef.h buffer.h crypt.h line.h \
  utf8.h estruct.h retcode.h bindable.h eval.h exec.h file.h isearch.h \
  random.h region.h search.h spawn.h window.h defines.h word.h
-eval.o: eval.c eval.h estruct.h retcode.h basic.h bind.h edef.h buffer.h \
- crypt.h line.h utf8.h display.h exec.h flook.h input.h random.h search.h \
- termio.h version.h window.h defines.h
+eval.o: eval.c eval.h basic.h bind.h edef.h buffer.h crypt.h line.h \
+ utf8.h estruct.h retcode.h display.h exec.h flook.h input.h random.h \
+ search.h termio.h version.h window.h defines.h
 exec.o: exec.c exec.h buffer.h crypt.h line.h utf8.h bind.h edef.h \
  estruct.h retcode.h display.h eval.h file.h flook.h input.h window.h \
  defines.h

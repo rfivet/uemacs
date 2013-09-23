@@ -1,3 +1,4 @@
+/* eval.c -- implements eval.h */
 #include "eval.h"
 
 /*	eval.c
@@ -229,6 +230,17 @@ static struct {
 /* User variables */
 static struct user_variable uv[MAXVARS + 1];
 
+/* When emacs' command interpetor needs to get a variable's name,
+ * rather than it's value, it is passed back as a variable description
+ * structure. The v_num field is a index into the appropriate variable table.
+ */
+struct variable_description {
+	int v_type;  /* Type of variable. */
+	int v_num;   /* Ordinal pointer to variable in list. */
+};
+
+static void findvar( char *var, struct variable_description *vd, int size) ;
+static int svar( struct variable_description *var, char *value) ;
 
 /*
  * putctext:
@@ -688,7 +700,7 @@ int setvar(int f, int n)
  * @vd: structure to hold type and pointer.
  * @size: size of variable array.
  */
-void findvar(char *var, struct variable_description *vd, int size)
+static void findvar(char *var, struct variable_description *vd, int size)
 {
 	int vnum;	/* subscript in variable arrays */
 	int vtype;	/* type to return */
@@ -746,7 +758,7 @@ fvar:
  * @var: variable to set.
  * @value: value to set to.
  */
-int svar(struct variable_description *var, char *value)
+static int svar(struct variable_description *var, char *value)
 {
 	int vnum;	/* ordinal number of var refrenced */
 	int vtype;	/* type of variable to set */
