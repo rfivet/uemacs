@@ -386,16 +386,6 @@ int cexit( int status) ;
 #endif
 
 /*
- * The starting position of a region, and the size of the region in
- * characters, is kept in a region structure.  Used by the region commands.
- */
-struct region {
-	struct line *r_linep;	/* Origin struct line address.         */
-	int r_offset;		/* Origin struct line offset.          */
-	long r_size;		/* Length in characters.        */
-};
-
-/*
  * The editor communicates with the display using a high level interface. A
  * "TERM" structure holds useful variables, and indirect pointers to routines
  * that do useful operations. The low level get and put routines are here too.
