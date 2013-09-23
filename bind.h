@@ -3,15 +3,20 @@
 
 #include "edef.h"
 
+#define	APROP	1  /* Add code for Apropos command                 */
+
+#if APROP
+int apro( int f, int n) ;
+int strinc( char *source, char *sub) ;
+#endif
+
 int help( int f, int n) ;
 int deskey( int f, int n) ;
 int bindtokey( int f, int n) ;
 int unbindkey( int f, int n) ;
 int unbindchar( int c) ;
 int desbind( int f, int n) ;
-int apro( int f, int n) ;
 int buildlist( int type, char *mstring) ;
-int strinc( char *source, char *sub) ;
 unsigned int getckey( int mflag) ;
 int startup( char *sfname) ;
 void cmdstr( int c, char *seq) ;

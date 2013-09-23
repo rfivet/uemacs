@@ -156,8 +156,8 @@
 #define	ISRCH	1  /* Incremental searches like ITS EMACS          */
 #endif
 #define	WORDPRO	1  /* Advanced word processing features            */
-#define	APROP	1  /* Add code for Apropos command                 */
 #if 0
+#define	APROP	1  /* Add code for Apropos command                 */
 #define	CRYPT	1  /* file encryption enabled?                     */
 #define MAGIC	1  /* include regular expression matching?         */
 #endif
@@ -270,20 +270,6 @@
 #define	TAB	0x09		/* a tab character              */
 
 #define	INTWIDTH	sizeof(int) * 3
-
-/*	Macro argument token types					*/
-
-#define	TKNUL	0		/* end-of-string                */
-#define	TKARG	1		/* interactive argument         */
-#define	TKBUF	2		/* buffer argument              */
-#define	TKVAR	3		/* user variables               */
-#define	TKENV	4		/* environment variables        */
-#define	TKFUN	5		/* function....                 */
-#define	TKDIR	6		/* directive                    */
-#define	TKLBL	7		/* line label                   */
-#define	TKLIT	8		/* numeric literal              */
-#define	TKSTR	9		/* quoted string literal        */
-#define	TKCMD	10		/* command name                 */
 
 /*	Internal defined functions					*/
 

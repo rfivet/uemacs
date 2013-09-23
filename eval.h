@@ -1,6 +1,22 @@
 #ifndef _EVAL_H_
 #define _EVAL_H_
 
+/*	Macro argument token types					*/
+
+#define	TKNUL	0		/* end-of-string                */
+#define	TKARG	1		/* interactive argument         */
+#define	TKBUF	2		/* buffer argument              */
+#define	TKVAR	3		/* user variables               */
+#define	TKENV	4		/* environment variables        */
+#define	TKFUN	5		/* function....                 */
+#define	TKDIR	6		/* directive                    */
+#define	TKLBL	7		/* line label                   */
+#define	TKLIT	8		/* numeric literal              */
+#define	TKSTR	9		/* quoted string literal        */
+#define	TKCMD	10		/* command name                 */
+
+int gettyp( char *token) ;
+
 void varinit( void) ;
 char *gtfun( char *fname) ;
 char *gtusr( char *vname) ;
@@ -8,7 +24,6 @@ char *gtenv( char *vname) ;
 char *getkill( void) ;
 int setvar( int f, int n) ;
 char *itoa( int i) ;
-int gettyp( char *token) ;
 char *getval( char *token) ;
 int stol( char *val) ;
 char *ltos( int val) ;
