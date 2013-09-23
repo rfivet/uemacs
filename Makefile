@@ -126,7 +126,7 @@ depend: ${SRC}
 
 # DO NOT DELETE THIS LINE -- make depend uses it
 
-ansi.o: ansi.c estruct.h line.h utf8.h retcode.h edef.h buffer.h crypt.h
+ansi.o: ansi.c estruct.h retcode.h edef.h buffer.h crypt.h line.h utf8.h
 basic.o: basic.c basic.h buffer.h crypt.h line.h utf8.h display.h \
  estruct.h retcode.h edef.h input.h random.h window.h defines.h word.h
 bind.o: bind.c bind.h edef.h buffer.h crypt.h line.h utf8.h estruct.h \
@@ -142,9 +142,9 @@ display.o: display.c display.h buffer.h crypt.h line.h utf8.h estruct.h \
 ebind.o: ebind.c ebind.h basic.h bind.h edef.h buffer.h crypt.h line.h \
  utf8.h estruct.h retcode.h bindable.h eval.h exec.h file.h isearch.h \
  random.h region.h search.h spawn.h window.h defines.h word.h
-eval.o: eval.c eval.h estruct.h line.h utf8.h retcode.h basic.h bind.h \
- edef.h buffer.h crypt.h display.h exec.h flook.h input.h random.h \
- search.h termio.h version.h window.h defines.h
+eval.o: eval.c eval.h estruct.h retcode.h basic.h bind.h edef.h buffer.h \
+ crypt.h line.h utf8.h display.h exec.h flook.h input.h random.h search.h \
+ termio.h version.h window.h defines.h
 exec.o: exec.c exec.h buffer.h crypt.h line.h utf8.h estruct.h retcode.h \
  bind.h edef.h display.h eval.h file.h flook.h input.h window.h defines.h
 execute.o: execute.c edef.h buffer.h crypt.h line.h utf8.h estruct.h \
@@ -155,16 +155,16 @@ fileio.o: fileio.c fileio.h crypt.h retcode.h defines.h
 flook.o: flook.c flook.h retcode.h defines.h fileio.h crypt.h
 globals.o: globals.c crypt.h defines.h edef.h buffer.h line.h utf8.h \
  estruct.h retcode.h
-ibmpc.o: ibmpc.c estruct.h line.h utf8.h retcode.h edef.h buffer.h \
- crypt.h
+ibmpc.o: ibmpc.c estruct.h retcode.h edef.h buffer.h crypt.h line.h \
+ utf8.h
 input.o: input.c input.h edef.h buffer.h crypt.h line.h utf8.h estruct.h \
  retcode.h bind.h bindable.h display.h exec.h names.h wrapper.h
 isearch.o: isearch.c isearch.h basic.h buffer.h crypt.h line.h utf8.h \
  display.h estruct.h retcode.h edef.h input.h search.h window.h defines.h
 line.o: line.c line.h utf8.h buffer.h crypt.h edef.h estruct.h retcode.h \
  log.h window.h defines.h
-lock.o: lock.c lock.h estruct.h line.h utf8.h retcode.h display.h edef.h \
- buffer.h crypt.h input.h
+lock.o: lock.c lock.h estruct.h retcode.h display.h edef.h buffer.h \
+ crypt.h line.h utf8.h input.h
 log.o: log.c log.h retcode.h
 main.o: main.c basic.h bind.h edef.h buffer.h crypt.h line.h utf8.h \
  estruct.h retcode.h bindable.h display.h eval.h execute.h file.h input.h \
@@ -172,27 +172,27 @@ main.o: main.c basic.h bind.h edef.h buffer.h crypt.h line.h utf8.h \
 names.o: names.c names.h basic.h bind.h edef.h buffer.h crypt.h line.h \
  utf8.h estruct.h retcode.h bindable.h display.h eval.h exec.h file.h \
  isearch.h region.h random.h search.h spawn.h window.h defines.h word.h
-pklock.o: pklock.c pklock.h estruct.h line.h utf8.h retcode.h edef.h \
- buffer.h crypt.h
+pklock.o: pklock.c pklock.h estruct.h retcode.h edef.h buffer.h crypt.h \
+ line.h utf8.h
 posix.o: posix.c termio.h
 random.o: random.c random.h basic.h buffer.h crypt.h line.h utf8.h \
  display.h estruct.h retcode.h edef.h execute.h input.h log.h search.h \
  window.h defines.h
-region.o: region.c region.h estruct.h line.h utf8.h retcode.h buffer.h \
- crypt.h edef.h log.h window.h defines.h
-search.o: search.c search.h estruct.h line.h utf8.h retcode.h basic.h \
- buffer.h crypt.h display.h edef.h input.h log.h window.h defines.h
+region.o: region.c region.h estruct.h retcode.h buffer.h crypt.h line.h \
+ utf8.h edef.h log.h window.h defines.h
+search.o: search.c search.h estruct.h retcode.h basic.h buffer.h crypt.h \
+ line.h utf8.h display.h edef.h input.h log.h window.h defines.h
 spawn.o: spawn.c spawn.h defines.h buffer.h crypt.h line.h utf8.h \
  display.h estruct.h retcode.h edef.h file.h flook.h input.h log.h \
  window.h
-tcap.o: tcap.c display.h estruct.h line.h utf8.h retcode.h edef.h \
- buffer.h crypt.h termio.h
-termio.o: termio.c termio.h estruct.h line.h utf8.h retcode.h edef.h \
- buffer.h crypt.h
+tcap.o: tcap.c display.h estruct.h retcode.h edef.h buffer.h crypt.h \
+ line.h utf8.h termio.h
+termio.o: termio.c termio.h estruct.h retcode.h edef.h buffer.h crypt.h \
+ line.h utf8.h
 utf8.o: utf8.c utf8.h
-vmsvt.o: vmsvt.c estruct.h line.h utf8.h retcode.h edef.h buffer.h \
- crypt.h
-vt52.o: vt52.c estruct.h line.h utf8.h retcode.h edef.h buffer.h crypt.h
+vmsvt.o: vmsvt.c estruct.h retcode.h edef.h buffer.h crypt.h line.h \
+ utf8.h
+vt52.o: vt52.c estruct.h retcode.h edef.h buffer.h crypt.h line.h utf8.h
 window.o: window.c window.h defines.h buffer.h crypt.h line.h utf8.h \
  basic.h display.h edef.h estruct.h retcode.h execute.h wrapper.h
 word.o: word.c word.h basic.h buffer.h crypt.h line.h utf8.h estruct.h \
