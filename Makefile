@@ -180,8 +180,8 @@ random.o: random.c random.h basic.h buffer.h crypt.h line.h utf8.h \
  window.h defines.h
 region.o: region.c region.h line.h utf8.h buffer.h crypt.h estruct.h \
  retcode.h edef.h log.h window.h defines.h
-search.o: search.c search.h estruct.h retcode.h basic.h buffer.h crypt.h \
- line.h utf8.h display.h edef.h input.h log.h window.h defines.h
+search.o: search.c search.h line.h utf8.h basic.h buffer.h crypt.h \
+ display.h edef.h estruct.h retcode.h input.h log.h window.h defines.h
 spawn.o: spawn.c spawn.h defines.h buffer.h crypt.h line.h utf8.h \
  display.h estruct.h retcode.h edef.h file.h flook.h input.h log.h \
  window.h

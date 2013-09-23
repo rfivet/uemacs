@@ -65,7 +65,6 @@
 #include "basic.h"
 #include "buffer.h"
 #include "display.h"
-#include "estruct.h"
 #include "edef.h"
 #include "input.h"
 #include "line.h"
@@ -73,6 +72,58 @@
 #include "window.h"
 
 #if defined(MAGIC)
+/*
+ * Defines for the metacharacters in the regular expression
+ * search routines.
+ */
+#define	MCNIL		0	/* Like the '\0' for strings. */
+#define	LITCHAR		1	/* Literal character, or string. */
+#define	ANY		2
+#define	CCL		3
+#define	NCCL		4
+#define	BOL		5
+#define	EOL		6
+#define	DITTO		7
+#define	CLOSURE		256	/* An or-able value. */
+#define	MASKCL		(CLOSURE - 1)
+
+#define	MC_ANY		'.'	/* 'Any' character (except newline). */
+#define	MC_CCL		'['	/* Character class. */
+#define	MC_NCCL		'^'	/* Negate character class. */
+#define	MC_RCCL		'-'	/* Range in character class. */
+#define	MC_ECCL		']'	/* End of character class. */
+#define	MC_BOL		'^'	/* Beginning of line. */
+#define	MC_EOL		'$'	/* End of line. */
+#define	MC_CLOSURE	'*'	/* Closure - does not extend past newline. */
+#define	MC_DITTO	'&'	/* Use matched string in replacement. */
+#define	MC_ESC		'\\'	/* Escape - suppress meta-meaning. */
+
+#define	BIT(n)		(1 << (n))	/* An integer with one bit set. */
+#define	CHCASE(c)	((c) ^ DIFCASE)	/* Toggle the case of a letter. */
+
+/* HICHAR - 1 is the largest character we will deal with.
+ * HIBYTE represents the number of bytes in the bitmap.
+ */
+#define	HICHAR		256
+#define	HIBYTE		HICHAR >> 3
+
+/* Typedefs that define the meta-character structure for MAGIC mode searching
+ * (struct magic), and the meta-character structure for MAGIC mode replacement
+ * (struct magic_replacement).
+ */
+struct magic {
+	short int mc_type;
+	union {
+		int lchar;
+		char *cclmap;
+	} u;
+};
+
+struct magic_replacement {
+	short int mc_type;
+	char *rstr;
+};
+
 /*
  * The variables magical and rmagical determine if there
  * were actual metacharacters in the search and replace strings -
@@ -84,6 +135,8 @@ static short int rmagical;
 static struct magic mcpat[NPAT]; /* The magic pattern. */
 static struct magic tapcm[NPAT]; /* The reversed magic patterni. */
 static struct magic_replacement rmcpat[NPAT]; /* The replacement magic array. */
+
+static int mcscanner( struct magic *mcpatrn, int direct, int beg_or_end) ;
 #endif
 
 static int amatch(struct magic *mcptr, int direct, struct line **pcwline, int *pcwoff);
@@ -309,7 +362,7 @@ int backhunt(int f, int n)
  * int direct;			which way to go.
  * int beg_or_end;		put point at beginning or end of pattern.
  */
-int mcscanner(struct magic *mcpatrn, int direct, int beg_or_end)
+static int mcscanner(struct magic *mcpatrn, int direct, int beg_or_end)
 {
 	struct line *curline;		/* current line during scan */
 	int curoff;		/* position within current line */
