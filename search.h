@@ -1,7 +1,7 @@
 #ifndef _SEARCH_H_
 #define _SEARCH_H_
 
-#define MAGIC 1
+#define MAGIC	1	/* include regular expression matching? */
 
 #include "line.h"
 
