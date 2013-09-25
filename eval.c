@@ -438,8 +438,6 @@ char *gtusr(char *vname)
 	return errorm;
 }
 
-extern char *getkill(void);
-
 /*
  * gtenv()
  *
@@ -567,30 +565,6 @@ char *gtenv(char *vname)
 #endif
 	}
 	exit(-12);		/* again, we should never get here */
-}
-
-/*
- * return some of the contents of the kill buffer
- */
-char *getkill(void)
-{
-	int size;	/* max number of chars to return */
-	static char value[NSTRING];	/* temp buffer for value */
-
-	if (kbufh == NULL)
-		/* no kill buffer....just a null string */
-		value[0] = 0;
-	else {
-		/* copy in the contents... */
-		if (kused < NSTRING)
-			size = kused;
-		else
-			size = NSTRING - 1;
-		strncpy(value, kbufh->d_chunk, size);
-	}
-
-	/* and return the constructed value */
-	return value;
 }
 
 /*

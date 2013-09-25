@@ -245,7 +245,6 @@
 #define HUGE    1000		/* Huge number                  */
 #define	NLOCKS	100		/* max # of file locks active   */
 #define	NCOLORS	8		/* number of supported colors   */
-#define	KBLOCK	250		/* sizeof kill buffer chunks    */
 
 #define CONTROL 0x10000000	/* Control flag, or'ed in       */
 #define META    0x20000000	/* Meta flag, or'ed in          */
@@ -413,16 +412,5 @@ struct terminal {
 #define	TTforg		(*term.t_setfor)
 #define	TTbacg		(*term.t_setback)
 #endif
-
-/* The editor holds deleted text chunks in the struct kill buffer. The
- * kill buffer is logically a stream of ascii characters, however
- * due to its unpredicatable size, it gets implemented as a linked
- * list of chunks. (The d_ prefix is for "deleted" text, as k_
- * was taken up by the keycode structure).
- */
-struct kill {
-	struct kill *d_next;   /* Link to next chunk, NULL if last. */
-	char d_chunk[KBLOCK];  /* Deleted text. */
-};
 
 #endif

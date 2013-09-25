@@ -21,7 +21,6 @@ void varinit( void) ;
 char *gtfun( char *fname) ;
 char *gtusr( char *vname) ;
 char *gtenv( char *vname) ;
-char *getkill( void) ;
 int setvar( int f, int n) ;
 char *itoa( int i) ;
 char *getval( char *token) ;

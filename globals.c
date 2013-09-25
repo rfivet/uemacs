@@ -76,9 +76,7 @@ char *cname[] = {		/* names of colors              */
 	    , "HIGH"
 #endif
 };
-struct kill *kbufp = NULL;		/* current kill buffer chunk pointer    */
-struct kill *kbufh = NULL;		/* kill buffer header pointer           */
-int kused = KBLOCK;		/* # of bytes used in kill buffer       */
+
 struct window *swindow = NULL;	/* saved window pointer                 */
 int *kbdptr;			/* current position in keyboard buf */
 int *kbdend = &kbdm[0];		/* ptr to end of the keyboard */

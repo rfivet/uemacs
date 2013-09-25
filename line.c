@@ -27,6 +27,48 @@
 
 static int ldelnewline( void) ;
 
+/* The editor holds deleted text chunks in the struct kill buffer. The
+ * kill buffer is logically a stream of ascii characters, however
+ * due to its unpredicatable size, it gets implemented as a linked
+ * list of chunks. (The d_ prefix is for "deleted" text, as k_
+ * was taken up by the keycode structure).
+ */
+
+#define	KBLOCK	250		/* sizeof kill buffer chunks    */
+
+struct kill {
+	struct kill *d_next;   /* Link to next chunk, NULL if last. */
+	char d_chunk[KBLOCK];  /* Deleted text. */
+};
+
+static struct kill *kbufp = NULL ;	/* current kill buffer chunk pointer */
+static struct kill *kbufh = NULL ;	/* kill buffer header pointer */
+static int kused = KBLOCK ;		/* # of bytes used in kill buffer */
+
+/*
+ * return some of the contents of the kill buffer
+ */
+char *getkill( void)
+{
+	int size;	/* max number of chars to return */
+	static char value[NSTRING];	/* temp buffer for value */
+
+	if (kbufh == NULL)
+		/* no kill buffer....just a null string */
+		value[0] = 0;
+	else {
+		/* copy in the contents... */
+		if (kused < NSTRING)
+			size = kused;
+		else
+			size = NSTRING - 1;
+		strncpy(value, kbufh->d_chunk, size);
+	}
+
+	/* and return the constructed value */
+	return value;
+}
+
 /*
  * Move the cursor backwards by "n" characters. If "n" is less than zero call
  * "forwchar" to actually do the move. Otherwise compute the new cursor

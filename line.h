@@ -25,6 +25,8 @@ struct line {
 #define lputc(lp, n, c) ((lp)->l_text[(n)]=(c))
 #define llength(lp)     ((lp)->l_used)
 
+char *getkill( void) ;
+
 int backchar( int f, int n) ;
 int forwchar( int f, int n) ;
 
