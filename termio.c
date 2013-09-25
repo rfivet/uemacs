@@ -11,13 +11,19 @@
 
 #ifndef POSIX
 
-#include        <stdio.h>
-#include	"estruct.h"
-#include        "edef.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "estruct.h"
+#include "utf8.h"
+
 
 /* rfi */
 #include <unistd.h>
 #include <sys/ioctl.h>
+
+int ttrow = HUGE ;		/* Row location of HW cursor */
+int ttcol = HUGE ;		/* Column location of HW cursor */
 
 #if     VMS
 #include        <stsdef.h>

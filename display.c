@@ -22,6 +22,7 @@
 #include "edef.h"
 #include "line.h"
 #include "termio.h"
+#include "terminal.h"
 #include "version.h"
 #include "wrapper.h"
 #include "utf8.h"

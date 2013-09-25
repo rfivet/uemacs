@@ -3,6 +3,7 @@
 #include "random.h"
 #include "display.h"
 #include "file.h"
+#include "terminal.h"
 #include "window.h"
 
 /*

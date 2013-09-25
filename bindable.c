@@ -8,6 +8,7 @@
 #include "file.h"
 #include "input.h"
 #include "lock.h"
+#include "terminal.h"
 
 #if VMS
 #include <ssdef.h>

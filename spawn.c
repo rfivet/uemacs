@@ -21,6 +21,7 @@
 #include "flook.h"
 #include "input.h"
 #include "log.h"
+#include "terminal.h"
 #include "window.h"
 
 #if     VMS

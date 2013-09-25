@@ -72,6 +72,7 @@
 #include "log.h"
 #include "random.h"
 #include "search.h"
+#include "terminal.h"
 #include "termio.h"
 #include "version.h"
 #include "window.h"

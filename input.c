@@ -18,6 +18,7 @@
 #include "display.h"
 #include "exec.h"
 #include "names.h"
+#include "terminal.h"
 #include "wrapper.h"
 
 #if	PKCODE

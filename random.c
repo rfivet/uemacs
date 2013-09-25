@@ -21,6 +21,7 @@
 #include "line.h"
 #include "log.h"
 #include "search.h"
+#include "terminal.h"
 #include "window.h"
 
 int tabsize; /* Tab size (0: use real tabs) */

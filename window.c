@@ -18,6 +18,7 @@
 #include "edef.h"
 #include "execute.h"
 #include "line.h"
+#include "terminal.h"
 #include "wrapper.h"
 
 /*

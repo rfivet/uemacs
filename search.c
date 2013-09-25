@@ -69,6 +69,7 @@
 #include "input.h"
 #include "line.h"
 #include "log.h"
+#include "terminal.h"
 #include "window.h"
 
 #if defined(MAGIC)

@@ -1,3 +1,6 @@
+/* tcap.c -- implements terminal.h */
+#include "terminal.h"
+
 /*	tcap.c
  *
  *	Unix V7 SysV and BS4 Termcap video driver
@@ -20,8 +23,6 @@
 #include <curses.h>
 #include <term.h>
 #endif
-
-#include <stdio.h>
 
 #include "display.h"
 #include "estruct.h"

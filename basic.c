@@ -22,6 +22,7 @@
 #include "input.h"
 #include "line.h"
 #include "random.h"
+#include "terminal.h"
 #include "utf8.h"
 #include "window.h"
 
