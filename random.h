@@ -1,6 +1,8 @@
 #ifndef _RANDOM_H_
 #define _RANDOM_H_
 
+#define AEDIT 1
+
 extern int tabsize ;  /* Tab size (0: use real tabs). */
 
 int setfillcol( int f, int n) ;
@@ -11,9 +13,11 @@ int setccol( int pos) ;
 int twiddle( int f, int n) ;
 int quote( int f, int n) ;
 int insert_tab( int f, int n) ;
+#if AEDIT
 int detab( int f, int n) ;
 int entab( int f, int n) ;
 int trim( int f, int n) ;
+#endif
 int openline( int f, int n) ;
 int insert_newline( int f, int n) ;
 int cinsert( void) ;

@@ -158,9 +158,7 @@
 #define	APROP	1  /* Add code for Apropos command                 */
 #define	CRYPT	1  /* file encryption enabled?                     */
 #define MAGIC	1  /* include regular expression matching?         */
-#endif
 #define	AEDIT	1  /* advanced editing options: en/detabbing       */
-#if 0
 #define	PROC	1  /* named procedures                             */
 #endif
 #define	CLEAN	0  /* de-alloc memory on exit                      */
