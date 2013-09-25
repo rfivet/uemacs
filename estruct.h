@@ -154,9 +154,7 @@
 
 #if 0
 #define	ISRCH	1  /* Incremental searches like ITS EMACS          */
-#endif
 #define	WORDPRO	1  /* Advanced word processing features            */
-#if 0
 #define	APROP	1  /* Add code for Apropos command                 */
 #define	CRYPT	1  /* file encryption enabled?                     */
 #define MAGIC	1  /* include regular expression matching?         */

@@ -128,7 +128,7 @@ depend: ${SRC}
 
 ansi.o: ansi.c estruct.h retcode.h edef.h buffer.h crypt.h line.h utf8.h
 basic.o: basic.c basic.h buffer.h crypt.h line.h utf8.h display.h \
- estruct.h retcode.h edef.h input.h random.h window.h defines.h word.h
+ estruct.h retcode.h edef.h input.h random.h window.h defines.h
 bind.o: bind.c bind.h edef.h buffer.h crypt.h line.h utf8.h estruct.h \
  retcode.h bindable.h display.h ebind.h exec.h file.h flook.h input.h \
  names.h window.h defines.h

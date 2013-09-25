@@ -22,6 +22,8 @@
 #include "region.h"
 #include "window.h"
 
+static int inword( void) ;
+
 /* Word wrap on n-spaces. Back-over whatever precedes the point on the current
  * line and stop on the first word-break or the beginning of the line. If we
  * reach the beginning of the line, jump back to the end of the word and start
@@ -378,7 +380,7 @@ int delbword(int f, int n)
  * Return TRUE if the character at dot is a character that is considered to be
  * part of a word. The word character list is hard coded. Should be setable.
  */
-int inword(void)
+static int inword(void)
 {
 	int c;
 
@@ -714,6 +716,106 @@ int wordcount(int f, int n)
 
 	logwrite("Words %D Chars %D Lines %d Avg chars/word %f",
 		nwords, nchars, nlines + 1, avgch);
+	return TRUE;
+}
+#endif
+
+#if WORDPRO
+/*
+ * go back to the beginning of the current paragraph
+ * here we look for a <NL><NL> or <NL><TAB> or <NL><SPACE>
+ * combination to delimit the beginning of a paragraph
+ *
+ * int f, n;		default Flag & Numeric argument
+ */
+int gotobop(int f, int n)
+{
+	int suc;  /* success of last backchar */
+
+	if (n < 0) /* the other way... */
+		return gotoeop(f, -n);
+
+	while (n-- > 0) {  /* for each one asked for */
+
+		/* first scan back until we are in a word */
+		suc = backchar(FALSE, 1);
+		while (!inword() && suc)
+			suc = backchar(FALSE, 1);
+		curwp->w_doto = 0;	/* and go to the B-O-Line */
+
+		/* and scan back until we hit a <NL><NL> or <NL><TAB>
+		   or a <NL><SPACE>                                     */
+		while (lback(curwp->w_dotp) != curbp->b_linep)
+			if (llength(curwp->w_dotp) != 0 &&
+#if	PKCODE
+			    ((justflag == TRUE) ||
+#endif
+			     (lgetc(curwp->w_dotp, curwp->w_doto) != TAB &&
+			      lgetc(curwp->w_dotp, curwp->w_doto) != ' '))
+#if	PKCODE
+			    )
+#endif
+				curwp->w_dotp = lback(curwp->w_dotp);
+			else
+				break;
+
+		/* and then forward until we are in a word */
+		suc = forwchar(FALSE, 1);
+		while (suc && !inword())
+			suc = forwchar(FALSE, 1);
+	}
+	curwp->w_flag |= WFMOVE;	/* force screen update */
+	return TRUE;
+}
+
+/*
+ * Go forword to the end of the current paragraph
+ * here we look for a <NL><NL> or <NL><TAB> or <NL><SPACE>
+ * combination to delimit the beginning of a paragraph
+ *
+ * int f, n;		default Flag & Numeric argument
+ */
+int gotoeop(int f, int n)
+{
+	int suc;  /* success of last backchar */
+
+	if (n < 0)  /* the other way... */
+		return gotobop(f, -n);
+
+	while (n-- > 0) {  /* for each one asked for */
+		/* first scan forward until we are in a word */
+		suc = forwchar(FALSE, 1);
+		while (!inword() && suc)
+			suc = forwchar(FALSE, 1);
+		curwp->w_doto = 0;	/* and go to the B-O-Line */
+		if (suc)	/* of next line if not at EOF */
+			curwp->w_dotp = lforw(curwp->w_dotp);
+
+		/* and scan forword until we hit a <NL><NL> or <NL><TAB>
+		   or a <NL><SPACE>                                     */
+		while (curwp->w_dotp != curbp->b_linep) {
+			if (llength(curwp->w_dotp) != 0 &&
+#if	PKCODE
+			    ((justflag == TRUE) ||
+#endif
+			     (lgetc(curwp->w_dotp, curwp->w_doto) != TAB &&
+			      lgetc(curwp->w_dotp, curwp->w_doto) != ' '))
+#if	PKCODE
+			    )
+#endif
+				curwp->w_dotp = lforw(curwp->w_dotp);
+			else
+				break;
+		}
+
+		/* and then backward until we are in a word */
+		suc = backchar(FALSE, 1);
+		while (suc && !inword()) {
+			suc = backchar(FALSE, 1);
+		}
+		curwp->w_doto = llength(curwp->w_dotp);	/* and to the EOL */
+	}
+	curwp->w_flag |= WFMOVE;  /* force screen update */
 	return TRUE;
 }
 #endif
