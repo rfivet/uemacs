@@ -249,18 +249,6 @@
 
 #include "retcode.h"
 
-/*
- * PTBEG, PTEND, FORWARD, and REVERSE are all toggle-able values for
- * the scan routines.
- */
-#define	PTBEG	0		/* Leave the point at the beginning on search   */
-#define	PTEND	1		/* Leave the point at the end on search         */
-#define	FORWARD	0		/* forward direction            */
-#define REVERSE	1		/* backwards direction          */
-
-#define CFCPCN  0x0001		/* Last command was C-P, C-N    */
-#define CFKILL  0x0002		/* Last command was a kill      */
-
 #define	BELL	0x07		/* a bell character             */
 #define	TAB	0x09		/* a tab character              */
 

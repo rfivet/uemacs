@@ -98,8 +98,14 @@ extern int scrollcount;		/* number of lines to scroll */
 
 extern int currow;		/* Cursor row                   */
 extern int curcol;		/* Cursor column                */
+
+
+#define CFCPCN  0x0001		/* Last command was C-P, C-N    */
+#define CFKILL  0x0002		/* Last command was a kill      */
+
 extern int thisflag;		/* Flags, this command          */
 extern int lastflag;		/* Flags, last command          */
+
 extern int curgoal;		/* Goal for C-P, C-N            */
 extern struct window *curwp;		/* Current window               */
 extern struct buffer *curbp;		/* Current buffer               */

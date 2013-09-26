@@ -5,11 +5,21 @@
 
 #include "line.h"
 
+/*
+ * PTBEG, PTEND, FORWARD, and REVERSE are all toggle-able values for
+ * the scan routines.
+ */
+#define	PTBEG	0		/* Leave the point at the beginning on search   */
+#define	PTEND	1		/* Leave the point at the end on search         */
+#define	FORWARD	0		/* forward direction            */
+#define REVERSE	1		/* backwards direction          */
+
+int scanner( const char *patrn, int direct, int beg_or_end) ;
+
 int forwsearch( int f, int n) ;
 int forwhunt( int f, int n) ;
 int backsearch( int f, int n) ;
 int backhunt( int f, int n) ;
-int scanner( const char *patrn, int direct, int beg_or_end) ;
 int eq( unsigned char bc, unsigned char pc) ;
 void savematch( void) ;
 void rvstrcpy( char *rvstr, char *str) ;
