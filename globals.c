@@ -9,8 +9,8 @@
 int fillcol = 72;		/* Current fill column          */
 int kbdm[NKBDM];		/* Macro                        */
 char *execstr = NULL;		/* pointer to string to execute */
-char golabel[NPAT] = "";	/* current line to go to        */
-int execlevel = 0;		/* execution IF level           */
+
+
 int eolexist = TRUE;		/* does clear to EOL exist      */
 int revexist = FALSE;		/* does reverse video exist?    */
 int flickcode = FALSE;		/* do flicker supression?       */
@@ -54,7 +54,7 @@ int clexec = FALSE;		/* command line execution flag  */
 int mstore = FALSE;		/* storing text to macro flag   */
 int discmd = TRUE;		/* display command flag         */
 int disinp = TRUE;		/* display input characters     */
-struct buffer *bstore = NULL;	/* buffer to store macro text to */
+
 int vtrow = 0;			/* Row location of SW cursor */
 int vtcol = 0;			/* Column location of SW cursor */
 int lbound = 0;			/* leftmost column of current line

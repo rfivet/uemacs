@@ -64,6 +64,10 @@ static const char *dname[] = {
 	"force"
 };
 
+static char golabel[ NPAT] = "" ;	/* current line to go to        */
+static int execlevel = 0 ;			/* execution IF level           */
+static struct buffer *bstore = NULL ;	/* buffer to store macro text to */
+
 static int dobuf( struct buffer *bp) ;
 static void freewhile( struct while_block *wp) ;
 

@@ -25,9 +25,10 @@ extern int fillcol;		/* Fill column                  */
 extern int kbdm[];		/* Holds kayboard macro data    */
 extern char pat[];		/* Search pattern               */
 extern char rpat[];		/* Replacement pattern          */
-extern char *execstr;		/* pointer to string to execute */
-extern char golabel[];		/* current line to go to        */
-extern int execlevel;		/* execution IF level           */
+extern char tap[];	    /* Reversed pattern array.      */
+extern char *execstr;	/* pointer to string to execute */
+
+
 extern int eolexist;		/* does clear to EOL exist?     */
 extern int revexist;		/* does reverse video exist?    */
 extern int flickcode;		/* do flicker supression?       */
@@ -46,7 +47,7 @@ extern int clexec;		/* command line execution flag  */
 extern int mstore;		/* storing text to macro flag   */
 extern int discmd;		/* display command flag         */
 extern int disinp;		/* display input characters     */
-extern struct buffer *bstore;	/* buffer to store macro text to */
+
 extern int vtrow;		/* Row location of SW cursor */
 extern int vtcol;		/* Column location of SW cursor */
 extern int lbound;		/* leftmost column of current line
@@ -114,9 +115,6 @@ extern struct buffer *bheadp;		/* Head of list of buffers      */
 extern struct buffer *blistp;		/* Buffer for C-X C-B           */
 
 extern char sres[NBUFN];	        /* Current screen resolution.   */
-extern char pat[];		        /* Search pattern.              */
-extern char tap[];		        /* Reversed pattern array.      */
-extern char rpat[];		        /* Replacement pattern.         */
 
 extern unsigned int matchlen;
 extern unsigned int mlenold;
