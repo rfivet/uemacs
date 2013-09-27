@@ -5,6 +5,9 @@
 
 #include "line.h"
 
+extern unsigned int matchlen ;
+extern char *patmatch ;
+
 /*
  * PTBEG, PTEND, FORWARD, and REVERSE are all toggle-able values for
  * the scan routines.

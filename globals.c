@@ -113,18 +113,6 @@ char pat[NPAT];			/* Search pattern               */
 char tap[NPAT];			/* Reversed pattern array.      */
 char rpat[NPAT];		/* replacement pattern          */
 
-/* The variable matchlen holds the length of the matched
- * string - used by the replace functions.
- * The variable patmatch holds the string that satisfies
- * the search command.
- * The variables matchline and matchoff hold the line and
- * offset position of the *start* of match.
- */
-unsigned int matchlen = 0;
-unsigned int mlenold = 0;
-char *patmatch = NULL;
-struct line *matchline = NULL;
-int matchoff = 0;
 
 #if	DEBUGM
 /*	vars needed for macro debugging output	*/

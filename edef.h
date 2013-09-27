@@ -112,11 +112,6 @@ extern struct buffer *blistp;		/* Buffer for C-X C-B           */
 
 extern char sres[NBUFN];	        /* Current screen resolution.   */
 
-extern unsigned int matchlen;
-extern unsigned int mlenold;
-extern char *patmatch;
-extern struct line *matchline;
-extern int matchoff;
 
 #if	DEBUGM
 /* Vars needed for macro debugging output. */

@@ -72,6 +72,20 @@
 #include "terminal.h"
 #include "window.h"
 
+/* The variable matchlen holds the length of the matched
+ * string - used by the replace functions.
+ * The variable patmatch holds the string that satisfies
+ * the search command.
+ * The variables matchline and matchoff hold the line and
+ * offset position of the *start* of match.
+ */
+unsigned int matchlen = 0 ;
+static unsigned int mlenold = 0 ;
+char *patmatch = NULL ;
+static struct line *matchline = NULL;
+static int matchoff = 0;
+
+
 #if defined(MAGIC)
 /*
  * Defines for the metacharacters in the regular expression
