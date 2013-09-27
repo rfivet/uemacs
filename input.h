@@ -3,6 +3,10 @@
 
 #include "edef.h"
 
+extern int kbdm[] ;		/* Holds kayboard macro data    */
+extern int *kbdptr ;		/* current position in keyboard buf */
+extern int *kbdend ;		/* ptr to end of the keyboard */
+
 int mlyesno( const char *prompt) ;
 int mlreply( const char *prompt, char *buf, int nbuf) ;
 int mlreplyt( const char *prompt, char *buf, int nbuf, int eolchar) ;

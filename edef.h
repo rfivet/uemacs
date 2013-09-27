@@ -22,7 +22,6 @@ typedef int (*fn_t)(int, int);
 /* Initialized global external declarations. */
 
 extern int fillcol;		/* Fill column                  */
-extern int kbdm[];		/* Holds kayboard macro data    */
 extern char pat[];		/* Search pattern               */
 extern char rpat[];		/* Replacement pattern          */
 extern char tap[];	    /* Reversed pattern array.      */
@@ -62,9 +61,6 @@ extern int quotec;		/* quote char during mlreply() */
 extern int tabmask;
 extern char *cname[];		/* names of colors              */
 
-
-extern int *kbdptr;		/* current position in keyboard buf */
-extern int *kbdend;		/* ptr to end of the keyboard */
 
 #if 0
 #define	STOP	0		/* keyboard macro not in use    */

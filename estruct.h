@@ -236,7 +236,6 @@
 #define NBUFN   16		/* # of bytes, buffer name      */
 #define NLINE   256		/* # of bytes, input line       */
 #define	NSTRING	128		/* # of bytes, string buffers   */
-#define NKBDM   256		/* # of strokes, keyboard macro */
 #define NPAT    128		/* # of bytes, pattern          */
 #define HUGE    1000		/* Huge number                  */
 #define	NLOCKS	100		/* max # of file locks active   */

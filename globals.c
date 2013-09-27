@@ -7,7 +7,6 @@
 /* initialized global definitions */
 
 int fillcol = 72;		/* Current fill column          */
-int kbdm[NKBDM];		/* Macro                        */
 char *execstr = NULL;		/* pointer to string to execute */
 
 
@@ -76,8 +75,6 @@ char *cname[] = {		/* names of colors              */
 };
 
 
-int *kbdptr;			/* current position in keyboard buf */
-int *kbdend = &kbdm[0];		/* ptr to end of the keyboard */
 kbdstate kbdmode = STOP;		/* current keyboard macro mode  */
 int kbdrep = 0;			/* number of repetitions        */
 int restflag = FALSE;		/* restricted use?              */

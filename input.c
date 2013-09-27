@@ -33,6 +33,11 @@
 #define COMPLC	0
 #endif
 
+#define NKBDM   256		/* # of strokes, keyboard macro     */
+int kbdm[ NKBDM] ;		/* Macro                            */
+int *kbdptr ;			/* current position in keyboard buf */
+int *kbdend = &kbdm[0] ;	/* ptr to end of the keyboard       */
+
 /*
  * Ask a yes or no question in the message line. Return either TRUE, FALSE, or
  * ABORT. The ABORT status is returned if the user bumps out of the question
