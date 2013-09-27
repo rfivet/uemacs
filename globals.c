@@ -75,7 +75,7 @@ char *cname[] = {		/* names of colors              */
 #endif
 };
 
-struct window *swindow = NULL;	/* saved window pointer                 */
+
 int *kbdptr;			/* current position in keyboard buf */
 int *kbdend = &kbdm[0];		/* ptr to end of the keyboard */
 kbdstate kbdmode = STOP;		/* current keyboard macro mode  */

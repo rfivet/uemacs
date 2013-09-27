@@ -21,6 +21,10 @@
 #include "terminal.h"
 #include "wrapper.h"
 
+
+static struct window *swindow = NULL ;	/* saved window pointer */
+
+
 /*
  * Reposition dot in the current window to line "n". If the argument is
  * positive, it is that line. If it is negative it is that line from the
