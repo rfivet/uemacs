@@ -48,23 +48,15 @@ int gbcolor = 0;		/* global backgrnd color (black) */
 int gasave = 256;		/* global ASAVE size            */
 int gacount = 256;		/* count until next ASAVE       */
 int sgarbf = TRUE;		/* TRUE if screen is garbage    */
-int mpresf = FALSE;		/* TRUE if message in last line */
 int clexec = FALSE;		/* command line execution flag  */
-int mstore = FALSE;		/* storing text to macro flag   */
 int discmd = TRUE;		/* display command flag         */
 int disinp = TRUE;		/* display input characters     */
 
-int vtrow = 0;			/* Row location of SW cursor */
-int vtcol = 0;			/* Column location of SW cursor */
-int lbound = 0;			/* leftmost column of current line
-				   being displayed */
-int taboff = 0;			/* tab offset for display       */
 int metac = CONTROL | '[';	/* current meta character */
 int ctlxc = CONTROL | 'X';	/* current control X prefix char */
 int reptc = CONTROL | 'U';	/* current universal repeat char */
 int abortc = CONTROL | 'G';	/* current abort command char   */
 
-int quotec = 0x11;		/* quote char during mlreply() */
 int tabmask = 0x07;		/* tabulator mask */
 
 
@@ -82,8 +74,6 @@ int scrollcount = 1;		/* number of lines to scroll */
 
 /* uninitialized global definitions */
 
-int currow;			/* Cursor row                   */
-int curcol;			/* Cursor column                */
 int thisflag;			/* Flags, this command          */
 int lastflag;			/* Flags, last command          */
 int curgoal;			/* Goal for C-P, C-N            */

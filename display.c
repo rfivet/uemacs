@@ -60,6 +60,15 @@ static int displaying = TRUE;
 int chg_width, chg_height;
 #endif
 
+static int currow ;		/* Cursor row                   */
+static int curcol ;		/* Cursor column                */
+static int vtrow = 0 ;	/* Row location of SW cursor */
+static int vtcol = 0 ;	/* Column location of SW cursor */
+static int lbound = 0 ;	/* leftmost column of current line being displayed */
+static int taboff = 0 ;	/* tab offset for display       */
+
+int mpresf = FALSE ;	/* TRUE if message in last line */
+
 static int reframe(struct window *wp);
 static void updone(struct window *wp);
 static void updall(struct window *wp);

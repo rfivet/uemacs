@@ -1,6 +1,8 @@
 #ifndef _DISPLAY_H_
 #define _DISPLAY_H_
 
+extern int mpresf ;		/* Stuff in message line */
+
 void vtinit( void) ;
 void vtfree( void) ;
 void vttidy( void) ;

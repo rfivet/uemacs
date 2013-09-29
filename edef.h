@@ -38,23 +38,15 @@ extern int gbcolor;		/* global backgrnd color (black) */
 extern int gasave;		/* global ASAVE size            */
 extern int gacount;		/* count until next ASAVE       */
 extern int sgarbf;		/* State of screen unknown      */
-extern int mpresf;		/* Stuff in message line        */
 extern int clexec;		/* command line execution flag  */
-extern int mstore;		/* storing text to macro flag   */
 extern int discmd;		/* display command flag         */
 extern int disinp;		/* display input characters     */
 
-extern int vtrow;		/* Row location of SW cursor */
-extern int vtcol;		/* Column location of SW cursor */
-extern int lbound;		/* leftmost column of current line
-				   being displayed */
-extern int taboff;		/* tab offset for display       */
 extern int metac;		/* current meta character */
 extern int ctlxc;		/* current control X prefix char */
 extern int reptc;		/* current universal repeat char */
 extern int abortc;		/* current abort command char   */
 
-extern int quotec;		/* quote char during mlreply() */
 extern int tabmask;
 
 
@@ -80,10 +72,6 @@ extern int overlap;		/* line overlap in forw/back page */
 extern int scrollcount;		/* number of lines to scroll */
 
 /* Uninitialized global external declarations. */
-
-extern int currow;		/* Cursor row                   */
-extern int curcol;		/* Cursor column                */
-
 
 #define CFCPCN  0x0001		/* Last command was C-P, C-N    */
 #define CFKILL  0x0002		/* Last command was a kill      */
