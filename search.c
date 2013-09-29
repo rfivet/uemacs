@@ -85,6 +85,10 @@ char *patmatch = NULL ;
 static struct line *matchline = NULL;
 static int matchoff = 0;
 
+char pat[ NPAT] ;	/* Search pattern               */
+char tap[ NPAT] ;	/* Reversed pattern array.      */
+char rpat[ NPAT] ;	/* replacement pattern          */
+
 
 #if defined(MAGIC)
 /*

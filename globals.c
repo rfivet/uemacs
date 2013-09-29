@@ -82,9 +82,6 @@ int cmdstatus = TRUE;		/* last command status          */
 char palstr[49] = "";		/* palette string               */
 int saveflag = 0;		/* Flags, saved with the $target var */
 int rval = 0;			/* return value of a subprocess */
-#if	PKCODE
-int justflag = FALSE;		/* justify, don't fill */
-#endif
 int overlap = 0;		/* line overlap in forw/back page */
 int scrollcount = 1;		/* number of lines to scroll */
 
@@ -102,9 +99,6 @@ struct buffer *bheadp;			/* Head of list of buffers      */
 struct buffer *blistp;			/* Buffer for C-X C-B           */
 
 char sres[NBUFN];		/* current screen resolution    */
-char pat[NPAT];			/* Search pattern               */
-char tap[NPAT];			/* Reversed pattern array.      */
-char rpat[NPAT];		/* replacement pattern          */
 
 
 #if	DEBUGM

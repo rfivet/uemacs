@@ -22,9 +22,6 @@ typedef int (*fn_t)(int, int);
 /* Initialized global external declarations. */
 
 extern int fillcol;		/* Fill column                  */
-extern char pat[];		/* Search pattern               */
-extern char rpat[];		/* Replacement pattern          */
-extern char tap[];	    /* Reversed pattern array.      */
 extern char *execstr;	/* pointer to string to execute */
 
 
@@ -84,9 +81,6 @@ extern int cmdstatus;		/* last command status          */
 extern char palstr[];		/* palette string               */
 extern int saveflag;		/* Flags, saved with the $target var */
 extern int rval;		/* return value of a subprocess */
-#if	PKCODE
-extern int justflag;		/* justify, don't fill */
-#endif
 extern int overlap;		/* line overlap in forw/back page */
 extern int scrollcount;		/* number of lines to scroll */
 

@@ -22,6 +22,10 @@
 #include "region.h"
 #include "window.h"
 
+#if	PKCODE
+static int justflag = FALSE ;		/* justify, don't fill */
+#endif
+
 static int inword( void) ;
 
 /* Word wrap on n-spaces. Back-over whatever precedes the point on the current

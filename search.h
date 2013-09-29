@@ -8,6 +8,10 @@
 extern unsigned int matchlen ;
 extern char *patmatch ;
 
+extern char pat[] ;		/* Search pattern               */
+extern char tap[] ;		/* Reversed pattern array.      */
+extern char rpat[] ;		/* replacement pattern          */
+
 /*
  * PTBEG, PTEND, FORWARD, and REVERSE are all toggle-able values for
  * the scan routines.
