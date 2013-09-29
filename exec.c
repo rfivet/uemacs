@@ -294,7 +294,8 @@ int nextarg(const char *prompt, char *buffer, int size, int terminator)
 	execstr = token(execstr, buffer, size);
 
 	/* evaluate it */
-	strcpy(buffer, getval(buffer));
+	strncpy( buffer, getval( buffer), size - 1) ;
+	buffer[ size - 1] = '\0' ;
 	return TRUE;
 }
 
