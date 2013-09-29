@@ -66,13 +66,6 @@ int abortc = CONTROL | 'G';	/* current abort command char   */
 
 int quotec = 0x11;		/* quote char during mlreply() */
 int tabmask = 0x07;		/* tabulator mask */
-char *cname[] = {		/* names of colors              */
-	"BLACK", "RED", "GREEN", "YELLOW", "BLUE",
-	"MAGENTA", "CYAN", "WHITE"
-#if	PKCODE & IBMPC
-	    , "HIGH"
-#endif
-};
 
 
 kbdstate kbdmode = STOP;		/* current keyboard macro mode  */

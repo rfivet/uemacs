@@ -24,6 +24,14 @@
 #include "terminal.h"
 #include "window.h"
 
+static const char *cname[] = {		/* names of colors              */
+	"BLACK", "RED", "GREEN", "YELLOW", "BLUE",
+	"MAGENTA", "CYAN", "WHITE"
+#if	PKCODE & IBMPC
+	    , "HIGH"
+#endif
+} ;
+
 int tabsize; /* Tab size (0: use real tabs) */
 
 /*

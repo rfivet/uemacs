@@ -59,7 +59,6 @@ extern int abortc;		/* current abort command char   */
 
 extern int quotec;		/* quote char during mlreply() */
 extern int tabmask;
-extern char *cname[];		/* names of colors              */
 
 
 #if 0
