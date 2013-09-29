@@ -71,14 +71,9 @@ extern kbdstate kbdmode ;		/* current keyboard macro mode  */
 extern int kbdrep;		/* number of repetitions        */
 extern int restflag;		/* restricted use?              */
 extern int lastkey;		/* last keystoke                */
-extern int seed;		/* random number seed           */
 extern long envram;		/* # of bytes current in use by malloc */
 extern int macbug;		/* macro debuging flag          */
-extern char errorm[];		/* error literal                */
-extern char truem[];		/* true literal                 */
-extern char falsem[];		/* false litereal               */
 extern int cmdstatus;		/* last command status          */
-extern char palstr[];		/* palette string               */
 extern int saveflag;		/* Flags, saved with the $target var */
 extern int rval;		/* return value of a subprocess */
 extern int overlap;		/* line overlap in forw/back page */

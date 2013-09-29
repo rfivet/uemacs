@@ -41,6 +41,12 @@ struct user_variable {
 	char *u_value;		 /* value (string) */
 };
 
+static char errorm[] = "ERROR" ;	/* error literal                */
+
+static int seed = 0 ;			/* random number seed           */
+
+static char *ltos( int val) ;
+
 /* List of recognized environment variables. */
 
 static const char *envars[] = {
@@ -494,8 +500,12 @@ char *gtenv(char *vname)
 		return ltos(macbug);
 	case EVSTATUS:
 		return ltos(cmdstatus);
-	case EVPALETTE:
+	case EVPALETTE: {
+		static char palstr[ 49] = "" ; /* palette string */
+		
 		return palstr;
+	    }
+
 	case EVASAVE:
 		return itoa(gasave);
 	case EVACOUNT:
@@ -1089,8 +1099,11 @@ int stol(char *val)
  *
  * int val;		value to translate
  */
-char *ltos(int val)
+static char *ltos( int val)
 {
+	static char truem[] = "TRUE" ;		/* true literal  */
+	static char falsem[] = "FALSE" ;	/* false literal */
+
 	if (val)
 		return truem;
 	else
