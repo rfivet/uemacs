@@ -24,13 +24,17 @@
 #include "terminal.h"
 #include "window.h"
 
-static const char *cname[] = {		/* names of colors              */
+
+static const char *cname[] = {						/* names of colors */
 	"BLACK", "RED", "GREEN", "YELLOW", "BLUE",
 	"MAGENTA", "CYAN", "WHITE"
 #if	PKCODE & IBMPC
 	    , "HIGH"
 #endif
 } ;
+
+#define NCOLORS (sizeof cname / sizeof( *cname))	/* # of supported colors */
+
 
 int tabsize; /* Tab size (0: use real tabs) */
 
@@ -917,12 +921,8 @@ int delgmode(int f, int n)
  */
 int adjustmode(int kind, int global)
 {
-	char *scan;	/* scanning pointer to convert prompt */
 	int i;		/* loop index */
 	int status;	/* error return on input */
-#if	COLOR
-	int uflag;	/* was modename uppercase?      */
-#endif
 	char prompt[50];	/* string to prompt user with */
 	char cbuf[NPAT];	/* buffer to recieve mode name into */
 
@@ -943,28 +943,12 @@ int adjustmode(int kind, int global)
 	if (status != TRUE)
 		return status;
 
-	/* make it uppercase */
-
-	scan = cbuf;
-#if	COLOR
-	uflag = (*scan >= 'A' && *scan <= 'Z');
-#endif
-	while (*scan != 0) {
-		if (*scan >= 'a' && *scan <= 'z')
-			*scan = *scan - 32;
-		scan++;
-	}
-
 	/* test it first against the colors we know */
-#if	PKCODE & IBMPC
-	for (i = 0; i <= NCOLORS; i++) {
-#else
 	for (i = 0; i < NCOLORS; i++) {
-#endif
-		if (strcmp(cbuf, cname[i]) == 0) {
+		if( stricmp( cbuf, cname[ i]) == 0) {
 			/* finding the match, we set the color */
 #if	COLOR
-			if (uflag) {
+			if( *cbuf >= 'A' && *cbuf <= 'Z') {
 				if (global)
 					gfcolor = i;
 #if	PKCODE == 0
@@ -990,7 +974,7 @@ int adjustmode(int kind, int global)
 	/* test it against the modes we know */
 
 	for (i = 0; i < NUMMODES; i++) {
-		if (strcmp(cbuf, modename[i]) == 0) {
+		if( stricmp( cbuf, modename[ i]) == 0) {
 			/* finding a match, we process it */
 			if (kind == TRUE)
 				if (global)

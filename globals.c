@@ -13,30 +13,6 @@ char *execstr = NULL;		/* pointer to string to execute */
 int eolexist = TRUE;		/* does clear to EOL exist      */
 int revexist = FALSE;		/* does reverse video exist?    */
 int flickcode = FALSE;		/* do flicker supression?       */
-const char *modename[] = {	/* name of modes                */
-	"WRAP", "CMODE", "SPELL", "EXACT", "VIEW", "OVER",
-	"MAGIC",
-#if CRYPT
-	"CRYPT",
-#else
-	"",
-#endif
-	"ASAVE", "UTF-8", "DOS"
-};
-
-const char *mode2name[] = {	/* name of modes                */
-	"Wrap", "Cmode", "Spell", "Exact", "View", "Over",
-	"Magic",
-#if CRYPT
-	"Crypt",
-#else
-	"",
-#endif
-	"Asave", "utf-8", "Dos"
-};
-
-const char modecode[] = "WCSEVOMYAUD"; /* letters to represent modes   */
-
 int gmode = 0;			/* global editor mode           */
 int gflags = GFREAD;		/* global control flag          */
 #if	PKCODE & IBMPC

@@ -28,9 +28,6 @@ extern char *execstr;	/* pointer to string to execute */
 extern int eolexist;		/* does clear to EOL exist?     */
 extern int revexist;		/* does reverse video exist?    */
 extern int flickcode;		/* do flicker supression?       */
-extern const char *modename[];	/* text names of modes          */
-extern const char *mode2name[];	/* text names of modes          */
-extern const char modecode[];	/* letters to represent modes   */
 extern int gmode;		/* global editor mode           */
 extern int gflags;		/* global control flag          */
 extern int gfcolor;		/* global forgrnd color (white) */

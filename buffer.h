@@ -59,6 +59,9 @@ struct buffer {
 #define MDDOS	0x0400		/* CRLF eol mode                */
 
 
+extern const char *modename[] ;	/* text names of modes          */
+
+
 int usebuffer( int f, int n) ;
 int nextbuffer( int f, int n) ;
 int swbuffer( struct buffer *bp) ;

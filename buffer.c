@@ -23,6 +23,20 @@
 #include "window.h"
 
 
+const char *modename[] = {	/* name of modes                */
+	"Wrap", "Cmode", "Spell", "Exact", "View", "Over",
+	"Magic",
+#if CRYPT
+	"Crypt",
+#else
+	"",
+#endif
+	"Asave", "Utf-8", "Dos"
+} ;
+
+static const char modecode[] = "WCSEVOMYAUD" ; /* letters to represent modes */
+
+
 static int makelist( int iflag) ;
 static int addline( char *text) ;
 static void ltoa( char *buf, int width, long num) ;
@@ -296,9 +310,8 @@ static int makelist( int iflag)
 	if ((s = bclear(blistp)) != TRUE)	/* Blow old text away   */
 		return s;
 	strcpy(blistp->b_fname, "");
-	if (addline("ACT MODES        Size Buffer        File") == FALSE
-	    || addline("--- -----        ---- ------        ----") ==
-	    FALSE)
+	if(		addline("ACT MODES          Size Buffer      File") == FALSE
+	    ||	addline("--- -----          ---- ------      ----") == FALSE)
 		return FALSE;
 	bp = bheadp;		/* For all buffers      */
 

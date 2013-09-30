@@ -1165,7 +1165,7 @@ static void modeline(struct window *wp)
 			if (firstm != TRUE)
 				strcat(tline, " ");
 			firstm = FALSE;
-			strcat(tline, mode2name[i]);
+			strcat( tline, modename[ i]) ;
 		}
 	strcat(tline, ") ");
 
