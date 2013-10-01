@@ -15,6 +15,7 @@
 #include <string.h>
 
 #include "defines.h"
+#include "retcode.h"
 
 #if CRYPT
 boolean	is_crypted ;		/* currently encrypting?   */
