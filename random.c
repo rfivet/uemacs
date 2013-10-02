@@ -947,7 +947,7 @@ int adjustmode(int kind, int global)
 
 	/* test it first against the colors we know */
 	for (i = 0; i < NCOLORS; i++) {
-		if( stricmp( cbuf, cname[ i]) == 0) {
+		if( strcasecmp( cbuf, cname[ i]) == 0) {
 			/* finding the match, we set the color */
 #if	COLOR
 			if( *cbuf >= 'A' && *cbuf <= 'Z') {
@@ -976,7 +976,7 @@ int adjustmode(int kind, int global)
 	/* test it against the modes we know */
 
 	for (i = 0; i < NUMMODES; i++) {
-		if( stricmp( cbuf, modename[ i]) == 0) {
+		if( strcasecmp( cbuf, modename[ i]) == 0) {
 			/* finding a match, we process it */
 			if (kind == TRUE)
 				if (global)
