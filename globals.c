@@ -14,7 +14,6 @@ int eolexist = TRUE;		/* does clear to EOL exist      */
 int revexist = FALSE;		/* does reverse video exist?    */
 int flickcode = FALSE;		/* do flicker supression?       */
 int gmode = 0;			/* global editor mode           */
-int gflags = GFREAD;		/* global control flag          */
 int gasave = 256;		/* global ASAVE size            */
 int gacount = 256;		/* count until next ASAVE       */
 int sgarbf = TRUE;		/* TRUE if screen is garbage    */

@@ -11,6 +11,12 @@ extern char outline[] ;		/* Global string to hold debug line text. */
 #endif
 
 
+/* Emacs global flag bit definitions (for gflags). */
+
+#define	GFREAD	1
+
+extern int gflags ;		/* global control flag          */
+
 /*	Macro argument token types					*/
 
 #define	TKNUL	0		/* end-of-string                */

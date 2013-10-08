@@ -29,7 +29,6 @@ extern int eolexist;		/* does clear to EOL exist?     */
 extern int revexist;		/* does reverse video exist?    */
 extern int flickcode;		/* do flicker supression?       */
 extern int gmode;		/* global editor mode           */
-extern int gflags;		/* global control flag          */
 extern int gfcolor;		/* global forgrnd color (white) */
 extern int gbcolor;		/* global backgrnd color (black) */
 extern int gasave;		/* global ASAVE size            */

@@ -224,10 +224,6 @@
 #define	ENVFUNC	0
 #endif
 
-/* Emacs global flag bit definitions (for gflags). */
-
-#define	GFREAD	1
-
 /* Internal constants. */
 
 #define	NBINDS	256		/* max # of bound keys          */

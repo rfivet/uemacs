@@ -37,6 +37,8 @@
 char outline[ NSTRING] ;	/* global string to hold debug line text */
 #endif
 
+int gflags = GFREAD ;		/* global control flag */
+
 /* Max #chars in a var name. */
 #define	NVSIZE	10
 
