@@ -20,6 +20,7 @@
 #include "buffer.h"
 #include "estruct.h"
 #include "edef.h"
+#include "input.h"
 #include "line.h"
 #include "termio.h"
 #include "terminal.h"

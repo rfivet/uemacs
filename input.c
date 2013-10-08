@@ -38,6 +38,10 @@ int kbdm[ NKBDM] ;		/* Macro                            */
 int *kbdptr ;			/* current position in keyboard buf */
 int *kbdend = &kbdm[0] ;	/* ptr to end of the keyboard       */
 
+kbdstate kbdmode = STOP ;	/* current keyboard macro mode  */
+int lastkey = 0 ;		/* last keystoke                */
+int kbdrep = 0 ;		/* number of repetitions        */
+
 static const int quotec = 0x11 ;	/* quote char during mlreply() */
 
 /*

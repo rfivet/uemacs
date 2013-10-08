@@ -31,6 +31,9 @@ struct window {
 #endif
 };
 
+extern struct window *curwp ;	/* Current window               */
+extern struct window *wheadp ;	/* Head of list of windows      */
+
 #define WFFORCE 0x01		/* Window needs forced reframe  */
 #define WFMOVE  0x02		/* Movement from line to line   */
 #define WFEDIT  0x04		/* Editing within a line        */

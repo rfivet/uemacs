@@ -42,19 +42,7 @@ extern int abortc;		/* current abort command char   */
 extern int tabmask;
 
 
-#if 0
-#define	STOP	0		/* keyboard macro not in use    */
-#define	PLAY	1		/*                playing       */
-#define	RECORD	2		/*                recording     */
-#endif
-
-typedef enum {
-	STOP, PLAY, RECORD
-} kbdstate ;
-extern kbdstate kbdmode ;		/* current keyboard macro mode  */
-extern int kbdrep;		/* number of repetitions        */
 extern int restflag;		/* restricted use?              */
-extern int lastkey;		/* last keystoke                */
 extern long envram;		/* # of bytes current in use by malloc */
 extern int rval;		/* return value of a subprocess */
 extern int overlap;		/* line overlap in forw/back page */
@@ -69,8 +57,6 @@ extern int thisflag;		/* Flags, this command          */
 extern int lastflag;		/* Flags, last command          */
 
 extern int curgoal;		/* Goal for C-P, C-N            */
-extern struct window *curwp;		/* Current window               */
-extern struct window *wheadp;                /* Head of list of windows      */
 
 extern char sres[NBUFN];	        /* Current screen resolution.   */
 

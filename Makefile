@@ -140,8 +140,8 @@ buffer.o: buffer.c buffer.h crypt.h line.h utf8.h defines.h display.h \
  edef.h estruct.h retcode.h file.h input.h window.h
 crypt.o: crypt.c crypt.h
 display.o: display.c display.h buffer.h crypt.h line.h utf8.h estruct.h \
- retcode.h edef.h termio.h terminal.h defines.h version.h wrapper.h \
- window.h
+ retcode.h edef.h input.h termio.h terminal.h defines.h version.h \
+ wrapper.h window.h
 ebind.o: ebind.c ebind.h basic.h bind.h edef.h buffer.h crypt.h line.h \
  utf8.h estruct.h retcode.h bindable.h eval.h exec.h file.h isearch.h \
  random.h region.h search.h spawn.h window.h defines.h word.h
@@ -202,7 +202,7 @@ vmsvt.o: vmsvt.c estruct.h retcode.h edef.h buffer.h crypt.h line.h \
  utf8.h
 vt52.o: vt52.c estruct.h retcode.h edef.h buffer.h crypt.h line.h utf8.h
 window.o: window.c window.h defines.h buffer.h crypt.h line.h utf8.h \
- basic.h display.h edef.h estruct.h retcode.h execute.h terminal.h \
+ basic.h display.h estruct.h retcode.h edef.h execute.h terminal.h \
  wrapper.h
 word.o: word.c word.h basic.h buffer.h crypt.h line.h utf8.h estruct.h \
  retcode.h edef.h log.h random.h region.h window.h defines.h

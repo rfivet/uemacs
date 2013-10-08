@@ -3,6 +3,12 @@
 
 #include "edef.h"
 
+typedef enum {
+	STOP, PLAY, RECORD
+} kbdstate ;
+extern kbdstate kbdmode ;	/* current keyboard macro mode  */
+extern int lastkey ;		/* last keystoke                */
+extern int kbdrep ;		/* number of repetitions        */
 extern int kbdm[] ;		/* Holds kayboard macro data    */
 extern int *kbdptr ;		/* current position in keyboard buf */
 extern int *kbdend ;		/* ptr to end of the keyboard */

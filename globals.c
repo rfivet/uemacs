@@ -25,10 +25,7 @@ int abortc = CONTROL | 'G';	/* current abort command char   */
 int tabmask = 0x07;		/* tabulator mask */
 
 
-kbdstate kbdmode = STOP;		/* current keyboard macro mode  */
-int kbdrep = 0;			/* number of repetitions        */
 int restflag = FALSE;		/* restricted use?              */
-int lastkey = 0;		/* last keystoke                */
 long envram = 0l;		/* # of bytes current in use by malloc */
 int rval = 0;			/* return value of a subprocess */
 int overlap = 0;		/* line overlap in forw/back page */
@@ -39,7 +36,5 @@ int scrollcount = 1;		/* number of lines to scroll */
 int thisflag;			/* Flags, this command          */
 int lastflag;			/* Flags, last command          */
 int curgoal;			/* Goal for C-P, C-N            */
-struct window *curwp;		/* Current window               */
-struct window *wheadp;		/* Head of list of windows      */
 
 char sres[NBUFN];		/* current screen resolution    */

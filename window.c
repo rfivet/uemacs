@@ -22,6 +22,9 @@
 #include "wrapper.h"
 
 
+struct window *curwp ;		/* Current window               */
+struct window *wheadp ;		/* Head of list of windows      */
+
 static struct window *swindow = NULL ;	/* saved window pointer */
 
 
