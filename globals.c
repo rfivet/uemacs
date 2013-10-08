@@ -7,7 +7,6 @@
 /* initialized global definitions */
 
 int fillcol = 72;		/* Current fill column          */
-char *execstr = NULL;		/* pointer to string to execute */
 
 
 int eolexist = TRUE;		/* does clear to EOL exist      */

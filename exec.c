@@ -24,6 +24,10 @@
 #include "line.h"
 #include "window.h"
 
+
+char *execstr = NULL ;		/* pointer to string to execute */
+
+
 /*	Directive definitions	*/
 
 #define	DIF		0

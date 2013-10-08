@@ -22,7 +22,6 @@ typedef int (*fn_t)(int, int);
 /* Initialized global external declarations. */
 
 extern int fillcol;		/* Fill column                  */
-extern char *execstr;	/* pointer to string to execute */
 
 
 extern int eolexist;		/* does clear to EOL exist?     */

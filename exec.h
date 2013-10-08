@@ -8,6 +8,10 @@ int storeproc( int f, int n) ;
 int execproc( int f, int n) ;
 #endif
 
+
+extern char *execstr ;	/* pointer to string to execute */
+
+
 int namedcmd( int f, int n) ;
 int execcmd( int f, int n) ;
 int docmd( char *cline) ;
