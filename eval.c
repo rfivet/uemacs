@@ -38,6 +38,11 @@ char outline[ NSTRING] ;	/* global string to hold debug line text */
 #endif
 
 int gflags = GFREAD ;		/* global control flag */
+int macbug = FALSE ;		/* macro debuging flag          */
+int cmdstatus = TRUE ;		/* last command status          */
+
+static int saveflag = 0 ;	/* Flags, saved with the $target var */
+
 
 /* Max #chars in a var name. */
 #define	NVSIZE	10

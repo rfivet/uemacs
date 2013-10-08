@@ -16,6 +16,8 @@ extern char outline[] ;		/* Global string to hold debug line text. */
 #define	GFREAD	1
 
 extern int gflags ;		/* global control flag          */
+extern int macbug ;		/* macro debuging flag          */
+extern int cmdstatus ;		/* last command status          */
 
 /*	Macro argument token types					*/
 

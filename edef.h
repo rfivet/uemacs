@@ -60,9 +60,6 @@ extern int kbdrep;		/* number of repetitions        */
 extern int restflag;		/* restricted use?              */
 extern int lastkey;		/* last keystoke                */
 extern long envram;		/* # of bytes current in use by malloc */
-extern int macbug;		/* macro debuging flag          */
-extern int cmdstatus;		/* last command status          */
-extern int saveflag;		/* Flags, saved with the $target var */
 extern int rval;		/* return value of a subprocess */
 extern int overlap;		/* line overlap in forw/back page */
 extern int scrollcount;		/* number of lines to scroll */
