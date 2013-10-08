@@ -23,6 +23,10 @@
 #include "window.h"
 
 
+struct buffer *curbp ;		/* Current buffer               */
+struct buffer *bheadp ;		/* Head of list of buffers      */
+struct buffer *blistp ;		/* Buffer for C-X C-B           */
+
 const char *modename[] = {	/* name of modes                */
 	"Wrap", "Cmode", "Spell", "Exact", "View", "Over",
 	"Magic",
@@ -33,6 +37,8 @@ const char *modename[] = {	/* name of modes                */
 #endif
 	"Asave", "Utf-8", "Dos"
 } ;
+
+int gmode = 0 ;			/* global editor mode           */
 
 static const char modecode[] = "WCSEVOMYAUD" ; /* letters to represent modes */
 

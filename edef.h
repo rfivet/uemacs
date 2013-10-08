@@ -27,7 +27,6 @@ extern int fillcol;		/* Fill column                  */
 extern int eolexist;		/* does clear to EOL exist?     */
 extern int revexist;		/* does reverse video exist?    */
 extern int flickcode;		/* do flicker supression?       */
-extern int gmode;		/* global editor mode           */
 extern int gfcolor;		/* global forgrnd color (white) */
 extern int gbcolor;		/* global backgrnd color (black) */
 extern int sgarbf;		/* State of screen unknown      */
@@ -71,10 +70,7 @@ extern int lastflag;		/* Flags, last command          */
 
 extern int curgoal;		/* Goal for C-P, C-N            */
 extern struct window *curwp;		/* Current window               */
-extern struct buffer *curbp;		/* Current buffer               */
 extern struct window *wheadp;                /* Head of list of windows      */
-extern struct buffer *bheadp;		/* Head of list of buffers      */
-extern struct buffer *blistp;		/* Buffer for C-X C-B           */
 
 extern char sres[NBUFN];	        /* Current screen resolution.   */
 

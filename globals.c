@@ -12,7 +12,6 @@ int fillcol = 72;		/* Current fill column          */
 int eolexist = TRUE;		/* does clear to EOL exist      */
 int revexist = FALSE;		/* does reverse video exist?    */
 int flickcode = FALSE;		/* do flicker supression?       */
-int gmode = 0;			/* global editor mode           */
 int sgarbf = TRUE;		/* TRUE if screen is garbage    */
 int clexec = FALSE;		/* command line execution flag  */
 int discmd = TRUE;		/* display command flag         */
@@ -41,9 +40,6 @@ int thisflag;			/* Flags, this command          */
 int lastflag;			/* Flags, last command          */
 int curgoal;			/* Goal for C-P, C-N            */
 struct window *curwp;		/* Current window               */
-struct buffer *curbp;			/* Current buffer               */
 struct window *wheadp;		/* Head of list of windows      */
-struct buffer *bheadp;			/* Head of list of buffers      */
-struct buffer *blistp;			/* Buffer for C-X C-B           */
 
 char sres[NBUFN];		/* current screen resolution    */

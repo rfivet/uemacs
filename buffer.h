@@ -37,6 +37,10 @@ struct buffer {
 #endif
 };
 
+extern struct buffer *curbp ;	/* Current buffer               */
+extern struct buffer *bheadp ;	/* Head of list of buffers      */
+extern struct buffer *blistp ;	/* Buffer for C-X C-B           */
+
 #define BFINVS  0x01		/* Internal invisable buffer    */
 #define BFCHG   0x02		/* Changed since last write     */
 #define	BFTRUNC	0x04		/* buffer was truncated when read */
@@ -60,6 +64,7 @@ struct buffer {
 
 
 extern const char *modename[] ;	/* text names of modes          */
+extern int gmode ;		/* global editor mode           */
 
 
 int usebuffer( int f, int n) ;
