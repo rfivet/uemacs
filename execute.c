@@ -1,3 +1,6 @@
+/* execute.c -- implements execute.h */
+#include "execute.h"
+
 #include "edef.h"
 #include "bind.h"
 #include "random.h"
@@ -5,6 +8,9 @@
 #include "file.h"
 #include "terminal.h"
 #include "window.h"
+
+int gasave = 256 ;		/* global ASAVE size            */
+int gacount = 256 ;		/* count until next ASAVE       */
 
 /*
  * This is the general command execution routine. It handles the fake binding

@@ -146,13 +146,14 @@ ebind.o: ebind.c ebind.h basic.h bind.h edef.h buffer.h crypt.h line.h \
  utf8.h estruct.h retcode.h bindable.h eval.h exec.h file.h isearch.h \
  random.h region.h search.h spawn.h window.h defines.h word.h
 eval.o: eval.c eval.h basic.h bind.h edef.h buffer.h crypt.h line.h \
- utf8.h estruct.h retcode.h display.h exec.h flook.h input.h random.h \
- search.h terminal.h defines.h termio.h version.h window.h
+ utf8.h estruct.h retcode.h display.h exec.h execute.h flook.h input.h \
+ random.h search.h terminal.h defines.h termio.h version.h window.h
 exec.o: exec.c exec.h buffer.h crypt.h line.h utf8.h bind.h edef.h \
  estruct.h retcode.h display.h eval.h file.h flook.h input.h window.h \
  defines.h
-execute.o: execute.c edef.h buffer.h crypt.h line.h utf8.h estruct.h \
- retcode.h bind.h random.h display.h file.h terminal.h defines.h window.h
+execute.o: execute.c execute.h edef.h buffer.h crypt.h line.h utf8.h \
+ estruct.h retcode.h bind.h random.h display.h file.h terminal.h \
+ defines.h window.h
 file.o: file.c file.h crypt.h retcode.h buffer.h line.h utf8.h defines.h \
  estruct.h edef.h execute.h fileio.h input.h lock.h log.h window.h
 fileio.o: fileio.c fileio.h crypt.h retcode.h defines.h

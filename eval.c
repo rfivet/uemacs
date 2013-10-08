@@ -18,6 +18,7 @@
 #include "estruct.h"
 #include "edef.h"
 #include "exec.h"
+#include "execute.h"
 #include "flook.h"
 #include "input.h"
 #include "line.h"

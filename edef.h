@@ -31,8 +31,6 @@ extern int flickcode;		/* do flicker supression?       */
 extern int gmode;		/* global editor mode           */
 extern int gfcolor;		/* global forgrnd color (white) */
 extern int gbcolor;		/* global backgrnd color (black) */
-extern int gasave;		/* global ASAVE size            */
-extern int gacount;		/* count until next ASAVE       */
 extern int sgarbf;		/* State of screen unknown      */
 extern int clexec;		/* command line execution flag  */
 extern int discmd;		/* display command flag         */
