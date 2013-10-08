@@ -1,6 +1,16 @@
 #ifndef _EVAL_H_
 #define _EVAL_H_
 
+
+#define DEBUGM	1		/* $debug triggers macro debugging	*/
+
+
+#if	DEBUGM
+/* Vars needed for macro debugging output. */
+extern char outline[] ;		/* Global string to hold debug line text. */
+#endif
+
+
 /*	Macro argument token types					*/
 
 #define	TKNUL	0		/* end-of-string                */

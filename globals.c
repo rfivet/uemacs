@@ -54,9 +54,3 @@ struct buffer *bheadp;			/* Head of list of buffers      */
 struct buffer *blistp;			/* Buffer for C-X C-B           */
 
 char sres[NBUFN];		/* current screen resolution    */
-
-
-#if	DEBUGM
-/*	vars needed for macro debugging output	*/
-char outline[NSTRING];		/* global string to hold debug line text */
-#endif

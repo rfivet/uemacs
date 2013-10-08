@@ -32,6 +32,11 @@
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
+#if	DEBUGM
+/*	vars needed for macro debugging output	*/
+char outline[ NSTRING] ;	/* global string to hold debug line text */
+#endif
+
 /* Max #chars in a var name. */
 #define	NVSIZE	10
 
@@ -587,10 +592,6 @@ char *gtenv(char *vname)
 int setvar(int f, int n)
 {
 	int status;	/* status return */
-#if	DEBUGM
-	char *sp;	/* temp string pointer */
-	char *ep;	/* ptr to end of outline */
-#endif
 	struct variable_description vd;		/* variable num/type */
 	char var[NVSIZE + 1];	/* name of variable to fetch */
 	char value[NSTRING];	/* value to set variable to */
@@ -631,6 +632,8 @@ int setvar(int f, int n)
 	   that effect here. */
 
 	if (macbug) {
+		char *sp ;	/* temp string pointer */
+
 		strcpy(outline, "(((");
 
 		/* assignment status */
@@ -649,6 +652,8 @@ int setvar(int f, int n)
 		sp = outline;
 		while (*sp)
 			if (*sp++ == '%') {
+				char *ep ;	/* ptr to end of outline */
+
 				/* advance to the end */
 				ep = --sp;
 				while (*ep++);

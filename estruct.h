@@ -129,7 +129,6 @@
 #define	CLRMSG	0  /* space clears the message line with no insert */
 #define	CFENCE	1  /* fench matching in CMODE                      */
 #define	TYPEAH	1  /* type ahead causes update to be skipped       */
-#define DEBUGM	1  /* $debug triggers macro debugging              */
 #define	VISMAC	0  /* update display during keyboard macros        */
 #define	CTRLZ	0  /* add a ^Z at end of files under MSDOS only    */
 #define ADDCR	0  /* ajout d'un CR en fin de chaque ligne (ST520) */

@@ -495,11 +495,6 @@ static int dobuf(struct buffer *bp)
 	char *eline;		/* text of line to execute */
 	char tkn[NSTRING];	/* buffer to evaluate an expresion in */
 
-#if	DEBUGM
-	char *sp;		/* temp for building debug string */
-	char *ep;	/* ptr to end of outline */
-#endif
-
 	/* clear IF level flags/while ptr */
 	execlevel = 0;
 	whlist = NULL;
@@ -616,6 +611,8 @@ static int dobuf(struct buffer *bp)
 		   ^G will abort the command */
 
 		if (macbug) {
+			char *sp ;	/* temp for building debug string */
+
 			strcpy(outline, "<<<");
 
 			/* debug macro name */
@@ -634,6 +631,8 @@ static int dobuf(struct buffer *bp)
 			sp = outline;
 			while (*sp)
 				if (*sp++ == '%') {
+					char *ep ; /* ptr to end of outline */
+
 					/* advance to the end */
 					ep = --sp;
 					while (*ep++);

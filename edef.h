@@ -86,9 +86,4 @@ extern struct buffer *blistp;		/* Buffer for C-X C-B           */
 extern char sres[NBUFN];	        /* Current screen resolution.   */
 
 
-#if	DEBUGM
-/* Vars needed for macro debugging output. */
-extern char outline[];		/* Global string to hold debug line text. */
-#endif
-
 #endif  /* EDEF_H_ */
