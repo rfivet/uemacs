@@ -16,9 +16,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* Some global fuction declarations. */
-typedef int (*fn_t)(int, int);
-
 /* Initialized global external declarations. */
 
 extern int fillcol;		/* Fill column                  */

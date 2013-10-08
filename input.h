@@ -1,7 +1,8 @@
 #ifndef _INPUT_H_
 #define _INPUT_H_
 
-#include "edef.h"
+#include "bind.h"
+
 
 typedef enum {
 	STOP, PLAY, RECORD

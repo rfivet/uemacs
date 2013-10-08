@@ -1,4 +1,3 @@
-#include "crypt.h"
 #include "defines.h"
 
 /* #include "estruct.h" */

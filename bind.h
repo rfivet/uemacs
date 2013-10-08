@@ -10,6 +10,9 @@ int apro( int f, int n) ;
 int strinc( char *source, char *sub) ;
 #endif
 
+/* Some global fuction declarations. */
+typedef int (*fn_t)(int, int);
+
 int help( int f, int n) ;
 int deskey( int f, int n) ;
 int bindtokey( int f, int n) ;
