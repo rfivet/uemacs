@@ -485,7 +485,6 @@ static int dobuf(struct buffer *bp)
 	int dirnum;		/* directive index */
 	int linlen;		/* length of line to execute */
 	int i;			/* index */
-	int c;			/* temp character */
 	int force;		/* force TRUE result? */
 	struct window *wp;		/* ptr to windows to scan */
 	struct while_block *whlist;	/* ptr to !WHILE list */
@@ -612,6 +611,7 @@ static int dobuf(struct buffer *bp)
 
 		if (macbug) {
 			char *sp ;	/* temp for building debug string */
+			int c ;		/* temp character */
 
 			strcpy(outline, "<<<");
 
