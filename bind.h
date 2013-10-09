@@ -1,8 +1,6 @@
 #ifndef _BIND_H_
 #define _BIND_H_
 
-#include "edef.h"
-
 #define	APROP	1  /* Add code for Apropos command                 */
 
 #if APROP

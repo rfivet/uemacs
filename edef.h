@@ -10,7 +10,6 @@
 #ifndef EDEF_H_
 #define EDEF_H_
 
-#include "buffer.h"
 #include "estruct.h"
 
 /* Initialized global external declarations. */
