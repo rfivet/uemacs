@@ -59,12 +59,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "estruct.h"	/* Global structures and defines. */
+#if UNIX
+#include <signal.h>
+#endif
+
 #include "basic.h"
 #include "bind.h"
 #include "bindable.h"
 #include "buffer.h"
 #include "display.h"
-#include "estruct.h"	/* Global structures and defines. */
 #include "globals.h"    /* Global definitions. */
 #include "eval.h"
 #include "execute.h"
@@ -89,11 +93,6 @@ extern unsigned _stklen = 32766;
 #endif
 
 #if UNIX
-#include <signal.h>
-#ifdef SIGWINCH
-extern void sizesignal(int);
-#endif
-
 static void emergencyexit(int signr)
 {
 	quickexit(FALSE, 0);

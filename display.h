@@ -21,6 +21,9 @@ void mlwrite( const char *fmt, ...) ;
 void mlforce( char *s) ;
 void mlputs( char *s) ;
 void getscreensize( int *widthp, int *heightp) ;
+
+#ifdef SIGWINCH
 void sizesignal( int signr) ;
+#endif
 
 #endif

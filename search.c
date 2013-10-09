@@ -1471,7 +1471,6 @@ static int mceq(int bc, struct magic *mt)
 	return result;
 }
 
-extern char *clearbits(void);
 
 /*
  * cclmake -- create the bitmap for the character class.
