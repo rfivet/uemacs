@@ -8,8 +8,6 @@
 extern int fillcol;		/* Fill column                  */
 
 
-extern int eolexist;		/* does clear to EOL exist?     */
-extern int revexist;		/* does reverse video exist?    */
 extern int flickcode;		/* do flicker supression?       */
 extern int gfcolor;		/* global forgrnd color (white) */
 extern int gbcolor;		/* global backgrnd color (black) */

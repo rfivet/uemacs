@@ -34,6 +34,9 @@
 
 #if TERMCAP
 
+boolean eolexist = TRUE ;	/* does clear to EOL exist      */
+boolean revexist = FALSE ;	/* does reverse video exist?    */
+
 char sres[ NBUFN] ;		/* current screen resolution    */
 
 #if UNIX

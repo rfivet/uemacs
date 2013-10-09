@@ -1,4 +1,4 @@
-/* globals.c -- implements global.h */
+/* globals.c -- implements globals.h */
 #include "globals.h"
 
 #include "defines.h"
@@ -9,8 +9,6 @@
 int fillcol = 72;		/* Current fill column          */
 
 
-int eolexist = TRUE;		/* does clear to EOL exist      */
-int revexist = FALSE;		/* does reverse video exist?    */
 int flickcode = FALSE;		/* do flicker supression?       */
 int sgarbf = TRUE;		/* TRUE if screen is garbage    */
 int clexec = FALSE;		/* command line execution flag  */

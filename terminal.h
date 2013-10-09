@@ -3,6 +3,7 @@
 
 
 #include "defines.h"	/* COLOR, SCROLLCODE */
+#include "retcode.h"
 
 /*
  * The editor communicates with the display using a high level interface. A
@@ -69,6 +70,9 @@ extern struct terminal term ;
 
 extern int ttrow ;		/* Row location of HW cursor */
 extern int ttcol ;		/* Column location of HW cursor */
+
+extern boolean eolexist ;	/* does clear to EOL exist?     */
+extern boolean revexist ;	/* does reverse video exist?    */
 
 extern char sres[] ;	        /* Current screen resolution.   */
 
