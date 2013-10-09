@@ -1,6 +1,8 @@
 /* execute.c -- implements execute.h */
 #include "execute.h"
 
+#include <stdlib.h>
+
 #include "edef.h"
 #include "bind.h"
 #include "random.h"

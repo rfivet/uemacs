@@ -8,6 +8,9 @@
  *	modified by Petri Kutvonen
  */
 
+#include <stdlib.h>
+#include <string.h>
+
 /*
  * Defining this to 1 breaks tcapopen() - it doesn't check if the
  * sceen size has changed.

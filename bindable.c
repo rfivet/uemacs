@@ -1,6 +1,9 @@
 /* bindable.h -- implements bindable.c */
 #include "bindable.h"
 
+#include <stdlib.h>
+
+
 #include "defines.h"
 #include "buffer.h"
 #include "display.h"

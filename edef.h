@@ -13,9 +13,6 @@
 #include "buffer.h"
 #include "estruct.h"
 
-#include <stdlib.h>
-#include <string.h>
-
 /* Initialized global external declarations. */
 
 extern int fillcol;		/* Fill column                  */

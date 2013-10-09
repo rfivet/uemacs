@@ -11,6 +11,8 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "buffer.h"
 #include "bind.h"

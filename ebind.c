@@ -8,6 +8,9 @@
  *	Modified by Petri Kutvonen
  */
 
+#include <stdlib.h>
+
+
 #include "basic.h"
 #include "bind.h"
 #include "bindable.h"

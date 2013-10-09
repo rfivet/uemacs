@@ -56,6 +56,8 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "basic.h"
 #include "bind.h"

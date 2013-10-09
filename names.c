@@ -8,6 +8,8 @@
  * function.
 */
 
+#include <stdlib.h>
+
 #include "basic.h"
 #include "bind.h"
 #include "bindable.h"

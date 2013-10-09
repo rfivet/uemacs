@@ -12,7 +12,9 @@
  *	modified by Petri Kutvonen
  */
 
-#include        <stdio.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "defines.h"
 #include "display.h"
