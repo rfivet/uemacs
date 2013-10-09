@@ -49,6 +49,8 @@ static const char *eolname[] = {
 	"MIXED"
 } ;
 
+boolean restflag = FALSE ;	/* restricted use?              */
+
 /*
  * Read a file into the current
  * buffer. This is really easy; all you do it

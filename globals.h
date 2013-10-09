@@ -26,7 +26,6 @@ extern int abortc;		/* current abort command char   */
 extern int tabmask;
 
 
-extern int restflag;		/* restricted use?              */
 extern long envram;		/* # of bytes current in use by malloc */
 extern int rval;		/* return value of a subprocess */
 extern int overlap;		/* line overlap in forw/back page */

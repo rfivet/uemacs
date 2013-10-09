@@ -11,6 +11,8 @@ void cryptbufferkey( struct buffer *bp) ;
 int  set_encryption_key( int f, int n) ;
 #endif
 
+extern boolean restflag ;		/* restricted use?              */
+
 int fileread( int f, int n) ;
 int insfile( int f, int n) ;
 int filefind( int f, int n) ;

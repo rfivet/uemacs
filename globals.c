@@ -25,7 +25,6 @@ int abortc = CONTROL | 'G';	/* current abort command char   */
 int tabmask = 0x07;		/* tabulator mask */
 
 
-int restflag = FALSE;		/* restricted use?              */
 long envram = 0l;		/* # of bytes current in use by malloc */
 int rval = 0;			/* return value of a subprocess */
 int overlap = 0;		/* line overlap in forw/back page */
