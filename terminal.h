@@ -73,6 +73,7 @@ extern int ttcol ;		/* Column location of HW cursor */
 
 extern boolean eolexist ;	/* does clear to EOL exist?     */
 extern boolean revexist ;	/* does reverse video exist?    */
+extern boolean sgarbf ;		/* State of screen unknown      */
 
 extern char sres[] ;	        /* Current screen resolution.   */
 

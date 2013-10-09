@@ -8,13 +8,7 @@
 extern int fillcol;		/* Fill column                  */
 
 
-extern int flickcode;		/* do flicker supression?       */
-extern int gfcolor;		/* global forgrnd color (white) */
-extern int gbcolor;		/* global backgrnd color (black) */
-extern int sgarbf;		/* State of screen unknown      */
 extern int clexec;		/* command line execution flag  */
-extern int discmd;		/* display command flag         */
-extern int disinp;		/* display input characters     */
 
 extern int metac;		/* current meta character */
 extern int ctlxc;		/* current control X prefix char */

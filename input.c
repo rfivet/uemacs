@@ -45,6 +45,8 @@ kbdstate kbdmode = STOP ;   /* current keyboard macro mode  */
 int lastkey = 0 ;       /* last keystoke                */
 int kbdrep = 0 ;        /* number of repetitions        */
 
+int disinp = TRUE ;	/* display input characters     */
+
 static const int quotec = 0x11 ;    /* quote char during mlreply() */
 
 /*

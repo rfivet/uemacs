@@ -3,6 +3,9 @@
 
 extern int mpresf ;		/* Stuff in message line */
 extern int scrollcount ;	/* number of lines to scroll */
+extern int discmd ;		/* display command flag         */
+extern int gfcolor ;		/* global forgrnd color (white) */
+extern int gbcolor ;		/* global backgrnd color (black) */
 
 void vtinit( void) ;
 void vtfree( void) ;

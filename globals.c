@@ -9,11 +9,7 @@
 int fillcol = 72;		/* Current fill column          */
 
 
-int flickcode = FALSE;		/* do flicker supression?       */
-int sgarbf = TRUE;		/* TRUE if screen is garbage    */
 int clexec = FALSE;		/* command line execution flag  */
-int discmd = TRUE;		/* display command flag         */
-int disinp = TRUE;		/* display input characters     */
 
 int metac = CONTROL | '[';	/* current meta character */
 int ctlxc = CONTROL | 'X';	/* current control X prefix char */

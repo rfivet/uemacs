@@ -12,7 +12,8 @@ extern int lastkey ;		/* last keystoke                */
 extern int kbdrep ;		/* number of repetitions        */
 extern int kbdm[] ;		/* Holds kayboard macro data    */
 extern int *kbdptr ;		/* current position in keyboard buf */
-extern int *kbdend ;		/* ptr to end of the keyboard */
+extern int *kbdend ;		/* ptr to end of the keyboard	*/
+extern int disinp ;		/* display input characters     */
 
 int mlyesno( const char *prompt) ;
 int mlreply( const char *prompt, char *buf, int nbuf) ;

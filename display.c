@@ -71,6 +71,7 @@ static int taboff = 0 ;	/* tab offset for display       */
 
 int mpresf = FALSE ;	/* TRUE if message in last line */
 int scrollcount = 1 ;	/* number of lines to scroll */
+int discmd = TRUE ;	/* display command flag         */
 
 static int reframe(struct window *wp);
 static void updone(struct window *wp);
