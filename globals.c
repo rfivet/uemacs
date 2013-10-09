@@ -1,7 +1,8 @@
-#include "defines.h"
+/* globals.c -- implements global.h */
+#include "globals.h"
 
-/* #include "estruct.h" */
-#include "edef.h"
+#include "defines.h"
+#include "retcode.h"
 
 /* initialized global definitions */
 
