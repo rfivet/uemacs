@@ -18,8 +18,8 @@
 
 #include "defines.h"
 #include "display.h"
-/* #include "estruct.h" */
-#include "edef.h"
+#include "estruct.h"
+#include "globals.h"
 #include "file.h"
 #include "input.h"
 #include "window.h"

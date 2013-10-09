@@ -3,7 +3,8 @@
 
 #include <stdlib.h>
 
-#include "edef.h"
+#include "estruct.h"
+#include "globals.h"
 #include "bind.h"
 #include "random.h"
 #include "display.h"

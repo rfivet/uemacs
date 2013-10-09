@@ -13,7 +13,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "edef.h"
+#include "estruct.h"
+#include "globals.h"
 #include "bindable.h"
 #include "buffer.h"
 #include "display.h"

@@ -15,7 +15,8 @@
 #include <unistd.h>
 
 #include "bind.h"
-#include "edef.h"
+#include "estruct.h"
+#include "globals.h"
 #include "bindable.h"
 #include "display.h"
 #include "exec.h"

@@ -64,8 +64,8 @@
 #include "bindable.h"
 #include "buffer.h"
 #include "display.h"
-#include "edef.h"    /* Global definitions. */
-#include "estruct.h" /* Global structures and defines. */
+#include "estruct.h"	/* Global structures and defines. */
+#include "globals.h"    /* Global definitions. */
 #include "eval.h"
 #include "execute.h"
 #include "file.h"

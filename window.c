@@ -14,8 +14,8 @@
 #include "basic.h"
 #include "buffer.h"
 #include "display.h"
-/* #include "estruct.h" */
-#include "edef.h"
+#include "estruct.h"
+#include "globals.h"
 #include "execute.h"
 #include "line.h"
 #include "terminal.h"

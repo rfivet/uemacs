@@ -14,7 +14,7 @@
 
 #include "buffer.h"
 #include "estruct.h"
-#include "edef.h"
+#include "globals.h"
 #include "line.h"
 #include "log.h"
 #include "window.h"

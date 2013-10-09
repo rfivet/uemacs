@@ -21,7 +21,8 @@
 #include <string.h>
 
 #include "buffer.h"
-#include "edef.h"
+#include "estruct.h"
+#include "globals.h"
 #include "log.h"
 #include "window.h"
 

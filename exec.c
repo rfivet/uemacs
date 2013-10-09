@@ -18,7 +18,7 @@
 #include "bind.h"
 #include "display.h"
 #include "estruct.h"
-#include "edef.h"
+#include "globals.h"
 #include "eval.h"
 #include "file.h"
 #include "flook.h"
