@@ -47,6 +47,9 @@ int cmdstatus = TRUE ;		/* last command status          */
 static int saveflag = 0 ;	/* Flags, saved with the $target var */
 
 
+long envram = 0l ;		/* # of bytes current in use by malloc */
+
+
 /* Max #chars in a var name. */
 #define	NVSIZE	10
 

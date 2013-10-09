@@ -26,10 +26,7 @@ extern int abortc;		/* current abort command char   */
 extern int tabmask;
 
 
-extern long envram;		/* # of bytes current in use by malloc */
 extern int rval;		/* return value of a subprocess */
-extern int overlap;		/* line overlap in forw/back page */
-extern int scrollcount;		/* number of lines to scroll */
 
 /* Uninitialized global external declarations. */
 
@@ -40,8 +37,5 @@ extern int thisflag;		/* Flags, this command          */
 extern int lastflag;		/* Flags, last command          */
 
 extern int curgoal;		/* Goal for C-P, C-N            */
-
-extern char sres[] ;	        /* Current screen resolution.   */
-
 
 #endif

@@ -19,6 +19,8 @@ extern int gflags ;		/* global control flag          */
 extern int macbug ;		/* macro debuging flag          */
 extern int cmdstatus ;		/* last command status          */
 
+extern long envram ;		/* # of bytes current in use by malloc */
+
 /*	Macro argument token types					*/
 
 #define	TKNUL	0		/* end-of-string                */

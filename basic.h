@@ -1,6 +1,8 @@
 #ifndef _BASIC_H_
 #define _BASIC_H_
 
+extern int overlap ;		/* line overlap in forw/back page */
+
 int gotobol( int f, int n) ;
 int gotoeol( int f, int n) ;
 int gotoline( int f, int n) ;

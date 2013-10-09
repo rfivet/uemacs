@@ -70,4 +70,6 @@ extern struct terminal term ;
 extern int ttrow ;		/* Row location of HW cursor */
 extern int ttcol ;		/* Column location of HW cursor */
 
+extern char sres[] ;	        /* Current screen resolution.   */
+
 #endif

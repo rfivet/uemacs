@@ -2,6 +2,7 @@
 #define _DISPLAY_H_
 
 extern int mpresf ;		/* Stuff in message line */
+extern int scrollcount ;	/* number of lines to scroll */
 
 void vtinit( void) ;
 void vtfree( void) ;

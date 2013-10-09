@@ -34,6 +34,8 @@
 
 #if TERMCAP
 
+char sres[ NBUFN] ;		/* current screen resolution    */
+
 #if UNIX
 #include <signal.h>
 #endif

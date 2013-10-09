@@ -27,6 +27,10 @@
 #include "utf8.h"
 #include "window.h"
 
+
+int overlap = 0 ;		/* line overlap in forw/back page */
+
+
 /*
  * This routine, given a pointer to a struct line, and the current cursor goal
  * column, return the best choice for the offset. The offset is returned.

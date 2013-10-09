@@ -25,15 +25,10 @@ int abortc = CONTROL | 'G';	/* current abort command char   */
 int tabmask = 0x07;		/* tabulator mask */
 
 
-long envram = 0l;		/* # of bytes current in use by malloc */
 int rval = 0;			/* return value of a subprocess */
-int overlap = 0;		/* line overlap in forw/back page */
-int scrollcount = 1;		/* number of lines to scroll */
 
 /* uninitialized global definitions */
 
 int thisflag;			/* Flags, this command          */
 int lastflag;			/* Flags, last command          */
 int curgoal;			/* Goal for C-P, C-N            */
-
-char sres[NBUFN];		/* current screen resolution    */
