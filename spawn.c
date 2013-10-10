@@ -18,7 +18,7 @@
 #include "buffer.h"
 #include "display.h"
 #include "estruct.h"
-#include "globals.h"
+#include "exec.h"
 #include "file.h"
 #include "flook.h"
 #include "input.h"

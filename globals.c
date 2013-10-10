@@ -2,14 +2,11 @@
 #include "globals.h"
 
 #include "defines.h"
-#include "retcode.h"
 
 /* initialized global definitions */
 
 int fillcol = 72;		/* Current fill column          */
 
-
-int clexec = FALSE;		/* command line execution flag  */
 
 int metac = CONTROL | '[';	/* current meta character */
 int ctlxc = CONTROL | 'X';	/* current control X prefix char */

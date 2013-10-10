@@ -148,8 +148,8 @@ ebind.o: ebind.c ebind.h basic.h bind.h estruct.h retcode.h globals.h \
 eval.o: eval.c eval.h basic.h bind.h buffer.h crypt.h line.h utf8.h \
  display.h estruct.h retcode.h globals.h exec.h execute.h flook.h input.h \
  random.h search.h terminal.h defines.h termio.h version.h window.h
-exec.o: exec.c exec.h buffer.h crypt.h line.h utf8.h bind.h display.h \
- estruct.h retcode.h globals.h eval.h file.h flook.h input.h window.h \
+exec.o: exec.c exec.h retcode.h buffer.h crypt.h line.h utf8.h bind.h \
+ display.h estruct.h globals.h eval.h file.h flook.h input.h window.h \
  defines.h
 execute.o: execute.c execute.h estruct.h retcode.h globals.h bind.h \
  random.h display.h file.h crypt.h buffer.h line.h utf8.h terminal.h \
@@ -159,24 +159,24 @@ file.o: file.c file.h crypt.h retcode.h buffer.h line.h utf8.h defines.h \
  window.h
 fileio.o: fileio.c fileio.h crypt.h retcode.h defines.h
 flook.o: flook.c flook.h retcode.h defines.h fileio.h crypt.h
-globals.o: globals.c globals.h defines.h retcode.h
+globals.o: globals.c globals.h defines.h
 ibmpc.o: ibmpc.c estruct.h retcode.h globals.h
 input.o: input.c input.h bind.h estruct.h retcode.h globals.h bindable.h \
  display.h exec.h names.h terminal.h defines.h wrapper.h
 isearch.o: isearch.c isearch.h basic.h buffer.h crypt.h line.h utf8.h \
- display.h estruct.h retcode.h globals.h input.h bind.h search.h \
+ display.h estruct.h retcode.h globals.h exec.h input.h bind.h search.h \
  terminal.h defines.h window.h
 line.o: line.c line.h utf8.h buffer.h crypt.h estruct.h retcode.h \
  globals.h log.h window.h defines.h
 lock.o: lock.c lock.h estruct.h retcode.h display.h globals.h input.h \
  bind.h
 log.o: log.c log.h retcode.h
-main.o: main.c basic.h bind.h bindable.h buffer.h crypt.h line.h utf8.h \
- display.h estruct.h retcode.h globals.h eval.h execute.h file.h input.h \
- lock.h log.h random.h search.h terminal.h defines.h termio.h version.h \
- window.h
+main.o: main.c estruct.h retcode.h basic.h bind.h bindable.h buffer.h \
+ crypt.h line.h utf8.h display.h globals.h eval.h execute.h file.h \
+ input.h lock.h log.h random.h search.h terminal.h defines.h termio.h \
+ version.h window.h
 names.o: names.c names.h basic.h bind.h bindable.h buffer.h crypt.h \
- line.h utf8.h display.h eval.h exec.h file.h retcode.h isearch.h \
+ line.h utf8.h display.h eval.h exec.h retcode.h file.h isearch.h \
  region.h random.h search.h spawn.h window.h defines.h word.h
 pklock.o: pklock.c pklock.h estruct.h retcode.h globals.h
 posix.o: posix.c termio.h
@@ -189,9 +189,9 @@ search.o: search.c search.h line.h utf8.h basic.h buffer.h crypt.h \
  display.h estruct.h retcode.h globals.h input.h bind.h log.h terminal.h \
  defines.h window.h
 spawn.o: spawn.c spawn.h defines.h buffer.h crypt.h line.h utf8.h \
- display.h estruct.h retcode.h globals.h file.h flook.h input.h bind.h \
- log.h terminal.h window.h
-tcap.o: tcap.c terminal.h defines.h display.h estruct.h retcode.h \
+ display.h estruct.h retcode.h exec.h file.h flook.h input.h bind.h log.h \
+ terminal.h window.h
+tcap.o: tcap.c terminal.h defines.h retcode.h display.h estruct.h \
  globals.h termio.h
 termio.o: termio.c termio.h estruct.h retcode.h utf8.h
 utf8.o: utf8.c utf8.h

@@ -1,6 +1,9 @@
 #ifndef _EXEC_H_
 #define _EXEC_H_
 
+#include "retcode.h"
+
+
 #define	PROC	1	/* named procedures  */
 
 #if PROC
@@ -10,6 +13,8 @@ int execproc( int f, int n) ;
 
 
 extern char *execstr ;	/* pointer to string to execute */
+extern boolean clexec ;	/* command line execution flag  */
+
 
 
 int namedcmd( int f, int n) ;

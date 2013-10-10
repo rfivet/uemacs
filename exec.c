@@ -28,6 +28,8 @@
 
 
 char *execstr = NULL ;		/* pointer to string to execute */
+boolean clexec = FALSE ;	/* command line execution flag  */
+
 
 
 /*	Directive definitions	*/
@@ -138,7 +140,7 @@ int docmd(char *cline)
 	int n;		/* numeric repeat value */
 	fn_t fnc;		/* function to execute */
 	int status;		/* return status of function */
-	int oldcle;		/* old contents of clexec flag */
+	boolean oldcle ;	/* old contents of clexec flag */
 	char *oldestr;		/* original exec string */
 	char tkn[NSTRING];	/* next token off of command line */
 
@@ -272,7 +274,7 @@ char *token(char *src, char *tok, int size)
  */
 int macarg(char *tok)
 {
-	int savcle;		/* buffer to store original clexec */
+	boolean savcle ;	/* buffer to store original clexec */
 	int status;
 
 	savcle = clexec;	/* save execution mode */
