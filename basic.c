@@ -28,7 +28,8 @@
 #include "window.h"
 
 
-int overlap = 0 ;		/* line overlap in forw/back page */
+int overlap = 0 ;		/* line overlap in forw/back page	*/
+int curgoal ;			/* Goal for C-P, C-N			*/
 
 
 /*

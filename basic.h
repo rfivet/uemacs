@@ -1,7 +1,9 @@
 #ifndef _BASIC_H_
 #define _BASIC_H_
 
-extern int overlap ;		/* line overlap in forw/back page */
+extern int overlap ;		/* line overlap in forw/back page	*/
+extern int curgoal ;		/* Goal for C-P, C-N			*/
+
 
 int gotobol( int f, int n) ;
 int gotoeol( int f, int n) ;

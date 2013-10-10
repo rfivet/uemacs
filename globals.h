@@ -18,6 +18,4 @@ extern int abortc;		/* current abort command char   */
 extern int thisflag;		/* Flags, this command          */
 extern int lastflag;		/* Flags, last command          */
 
-extern int curgoal;		/* Goal for C-P, C-N            */
-
 #endif
