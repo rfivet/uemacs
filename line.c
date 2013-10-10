@@ -26,6 +26,9 @@
 #include "log.h"
 #include "window.h"
 
+
+int tabmask = 0x07 ;		/* tabulator mask */
+
 #define	BLOCK_SIZE 16 /* Line block chunk size. */
 
 static int ldelnewline( void) ;

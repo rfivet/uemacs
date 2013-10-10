@@ -40,10 +40,12 @@
 char outline[ NSTRING] ;	/* global string to hold debug line text */
 #endif
 
-int gflags = GFREAD ;		/* global control flag */
+int gflags = GFREAD ;		/* global control flag		*/
 int macbug = FALSE ;		/* macro debuging flag          */
 int cmdstatus = TRUE ;		/* last command status          */
 int flickcode = FALSE ;		/* do flicker supression?       */
+int rval = 0 ;			/* return value of a subprocess */
+
 
 static int saveflag = 0 ;	/* Flags, saved with the $target var */
 

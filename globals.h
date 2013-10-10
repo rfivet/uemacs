@@ -10,11 +10,6 @@ extern int ctlxc;		/* current control X prefix char */
 extern int reptc;		/* current universal repeat char */
 extern int abortc;		/* current abort command char   */
 
-extern int tabmask;
-
-
-extern int rval;		/* return value of a subprocess */
-
 /* Uninitialized global external declarations. */
 
 #define CFCPCN  0x0001		/* Last command was C-P, C-N    */

@@ -25,6 +25,9 @@ struct line {
 #define lputc(lp, n, c) ((lp)->l_text[(n)]=(c))
 #define llength(lp)     ((lp)->l_used)
 
+#define	nextab(a)	(a & ~tabmask) + (tabmask+1)
+extern int tabmask ;
+
 char *getkill( void) ;
 
 int backchar( int f, int n) ;

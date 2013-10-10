@@ -19,6 +19,7 @@ extern int gflags ;		/* global control flag          */
 extern int macbug ;		/* macro debuging flag          */
 extern int cmdstatus ;		/* last command status          */
 extern int flickcode ;		/* do flicker supression?       */
+extern int rval ;		/* return value of a subprocess */
 extern long envram ;		/* # of bytes current in use by malloc */
 
 /*	Macro argument token types					*/

@@ -249,7 +249,6 @@
 
 /*	Internal defined functions					*/
 
-#define	nextab(a)	(a & ~tabmask) + (tabmask+1)
 #ifdef	abs
 #undef	abs
 #endif
