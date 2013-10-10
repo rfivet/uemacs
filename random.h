@@ -3,7 +3,9 @@
 
 #define AEDIT 1
 
-extern int tabsize ;  /* Tab size (0: use real tabs). */
+extern int tabsize ;	/* Tab size (0: use real tabs). */
+extern int fillcol ;	/* Fill column                  */
+
 
 int setfillcol( int f, int n) ;
 int showcpos( int f, int n) ;

@@ -5,9 +5,6 @@
 
 /* initialized global definitions */
 
-int fillcol = 72;		/* Current fill column          */
-
-
 int metac = CONTROL | '[';	/* current meta character */
 int ctlxc = CONTROL | 'X';	/* current control X prefix char */
 int reptc = CONTROL | 'U';	/* current universal repeat char */

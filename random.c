@@ -36,10 +36,12 @@ static const char *cname[] = {						/* names of colors */
 
 #define NCOLORS (sizeof cname / sizeof( *cname))	/* # of supported colors */
 
-int gfcolor = NCOLORS - 1 ;		/* global forgrnd color (white) */
-int gbcolor = 0 ;				/* global backgrnd color (black) */
+int gfcolor = NCOLORS - 1 ;	/* global forgrnd color (white)  */
+int gbcolor = 0 ;		/* global backgrnd color (black) */
 
-int tabsize; /* Tab size (0: use real tabs) */
+int tabsize ;			/* Tab size (0: use real tabs)   */
+int fillcol = 72 ;		/* Current fill column           */
+
 
 /*
  * Set fill column to n.

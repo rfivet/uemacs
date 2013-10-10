@@ -5,8 +5,6 @@
 
 /* Initialized global external declarations. */
 
-extern int fillcol;		/* Fill column                  */
-
 extern int metac;		/* current meta character */
 extern int ctlxc;		/* current control X prefix char */
 extern int reptc;		/* current universal repeat char */
