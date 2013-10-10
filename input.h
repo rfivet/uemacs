@@ -14,6 +14,11 @@ extern int kbdm[] ;		/* Holds kayboard macro data    */
 extern int *kbdptr ;		/* current position in keyboard buf */
 extern int *kbdend ;		/* ptr to end of the keyboard	*/
 extern int disinp ;		/* display input characters     */
+extern int metac;		/* current meta character */
+extern int ctlxc;		/* current control X prefix char */
+extern int reptc;		/* current universal repeat char */
+extern int abortc;		/* current abort command char   */
+
 
 int mlyesno( const char *prompt) ;
 int mlreply( const char *prompt, char *buf, int nbuf) ;

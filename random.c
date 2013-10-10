@@ -16,7 +16,6 @@
 #include "buffer.h"
 #include "display.h"
 #include "estruct.h"
-#include "globals.h"
 #include "execute.h"
 #include "input.h"
 #include "line.h"
@@ -41,6 +40,11 @@ int gbcolor = 0 ;		/* global backgrnd color (black) */
 
 int tabsize ;			/* Tab size (0: use real tabs)   */
 int fillcol = 72 ;		/* Current fill column           */
+
+/* uninitialized global definitions */
+
+int thisflag ;			/* Flags, this command		*/
+int lastflag ;			/* Flags, last command		*/
 
 
 /*

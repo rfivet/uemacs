@@ -69,7 +69,6 @@
 #include "bindable.h"
 #include "buffer.h"
 #include "display.h"
-#include "globals.h"    /* Global definitions. */
 #include "eval.h"
 #include "execute.h"
 #include "file.h"

@@ -22,7 +22,6 @@
 
 #include "buffer.h"
 #include "estruct.h"
-#include "globals.h"
 #include "log.h"
 #include "window.h"
 

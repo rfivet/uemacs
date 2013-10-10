@@ -18,12 +18,12 @@
 #include "bind.h"
 #include "display.h"
 #include "estruct.h"
-#include "globals.h"
 #include "eval.h"
 #include "file.h"
 #include "flook.h"
 #include "input.h"
 #include "line.h"
+#include "random.h"
 #include "window.h"
 
 

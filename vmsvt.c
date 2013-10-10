@@ -11,7 +11,6 @@
 
 #include	<stdio.h>	/* Standard I/O package         */
 #include	"estruct.h"	/* Emacs' structures            */
-#include	"globals.h"	/* Emacs' definitions           */
 
 #if	VMSVT
 

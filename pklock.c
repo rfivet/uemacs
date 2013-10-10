@@ -6,7 +6,6 @@
  */
 
 #include "estruct.h"
-#include "globals.h"
 
 #if (FILOCK && BSD) || SVR4
 #include <sys/types.h>

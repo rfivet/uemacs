@@ -12,7 +12,6 @@
 
 #include        <stdio.h>
 #include	"estruct.h"
-#include        "globals.h"
 
 #if     IBMPC
 #if	PKCODE

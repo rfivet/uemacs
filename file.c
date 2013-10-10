@@ -19,7 +19,6 @@
 #include "crypt.h"
 #include "defines.h"
 #include "estruct.h"
-#include "globals.h"
 #include "execute.h"
 #include "fileio.h"
 #include "input.h"

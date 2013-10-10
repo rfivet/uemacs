@@ -31,7 +31,6 @@
 #include "buffer.h"
 #include "display.h"
 #include "estruct.h"
-#include "globals.h"
 #include "exec.h"
 #include "input.h"
 #include "line.h"

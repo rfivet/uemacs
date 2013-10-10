@@ -14,7 +14,6 @@
 #include "basic.h"
 #include "bind.h"
 #include "estruct.h"
-#include "globals.h"
 #include "bindable.h"
 #include "buffer.h"
 #include "eval.h"

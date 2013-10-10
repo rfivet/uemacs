@@ -29,7 +29,6 @@
 
 #include "display.h"
 #include "estruct.h"
-#include "globals.h"
 #include "termio.h"
 
 #if TERMCAP

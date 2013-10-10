@@ -16,7 +16,6 @@
 
 #include "bind.h"
 #include "estruct.h"
-#include "globals.h"
 #include "bindable.h"
 #include "display.h"
 #include "exec.h"
@@ -47,7 +46,12 @@ int kbdrep = 0 ;        /* number of repetitions        */
 
 int disinp = TRUE ;	/* display input characters     */
 
-static const int quotec = 0x11 ;    /* quote char during mlreply() */
+int metac = CONTROL | '[' ;		/* current meta character 	 */
+int ctlxc = CONTROL | 'X' ;		/* current control X prefix char */
+int reptc = CONTROL | 'U' ;		/* current universal repeat char */
+int abortc = CONTROL | 'G' ;		/* current abort command char	 */
+
+static const int quotec = 0x11 ;	/* quote char during mlreply()	 */
 
 /*
  * Ask a yes or no question in the message line. Return either TRUE, FALSE, or

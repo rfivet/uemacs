@@ -7,6 +7,14 @@ extern int tabsize ;	/* Tab size (0: use real tabs). */
 extern int fillcol ;	/* Fill column                  */
 
 
+/* Uninitialized global external declarations. */
+
+#define CFCPCN  0x0001	/* Last command was C-P, C-N    */
+#define CFKILL  0x0002	/* Last command was a kill      */
+
+extern int thisflag ;	/* Flags, this command          */
+extern int lastflag ;	/* Flags, last command          */
+
 int setfillcol( int f, int n) ;
 int showcpos( int f, int n) ;
 int getcline( void) ;

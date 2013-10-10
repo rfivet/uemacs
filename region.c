@@ -14,9 +14,9 @@
 
 #include "buffer.h"
 #include "estruct.h"
-#include "globals.h"
 #include "line.h"
 #include "log.h"
+#include "random.h"
 #include "window.h"
 
 /*

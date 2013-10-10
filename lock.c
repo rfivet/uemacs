@@ -11,7 +11,6 @@
 
 #include "display.h"
 #include "estruct.h"
-#include "globals.h"
 #include "input.h"
 
 #if (FILOCK && BSD) || SVR4

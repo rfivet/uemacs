@@ -4,7 +4,6 @@
 #include <stdlib.h>
 
 #include "estruct.h"
-#include "globals.h"
 #include "bind.h"
 #include "random.h"
 #include "display.h"

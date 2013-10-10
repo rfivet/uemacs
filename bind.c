@@ -14,7 +14,6 @@
 #include <string.h>
 
 #include "estruct.h"
-#include "globals.h"
 #include "bindable.h"
 #include "buffer.h"
 #include "display.h"

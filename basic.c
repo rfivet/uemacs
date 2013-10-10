@@ -19,7 +19,6 @@
 #include "buffer.h"
 #include "display.h"
 #include "estruct.h"
-#include "globals.h"
 #include "input.h"
 #include "line.h"
 #include "random.h"

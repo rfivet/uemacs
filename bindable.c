@@ -8,7 +8,6 @@
 #include "buffer.h"
 #include "display.h"
 #include "estruct.h"
-#include "globals.h"
 #include "file.h"
 #include "input.h"
 #include "lock.h"

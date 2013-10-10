@@ -23,7 +23,6 @@
 #include <unistd.h>
 
 #include "estruct.h"
-#include "globals.h"
 #include "utf8.h"
 
 int ttrow = HUGE ;		/* Row location of HW cursor */
