@@ -394,13 +394,13 @@ struct key_tab keytab[NBINDS] = {
 #endif
 
 #if VT220
-    {SPEC | '1', fisearch}
+    {SPEC | '1', gotobob /* fisearch */}
     ,           /* VT220 keys   */
     {SPEC | '2', yank}
     ,
-    {SPEC | '3', killregion}
+    {SPEC | '3', forwdel /* killregion */}
     ,
-    {SPEC | '4', setmark}
+    {SPEC | '4', gotoeob /* setmark */}
     ,
     {SPEC | '5', backpage}
     ,
