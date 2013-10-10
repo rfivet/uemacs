@@ -1,8 +1,8 @@
-# Makefile for emacs, updated Thu, Oct 10, 2013 12:28:18 PM
+# Makefile for emacs, updated Thu, Oct 10, 2013  1:03:16 PM
 
 SRC=ansi.c basic.c bind.c bindable.c buffer.c crypt.c display.c ebind.c eval.c exec.c execute.c file.c fileio.c flook.c ibmpc.c input.c isearch.c line.c lock.c log.c main.c names.c pklock.c posix.c random.c region.c search.c spawn.c tcap.c termio.c utf8.c vmsvt.c vt52.c window.c word.c wrapper.c
 OBJ=ansi.o basic.o bind.o bindable.o buffer.o crypt.o display.o ebind.o eval.o exec.o execute.o file.o fileio.o flook.o ibmpc.o input.o isearch.o line.o lock.o log.o main.o names.o pklock.o posix.o random.o region.o search.o spawn.o tcap.o termio.o utf8.o vmsvt.o vt52.o window.o word.o wrapper.o
-HDR=basic.h bind.h bindable.h buffer.h crypt.h defines.h display.h ebind.h efunc.h estruct.h eval.h exec.h execute.h file.h fileio.h flook.h input.h isearch.h line.h lock.h log.h names.h pklock.h random.h region.h retcode.h search.h spawn.h terminal.h termio.h utf8.h version.h window.h word.h wrapper.h
+HDR=basic.h bind.h bindable.h buffer.h crypt.h defines.h display.h ebind.h estruct.h eval.h exec.h execute.h file.h fileio.h flook.h input.h isearch.h line.h lock.h log.h names.h pklock.h random.h region.h retcode.h search.h spawn.h terminal.h termio.h utf8.h version.h window.h word.h wrapper.h
 
 # DO NOT ADD OR MODIFY ANY LINES ABOVE THIS -- make source creates them
 
@@ -166,7 +166,7 @@ isearch.o: isearch.c isearch.h basic.h buffer.h crypt.h line.h utf8.h \
  defines.h window.h
 line.o: line.c line.h utf8.h buffer.h crypt.h estruct.h retcode.h log.h \
  window.h defines.h
-lock.o: lock.c lock.h estruct.h retcode.h display.h input.h bind.h
+lock.o: lock.c lock.h estruct.h retcode.h
 log.o: log.c log.h retcode.h
 main.o: main.c estruct.h retcode.h basic.h bind.h bindable.h buffer.h \
  crypt.h line.h utf8.h display.h eval.h execute.h file.h input.h lock.h \
@@ -174,7 +174,7 @@ main.o: main.c estruct.h retcode.h basic.h bind.h bindable.h buffer.h \
 names.o: names.c names.h basic.h bind.h bindable.h buffer.h crypt.h \
  line.h utf8.h display.h eval.h exec.h retcode.h file.h isearch.h \
  region.h random.h search.h spawn.h window.h defines.h word.h
-pklock.o: pklock.c pklock.h estruct.h retcode.h
+pklock.o: pklock.c estruct.h retcode.h pklock.h
 posix.o: posix.c termio.h
 random.o: random.c random.h basic.h buffer.h crypt.h line.h utf8.h \
  display.h estruct.h retcode.h execute.h input.h bind.h log.h search.h \

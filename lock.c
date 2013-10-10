@@ -1,3 +1,4 @@
+#include "estruct.h"
 #include "lock.h"
 
 /*	LOCK.C
@@ -7,17 +8,18 @@
  *	written by Daniel Lawrence
  */
 
+#if	BSD | SVR4
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "display.h"
-#include "estruct.h"
 #include "input.h"
 
 #if (FILOCK && BSD) || SVR4
 #include "pklock.h"
 #endif
 
-#if	BSD | SVR4
 #include <sys/errno.h>
 
 static char *lname[NLOCKS];		/* names of all locked files */

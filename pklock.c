@@ -1,11 +1,11 @@
+/* pklock.c -- implements pklock.h */
+#include "estruct.h"
 #include "pklock.h"
 
 /*	PKLOCK.C
  *
  *	locking routines as modified by Petri Kutvonen
  */
-
-#include "estruct.h"
 
 #if (FILOCK && BSD) || SVR4
 #include <sys/types.h>
