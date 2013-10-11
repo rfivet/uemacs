@@ -87,7 +87,9 @@
 /*	Debugging options	*/
 
 #define	RAMSIZE	0		/* dynamic RAM memory usage tracking */
-#define	RAMSHOW	0		/* auto dynamic RAM reporting */
+#if RAMSIZE
+#define	RAMSHOW	1		/* auto dynamic RAM reporting */
+#endif
 
 #ifndef	AUTOCONF
 
@@ -270,6 +272,9 @@
 /*	Dynamic RAM tracking and reporting redefinitions	*/
 
 #if	RAMSIZE
+#include <stdlib.h>
+void *allocate( size_t size) ;
+void release( void *ptr) ;
 #define	malloc	allocate
 #define	free	release
 #endif

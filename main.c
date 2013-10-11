@@ -510,16 +510,19 @@ static void edinit(char *bname)
 	end of the bottom mode line and is updated whenever it is changed.
 */
 
+static void dspram( void) ;
+
 #undef	malloc
 #undef	free
-
+#if 0
 char *allocate(nbytes)
 			    /* allocate nbytes and track */
 unsigned nbytes;		/* # of bytes to allocate */
-
+#endif
+void *allocate( size_t nbytes)
 {
 	char *mp;		/* ptr returned from malloc */
-	char *malloc();
+/*	char *malloc(); */
 
 	mp = malloc(nbytes);
 	if (mp) {
@@ -532,10 +535,12 @@ unsigned nbytes;		/* # of bytes to allocate */
 	return mp;
 }
 
+#if 0
 release(mp)
     /* release malloced memory and track */
 char *mp;			/* chunk of RAM to release */
-
+#endif
+void release( void *mp)
 {
 	unsigned *lp;		/* ptr to the long containing the block size */
 
@@ -551,7 +556,7 @@ char *mp;			/* chunk of RAM to release */
 }
 
 #if	RAMSHOW
-dspram()
+static void dspram( void)
 {				/* display the amount of RAM currently malloced */
 	char mbuf[20];
 	char *sp;
