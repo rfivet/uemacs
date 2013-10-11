@@ -1,3 +1,7 @@
+/* main.c -- */
+
+#define	CLRMSG	0  /* space clears the message line with no insert */
+
 /*
  *	main.c
 

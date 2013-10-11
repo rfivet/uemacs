@@ -2,6 +2,8 @@
 
 #include "display.h"
 
+#define	REVSTA	1  /* Status line appears in reverse video         */
+
 /*	display.c
  *
  *      The functions in this file handle redisplay. There are two halves, the

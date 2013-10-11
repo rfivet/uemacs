@@ -1,6 +1,8 @@
 /* random.c -- implements random.h */
 #include "random.h"
 
+#define	NBRACE	1  /* new style brace matching command             */
+
 /*	random.c
  *
  *      This file contains the command processing functions for a number of

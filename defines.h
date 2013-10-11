@@ -3,11 +3,12 @@
 */
 #define USG 1
 
-#define	NSTRING	128		/* # of bytes, string buffers   */
-
 #define PKCODE 1
 #define SCROLLCODE 1   /* scrolling code P.K.                          */
 #define ENVFUNC 1
+
+#define	NSTRING	128		/* # of bytes, string buffers	*/
+#define	NPAT	128		/* # of bytes, pattern		*/
 
 #define CONTROL 0x10000000	/* Control flag, or'ed in       */
 #define META    0x20000000	/* Meta flag, or'ed in          */

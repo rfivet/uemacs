@@ -2,6 +2,11 @@
 
 #include "fileio.h"
 
+#ifdef	CTRLZ
+#undef	CTRLZ
+#endif
+#define	CTRLZ	0  /* add a ^Z at end of files under MSDOS only    */
+
 /*  FILEIO.C
  *
  * The routines in this file read and write ASCII files from the disk. All of

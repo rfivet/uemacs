@@ -18,9 +18,6 @@
 #ifdef	EGA
 #undef	EGA
 #endif
-#ifdef	CTRLZ
-#undef	CTRLZ
-#endif
 
 /* Machine/OS definitions. */
 
@@ -122,15 +119,8 @@
 
 /*	Configuration options	*/
 
-#define CVMVAS  1  /* arguments to page forward/back in pages      */
-#define	CLRMSG	0  /* space clears the message line with no insert */
 #define	CFENCE	1  /* fench matching in CMODE                      */
-#define	TYPEAH	1  /* type ahead causes update to be skipped       */
 #define	VISMAC	0  /* update display during keyboard macros        */
-#define	CTRLZ	0  /* add a ^Z at end of files under MSDOS only    */
-#define ADDCR	0  /* ajout d'un CR en fin de chaque ligne (ST520) */
-#define	NBRACE	1  /* new style brace matching command             */
-#define	REVSTA	1  /* Status line appears in reverse video         */
 
 #ifndef	AUTOCONF
 
@@ -148,15 +138,6 @@
 
 #endif /* Autoconf. */
 
-#if 0
-#define	ISRCH	1  /* Incremental searches like ITS EMACS          */
-#define	WORDPRO	1  /* Advanced word processing features            */
-#define	APROP	1  /* Add code for Apropos command                 */
-#define	CRYPT	1  /* file encryption enabled?                     */
-#define MAGIC	1  /* include regular expression matching?         */
-#define	AEDIT	1  /* advanced editing options: en/detabbing       */
-#define	PROC	1  /* named procedures                             */
-#endif
 #define	CLEAN	0  /* de-alloc memory on exit                      */
 
 #define ASCII	1  /* always using ASCII char sequences for now    */
@@ -220,16 +201,6 @@
 #else
 #define	ENVFUNC	0
 #endif
-
-/* Internal constants. */
-
-#define	NSTRING	128		/* # of bytes, string buffers   */
-#define NPAT    128		/* # of bytes, pattern          */
-
-#define CONTROL 0x10000000	/* Control flag, or'ed in       */
-#define META    0x20000000	/* Meta flag, or'ed in          */
-#define CTLX    0x40000000	/* ^X flag, or'ed in            */
-#define	SPEC	0x80000000	/* special key (function keys)  */
 
 /*	Internal defined functions					*/
 

@@ -2,6 +2,8 @@
 
 #include "basic.h"
 
+#define CVMVAS  1  /* arguments to page forward/back in pages      */
+
 /*	basic.c
  *
  * The routines in this file move the cursor around on the screen. They
