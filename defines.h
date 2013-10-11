@@ -3,7 +3,6 @@
 */
 #define USG 1
 
-#define NBUFN   16		/* # of bytes, buffer name      */
 #define	NSTRING	128		/* # of bytes, string buffers   */
 
 #define PKCODE 1
@@ -14,3 +13,6 @@
 #define META    0x20000000	/* Meta flag, or'ed in          */
 #define CTLX    0x40000000	/* ^X flag, or'ed in            */
 #define	SPEC	0x80000000	/* special key (function keys)  */
+
+#define MAXCOL	500
+#define MAXROW	500

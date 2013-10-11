@@ -21,6 +21,8 @@
 #include "region.h"
 #include "window.h"
 
+#define	TAB	0x09		/* a tab character              */
+
 #if	PKCODE
 static int justflag = FALSE ;		/* justify, don't fill */
 #endif

@@ -76,5 +76,6 @@ extern boolean revexist ;	/* does reverse video exist?    */
 extern boolean sgarbf ;		/* State of screen unknown      */
 
 extern char sres[] ;	        /* Current screen resolution.   */
+				/* NORMAL, CGA, EGA, VGA	*/
 
 #endif

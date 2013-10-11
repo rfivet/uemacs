@@ -937,6 +937,8 @@ static int svar(struct variable_description *var, char *value)
  */
 char *itoa(int i)
 {
+	#define	INTWIDTH	sizeof( int) * 3
+
 	int digit;	/* current digit being used */
 	char *sp;	/* pointer into result */
 	int sign;	/* sign of resulting number */

@@ -3,6 +3,8 @@
 
 #include "utf8.h"
 
+#define NLINE   256		/* # of bytes, input line       */
+
 /*
  * All text is kept in circularly linked lists of "struct line" structures. These
  * begin at the header line (which is the blank line beyond the end of the

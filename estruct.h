@@ -12,9 +12,6 @@
  */
 
 
-#define MAXCOL	500
-#define MAXROW	500
-
 #ifdef	MSDOS
 #undef	MSDOS
 #endif
@@ -226,26 +223,15 @@
 
 /* Internal constants. */
 
-#define	NBINDS	256		/* max # of bound keys          */
 #define NFILEN  80		/* # of bytes, file name        */
-#define NBUFN   16		/* # of bytes, buffer name      */
-#define NLINE   256		/* # of bytes, input line       */
 #define	NSTRING	128		/* # of bytes, string buffers   */
 #define NPAT    128		/* # of bytes, pattern          */
 #define HUGE    1000		/* Huge number                  */
-#define	NLOCKS	100		/* max # of file locks active   */
 
 #define CONTROL 0x10000000	/* Control flag, or'ed in       */
 #define META    0x20000000	/* Meta flag, or'ed in          */
 #define CTLX    0x40000000	/* ^X flag, or'ed in            */
 #define	SPEC	0x80000000	/* special key (function keys)  */
-
-#include "retcode.h"
-
-#define	BELL	0x07		/* a bell character             */
-#define	TAB	0x09		/* a tab character              */
-
-#define	INTWIDTH	sizeof(int) * 3
 
 /*	Internal defined functions					*/
 

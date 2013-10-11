@@ -22,8 +22,9 @@
 
 #include <sys/errno.h>
 
-static char *lname[NLOCKS];		/* names of all locked files */
-static int numlocks;			/* # of current locks active */
+#define	NLOCKS	100			/* max # of file locks active	*/
+static char *lname[ NLOCKS] ;		/* names of all locked files	*/
+static int numlocks ;			/* # of current locks active	*/
 
 static void lckerror(char *errstr) ;
 
@@ -45,7 +46,7 @@ int lockchk( const char *fname)
 				return TRUE;
 
 	/* if we have a full locking table, bitch and leave */
-	if (numlocks == NLOCKS) {
+	if( numlocks >= NLOCKS) {
 		mlwrite("LOCK ERROR: Lock table full");
 		return ABORT;
 	}

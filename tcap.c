@@ -37,7 +37,8 @@ boolean eolexist = TRUE ;	/* does clear to EOL exist      */
 boolean revexist = FALSE ;	/* does reverse video exist?    */
 boolean sgarbf = TRUE ;		/* TRUE if screen is garbage    */
 
-char sres[ NBUFN] ;		/* current screen resolution    */
+char sres[ 16] ;		/* current screen resolution    */
+				/* NORMAL, CGA, EGA, VGA	*/
 
 #if UNIX
 #include <signal.h>

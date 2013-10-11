@@ -15,6 +15,7 @@
 #include <stdlib.h>
 
 #include "estruct.h"
+#include "retcode.h"
 #include "utf8.h"
 
 

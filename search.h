@@ -5,6 +5,8 @@
 
 #include "line.h"
 
+#define	BELL	0x07		/* a bell character             */
+
 extern unsigned int matchlen ;
 extern char *patmatch ;
 

@@ -126,77 +126,76 @@ depend: ${SRC}
 
 # DO NOT DELETE THIS LINE -- make depend uses it
 
-ansi.o: ansi.c estruct.h retcode.h
+ansi.o: ansi.c estruct.h
 basic.o: basic.c basic.h buffer.h crypt.h line.h utf8.h display.h \
- estruct.h retcode.h input.h bind.h random.h terminal.h defines.h \
+ estruct.h input.h bind.h random.h terminal.h defines.h retcode.h \
  window.h
-bind.o: bind.c bind.h estruct.h retcode.h bindable.h buffer.h crypt.h \
- line.h utf8.h display.h ebind.h exec.h file.h flook.h input.h names.h \
+bind.o: bind.c bind.h estruct.h bindable.h buffer.h crypt.h line.h utf8.h \
+ display.h ebind.h exec.h retcode.h file.h flook.h input.h names.h \
  window.h defines.h
 bindable.o: bindable.c bindable.h defines.h buffer.h crypt.h line.h \
- utf8.h display.h estruct.h retcode.h file.h input.h bind.h lock.h \
+ utf8.h display.h estruct.h file.h retcode.h input.h bind.h lock.h \
  terminal.h
 buffer.o: buffer.c buffer.h crypt.h line.h utf8.h defines.h display.h \
- estruct.h retcode.h file.h input.h bind.h window.h
+ estruct.h file.h retcode.h input.h bind.h window.h
 crypt.o: crypt.c crypt.h
 display.o: display.c display.h buffer.h crypt.h line.h utf8.h estruct.h \
- retcode.h input.h bind.h termio.h terminal.h defines.h version.h \
+ input.h bind.h termio.h terminal.h defines.h retcode.h version.h \
  wrapper.h window.h
-ebind.o: ebind.c ebind.h basic.h bind.h estruct.h retcode.h bindable.h \
- buffer.h crypt.h line.h utf8.h eval.h exec.h file.h isearch.h random.h \
+ebind.o: ebind.c ebind.h basic.h bind.h estruct.h bindable.h buffer.h \
+ crypt.h line.h utf8.h eval.h exec.h retcode.h file.h isearch.h random.h \
  region.h search.h spawn.h window.h defines.h word.h
 eval.o: eval.c eval.h basic.h bind.h buffer.h crypt.h line.h utf8.h \
- display.h estruct.h retcode.h exec.h execute.h flook.h input.h random.h \
+ display.h estruct.h exec.h retcode.h execute.h flook.h input.h random.h \
  search.h terminal.h defines.h termio.h version.h window.h
 exec.o: exec.c exec.h retcode.h buffer.h crypt.h line.h utf8.h bind.h \
  display.h estruct.h eval.h file.h flook.h input.h random.h window.h \
  defines.h
-execute.o: execute.c execute.h estruct.h retcode.h bind.h random.h \
- display.h file.h crypt.h buffer.h line.h utf8.h terminal.h defines.h \
- window.h
+execute.o: execute.c execute.h estruct.h bind.h random.h display.h file.h \
+ crypt.h retcode.h buffer.h line.h utf8.h terminal.h defines.h window.h
 file.o: file.c file.h crypt.h retcode.h buffer.h line.h utf8.h defines.h \
  estruct.h execute.h fileio.h input.h bind.h lock.h log.h window.h
 fileio.o: fileio.c fileio.h crypt.h retcode.h defines.h
 flook.o: flook.c flook.h retcode.h defines.h fileio.h crypt.h
-ibmpc.o: ibmpc.c estruct.h retcode.h
-input.o: input.c input.h bind.h estruct.h retcode.h bindable.h display.h \
- exec.h names.h terminal.h defines.h wrapper.h
+ibmpc.o: ibmpc.c estruct.h
+input.o: input.c input.h bind.h estruct.h bindable.h display.h exec.h \
+ retcode.h names.h terminal.h defines.h wrapper.h
 isearch.o: isearch.c isearch.h basic.h buffer.h crypt.h line.h utf8.h \
- display.h estruct.h retcode.h exec.h input.h bind.h search.h terminal.h \
+ display.h estruct.h exec.h retcode.h input.h bind.h search.h terminal.h \
  defines.h window.h
-line.o: line.c line.h utf8.h buffer.h crypt.h estruct.h retcode.h log.h \
+line.o: line.c line.h utf8.h buffer.h crypt.h estruct.h log.h retcode.h \
  window.h defines.h
-lock.o: lock.c lock.h estruct.h retcode.h
+lock.o: lock.c estruct.h lock.h
 log.o: log.c log.h retcode.h
-main.o: main.c estruct.h retcode.h basic.h bind.h bindable.h buffer.h \
- crypt.h line.h utf8.h display.h eval.h execute.h file.h input.h lock.h \
+main.o: main.c estruct.h basic.h bind.h bindable.h buffer.h crypt.h \
+ line.h utf8.h display.h eval.h execute.h file.h retcode.h input.h lock.h \
  log.h random.h search.h terminal.h defines.h termio.h version.h window.h
 names.o: names.c names.h basic.h bind.h bindable.h buffer.h crypt.h \
  line.h utf8.h display.h eval.h exec.h retcode.h file.h isearch.h \
  region.h random.h search.h spawn.h window.h defines.h word.h
-pklock.o: pklock.c estruct.h retcode.h pklock.h
+pklock.o: pklock.c estruct.h pklock.h
 posix.o: posix.c termio.h
 random.o: random.c random.h basic.h buffer.h crypt.h line.h utf8.h \
- display.h estruct.h retcode.h execute.h input.h bind.h log.h search.h \
+ display.h estruct.h execute.h input.h bind.h log.h retcode.h search.h \
  terminal.h defines.h window.h
 region.o: region.c region.h line.h utf8.h buffer.h crypt.h estruct.h \
- retcode.h log.h random.h window.h defines.h
+ log.h retcode.h random.h window.h defines.h
 search.o: search.c search.h line.h utf8.h basic.h buffer.h crypt.h \
- display.h estruct.h retcode.h input.h bind.h log.h terminal.h defines.h \
+ display.h estruct.h input.h bind.h log.h retcode.h terminal.h defines.h \
  window.h
 spawn.o: spawn.c spawn.h defines.h buffer.h crypt.h line.h utf8.h \
- display.h estruct.h retcode.h exec.h file.h flook.h input.h bind.h log.h \
+ display.h estruct.h exec.h retcode.h file.h flook.h input.h bind.h log.h \
  terminal.h window.h
 tcap.o: tcap.c terminal.h defines.h retcode.h display.h estruct.h \
  termio.h
 termio.o: termio.c termio.h estruct.h retcode.h utf8.h
 utf8.o: utf8.c utf8.h
-vmsvt.o: vmsvt.c estruct.h retcode.h
-vt52.o: vt52.c estruct.h retcode.h
+vmsvt.o: vmsvt.c estruct.h
+vt52.o: vt52.c estruct.h
 window.o: window.c window.h defines.h buffer.h crypt.h line.h utf8.h \
- basic.h display.h estruct.h retcode.h execute.h terminal.h wrapper.h
+ basic.h display.h estruct.h execute.h terminal.h retcode.h wrapper.h
 word.o: word.c word.h basic.h buffer.h crypt.h line.h utf8.h estruct.h \
- retcode.h log.h random.h region.h window.h defines.h
+ log.h retcode.h random.h region.h window.h defines.h
 wrapper.o: wrapper.c wrapper.h
 
 # DEPENDENCIES MUST END AT END OF FILE
