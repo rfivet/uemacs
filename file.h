@@ -11,6 +11,8 @@ void cryptbufferkey( struct buffer *bp) ;
 int  set_encryption_key( int f, int n) ;
 #endif
 
+#define NFILEN  80			/* # of bytes, file name        */
+
 extern boolean restflag ;		/* restricted use?              */
 
 int fileread( int f, int n) ;

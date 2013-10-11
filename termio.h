@@ -1,7 +1,9 @@
 #ifndef _TERMIO_H_
 #define _TERMIO_H_
 
-extern int ttrow ;		/* Row location of HW cursor */
+#define HUGE    1000		/* Huge number (for row/col)	*/
+
+extern int ttrow ;		/* Row location of HW cursor	*/
 extern int ttcol ;		/* Column location of HW cursor */
 
 void ttopen( void) ;

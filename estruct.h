@@ -223,10 +223,8 @@
 
 /* Internal constants. */
 
-#define NFILEN  80		/* # of bytes, file name        */
 #define	NSTRING	128		/* # of bytes, string buffers   */
 #define NPAT    128		/* # of bytes, pattern          */
-#define HUGE    1000		/* Huge number                  */
 
 #define CONTROL 0x10000000	/* Control flag, or'ed in       */
 #define META    0x20000000	/* Meta flag, or'ed in          */
