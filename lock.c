@@ -13,8 +13,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "defines.h"
 #include "display.h"
 #include "input.h"
+#include "retcode.h"
 
 #if (FILOCK && BSD) || SVR4
 #include "pklock.h"
