@@ -40,7 +40,7 @@ static const char *cname[] = {						/* names of colors */
 int gfcolor = NCOLORS - 1 ;	/* global forgrnd color (white)  */
 int gbcolor = 0 ;		/* global backgrnd color (black) */
 
-int tabsize ;			/* Tab size (0: use real tabs)   */
+static int tabsize ;		/* Tab size (0: use real tabs)   */
 int fillcol = 72 ;		/* Current fill column           */
 
 /* uninitialized global definitions */
@@ -345,6 +345,8 @@ int detab(int f, int n)
  */
 int entab(int f, int n)
 {
+#define	nextab(a)	(a & ~tabmask) + (tabmask+1)
+
 	int inc;	/* increment to next line [sgn(n)] */
 	int fspace;	/* pointer to first space if in a run */
 	int ccol;	/* current cursor column */
