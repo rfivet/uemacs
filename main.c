@@ -234,7 +234,8 @@ int main(int argc, char **argv)
 			case 'k':	/* -k<key> for code key */
 			case 'K':
 				cryptflag = TRUE;
-				strcpy(ekey, &argv[carg][2]);
+				strncpy( ekey, &argv[ carg][ 2], sizeof ekey - 1) ; /* max encryption pattern limited to NPAT - 1 */
+				ekey[ sizeof ekey - 1] = 0 ;
 				break;
 #endif
 			case 'r':	/* -r restrictive use */
@@ -272,7 +273,8 @@ int main(int argc, char **argv)
 
 			/* set this to inactive */
 			bp = bfind(bname, TRUE, 0);
-			strcpy(bp->b_fname, argv[carg]);
+			strncpy( bp->b_fname, argv[ carg], NFILEN - 1) ; /* max filename length limited to NFILEN - 1 (79) */
+			bp->b_fname[ NFILEN - 1] = 0 ;
 			bp->b_active = FALSE;
 			if (firstfile) {
 				firstbp = bp;
