@@ -59,9 +59,9 @@ int usebuffer(int f, int n)
 {
 	struct buffer *bp;
 	int s;
-	char bufn[NBUFN];
+	bname_t bufn ;
 
-	if ((s = mlreply("Use buffer: ", bufn, NBUFN)) != TRUE)
+	if ((s = mlreply("Use buffer: ", bufn, sizeof bufn)) != TRUE)
 		return s;
 	if ((bp = bfind(bufn, TRUE, 0)) == NULL)
 		return FALSE;
@@ -168,9 +168,9 @@ int killbuffer(int f, int n)
 {
 	struct buffer *bp;
 	int s;
-	char bufn[NBUFN];
+	bname_t bufn ;
 
-	if ((s = mlreply("Kill buffer: ", bufn, NBUFN)) != TRUE)
+	if ((s = mlreply("Kill buffer: ", bufn, sizeof bufn)) != TRUE)
 		return s;
 	if ((bp = bfind(bufn, FALSE, 0)) == NULL)	/* Easy if unknown.     */
 		return TRUE;
@@ -218,10 +218,10 @@ int zotbuf(struct buffer *bp)
 int namebuffer(int f, int n)
 {
 	struct buffer *bp;	/* pointer to scan through all buffers */
-	char bufn[NBUFN];	/* buffer to hold buffer name */
+	bname_t bufn ;	/* buffer to hold buffer name */
 
 	/* prompt for and get the new buffer name */
-      ask:if (mlreply("Change buffer name to: ", bufn, NBUFN) !=
+      ask:if (mlreply("Change buffer name to: ", bufn, sizeof bufn) !=
 	    TRUE)
 		return FALSE;
 

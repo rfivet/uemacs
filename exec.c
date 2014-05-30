@@ -319,7 +319,7 @@ int nextarg(const char *prompt, char *buffer, int size, int terminator)
 int storemac(int f, int n)
 {
 	struct buffer *bp;	/* pointer to macro buffer */
-	char bname[NBUFN];	/* name of buffer to use */
+	bname_t bname ;	/* name of buffer to use */
 
 	/* must have a numeric argument to this function */
 	if (f == FALSE) {
@@ -366,7 +366,7 @@ int storeproc(int f, int n)
 {
 	struct buffer *bp;	/* pointer to macro buffer */
 	int status;	/* return status */
-	char bname[NBUFN];	/* name of buffer to use */
+	bname_t bname ;	/* name of buffer to use */
 
 	/* a numeric argument means its a numbered macro */
 	if (f == TRUE)
@@ -374,7 +374,7 @@ int storeproc(int f, int n)
 
 	/* get the name of the procedure */
 	if ((status =
-	     mlreply("Procedure name: ", &bname[1], NBUFN - 2)) != TRUE)
+	     mlreply("Procedure name: ", &bname[1], sizeof bname - 2)) != TRUE)
 		return status;
 
 	/* construct the macro buffer name */
@@ -441,10 +441,10 @@ int execbuf(int f, int n)
 {
 	struct buffer *bp;	/* ptr to buffer to execute */
 	int status;	/* status return */
-	char bufn[NSTRING];	/* name of buffer to execute */
+	bname_t bufn ;	/* name of buffer to execute */
 
 	/* find out what buffer the user wants to execute */
-	if ((status = mlreply("Execute buffer: ", bufn, NBUFN)) != TRUE)
+	if ((status = mlreply("Execute buffer: ", bufn, sizeof bufn)) != TRUE)
 		return status;
 
 	/* find the pointer to that buffer */
@@ -952,7 +952,7 @@ int dofile(char *fname)
 	struct buffer *bp;	/* buffer to place file to exeute */
 	struct buffer *cb;	/* temp to hold current buf while we read */
 	int status;	/* results of various calls */
-	char bname[NBUFN];	/* name of buffer */
+	bname_t bname ;	/* name of buffer */
 
 	makename(bname, fname);	/* derive the name of the buffer */
 	unqname(bname);		/* make sure we don't stomp things */

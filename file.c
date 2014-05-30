@@ -215,7 +215,7 @@ int getfile( const char *fname, boolean lockfl)
     struct line *lp;
     int i;
     int s;
-    char bname[NBUFN];  /* buffer name to put file */
+    bname_t bname ;  /* buffer name to put file */
 
 #if MSDOS
     mklower(fname);     /* msdos isn't case sensitive */
@@ -238,7 +238,7 @@ int getfile( const char *fname, boolean lockfl)
     makename(bname, fname); /* New buffer name.     */
     while ((bp = bfind(bname, FALSE, 0)) != NULL) {
         /* old buffer name conflict code */
-        s = mlreply("Buffer name: ", bname, NBUFN);
+        s = mlreply("Buffer name: ", bname, sizeof bname);
         if (s == ABORT) /* ^G to just quit      */
             return s;
         if (s == FALSE) {   /* CR to clobber it     */

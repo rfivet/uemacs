@@ -156,7 +156,7 @@ int main(int argc, char **argv)
 	int searchflag;		/* Do we need to search at start? */
 	int saveflag;		/* temp store for lastflag */
 	int errflag;		/* C error processing? */
-	char bname[NBUFN];	/* buffer name of file to read */
+	bname_t bname ;	/* buffer name of file to read */
 #if	CRYPT
 	int cryptflag;		/* encrypting on the way in? */
 	char ekey[NPAT];	/* startup encryption key */
