@@ -4,9 +4,10 @@
 #include "crypt.h"
 #include "line.h"
 
-#define NFILEN  80		/* # of bytes, file name        */
 #define NBUFN   16		/* # of bytes, buffer name      */
 #define NPAT    128		/* # of bytes, pattern          */
+
+typedef char fname_t[ 80] ;
 
 /*
  * Text is kept in buffers. A buffer header, described below, exists for every
@@ -30,7 +31,7 @@ struct buffer {
 	char b_active;		/* window activated flag        */
 	char b_nwnd;		/* Count of windows on buffer   */
 	char b_flag;		/* Flags                        */
-	char b_fname[NFILEN];	/* File name                    */
+	fname_t b_fname ;	/* File name                    */
 	char b_bname[NBUFN];	/* Buffer name                  */
 #if CRYPT
 	char b_key[NPAT];	/* current encrypted key        */

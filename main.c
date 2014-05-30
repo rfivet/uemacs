@@ -274,8 +274,8 @@ int main(int argc, char **argv)
 
 			/* set this to inactive */
 			bp = bfind(bname, TRUE, 0);
-			strncpy( bp->b_fname, argv[ carg], NFILEN - 1) ; /* max filename length limited to NFILEN - 1 (79) */
-			bp->b_fname[ NFILEN - 1] = 0 ;
+			strncpy( bp->b_fname, argv[ carg], sizeof bp->b_fname - 1) ; /* max filename length limited to NFILEN - 1 (79) */
+			bp->b_fname[ sizeof bp->b_fname - 1] = 0 ;
 			bp->b_active = FALSE;
 			if (firstfile) {
 				firstbp = bp;

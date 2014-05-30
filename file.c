@@ -60,11 +60,11 @@ boolean restflag = FALSE ;	/* restricted use?              */
 int fileread(int f, int n)
 {
     int s;
-    char fname[NFILEN];
+    fname_t fname ;
 
     if (restflag)       /* don't allow this command if restricted */
         return resterr();
-    if ((s = mlreply("Read file: ", fname, NFILEN)) != TRUE)
+    if ((s = mlreply("Read file: ", fname, sizeof fname)) != TRUE)
         return s;
     return readin(fname, TRUE);
 }
@@ -79,13 +79,13 @@ int fileread(int f, int n)
 int insfile(int f, int n)
 {
     int s;
-    char fname[NFILEN];
+    fname_t fname ;
 
     if (restflag)       /* don't allow this command if restricted */
         return resterr();
     if (curbp->b_mode & MDVIEW) /* don't allow this command if      */
         return rdonly();    /* we are in read only mode     */
-    if ((s = mlreply("Insert file: ", fname, NFILEN)) != TRUE)
+    if ((s = mlreply("Insert file: ", fname, sizeof fname)) != TRUE)
         return s;
     if ((s = ifile(fname)) != TRUE)
         return s;
@@ -103,25 +103,25 @@ int insfile(int f, int n)
  */
 int filefind(int f, int n)
 {
-    char fname[NFILEN]; /* file user wishes to find */
+    fname_t fname ; /* file user wishes to find */
     int s;      /* status return */
 
     if (restflag)       /* don't allow this command if restricted */
         return resterr();
-    if ((s = mlreply("Find file: ", fname, NFILEN)) != TRUE)
+    if ((s = mlreply("Find file: ", fname, sizeof fname)) != TRUE)
         return s;
     return getfile(fname, TRUE);
 }
 
 int viewfile(int f, int n)
 {               /* visit a file in VIEW mode */
-    char fname[NFILEN]; /* file user wishes to find */
+    fname_t fname ; /* file user wishes to find */
     int s;      /* status return */
     struct window *wp;  /* scan for windows that need updating */
 
     if (restflag)       /* don't allow this command if restricted */
         return resterr();
-    if ((s = mlreply("View file: ", fname, NFILEN)) != TRUE)
+    if ((s = mlreply("View file: ", fname, sizeof fname)) != TRUE)
         return s;
     s = getfile(fname, FALSE);
     if (s) {        /* if we succeed, put it in view mode */
@@ -481,11 +481,11 @@ int filewrite(int f, int n)
 {
     struct window *wp;
     int s;
-    char fname[NFILEN];
+    fname_t fname ;
 
     if (restflag)       /* don't allow this command if restricted */
         return resterr();
-    if ((s = mlreply("Write file: ", fname, NFILEN)) != TRUE)
+    if ((s = mlreply("Write file: ", fname, sizeof fname)) != TRUE)
         return s;
     if ((s = writeout(fname)) == TRUE) {
         strcpy(curbp->b_fname, fname);
@@ -608,11 +608,11 @@ int filename(int f, int n)
 {
     struct window *wp;
     int s;
-    char fname[NFILEN];
+    fname_t fname ;
 
     if (restflag)       /* don't allow this command if restricted */
         return resterr();
-    if ((s = mlreply("Name: ", fname, NFILEN)) == ABORT)
+    if ((s = mlreply("Name: ", fname, sizeof fname)) == ABORT)
         return s;
     if (s == FALSE)
         strcpy(curbp->b_fname, "");
