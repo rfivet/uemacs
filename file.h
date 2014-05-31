@@ -1,12 +1,11 @@
 #ifndef _FILE_H_
 #define _FILE_H_
 
+#include "buffer.h"
 #include "crypt.h"
 #include "retcode.h"
 
 #if CRYPT
-#include "buffer.h"
-
 void cryptbufferkey( struct buffer *bp) ;
 int  set_encryption_key( int f, int n) ;
 #endif
@@ -19,7 +18,7 @@ int filefind( int f, int n) ;
 int viewfile( int f, int n) ;
 int getfile( const char *fname, boolean lockfl) ;
 int readin( const char *fname, boolean lockfl) ;
-void makename( char *bname, const char *fname) ;
+void makename( bname_t bname, const char *fname) ;
 void unqname( char *name) ;
 int filewrite( int f, int n) ;
 int filesave( int f, int n) ;

@@ -411,7 +411,7 @@ int readin(const char *fname, boolean lockfl)
  * I suppose that this information could be put in
  * a better place than a line of code.
  */
-void makename(char *bname, const char *fname)
+void makename( bname_t bname, const char *fname)
 {
     const char *cp1;
     char *cp2;
@@ -439,7 +439,7 @@ void makename(char *bname, const char *fname)
         --cp1;
 #endif
     cp2 = &bname[0];
-    while (cp2 != &bname[NBUFN - 1] && *cp1 != 0 && *cp1 != ';')
+    while( cp2 != &bname[ sizeof( bname_t) - 1] && *cp1 != 0 && *cp1 != ';')
         *cp2++ = *cp1++;
     *cp2 = 0;
 }
