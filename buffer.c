@@ -310,7 +310,7 @@ static int makelist( int iflag)
 	int s;
 	int i;
 	long nbytes;		/* # of bytes in current buffer */
-	char b[7 + 1];
+	char b[ 8 + 1] ;
 	char line[MAXLINE];
 
 	blistp->b_flag &= ~BFCHG;	/* Don't complain!      */
@@ -375,24 +375,28 @@ static int makelist( int iflag)
 			else
 				*cp1++ = '.';
 		}
-		*cp1++ = ' ';	/* Gap.                 */
+
+	/* No gap as buffer size if left padded with space */
+	
+	/* Buffer size */
 		nbytes = 0L;	/* Count bytes in buf.  */
 		lp = lforw(bp->b_linep);
 		while (lp != bp->b_linep) {
 			nbytes += (long) llength(lp) + 1L;
 			lp = lforw(lp);
 		}
-		ltoa(b, 7, nbytes);	/* 6 digit buffer size. */
+		ltoa( b, sizeof b, nbytes) ;	/* 8 digits string buffer size. */
 		cp2 = &b[0];
 		while ((c = *cp2++) != 0)
 			*cp1++ = c;
+
 		*cp1++ = ' ';	/* Gap.                 */
 		cp2 = &bp->b_bname[0];	/* Buffer name          */
 		while ((c = *cp2++) != 0)
 			*cp1++ = c;
 		cp2 = &bp->b_fname[0];	/* File name            */
 		if (*cp2 != 0) {
-			while( cp1 < &line[ 3 + 1 + NUMMODES + 1 + 6 + 1 + NBUFN + 1])
+			while( cp1 < &line[ 3 + 1 + NUMMODES + 8 + 1 + (NBUFN-1) + 1])
 				*cp1++ = ' ';
 			while ((c = *cp2++) != 0) {
 				if (cp1 < &line[MAXLINE - 1])
@@ -409,13 +413,13 @@ static int makelist( int iflag)
 
 static void ltoa(char *buf, int width, long num)
 {
-	buf[width] = 0;		/* End of string.       */
+	buf[ --width] = 0 ;		/* End of string.       */
 	while (num >= 10) {	/* Conditional digits.  */
 		buf[--width] = (int) (num % 10L) + '0';
 		num /= 10L;
 	}
 	buf[--width] = (int) num + '0';	/* Always 1 digit.      */
-	while (width != 0)	/* Pad with blanks.     */
+	while( width > 0)	/* Pad with blanks.     */
 		buf[--width] = ' ';
 }
 
