@@ -159,7 +159,7 @@ int main(int argc, char **argv)
 	bname_t bname ;	/* buffer name of file to read */
 #if	CRYPT
 	int cryptflag;		/* encrypting on the way in? */
-	char ekey[NPAT];	/* startup encryption key */
+	ekey_t	ekey ;	/* startup encryption key */
 #endif
 	int newc;
 
@@ -234,7 +234,7 @@ int main(int argc, char **argv)
 			case 'k':	/* -k<key> for code key */
 			case 'K':
 				cryptflag = TRUE;
-				strncpy( ekey, &argv[ carg][ 2], sizeof ekey - 1) ; /* max encryption pattern limited to NPAT - 1 */
+				strncpy( ekey, &argv[ carg][ 2], sizeof ekey - 1) ;
 				ekey[ sizeof ekey - 1] = 0 ;
 				break;
 #endif
@@ -288,7 +288,7 @@ int main(int argc, char **argv)
 #if	CRYPT
 			if (cryptflag) {
 				bp->b_mode |= MDCRYPT;
-				strncpy( bp->b_key, ekey, NPAT) ;
+				strncpy( bp->b_key, ekey, sizeof ekey) ;
 				cryptbufferkey( bp) ;
 			}
 #endif

@@ -153,14 +153,14 @@ int set_encryption_key(int f, int n)
 {
 	int status;	/* return status */
 	int odisinp;		/* original vlaue of disinp */
-	char key[NPAT];		/* new encryption string */
+	ekey_t	key ;	/* new encryption string */
 
 	/* turn command input echo off */
 	odisinp = disinp;
 	disinp = FALSE;
 
 	/* get the string to use as an encrytion string */
-	status = mlreply("Encryption String: ", key, NPAT - 1);
+	status = mlreply("Encryption String: ", key, sizeof key - 1);
 	disinp = odisinp;
 	if (status != TRUE)
 		return status;
