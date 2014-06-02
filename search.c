@@ -87,9 +87,9 @@ char *patmatch = NULL ;
 static struct line *matchline = NULL;
 static int matchoff = 0;
 
-char pat[ NPAT] ;	/* Search pattern               */
-char tap[ NPAT] ;	/* Reversed pattern array.      */
-char rpat[ NPAT] ;	/* replacement pattern          */
+spat_t pat ;	/* Search pattern               */
+spat_t tap ;	/* Reversed pattern array.      */
+spat_t rpat ;	/* replacement pattern          */
 
 
 #if defined(MAGIC)
@@ -815,7 +815,7 @@ static int replaces(int kind, int f, int n)
 	int nlflag;		/* last char of search string a <NL>? */
 	int nlrepl;		/* was a replace done on the last line? */
 	char c;			/* input char for query */
-	char tpat[NPAT];	/* temporary to hold search pattern */
+	spat_t tpat ;	/* temporary to hold search pattern */
 	struct line *origline;		/* original "." position */
 	int origoff;		/* and offset (for . query option) */
 	struct line *lastline;		/* position of last replace and */

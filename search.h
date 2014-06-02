@@ -7,12 +7,15 @@
 
 #define	BELL	0x07		/* a bell character             */
 
+typedef char spat_t[ 128] ;		/* search pattern type */
+#define	NPAT sizeof( spat_t)	/* # of bytes, pattern		*/
+
 extern unsigned int matchlen ;
 extern char *patmatch ;
 
-extern char pat[] ;		/* Search pattern               */
-extern char tap[] ;		/* Reversed pattern array.      */
-extern char rpat[] ;		/* replacement pattern          */
+extern spat_t pat ;		/* Search pattern               */
+extern spat_t tap ;		/* Reversed pattern array.      */
+extern spat_t rpat ;	/* replacement pattern          */
 
 /*
  * PTBEG, PTEND, FORWARD, and REVERSE are all toggle-able values for

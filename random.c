@@ -937,7 +937,7 @@ int adjustmode(int kind, int global)
 	int i;		/* loop index */
 	int status;	/* error return on input */
 	char prompt[50];	/* string to prompt user with */
-	char cbuf[NPAT];	/* buffer to recieve mode name into */
+	char cbuf[ NSTRING] ;	/* buffer to recieve mode name into */
 
 	/* build the proper prompt string */
 	if (global)
@@ -952,7 +952,7 @@ int adjustmode(int kind, int global)
 
 	/* prompt the user and get an answer */
 
-	status = mlreply(prompt, cbuf, NPAT - 1);
+	status = mlreply( prompt, cbuf, sizeof cbuf - 1) ;
 	if (status != TRUE)
 		return status;
 
@@ -1033,11 +1033,11 @@ int writemsg(int f, int n)
 	char *sp;	/* pointer into buf to expand %s */
 	char *np;	/* ptr into nbuf */
 	int status;
-	char buf[NPAT];		/* buffer to recieve message into */
-	char nbuf[NPAT * 2];	/* buffer to expand string into */
+	char buf[ NSTRING] ;		/* buffer to recieve message into */
+	char nbuf[ NSTRING * 2] ;	/* buffer to expand string into */
 
 	if ((status =
-	     mlreply("Message to write: ", buf, NPAT - 1)) != TRUE)
+	     mlreply("Message to write: ", buf, sizeof buf - 1)) != TRUE)
 		return status;
 
 	/* expand all '%' to "%%" so mlwrite won't expect arguments */
@@ -1231,11 +1231,11 @@ int fmatch(int ch)
 int istring(int f, int n)
 {
 	int status;	/* status return code */
-	char tstring[NPAT + 1];	/* string to add */
+	char tstring[ NSTRING + 1] ;	/* string to add */
 
 	/* ask for string to insert */
 	status =
-	    mlreplyt("String to insert<META>: ", tstring, NPAT, metac);
+	    mlreplyt("String to insert<META>: ", tstring, NSTRING, metac) ;
 	if (status != TRUE)
 		return status;
 
@@ -1259,11 +1259,11 @@ int istring(int f, int n)
 int ovstring(int f, int n)
 {
 	int status;	/* status return code */
-	char tstring[NPAT + 1];	/* string to add */
+	char tstring[ NSTRING + 1] ;	/* string to add */
 
 	/* ask for string to insert */
 	status =
-	    mlreplyt("String to overwrite<META>: ", tstring, NPAT, metac);
+	    mlreplyt( "String to overwrite<META>: ", tstring, NSTRING, metac) ;
 	if (status != TRUE)
 		return status;
 

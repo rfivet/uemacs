@@ -61,7 +61,7 @@ static const int quotec = 0x11 ;	/* quote char during mlreply()	 */
 int mlyesno( const char *prompt)
 {
     char c;         /* input character */
-    char buf[NPAT];     /* prompt to user */
+    char buf[ NSTRING] ;	/* prompt to user */
 
     for (;;) {
         /* build and prompt the user */
@@ -69,7 +69,7 @@ int mlyesno( const char *prompt)
         strcat(buf, " (y/n)? ");
         mlwrite(buf);
 
-        /* get the responce */
+        /* get the response */
         c = tgetc();
 
         if (c == ectoc(abortc)) /* Bail out! */

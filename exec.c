@@ -72,7 +72,7 @@ static const char *dname[] = {
 	"force"
 };
 
-static char golabel[ NPAT] = "" ;	/* current line to go to        */
+static char golabel[ NSTRING] = "" ;	/* current line to go to        */
 static int execlevel = 0 ;			/* execution IF level           */
 static struct buffer *bstore = NULL ;	/* buffer to store macro text to */
 static int mstore = FALSE ;			/* storing text to macro flag   */
@@ -798,7 +798,7 @@ static int dobuf(struct buffer *bp)
 
 					/* grab label to jump to */
 					eline =
-					    token(eline, golabel, NPAT);
+					    token( eline, golabel, sizeof golabel) ;
 					linlen = strlen(golabel);
 					glp = hlp->l_fp;
 					while (glp != hlp) {

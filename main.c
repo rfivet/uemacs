@@ -245,8 +245,8 @@ int main(int argc, char **argv)
 			case 's':	/* -s for initial search string */
 			case 'S':
 				searchflag = TRUE;
-				strncpy( pat, &argv[ carg][ 2], NPAT - 1) ;
-				pat[ NPAT -1] = 0 ;
+				strncpy( pat, &argv[ carg][ 2], sizeof pat - 1) ;
+				pat[ sizeof pat -1] = 0 ;
 				break;
 			case 'v':	/* -v for View File */
 			case 'V':

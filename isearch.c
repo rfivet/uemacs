@@ -188,7 +188,7 @@ static int isearch(int f, int n)
 	int cpos;	/* character number in search string  */
 	int c;		/* current input character */
 	int expc;	/* function expanded input char       */
-	char pat_save[NPAT];	/* Saved copy of the old pattern str  */
+	spat_t pat_save ;	/* Saved copy of the old pattern str  */
 	struct line *curline;		/* Current line on entry              */
 	int curoff;		/* Current offset on entry            */
 	int init_direction;	/* The initial search direction       */
@@ -198,7 +198,7 @@ static int isearch(int f, int n)
 	cmd_reexecute = -1;	/* We're not re-executing (yet?)      */
 	cmd_offset = 0;		/* Start at the beginning of the buff */
 	cmd_buff[0] = '\0';	/* Init the command buffer            */
-	strncpy(pat_save, pat, NPAT);	/* Save the old pattern string        */
+	strncpy( pat_save, pat, sizeof pat_save) ;	/* Save the old pattern string        */
 	curline = curwp->w_dotp;	/* Save the current line pointer      */
 	curoff = curwp->w_doto;	/* Save the current offset            */
 	init_direction = n;	/* Save the initial search direction  */
@@ -276,7 +276,7 @@ static int isearch(int f, int n)
 			curwp->w_dotp = curline;	/* Reset the line pointer     */
 			curwp->w_doto = curoff;	/*  and the offset            */
 			n = init_direction;	/* Reset the search direction */
-			strncpy(pat, pat_save, NPAT);	/* Restore the old search str */
+			strncpy( pat, pat_save, sizeof pat) ;	/* Restore the old search str */
 			cmd_reexecute = 0;	/* Start the whole mess over  */
 			goto start_over;	/* Let it take care of itself */
 
@@ -292,7 +292,8 @@ static int isearch(int f, int n)
 		/* I guess we got something to search for, so search for it           */
 
 		pat[cpos++] = c;	/* put the char in the buffer */
-		if (cpos >= NPAT) {	/* too many chars in string?  *//* Yup.  Complain about it    */
+		if (cpos >= sizeof pat) {	/* too many chars in string?  */
+		/* Yup.  Complain about it    */
 			mlwrite("? Search string too long");
 			return TRUE;	/* Return an error            */
 		}
