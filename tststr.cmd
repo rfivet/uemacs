@@ -33,5 +33,18 @@ insert-string &cat "Filename: " $cfname
 newline
 insert-string "Filename length: "
 insert-string &len $cfname
+end-of-file
+; Create a line longer than 1 kill block (250), 2 * 127 + 21 = 255
+insert-string 1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+insert-string 1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+insert-string "#12345678901234567890"
+; kill and yank
+beginning-of-line
+kill-to-end-of-line
+yank
+newline
+; insert kill variable (up to 127 characters), was 25 before fix
+insert-string $kill
 save-file
 beginning-of-file
+

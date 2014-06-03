@@ -63,7 +63,7 @@ char *getkill( void)
 		value[0] = 0;
 	else {
 		/* copy in the contents... */
-		if (kused < NSTRING)
+		if( kbufh == kbufp && kused < NSTRING)
 			size = kused;
 		else
 			size = NSTRING - 1;
