@@ -49,26 +49,38 @@ struct kill {
 static struct kill *kbufp = NULL ;	/* current kill buffer chunk pointer */
 static struct kill *kbufh = NULL ;	/* kill buffer header pointer */
 static int kused = KBLOCK ;		/* # of bytes used in kill buffer */
+static int klen ;					/* length of kill buffer content */
+static char *value = NULL ;			/* temp buffer for value */
 
 /*
  * return some of the contents of the kill buffer
  */
-char *getkill( void)
-{
-	int size;	/* max number of chars to return */
-	static char value[NSTRING];	/* temp buffer for value */
+char *getkill( void) {
+	struct kill *kp ;
+	char *cp ;
 
 	if (kbufh == NULL)
 		/* no kill buffer....just a null string */
-		value[0] = 0;
-	else {
-		/* copy in the contents... */
-		if( kbufh == kbufp && kused < NSTRING)
-			size = kused;
+		return "" ;
+
+	if( value != NULL)
+		free( value) ;
+
+	value = (char *) malloc( klen + 1) ;
+	cp = value ;
+	for( kp = kbufh ; kp != NULL ; kp = kp->d_next) {
+		int size ;
+		
+		if( kp->d_next != NULL)
+			size = KBLOCK ;
 		else
-			size = NSTRING - 1;
-		strncpy(value, kbufh->d_chunk, size);
+			size = kused ;
+			
+		memcpy( cp, kp->d_chunk, size) ;
+		cp += size ;
 	}
+	
+	*cp = 0 ;
 
 	/* and return the constructed value */
 	return value;
@@ -712,6 +724,11 @@ void kdelete(void)
 		/* and reset all the kill buffer pointers */
 		kbufh = kbufp = NULL;
 		kused = KBLOCK;
+		klen = 0 ;
+		if( value != NULL) {
+			free( value) ;
+			value = NULL ;
+		}
 	}
 }
 
@@ -729,8 +746,11 @@ int kinsert(int c)
 	if (kused >= KBLOCK) {
 		if ((nchunk = (struct kill *)malloc(sizeof(struct kill))) == NULL)
 			return FALSE;
-		if (kbufh == NULL)	/* set head ptr if first time */
+		if( kbufh == NULL) {	/* set head ptr if first time */
 			kbufh = nchunk;
+			klen = 0 ;
+		}
+
 		if (kbufp != NULL)	/* point the current to this new one */
 			kbufp->d_next = nchunk;
 		kbufp = nchunk;
@@ -740,6 +760,7 @@ int kinsert(int c)
 
 	/* and now insert the character */
 	kbufp->d_chunk[kused++] = c;
+	klen += 1 ;
 	return TRUE;
 }
 
