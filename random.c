@@ -1231,11 +1231,11 @@ int fmatch(int ch)
 int istring(int f, int n)
 {
 	int status;	/* status return code */
-	char tstring[ NSTRING + 1] ;	/* string to add */
+	char tstring[ 512] ;	/* string to add */
 
 	/* ask for string to insert */
 	status =
-	    mlreplyt("String to insert<META>: ", tstring, NSTRING, metac) ;
+	    mlreplyt("String to insert<META>: ", tstring, sizeof tstring - 1, metac) ;
 	if (status != TRUE)
 		return status;
 

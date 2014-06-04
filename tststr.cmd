@@ -1,5 +1,12 @@
 ; Insert long environment variables [will be truncated to NSTRING - 1 (127)]
+insert-string &env PATH
+newline
 insert-string $PATH
+newline
+set %mypath $PATH
+insert-string %mypath
+newline
+insert-string &cat "Length of $PATH: " &len $PATH
 newline
 ; Insert string with escaped characters
 insert-string "hello, world~n"
@@ -41,8 +48,9 @@ insert-string "#12345678901234567890"
 ; kill and yank
 beginning-of-line
 kill-to-end-of-line
+kill-to-end-of-line
 yank
-newline
+yank
 ; insert kill variable (up to 127 characters), was 25 before fix
 insert-string $kill
 save-file
