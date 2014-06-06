@@ -101,6 +101,8 @@ int namedcmd(int f, int n)
 	return kfunc(f, n);
 }
 
+static int docmd( char *cline) ;
+
 /*
  * execcmd:
  *	Execute a command line command to be typed in
@@ -134,8 +136,7 @@ int execcmd(int f, int n)
  *
  * char *cline;		command line to execute
  */
-int docmd(char *cline)
-{
+static int docmd( char *cline) {
 	int f;		/* default argument flag */
 	int n;		/* numeric repeat value */
 	fn_t fnc;		/* function to execute */
