@@ -46,7 +46,7 @@ static const char modecode[] = "WCSEVOMYAUD" ; /* letters to represent modes */
 
 static int makelist( int iflag) ;
 static int addline( char *text) ;
-static void ltoa( char *buf, int width, long num) ;
+static void l_to_a( char *buf, int width, long num) ;
 
 
 /*
@@ -385,7 +385,7 @@ static int makelist( int iflag)
 			nbytes += (long) llength(lp) + 1L;
 			lp = lforw(lp);
 		}
-		ltoa( b, sizeof b, nbytes) ;	/* 8 digits string buffer size. */
+		l_to_a( b, sizeof b, nbytes) ;	/* 8 digits string buffer size. */
 		cp2 = &b[0];
 		while ((c = *cp2++) != 0)
 			*cp1++ = c;
@@ -411,7 +411,7 @@ static int makelist( int iflag)
 	return TRUE;		/* All done             */
 }
 
-static void ltoa(char *buf, int width, long num)
+static void l_to_a(char *buf, int width, long num)
 {
 	buf[ --width] = 0 ;		/* End of string.       */
 	while (num >= 10) {	/* Conditional digits.  */

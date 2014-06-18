@@ -106,6 +106,17 @@
 #define TERMCAP 0		/* Use TERMCAP                  */
 #define	IBMPC	1		/* IBM-PC CGA/MONO/EGA driver   */
 
+#elif defined( MINGW32)
+
+#define	VT220	(UNIX | VMS)
+#define	VT100	0
+
+#define	ANSI	0
+#define	VMSVT	0
+#define	VT52	0
+#define	TERMCAP	0
+#define	IBMPC	0
+
 #else
 
 #define	VT220	(UNIX | VMS)

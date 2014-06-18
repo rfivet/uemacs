@@ -102,7 +102,7 @@ int spawncli(int f, int n)
 		system("exec /bin/sh");
 #endif
 	sgarbf = TRUE;
-	sleep(2);
+	usleep( 2000000L) ;
 	TTopen();
 	TTkopen();
 #ifdef SIGWINCH

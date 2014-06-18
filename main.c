@@ -296,7 +296,9 @@ int main(int argc, char **argv)
 	}
 
 #if	UNIX
+#ifdef SIGHUP
 	signal(SIGHUP, emergencyexit);
+#endif
 	signal(SIGTERM, emergencyexit);
 #endif
 

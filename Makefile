@@ -1,8 +1,8 @@
-# Makefile for emacs, updated Thu, Oct 10, 2013  1:03:16 PM
+# Makefile for emacs, updated Wed, Jun 18, 2014  2:24:32 PM
 
-SRC=ansi.c basic.c bind.c bindable.c buffer.c crypt.c display.c ebind.c eval.c exec.c execute.c file.c fileio.c flook.c ibmpc.c input.c isearch.c line.c lock.c log.c main.c names.c pklock.c posix.c random.c region.c search.c spawn.c tcap.c termio.c utf8.c vmsvt.c vt52.c window.c word.c wrapper.c
-OBJ=ansi.o basic.o bind.o bindable.o buffer.o crypt.o display.o ebind.o eval.o exec.o execute.o file.o fileio.o flook.o ibmpc.o input.o isearch.o line.o lock.o log.o main.o names.o pklock.o posix.o random.o region.o search.o spawn.o tcap.o termio.o utf8.o vmsvt.o vt52.o window.o word.o wrapper.o
-HDR=basic.h bind.h bindable.h buffer.h crypt.h defines.h display.h ebind.h estruct.h eval.h exec.h execute.h file.h fileio.h flook.h input.h isearch.h line.h lock.h log.h names.h pklock.h random.h region.h retcode.h search.h spawn.h terminal.h termio.h utf8.h version.h window.h word.h wrapper.h
+SRC=ansi.c basic.c bind.c bindable.c buffer.c crypt.c display.c ebind.c eval.c exec.c execute.c file.c fileio.c flook.c ibmpc.c input.c isearch.c line.c lock.c log.c main.c mingw32.c names.c pklock.c posix.c random.c region.c search.c spawn.c tcap.c termio.c utf8.c vmsvt.c vt52.c window.c word.c wrapper.c wscreen.c
+OBJ=ansi.o basic.o bind.o bindable.o buffer.o crypt.o display.o ebind.o eval.o exec.o execute.o file.o fileio.o flook.o ibmpc.o input.o isearch.o line.o lock.o log.o main.o mingw32.o names.o pklock.o posix.o random.o region.o search.o spawn.o tcap.o termio.o utf8.o vmsvt.o vt52.o window.o word.o wrapper.o wscreen.o
+HDR=basic.h bind.h bindable.h buffer.h crypt.h defines.h display.h ebind.h estruct.h eval.h exec.h execute.h file.h fileio.h flook.h input.h isearch.h line.h lock.h log.h names.h pklock.h random.h region.h retcode.h search.h spawn.h terminal.h termio.h utf8.h version.h window.h word.h wrapper.h wscreen.h
 
 # DO NOT ADD OR MODIFY ANY LINES ABOVE THIS -- make source creates them
 
@@ -40,13 +40,19 @@ ifeq ($(uname_S),Darwin)
 endif
 ifeq ($(uname_S),CYGWIN_NT-6.1-WOW64)
  DEFINES=-DAUTOCONF -DCYGWIN -DPROGRAM=$(PROGRAM)
+ LIBS=-lcurses			# SYSV
 endif
 ifeq ($(uname_S),CYGWIN_NT-6.1)
  DEFINES=-DAUTOCONF -DCYGWIN -DPROGRAM=$(PROGRAM)
+ LIBS=-lcurses			# SYSV
+endif
+ifeq ($(uname_S),MINGW32_NT-6.1)
+ DEFINES=-DAUTOCONF -DSYSV -DMINGW32 -DPROGRAM=$(PROGRAM)
+ LIBS=
 endif
 #DEFINES=-DAUTOCONF
 #LIBS=-ltermcap			# BSD
-LIBS=-lcurses			# SYSV
+#LIBS=-lcurses			# SYSV
 #LIBS=-ltermlib
 #LIBS=-L/usr/lib/termcap -ltermcap
 LFLAGS=-hbx
@@ -152,8 +158,8 @@ exec.o: exec.c exec.h retcode.h buffer.h crypt.h line.h utf8.h bind.h \
  display.h estruct.h eval.h file.h flook.h input.h random.h window.h \
  defines.h
 execute.o: execute.c execute.h estruct.h bind.h random.h display.h file.h \
- crypt.h retcode.h buffer.h line.h utf8.h terminal.h defines.h window.h
-file.o: file.c file.h crypt.h retcode.h buffer.h line.h utf8.h defines.h \
+ buffer.h crypt.h line.h utf8.h retcode.h terminal.h defines.h window.h
+file.o: file.c file.h buffer.h crypt.h line.h utf8.h retcode.h defines.h \
  estruct.h execute.h fileio.h input.h bind.h lock.h log.h window.h
 fileio.o: fileio.c fileio.h crypt.h retcode.h defines.h
 flook.o: flook.c flook.h retcode.h defines.h fileio.h crypt.h
@@ -170,6 +176,7 @@ log.o: log.c log.h retcode.h
 main.o: main.c estruct.h basic.h bind.h bindable.h buffer.h crypt.h \
  line.h utf8.h display.h eval.h execute.h file.h retcode.h input.h lock.h \
  log.h random.h search.h terminal.h defines.h termio.h version.h window.h
+mingw32.o: mingw32.c
 names.o: names.c names.h basic.h bind.h bindable.h buffer.h crypt.h \
  line.h utf8.h display.h eval.h exec.h retcode.h file.h isearch.h \
  region.h random.h search.h spawn.h window.h defines.h word.h
@@ -197,6 +204,7 @@ window.o: window.c window.h defines.h buffer.h crypt.h line.h utf8.h \
 word.o: word.c word.h basic.h buffer.h crypt.h line.h utf8.h estruct.h \
  log.h retcode.h random.h region.h window.h defines.h
 wrapper.o: wrapper.c wrapper.h
+wscreen.o: wscreen.c wscreen.h
 
 # DEPENDENCIES MUST END AT END OF FILE
 # IF YOU PUT STUFF HERE IT WILL GO AWAY

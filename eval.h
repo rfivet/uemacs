@@ -43,7 +43,7 @@ char *gtfun( char *fname) ;
 char *gtusr( char *vname) ;
 char *gtenv( char *vname) ;
 int setvar( int f, int n) ;
-char *itoa( int i) ;
+char *i_to_a( int i) ;
 char *getval( char *token) ;
 int stol( char *val) ;
 char *mkupper( char *str) ;
