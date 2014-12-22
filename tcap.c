@@ -20,13 +20,8 @@
 #define	termdef	1 /* Don't define "term" external. */
 
 #ifndef MINGW32
-#ifdef CYGWIN
-#include <ncurses/curses.h>
-#include <ncurses/term.h>
-#else
 #include <curses.h>
 #include <term.h>
-#endif
 #endif
 
 #include "display.h"
