@@ -1,3 +1,6 @@
+#include "estruct.h"
+#include "lock.h"
+
 /*	LOCK.C
  *
  *	File locking command routines
@@ -5,24 +8,35 @@
  *	written by Daniel Lawrence
  */
 
-#include <stdio.h>
-#include "estruct.h"
-#include "edef.h"
-#include "efunc.h"
-
 #if	BSD | SVR4
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "defines.h"
+#include "display.h"
+#include "input.h"
+#include "retcode.h"
+
+#if (FILOCK && BSD) || SVR4
+#include "pklock.h"
+#endif
+
 #include <sys/errno.h>
 
-static char *lname[NLOCKS];		/* names of all locked files */
-static int numlocks;			/* # of current locks active */
+#define	NLOCKS	100			/* max # of file locks active	*/
+static char *lname[ NLOCKS] ;		/* names of all locked files	*/
+static int numlocks ;			/* # of current locks active	*/
+
+static void lckerror(char *errstr) ;
 
 /*
  * lockchk:
  *	check a file for locking and add it to the list
  *
- * char *fname;			file to check for a lock
+ * const char *fname;			file to check for a lock
  */
-int lockchk(char *fname)
+int lockchk( const char *fname)
 {
 	int i;		/* loop indexes */
 	int status;	/* return status */
@@ -34,7 +48,7 @@ int lockchk(char *fname)
 				return TRUE;
 
 	/* if we have a full locking table, bitch and leave */
-	if (numlocks == NLOCKS) {
+	if( numlocks >= NLOCKS) {
 		mlwrite("LOCK ERROR: Lock table full");
 		return ABORT;
 	}
@@ -88,9 +102,9 @@ int lockrel(void)
  *		FALSE = file was locked and overridden
  *		ABORT = file was locked, abort command
  *
- * char *fname;		file name to lock
+ * const char *fname;		file name to lock
  */
-int lock(char *fname)
+int lock( const char *fname)
 {
 	char *locker;	/* lock error message */
 	int status;	/* return status */
@@ -123,9 +137,9 @@ int lock(char *fname)
  *	Unlock a file
  *	this only warns the user if it fails
  *
- * char *fname;		file to unlock
+ * const char *fname;		file to unlock
  */
-int unlock(char *fname)
+int unlock( const char *fname)
 {
 	char *locker;	/* undolock return string */
 

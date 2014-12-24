@@ -1,9 +1,15 @@
+/* tcap.c -- implements terminal.h */
+#include "terminal.h"
+
 /*	tcap.c
  *
  *	Unix V7 SysV and BS4 Termcap video driver
  *
  *	modified by Petri Kutvonen
  */
+
+#include <stdlib.h>
+#include <string.h>
 
 /*
  * Defining this to 1 breaks tcapopen() - it doesn't check if the
@@ -13,15 +19,23 @@
 #define USE_BROKEN_OPTIMIZATION 0
 #define	termdef	1 /* Don't define "term" external. */
 
+#ifndef MINGW32
 #include <curses.h>
-#include <stdio.h>
 #include <term.h>
+#endif
 
+#include "display.h"
 #include "estruct.h"
-#include "edef.h"
-#include "efunc.h"
+#include "termio.h"
 
 #if TERMCAP
+
+boolean eolexist = TRUE ;	/* does clear to EOL exist      */
+boolean revexist = FALSE ;	/* does reverse video exist?    */
+boolean sgarbf = TRUE ;		/* TRUE if screen is garbage    */
+
+char sres[ 16] ;		/* current screen resolution    */
+				/* NORMAL, CGA, EGA, VGA	*/
 
 #if UNIX
 #include <signal.h>

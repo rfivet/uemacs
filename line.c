@@ -15,14 +15,139 @@
 
 #include "line.h"
 
+#include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include "buffer.h"
 #include "estruct.h"
-#include "edef.h"
-#include "efunc.h"
-#include "utf8.h"
+#include "log.h"
+#include "window.h"
+
+
+int tabmask = 0x07 ;		/* tabulator mask */
 
 #define	BLOCK_SIZE 16 /* Line block chunk size. */
+
+static int ldelnewline( void) ;
+
+/* The editor holds deleted text chunks in the struct kill buffer. The
+ * kill buffer is logically a stream of ascii characters, however
+ * due to its unpredicatable size, it gets implemented as a linked
+ * list of chunks. (The d_ prefix is for "deleted" text, as k_
+ * was taken up by the keycode structure).
+ */
+
+#define	KBLOCK	250		/* sizeof kill buffer chunks    */
+
+struct kill {
+	struct kill *d_next;   /* Link to next chunk, NULL if last. */
+	char d_chunk[KBLOCK];  /* Deleted text. */
+};
+
+static struct kill *kbufp = NULL ;	/* current kill buffer chunk pointer */
+static struct kill *kbufh = NULL ;	/* kill buffer header pointer */
+static int kused = KBLOCK ;		/* # of bytes used in kill buffer */
+static int klen ;					/* length of kill buffer content */
+static char *value = NULL ;			/* temp buffer for value */
+
+/*
+ * return some of the contents of the kill buffer
+ */
+char *getkill( void) {
+	struct kill *kp ;
+	char *cp ;
+
+	if (kbufh == NULL)
+		/* no kill buffer....just a null string */
+		return "" ;
+
+	if( value != NULL)
+		free( value) ;
+
+	value = (char *) malloc( klen + 1) ;
+	cp = value ;
+	for( kp = kbufh ; kp != NULL ; kp = kp->d_next) {
+		int size ;
+		
+		if( kp->d_next != NULL)
+			size = KBLOCK ;
+		else
+			size = kused ;
+			
+		memcpy( cp, kp->d_chunk, size) ;
+		cp += size ;
+	}
+	
+	*cp = 0 ;
+
+	/* and return the constructed value */
+	return value;
+}
+
+/*
+ * Move the cursor backwards by "n" characters. If "n" is less than zero call
+ * "forwchar" to actually do the move. Otherwise compute the new cursor
+ * location. Error if you try and move out of the buffer. Set the flag if the
+ * line pointer for dot changes.
+ */
+int backchar(int f, int n)
+{
+	struct line *lp;
+
+	if (n < 0)
+		return forwchar(f, -n);
+	while (n--) {
+		if (curwp->w_doto == 0) {
+			if ((lp = lback(curwp->w_dotp)) == curbp->b_linep)
+				return FALSE;
+			curwp->w_dotp = lp;
+			curwp->w_doto = llength(lp);
+			curwp->w_flag |= WFMOVE;
+		} else {
+			do {
+				unsigned char c;
+				curwp->w_doto--;
+				c = lgetc(curwp->w_dotp, curwp->w_doto);
+				if (is_beginning_utf8(c))
+					break;
+			} while (curwp->w_doto);
+		}
+	}
+	return TRUE;
+}
+
+/*
+ * Move the cursor forwards by "n" characters. If "n" is less than zero call
+ * "backchar" to actually do the move. Otherwise compute the new cursor
+ * location, and move ".". Error if you try and move off the end of the
+ * buffer. Set the flag if the line pointer for dot changes.
+ */
+int forwchar(int f, int n)
+{
+	if (n < 0)
+		return backchar(f, -n);
+	while (n--) {
+		int len = llength(curwp->w_dotp);
+		if (curwp->w_doto == len) {
+			if (curwp->w_dotp == curbp->b_linep)
+				return FALSE;
+			curwp->w_dotp = lforw(curwp->w_dotp);
+			curwp->w_doto = 0;
+			curwp->w_flag |= WFMOVE;
+		} else {
+			do {
+				unsigned char c;
+				curwp->w_doto++;
+				c = lgetc(curwp->w_dotp, curwp->w_doto);
+				if (is_beginning_utf8(c))
+					break;
+			} while (curwp->w_doto < len);
+		}
+	}
+	return TRUE;
+}
 
 /*
  * This routine allocates a block of memory large enough to hold a struct line
@@ -39,7 +164,7 @@ struct line *lalloc(int used)
 	if (size == 0)	/* Assume that is an empty. */
 		size = BLOCK_SIZE;  /* Line is for type-in. */
 	if ((lp = (struct line *)malloc(sizeof(struct line) + size)) == NULL) {
-		mlwrite("(OUT OF MEMORY)");
+		logwrite( "(OUT OF MEMORY)") ;
 		return NULL;
 	}
 	lp->l_size = size;
@@ -132,24 +257,23 @@ int insspace(int f, int n)
  * linstr -- Insert a string at the current point
  */
 
-int linstr(char *instr)
-{
-	int status = TRUE;
-	char tmpc;
+int linstr( char *instr) {
+	int status = TRUE ;
 
-	if (instr != NULL)
-		while ((tmpc = *instr) && status == TRUE) {
+	if( instr != NULL) {
+		char tmpc ;
+
+		while( (tmpc = *instr++)) {
 			status =
-			    (tmpc == '\n' ? lnewline() : linsert(1, tmpc));
+			    (tmpc == '\n' ? lnewline() : linsert( 1, tmpc)) ;
 
 			/* Insertion error? */
-			if (status != TRUE) {
-				mlwrite("%%Out of memory while inserting");
-				break;
-			}
-			instr++;
+			if( status != TRUE)
+				return logger( status, FALSE, "%%Out of memory while inserting") ;
 		}
-	return status;
+	}
+
+	return status ;
 }
 
 /*
@@ -173,13 +297,16 @@ static int linsert_byte(int n, int c)
 	int i;
 	struct window *wp;
 
+	assert( (curbp->b_mode & MDVIEW) == 0) ;
+#if 0
 	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
 		return rdonly();	/* we are in read only mode     */
+#endif
 	lchange(WFEDIT);
 	lp1 = curwp->w_dotp;	/* Current line         */
 	if (lp1 == curbp->b_linep) {	/* At the end: special  */
 		if (curwp->w_doto != 0) {
-			mlwrite("bug: linsert");
+			logwrite( "bug: linsert") ;
 			return FALSE;
 		}
 		if ((lp2 = lalloc(n)) == NULL)	/* Allocate new line        */
@@ -243,8 +370,13 @@ static int linsert_byte(int n, int c)
 int linsert(int n, int c)
 {
 	char utf8[6];
-	int bytes = unicode_to_utf8(c, utf8), i;
+	int bytes, i ;
 
+	assert( n > 0) ;
+	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+		return rdonly();	/* we are in read only mode     */
+
+	bytes = unicode_to_utf8(c, utf8) ;
 	if (bytes == 1)
 		return linsert_byte(n, (unsigned char) utf8[0]);
 	for (i = 0; i < n; i++) {
@@ -263,7 +395,7 @@ int linsert(int n, int c)
  *
  * int c;	character to overwrite on current position
  */
-int lowrite(int c)
+static int lowrite(int c)
 {
 	if (curwp->w_doto < curwp->w_dotp->l_used &&
 	    (lgetc(curwp->w_dotp, curwp->w_doto) != '\t' ||
@@ -275,25 +407,23 @@ int lowrite(int c)
 /*
  * lover -- Overwrite a string at the current point
  */
-int lover(char *ostr)
-{
-	int status = TRUE;
-	char tmpc;
+int lover( char *ostr) {
+	int status = TRUE ;
 
-	if (ostr != NULL)
-		while ((tmpc = *ostr) && status == TRUE) {
+	if (ostr != NULL) {
+		char tmpc ;
+
+		while( (tmpc = *ostr++)) {
 			status =
 			    (tmpc == '\n' ? lnewline() : lowrite(tmpc));
 
 			/* Insertion error? */
-			if (status != TRUE) {
-				mlwrite
-				    ("%%Out of memory while overwriting");
-				break;
-			}
-			ostr++;
+			if( status != TRUE)
+				return logger( status, FALSE, "%%Out of memory while overwriting") ;
 		}
-	return status;
+	}
+	
+	return status ;
 }
 
 /*
@@ -482,29 +612,6 @@ char *getctext(void)
 }
 
 /*
- * putctext:
- *	replace the current line with the passed in text
- *
- * char *iline;			contents of new line
- */
-int putctext(char *iline)
-{
-	int status;
-
-	/* delete the current line */
-	curwp->w_doto = 0;	/* starting at the beginning of the line */
-	if ((status = killtext(TRUE, 1)) != TRUE)
-		return status;
-
-	/* insert the new line */
-	if ((status = linstr(iline)) != TRUE)
-		return status;
-	status = lnewline();
-	backline(TRUE, 1);
-	return status;
-}
-
-/*
  * Delete a newline. Join the current line with the next line. If the next line
  * is the magic header line always return TRUE; merging the last line with the
  * header line can be thought of as always being a successful operation, even
@@ -513,7 +620,7 @@ int putctext(char *iline)
  * about in memory. Return FALSE on error and TRUE if all looks ok. Called by
  * "ldelete" only.
  */
-int ldelnewline(void)
+static int ldelnewline(void)
 {
 	char *cp1;
 	char *cp2;
@@ -522,8 +629,11 @@ int ldelnewline(void)
 	struct line *lp3;
 	struct window *wp;
 
+	assert( (curbp->b_mode & MDVIEW) == 0) ;
+#if 0
 	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
 		return rdonly();	/* we are in read only mode     */
+#endif
 	lp1 = curwp->w_dotp;
 	lp2 = lp1->l_fp;
 	if (lp2 == curbp->b_linep) {	/* At the buffer end.   */
@@ -614,6 +724,11 @@ void kdelete(void)
 		/* and reset all the kill buffer pointers */
 		kbufh = kbufp = NULL;
 		kused = KBLOCK;
+		klen = 0 ;
+		if( value != NULL) {
+			free( value) ;
+			value = NULL ;
+		}
 	}
 }
 
@@ -631,8 +746,11 @@ int kinsert(int c)
 	if (kused >= KBLOCK) {
 		if ((nchunk = (struct kill *)malloc(sizeof(struct kill))) == NULL)
 			return FALSE;
-		if (kbufh == NULL)	/* set head ptr if first time */
+		if( kbufh == NULL) {	/* set head ptr if first time */
 			kbufh = nchunk;
+			klen = 0 ;
+		}
+
 		if (kbufp != NULL)	/* point the current to this new one */
 			kbufp->d_next = nchunk;
 		kbufp = nchunk;
@@ -642,6 +760,7 @@ int kinsert(int c)
 
 	/* and now insert the character */
 	kbufp->d_chunk[kused++] = c;
+	klen += 1 ;
 	return TRUE;
 }
 

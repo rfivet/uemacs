@@ -1,14 +1,31 @@
+/* names.c -- implements names.h */
+#include "names.h"
+
 /* Name to function binding table.
  *
  * This table gives the names of all the bindable functions
- * end their C function address. These are used for the bind-to-key
+ * and their C function address. These are used for the bind-to-key
  * function.
 */
 
-#include "estruct.h"
-#include "edef.h"
-#include "efunc.h"
+#include <stdlib.h>
+
+#include "basic.h"
+#include "bind.h"
+#include "bindable.h"
+#include "buffer.h"
+#include "display.h"
+#include "eval.h"
+#include "exec.h"
+#include "file.h"
+#include "isearch.h"
 #include "line.h"
+#include "region.h"
+#include "random.h"
+#include "search.h"
+#include "spawn.h"
+#include "window.h"
+#include "word.h"
 
 struct name_bind names[] = {
 	{"abort-command", ctrlg},

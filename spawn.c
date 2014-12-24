@@ -1,4 +1,7 @@
-/*	spaw.c
+/* spawn.c -- implements spawn.h */
+#include "spawn.h"
+
+/*	spawn.c
  *
  *	Various operating system access commands.
  *
@@ -6,11 +9,22 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
+#include "defines.h"
+
+#include "buffer.h"
+#include "display.h"
 #include "estruct.h"
-#include "edef.h"
-#include "efunc.h"
+#include "exec.h"
+#include "file.h"
+#include "flook.h"
+#include "input.h"
+#include "log.h"
+#include "terminal.h"
+#include "window.h"
 
 #if     VMS
 #define EFN     0		/* Event flag.          */
@@ -88,7 +102,7 @@ int spawncli(int f, int n)
 		system("exec /bin/sh");
 #endif
 	sgarbf = TRUE;
-	sleep(2);
+	usleep( 2000000L) ;
 	TTopen();
 	TTkopen();
 #ifdef SIGWINCH
@@ -387,7 +401,7 @@ int filter_buffer(int f, int n)
 	int s;		/* return status from CLI */
 	struct buffer *bp;	/* pointer to buffer to zot */
 	char line[NLINE];	/* command line send to shell */
-	char tmpnam[NFILEN];	/* place to store real file name */
+	fname_t tmpnam ;	/* place to store real file name */
 	static char bname1[] = "fltinp";
 
 	static char filnam1[] = "fltinp";
@@ -571,7 +585,6 @@ int execprog(char *cmd)
 		char *fcb1;	/* 4 byte pointer to FCB at PSP+5Ch */
 		char *fcb2;	/* 4 byte pointer to FCB at PSP+6Ch */
 	} pblock;
-	char *flook();
 
 	/* parse the command name from the command line */
 	sp = prog;

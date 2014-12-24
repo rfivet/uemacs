@@ -1,3 +1,8 @@
+/* random.c -- implements random.h */
+#include "random.h"
+
+#define	NBRACE	1  /* new style brace matching command             */
+
 /*	random.c
  *
  *      This file contains the command processing functions for a number of
@@ -7,13 +12,42 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
+#include "basic.h"
+#include "buffer.h"
+#include "display.h"
 #include "estruct.h"
-#include "edef.h"
-#include "efunc.h"
+#include "execute.h"
+#include "input.h"
 #include "line.h"
+#include "log.h"
+#include "search.h"
+#include "terminal.h"
+#include "window.h"
 
-int tabsize; /* Tab size (0: use real tabs) */
+
+static const char *cname[] = {						/* names of colors */
+	"BLACK", "RED", "GREEN", "YELLOW", "BLUE",
+	"MAGENTA", "CYAN", "WHITE"
+#if	PKCODE & IBMPC
+	    , "HIGH"
+#endif
+} ;
+
+#define NCOLORS (sizeof cname / sizeof( *cname))	/* # of supported colors */
+
+int gfcolor = NCOLORS - 1 ;	/* global forgrnd color (white)  */
+int gbcolor = 0 ;		/* global backgrnd color (black) */
+
+static int tabsize ;		/* Tab size (0: use real tabs)   */
+int fillcol = 72 ;		/* Current fill column           */
+
+/* uninitialized global definitions */
+
+int thisflag ;			/* Flags, this command		*/
+int lastflag ;			/* Flags, last command		*/
+
 
 /*
  * Set fill column to n.
@@ -311,6 +345,8 @@ int detab(int f, int n)
  */
 int entab(int f, int n)
 {
+#define	nextab(a)	(a & ~tabmask) + (tabmask+1)
+
 	int inc;	/* increment to next line [sgn(n)] */
 	int fspace;	/* pointer to first space if in a run */
 	int ccol;	/* current cursor column */
@@ -898,14 +934,10 @@ int delgmode(int f, int n)
  */
 int adjustmode(int kind, int global)
 {
-	char *scan;	/* scanning pointer to convert prompt */
 	int i;		/* loop index */
 	int status;	/* error return on input */
-#if	COLOR
-	int uflag;	/* was modename uppercase?      */
-#endif
 	char prompt[50];	/* string to prompt user with */
-	char cbuf[NPAT];	/* buffer to recieve mode name into */
+	char cbuf[ NSTRING] ;	/* buffer to recieve mode name into */
 
 	/* build the proper prompt string */
 	if (global)
@@ -920,32 +952,16 @@ int adjustmode(int kind, int global)
 
 	/* prompt the user and get an answer */
 
-	status = mlreply(prompt, cbuf, NPAT - 1);
+	status = mlreply( prompt, cbuf, sizeof cbuf - 1) ;
 	if (status != TRUE)
 		return status;
 
-	/* make it uppercase */
-
-	scan = cbuf;
-#if	COLOR
-	uflag = (*scan >= 'A' && *scan <= 'Z');
-#endif
-	while (*scan != 0) {
-		if (*scan >= 'a' && *scan <= 'z')
-			*scan = *scan - 32;
-		scan++;
-	}
-
 	/* test it first against the colors we know */
-#if	PKCODE & IBMPC
-	for (i = 0; i <= NCOLORS; i++) {
-#else
 	for (i = 0; i < NCOLORS; i++) {
-#endif
-		if (strcmp(cbuf, cname[i]) == 0) {
+		if( strcasecmp( cbuf, cname[ i]) == 0) {
 			/* finding the match, we set the color */
 #if	COLOR
-			if (uflag) {
+			if( *cbuf >= 'A' && *cbuf <= 'Z') {
 				if (global)
 					gfcolor = i;
 #if	PKCODE == 0
@@ -971,7 +987,7 @@ int adjustmode(int kind, int global)
 	/* test it against the modes we know */
 
 	for (i = 0; i < NUMMODES; i++) {
-		if (strcmp(cbuf, modename[i]) == 0) {
+		if( strcasecmp( cbuf, modename[ i]) == 0) {
 			/* finding a match, we process it */
 			if (kind == TRUE)
 				if (global)
@@ -1017,11 +1033,11 @@ int writemsg(int f, int n)
 	char *sp;	/* pointer into buf to expand %s */
 	char *np;	/* ptr into nbuf */
 	int status;
-	char buf[NPAT];		/* buffer to recieve message into */
-	char nbuf[NPAT * 2];	/* buffer to expand string into */
+	char buf[ NSTRING] ;		/* buffer to recieve message into */
+	char nbuf[ NSTRING * 2] ;	/* buffer to expand string into */
 
 	if ((status =
-	     mlreply("Message to write: ", buf, NPAT - 1)) != TRUE)
+	     mlreply("Message to write: ", buf, sizeof buf - 1)) != TRUE)
 		return status;
 
 	/* expand all '%' to "%%" so mlwrite won't expect arguments */
@@ -1215,11 +1231,11 @@ int fmatch(int ch)
 int istring(int f, int n)
 {
 	int status;	/* status return code */
-	char tstring[NPAT + 1];	/* string to add */
+	char tstring[ 512] ;	/* string to add */
 
 	/* ask for string to insert */
 	status =
-	    mlreplyt("String to insert<META>: ", tstring, NPAT, metac);
+	    mlreplyt("String to insert<META>: ", tstring, sizeof tstring - 1, metac) ;
 	if (status != TRUE)
 		return status;
 
@@ -1243,11 +1259,11 @@ int istring(int f, int n)
 int ovstring(int f, int n)
 {
 	int status;	/* status return code */
-	char tstring[NPAT + 1];	/* string to add */
+	char tstring[ NSTRING + 1] ;	/* string to add */
 
 	/* ask for string to insert */
 	status =
-	    mlreplyt("String to overwrite<META>: ", tstring, NPAT, metac);
+	    mlreplyt( "String to overwrite<META>: ", tstring, NSTRING, metac) ;
 	if (status != TRUE)
 		return status;
 

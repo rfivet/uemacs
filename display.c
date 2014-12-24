@@ -1,3 +1,9 @@
+/* display.c -- implements display.h */
+
+#include "display.h"
+
+#define	REVSTA	1  /* Status line appears in reverse video         */
+
 /*	display.c
  *
  *      The functions in this file handle redisplay. There are two halves, the
@@ -11,15 +17,19 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 #include <unistd.h>
 
+#include "buffer.h"
 #include "estruct.h"
-#include "edef.h"
-#include "efunc.h"
+#include "input.h"
 #include "line.h"
+#include "termio.h"
+#include "terminal.h"
 #include "version.h"
 #include "wrapper.h"
 #include "utf8.h"
+#include "window.h"
 
 struct video {
 	int v_flag;		/* Flags */
@@ -53,6 +63,17 @@ static int displaying = TRUE;
 int chg_width, chg_height;
 #endif
 
+static int currow ;		/* Cursor row                   */
+static int curcol ;		/* Cursor column                */
+static int vtrow = 0 ;	/* Row location of SW cursor */
+static int vtcol = 0 ;	/* Column location of SW cursor */
+static int lbound = 0 ;	/* leftmost column of current line being displayed */
+static int taboff = 0 ;	/* tab offset for display       */
+
+int mpresf = FALSE ;	/* TRUE if message in last line */
+int scrollcount = 1 ;	/* number of lines to scroll */
+int discmd = TRUE ;	/* display command flag         */
+
 static int reframe(struct window *wp);
 static void updone(struct window *wp);
 static void updall(struct window *wp);
@@ -66,7 +87,9 @@ static void modeline(struct window *wp);
 static void mlputi(int i, int r);
 static void mlputli(long l, int r);
 static void mlputf(int s);
+#if SIGWINCH
 static int newscreensize(int h, int w);
+#endif
 
 #if RAINBOW
 static void putline(int row, int col, char *buf);
@@ -947,8 +970,10 @@ static int updateline(int row, struct video *vp1, struct video *vp2)
 	unicode_t *cp4;
 	unicode_t *cp5;
 	int nbflag;	/* non-blanks to the right flag? */
-	int rev;		/* reverse video flag */
-	int req;		/* reverse video request flag */
+#if REVSTA
+	int rev;			/* reverse video flag */
+#endif
+	int req = FALSE ;	/* reverse video request flag */
 
 
 	/* set up pointers to virtual and physical lines */
@@ -1093,7 +1118,7 @@ static void modeline(struct window *wp)
 #endif
 	vtmove(n, 0);		/* Seek to right line. */
 	if (wp == curwp)	/* mark the current buffer */
-#if	PKCODE
+#if	PKCODE && REVSTA
 		lchar = '-';
 #else
 		lchar = '=';
@@ -1121,12 +1146,7 @@ static void modeline(struct window *wp)
 
 	n = 2;
 
-	strcpy(tline, " ");
-	strcat(tline, PROGRAM_NAME_LONG);
-	strcat(tline, " ");
-	strcat(tline, VERSION);
-	strcat(tline, ": ");
-	cp = &tline[0];
+	cp = " " PROGRAM_NAME_LONG " " VERSION ": " ;
 	while ((c = *cp++) != 0) {
 		vtputc(c);
 		++n;
@@ -1152,7 +1172,7 @@ static void modeline(struct window *wp)
 			if (firstm != TRUE)
 				strcat(tline, " ");
 			firstm = FALSE;
-			strcat(tline, mode2name[i]);
+			strcat( tline, modename[ i]) ;
 		}
 	strcat(tline, ") ");
 

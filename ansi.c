@@ -11,7 +11,7 @@
 
 #include        <stdio.h>
 #include	"estruct.h"
-#include        "edef.h"
+
 
 #if     ANSI
 

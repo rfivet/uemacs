@@ -1,3 +1,6 @@
+/* posix.c -- implements termio.h */
+#include "termio.h"
+
 /*	posix.c
  *
  *      The functions in this file negotiate with the operating system for
@@ -16,19 +19,29 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <termios.h>
 #include <unistd.h>
 
 #include "estruct.h"
-#include "edef.h"
-#include "efunc.h"
+#include "retcode.h"
 #include "utf8.h"
+
+int ttrow = HUGE ;		/* Row location of HW cursor */
+int ttcol = HUGE ;		/* Column location of HW cursor */
 
 /* Since Mac OS X's termios.h doesn't have the following 2 macros, define them.
  */
 #if defined(SYSV) && (defined(_DARWIN_C_SOURCE) || defined(_FREEBSD_C_SOURCE))
 #define OLCUC 0000002
 #define XCASE 0000004
+#endif
+
+#ifdef CYGWIN
+#define XCASE 0
+#define ECHOPRT 0
+#define PENDIN 0
 #endif
 
 static int kbdflgs;			/* saved keyboard fd flags      */
@@ -58,6 +71,7 @@ void ttopen(void)
 
 	/* raw CR/NL etc input handling, but keep ISTRIP if we're on a 7-bit line */
 	ntermios.c_iflag &= ~(IGNBRK | BRKINT | IGNPAR | PARMRK
+				| IXON | IXOFF | IXANY
 			      | INPCK | INLCR | IGNCR | ICRNL);
 
 	/* raw CR/NR etc output handling */

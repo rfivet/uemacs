@@ -1,3 +1,7 @@
+/* window.c -- inplements window.h */
+
+#include "window.h"
+
 /*	window.c
  *
  *      Window management. Some of the functions are internal, and some are
@@ -7,11 +11,21 @@
 
 #include <stdio.h>
 
+#include "basic.h"
+#include "buffer.h"
+#include "display.h"
 #include "estruct.h"
-#include "edef.h"
-#include "efunc.h"
+#include "execute.h"
 #include "line.h"
+#include "terminal.h"
 #include "wrapper.h"
+
+
+struct window *curwp ;		/* Current window               */
+struct window *wheadp ;		/* Head of list of windows      */
+
+static struct window *swindow = NULL ;	/* saved window pointer */
+
 
 /*
  * Reposition dot in the current window to line "n". If the argument is

@@ -1,3 +1,6 @@
+/* buffer.c -- implements buffer.h */
+#include "buffer.h"
+
 /*	buffer.c
  *
  *	Buffer management.
@@ -9,12 +12,42 @@
  *	modified by Petri Kutvonen
  */
 
-#include        <stdio.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include "defines.h"
+#include "display.h"
 #include "estruct.h"
-#include "edef.h"
-#include "efunc.h"
-#include "line.h"
+#include "file.h"
+#include "input.h"
+#include "window.h"
+
+
+struct buffer *curbp ;		/* Current buffer               */
+struct buffer *bheadp ;		/* Head of list of buffers      */
+struct buffer *blistp ;		/* Buffer for C-X C-B           */
+
+const char *modename[] = {	/* name of modes                */
+	"Wrap", "Cmode", "Spell", "Exact", "View", "Over",
+	"Magic",
+#if CRYPT
+	"Crypt",
+#else
+	"",
+#endif
+	"Asave", "Utf-8", "Dos"
+} ;
+
+int gmode = 0 ;			/* global editor mode           */
+
+static const char modecode[] = "WCSEVOMYAUD" ; /* letters to represent modes */
+
+
+static int makelist( int iflag) ;
+static int addline( char *text) ;
+static void l_to_a( char *buf, int width, long num) ;
+
 
 /*
  * Attach a buffer to a window. The
@@ -26,9 +59,9 @@ int usebuffer(int f, int n)
 {
 	struct buffer *bp;
 	int s;
-	char bufn[NBUFN];
+	bname_t bufn ;
 
-	if ((s = mlreply("Use buffer: ", bufn, NBUFN)) != TRUE)
+	if ((s = mlreply("Use buffer: ", bufn, sizeof bufn)) != TRUE)
 		return s;
 	if ((bp = bfind(bufn, TRUE, 0)) == NULL)
 		return FALSE;
@@ -135,9 +168,9 @@ int killbuffer(int f, int n)
 {
 	struct buffer *bp;
 	int s;
-	char bufn[NBUFN];
+	bname_t bufn ;
 
-	if ((s = mlreply("Kill buffer: ", bufn, NBUFN)) != TRUE)
+	if ((s = mlreply("Kill buffer: ", bufn, sizeof bufn)) != TRUE)
 		return s;
 	if ((bp = bfind(bufn, FALSE, 0)) == NULL)	/* Easy if unknown.     */
 		return TRUE;
@@ -185,10 +218,10 @@ int zotbuf(struct buffer *bp)
 int namebuffer(int f, int n)
 {
 	struct buffer *bp;	/* pointer to scan through all buffers */
-	char bufn[NBUFN];	/* buffer to hold buffer name */
+	bname_t bufn ;	/* buffer to hold buffer name */
 
 	/* prompt for and get the new buffer name */
-      ask:if (mlreply("Change buffer name to: ", bufn, NBUFN) !=
+      ask:if (mlreply("Change buffer name to: ", bufn, sizeof bufn) !=
 	    TRUE)
 		return FALSE;
 
@@ -267,7 +300,7 @@ int listbuffers(int f, int n)
  * int iflag;		list hidden buffer flag
  */
 #define MAXLINE	MAXCOL
-int makelist(int iflag)
+static int makelist( int iflag)
 {
 	char *cp1;
 	char *cp2;
@@ -277,16 +310,15 @@ int makelist(int iflag)
 	int s;
 	int i;
 	long nbytes;		/* # of bytes in current buffer */
-	char b[7 + 1];
+	char b[ 8 + 1] ;
 	char line[MAXLINE];
 
 	blistp->b_flag &= ~BFCHG;	/* Don't complain!      */
 	if ((s = bclear(blistp)) != TRUE)	/* Blow old text away   */
 		return s;
 	strcpy(blistp->b_fname, "");
-	if (addline("ACT MODES        Size Buffer        File") == FALSE
-	    || addline("--- -----        ---- ------        ----") ==
-	    FALSE)
+	if(		addline("ACT MODES          Size Buffer          File") == FALSE
+	    ||	addline("--- -----          ---- ------          ----") == FALSE)
 		return FALSE;
 	bp = bheadp;		/* For all buffers      */
 
@@ -343,24 +375,28 @@ int makelist(int iflag)
 			else
 				*cp1++ = '.';
 		}
-		*cp1++ = ' ';	/* Gap.                 */
+
+	/* No gap as buffer size if left padded with space */
+	
+	/* Buffer size */
 		nbytes = 0L;	/* Count bytes in buf.  */
 		lp = lforw(bp->b_linep);
 		while (lp != bp->b_linep) {
 			nbytes += (long) llength(lp) + 1L;
 			lp = lforw(lp);
 		}
-		ltoa(b, 7, nbytes);	/* 6 digit buffer size. */
+		l_to_a( b, sizeof b, nbytes) ;	/* 8 digits string buffer size. */
 		cp2 = &b[0];
 		while ((c = *cp2++) != 0)
 			*cp1++ = c;
+
 		*cp1++ = ' ';	/* Gap.                 */
 		cp2 = &bp->b_bname[0];	/* Buffer name          */
 		while ((c = *cp2++) != 0)
 			*cp1++ = c;
 		cp2 = &bp->b_fname[0];	/* File name            */
 		if (*cp2 != 0) {
-			while (cp1 < &line[3 + 1 + 5 + 1 + 6 + 4 + NBUFN])
+			while( cp1 < &line[ 3 + 1 + NUMMODES + 8 + 1 + (NBUFN-1) + 1])
 				*cp1++ = ' ';
 			while ((c = *cp2++) != 0) {
 				if (cp1 < &line[MAXLINE - 1])
@@ -375,15 +411,15 @@ int makelist(int iflag)
 	return TRUE;		/* All done             */
 }
 
-void ltoa(char *buf, int width, long num)
+static void l_to_a(char *buf, int width, long num)
 {
-	buf[width] = 0;		/* End of string.       */
+	buf[ --width] = 0 ;		/* End of string.       */
 	while (num >= 10) {	/* Conditional digits.  */
 		buf[--width] = (int) (num % 10L) + '0';
 		num /= 10L;
 	}
 	buf[--width] = (int) num + '0';	/* Always 1 digit.      */
-	while (width != 0)	/* Pad with blanks.     */
+	while( width > 0)	/* Pad with blanks.     */
 		buf[--width] = ' ';
 }
 
@@ -394,7 +430,7 @@ void ltoa(char *buf, int width, long num)
  * on the end. Return TRUE if it worked and
  * FALSE if you ran out of room.
  */
-int addline(char *text)
+static int addline( char *text)
 {
 	struct line *lp;
 	int i;
@@ -445,7 +481,7 @@ int anycb(void)
  * and the "cflag" is TRUE, create it. The "bflag" is
  * the settings for the flags in in buffer.
  */
-struct buffer *bfind(char *bname, int cflag, int bflag)
+struct buffer *bfind( const char *bname, int cflag, int bflag)
 {
 	struct buffer *bp;
 	struct buffer *sb;	/* buffer to insert after */

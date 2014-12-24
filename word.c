@@ -1,3 +1,6 @@
+/* word.c -- implements word.h */
+#include "word.h"
+
 /*	word.c
  *
  *      The routines in this file implement commands that work word or a
@@ -9,10 +12,22 @@
 
 #include <stdio.h>
 
+#include "basic.h"
+#include "buffer.h"
 #include "estruct.h"
-#include "edef.h"
-#include "efunc.h"
 #include "line.h"
+#include "log.h"
+#include "random.h"
+#include "region.h"
+#include "window.h"
+
+#define	TAB	0x09		/* a tab character              */
+
+#if	PKCODE
+static int justflag = FALSE ;		/* justify, don't fill */
+#endif
+
+static int inword( void) ;
 
 /* Word wrap on n-spaces. Back-over whatever precedes the point on the current
  * line and stop on the first word-break or the beginning of the line. If we
@@ -370,7 +385,7 @@ int delbword(int f, int n)
  * Return TRUE if the character at dot is a character that is considered to be
  * part of a word. The word character list is hard coded. Should be setable.
  */
-int inword(void)
+static int inword(void)
 {
 	int c;
 
@@ -413,7 +428,7 @@ int fillpara(int f, int n)
 	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
 		return rdonly();	/* we are in read only mode     */
 	if (fillcol == 0) {	/* no fill column set */
-		mlwrite("No fill column set");
+		logwrite("No fill column set");
 		return FALSE;
 	}
 #if	PKCODE
@@ -512,14 +527,14 @@ int justpara(int f, int n)
 	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
 		return rdonly();	/* we are in read only mode     */
 	if (fillcol == 0) {	/* no fill column set */
-		mlwrite("No fill column set");
+		logwrite("No fill column set");
 		return FALSE;
 	}
 	justflag = TRUE;
 	leftmarg = curwp->w_doto;
 	if (leftmarg + 10 > fillcol) {
 		leftmarg = 0;
-		mlwrite("Column too narrow");
+		logwrite("Column too narrow");
 		return FALSE;
 	}
 
@@ -704,8 +719,108 @@ int wordcount(int f, int n)
 	else
 		avgch = 0;
 
-	mlwrite("Words %D Chars %D Lines %d Avg chars/word %f",
+	logwrite("Words %D Chars %D Lines %d Avg chars/word %f",
 		nwords, nchars, nlines + 1, avgch);
+	return TRUE;
+}
+#endif
+
+#if WORDPRO
+/*
+ * go back to the beginning of the current paragraph
+ * here we look for a <NL><NL> or <NL><TAB> or <NL><SPACE>
+ * combination to delimit the beginning of a paragraph
+ *
+ * int f, n;		default Flag & Numeric argument
+ */
+int gotobop(int f, int n)
+{
+	int suc;  /* success of last backchar */
+
+	if (n < 0) /* the other way... */
+		return gotoeop(f, -n);
+
+	while (n-- > 0) {  /* for each one asked for */
+
+		/* first scan back until we are in a word */
+		suc = backchar(FALSE, 1);
+		while (!inword() && suc)
+			suc = backchar(FALSE, 1);
+		curwp->w_doto = 0;	/* and go to the B-O-Line */
+
+		/* and scan back until we hit a <NL><NL> or <NL><TAB>
+		   or a <NL><SPACE>                                     */
+		while (lback(curwp->w_dotp) != curbp->b_linep)
+			if (llength(curwp->w_dotp) != 0 &&
+#if	PKCODE
+			    ((justflag == TRUE) ||
+#endif
+			     (lgetc(curwp->w_dotp, curwp->w_doto) != TAB &&
+			      lgetc(curwp->w_dotp, curwp->w_doto) != ' '))
+#if	PKCODE
+			    )
+#endif
+				curwp->w_dotp = lback(curwp->w_dotp);
+			else
+				break;
+
+		/* and then forward until we are in a word */
+		suc = forwchar(FALSE, 1);
+		while (suc && !inword())
+			suc = forwchar(FALSE, 1);
+	}
+	curwp->w_flag |= WFMOVE;	/* force screen update */
+	return TRUE;
+}
+
+/*
+ * Go forword to the end of the current paragraph
+ * here we look for a <NL><NL> or <NL><TAB> or <NL><SPACE>
+ * combination to delimit the beginning of a paragraph
+ *
+ * int f, n;		default Flag & Numeric argument
+ */
+int gotoeop(int f, int n)
+{
+	int suc;  /* success of last backchar */
+
+	if (n < 0)  /* the other way... */
+		return gotobop(f, -n);
+
+	while (n-- > 0) {  /* for each one asked for */
+		/* first scan forward until we are in a word */
+		suc = forwchar(FALSE, 1);
+		while (!inword() && suc)
+			suc = forwchar(FALSE, 1);
+		curwp->w_doto = 0;	/* and go to the B-O-Line */
+		if (suc)	/* of next line if not at EOF */
+			curwp->w_dotp = lforw(curwp->w_dotp);
+
+		/* and scan forword until we hit a <NL><NL> or <NL><TAB>
+		   or a <NL><SPACE>                                     */
+		while (curwp->w_dotp != curbp->b_linep) {
+			if (llength(curwp->w_dotp) != 0 &&
+#if	PKCODE
+			    ((justflag == TRUE) ||
+#endif
+			     (lgetc(curwp->w_dotp, curwp->w_doto) != TAB &&
+			      lgetc(curwp->w_dotp, curwp->w_doto) != ' '))
+#if	PKCODE
+			    )
+#endif
+				curwp->w_dotp = lforw(curwp->w_dotp);
+			else
+				break;
+		}
+
+		/* and then backward until we are in a word */
+		suc = backchar(FALSE, 1);
+		while (suc && !inword()) {
+			suc = backchar(FALSE, 1);
+		}
+		curwp->w_doto = llength(curwp->w_dotp);	/* and to the EOL */
+	}
+	curwp->w_flag |= WFMOVE;  /* force screen update */
 	return TRUE;
 }
 #endif

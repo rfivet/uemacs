@@ -1,3 +1,9 @@
+/* basic.c -- implements basic.h */
+
+#include "basic.h"
+
+#define CVMVAS  1  /* arguments to page forward/back in pages      */
+
 /*	basic.c
  *
  * The routines in this file move the cursor around on the screen. They
@@ -10,12 +16,22 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 
+#include "buffer.h"
+#include "display.h"
 #include "estruct.h"
-#include "edef.h"
-#include "efunc.h"
+#include "input.h"
 #include "line.h"
+#include "random.h"
+#include "terminal.h"
 #include "utf8.h"
+#include "window.h"
+
+
+int overlap = 0 ;		/* line overlap in forw/back page	*/
+int curgoal ;			/* Goal for C-P, C-N			*/
+
 
 /*
  * This routine, given a pointer to a struct line, and the current cursor goal
@@ -63,74 +79,11 @@ int gotobol(int f, int n)
 }
 
 /*
- * Move the cursor backwards by "n" characters. If "n" is less than zero call
- * "forwchar" to actually do the move. Otherwise compute the new cursor
- * location. Error if you try and move out of the buffer. Set the flag if the
- * line pointer for dot changes.
- */
-int backchar(int f, int n)
-{
-	struct line *lp;
-
-	if (n < 0)
-		return forwchar(f, -n);
-	while (n--) {
-		if (curwp->w_doto == 0) {
-			if ((lp = lback(curwp->w_dotp)) == curbp->b_linep)
-				return FALSE;
-			curwp->w_dotp = lp;
-			curwp->w_doto = llength(lp);
-			curwp->w_flag |= WFMOVE;
-		} else {
-			do {
-				unsigned char c;
-				curwp->w_doto--;
-				c = lgetc(curwp->w_dotp, curwp->w_doto);
-				if (is_beginning_utf8(c))
-					break;
-			} while (curwp->w_doto);
-		}
-	}
-	return TRUE;
-}
-
-/*
  * Move the cursor to the end of the current line. Trivial. No errors.
  */
 int gotoeol(int f, int n)
 {
 	curwp->w_doto = llength(curwp->w_dotp);
-	return TRUE;
-}
-
-/*
- * Move the cursor forwards by "n" characters. If "n" is less than zero call
- * "backchar" to actually do the move. Otherwise compute the new cursor
- * location, and move ".". Error if you try and move off the end of the
- * buffer. Set the flag if the line pointer for dot changes.
- */
-int forwchar(int f, int n)
-{
-	if (n < 0)
-		return backchar(f, -n);
-	while (n--) {
-		int len = llength(curwp->w_dotp);
-		if (curwp->w_doto == len) {
-			if (curwp->w_dotp == curbp->b_linep)
-				return FALSE;
-			curwp->w_dotp = lforw(curwp->w_dotp);
-			curwp->w_doto = 0;
-			curwp->w_flag |= WFMOVE;
-		} else {
-			do {
-				unsigned char c;
-				curwp->w_doto++;
-				c = lgetc(curwp->w_dotp, curwp->w_doto);
-				if (is_beginning_utf8(c))
-					break;
-			} while (curwp->w_doto < len);
-		}
-	}
 	return TRUE;
 }
 
@@ -268,106 +221,6 @@ int backline(int f, int n)
 	curwp->w_flag |= WFMOVE;
 	return TRUE;
 }
-
-#if	WORDPRO
-/*
- * go back to the beginning of the current paragraph
- * here we look for a <NL><NL> or <NL><TAB> or <NL><SPACE>
- * combination to delimit the beginning of a paragraph
- *
- * int f, n;		default Flag & Numeric argument
- */
-int gotobop(int f, int n)
-{
-	int suc;  /* success of last backchar */
-
-	if (n < 0) /* the other way... */
-		return gotoeop(f, -n);
-
-	while (n-- > 0) {  /* for each one asked for */
-
-		/* first scan back until we are in a word */
-		suc = backchar(FALSE, 1);
-		while (!inword() && suc)
-			suc = backchar(FALSE, 1);
-		curwp->w_doto = 0;	/* and go to the B-O-Line */
-
-		/* and scan back until we hit a <NL><NL> or <NL><TAB>
-		   or a <NL><SPACE>                                     */
-		while (lback(curwp->w_dotp) != curbp->b_linep)
-			if (llength(curwp->w_dotp) != 0 &&
-#if	PKCODE
-			    ((justflag == TRUE) ||
-#endif
-			     (lgetc(curwp->w_dotp, curwp->w_doto) != TAB &&
-			      lgetc(curwp->w_dotp, curwp->w_doto) != ' '))
-#if	PKCODE
-			    )
-#endif
-				curwp->w_dotp = lback(curwp->w_dotp);
-			else
-				break;
-
-		/* and then forward until we are in a word */
-		suc = forwchar(FALSE, 1);
-		while (suc && !inword())
-			suc = forwchar(FALSE, 1);
-	}
-	curwp->w_flag |= WFMOVE;	/* force screen update */
-	return TRUE;
-}
-
-/*
- * Go forword to the end of the current paragraph
- * here we look for a <NL><NL> or <NL><TAB> or <NL><SPACE>
- * combination to delimit the beginning of a paragraph
- *
- * int f, n;		default Flag & Numeric argument
- */
-int gotoeop(int f, int n)
-{
-	int suc;  /* success of last backchar */
-
-	if (n < 0)  /* the other way... */
-		return gotobop(f, -n);
-
-	while (n-- > 0) {  /* for each one asked for */
-		/* first scan forward until we are in a word */
-		suc = forwchar(FALSE, 1);
-		while (!inword() && suc)
-			suc = forwchar(FALSE, 1);
-		curwp->w_doto = 0;	/* and go to the B-O-Line */
-		if (suc)	/* of next line if not at EOF */
-			curwp->w_dotp = lforw(curwp->w_dotp);
-
-		/* and scan forword until we hit a <NL><NL> or <NL><TAB>
-		   or a <NL><SPACE>                                     */
-		while (curwp->w_dotp != curbp->b_linep) {
-			if (llength(curwp->w_dotp) != 0 &&
-#if	PKCODE
-			    ((justflag == TRUE) ||
-#endif
-			     (lgetc(curwp->w_dotp, curwp->w_doto) != TAB &&
-			      lgetc(curwp->w_dotp, curwp->w_doto) != ' '))
-#if	PKCODE
-			    )
-#endif
-				curwp->w_dotp = lforw(curwp->w_dotp);
-			else
-				break;
-		}
-
-		/* and then backward until we are in a word */
-		suc = backchar(FALSE, 1);
-		while (suc && !inword()) {
-			suc = backchar(FALSE, 1);
-		}
-		curwp->w_doto = llength(curwp->w_dotp);	/* and to the EOL */
-	}
-	curwp->w_flag |= WFMOVE;  /* force screen update */
-	return TRUE;
-}
-#endif
 
 /*
  * Scroll forward by a specified number of lines, or by a full page if no

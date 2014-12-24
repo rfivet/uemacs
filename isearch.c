@@ -1,3 +1,5 @@
+#include "isearch.h"
+
 /*	isearch.c
  *
  * The functions in this file implement commands that perform incremental
@@ -23,11 +25,52 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
+#include "basic.h"
+#include "buffer.h"
+#include "display.h"
 #include "estruct.h"
-#include "edef.h"
-#include "efunc.h"
+#include "exec.h"
+#include "input.h"
 #include "line.h"
+#include "search.h"
+#include "terminal.h"
+#include "window.h"
+
+/*
+ * Incremental search defines.
+ */
+#if	ISRCH
+
+#define	CMDBUFLEN	256	/* Length of our command buffer */
+
+#define	IS_ABORT	0x07	/* Abort the isearch */
+#define IS_BACKSP	0x08	/* Delete previous char */
+#define	IS_TAB		0x09	/* Tab character (allowed search char) */
+#define IS_NEWLINE	0x0D	/* New line from keyboard (Carriage return) */
+#define	IS_QUOTE	0x11	/* Quote next character */
+#define IS_REVERSE	0x12	/* Search backward */
+#define	IS_FORWARD	0x13	/* Search forward */
+#define	IS_VMSQUOTE	0x16	/* VMS quote character */
+#define	IS_VMSFORW	0x18	/* Search forward for VMS */
+#define	IS_QUIT		0x1B	/* Exit the search */
+#define	IS_RUBOUT	0x7F	/* Delete previous character */
+
+/* IS_QUIT is no longer used, the variable metac is used instead */
+
+#endif
+
+
+static int isearch( int f, int n) ;
+static int checknext( char chr, char *patrn, int dir) ;
+static int scanmore( char *patrn, int dir) ;
+static int match_pat( char *patrn) ;
+static int promptpattern( char *prompt) ;
+static int get_char( void) ;
+static int uneat( void) ;
+static void reeat( int c) ;
+
 
 #if	ISRCH
 
@@ -138,14 +181,14 @@ int fisearch(int f, int n)
  * exists (or until the search is aborted).
  */
 
-int isearch(int f, int n)
+static int isearch(int f, int n)
 {
 	int status;		/* Search status */
 	int col;		/* prompt column */
 	int cpos;	/* character number in search string  */
 	int c;		/* current input character */
 	int expc;	/* function expanded input char       */
-	char pat_save[NPAT];	/* Saved copy of the old pattern str  */
+	spat_t pat_save ;	/* Saved copy of the old pattern str  */
 	struct line *curline;		/* Current line on entry              */
 	int curoff;		/* Current offset on entry            */
 	int init_direction;	/* The initial search direction       */
@@ -155,7 +198,7 @@ int isearch(int f, int n)
 	cmd_reexecute = -1;	/* We're not re-executing (yet?)      */
 	cmd_offset = 0;		/* Start at the beginning of the buff */
 	cmd_buff[0] = '\0';	/* Init the command buffer            */
-	strncpy(pat_save, pat, NPAT);	/* Save the old pattern string        */
+	strncpy( pat_save, pat, sizeof pat_save) ;	/* Save the old pattern string        */
 	curline = curwp->w_dotp;	/* Save the current line pointer      */
 	curoff = curwp->w_doto;	/* Save the current offset            */
 	init_direction = n;	/* Save the initial search direction  */
@@ -233,7 +276,7 @@ int isearch(int f, int n)
 			curwp->w_dotp = curline;	/* Reset the line pointer     */
 			curwp->w_doto = curoff;	/*  and the offset            */
 			n = init_direction;	/* Reset the search direction */
-			strncpy(pat, pat_save, NPAT);	/* Restore the old search str */
+			strncpy( pat, pat_save, sizeof pat) ;	/* Restore the old search str */
 			cmd_reexecute = 0;	/* Start the whole mess over  */
 			goto start_over;	/* Let it take care of itself */
 
@@ -249,7 +292,8 @@ int isearch(int f, int n)
 		/* I guess we got something to search for, so search for it           */
 
 		pat[cpos++] = c;	/* put the char in the buffer */
-		if (cpos >= NPAT) {	/* too many chars in string?  *//* Yup.  Complain about it    */
+		if (cpos >= sizeof pat) {	/* too many chars in string?  */
+		/* Yup.  Complain about it    */
 			mlwrite("? Search string too long");
 			return TRUE;	/* Return an error            */
 		}
@@ -278,7 +322,7 @@ int isearch(int f, int n)
  * char *patrn;		The entire search string (incl chr)
  * int dir;		Search direction
  */
-int checknext(char chr, char *patrn, int dir)	/* Check next character in search string */
+static int checknext(char chr, char *patrn, int dir)	/* Check next character in search string */
 {
 	struct line *curline;	/* current line during scan           */
 	int curoff;	/* position within current line       */
@@ -322,7 +366,7 @@ int checknext(char chr, char *patrn, int dir)	/* Check next character in search 
  * char *patrn;			string to scan for
  * int dir;			direction to search
  */
-int scanmore(char *patrn, int dir)	/* search forward or back for a pattern           */
+static int scanmore(char *patrn, int dir)	/* search forward or back for a pattern           */
 {
 	int sts;		/* search status                      */
 
@@ -351,7 +395,7 @@ int scanmore(char *patrn, int dir)	/* search forward or back for a pattern      
  *
  * char *patrn;			String to match to buffer
  */
-int match_pat(char *patrn)	/* See if the pattern string matches string at "."   */
+static int match_pat(char *patrn)	/* See if the pattern string matches string at "."   */
 {
 	int i;		/* Generic loop index/offset          */
 	int buffchar;	/* character at current position      */
@@ -383,7 +427,7 @@ int match_pat(char *patrn)	/* See if the pattern string matches string at "."   
 /*
  * Routine to prompt for I-Search string.
  */
-int promptpattern(char *prompt)
+static int promptpattern(char *prompt)
 {
 	char tpat[NPAT + 20];
 
@@ -450,7 +494,7 @@ static int echo_char(int c, int col)
  * Otherwise, we must be re-executing the command string, so just return the
  * next character.
  */
-int get_char(void)
+static int get_char(void)
 {
 	int c;			/* A place to get a character         */
 
@@ -481,7 +525,7 @@ int get_char(void)
 
 /* Come here on the next term.t_getchar call: */
 
-int uneat(void)
+static int uneat(void)
 {
 	int c;
 
@@ -491,7 +535,7 @@ int uneat(void)
 	return c;		/* and return the last char           */
 }
 
-void reeat(int c)
+static void reeat(int c)
 {
 	if (eaten_char != -1)	/* If we've already been here             */
 		return /*(NULL) */ ;	/* Don't do it again                  */

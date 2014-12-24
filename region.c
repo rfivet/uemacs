@@ -1,3 +1,6 @@
+/* region.c -- implements region.h */
+#include "region.h"
+
 /*	region.c
  *
  *      The routines in this file deal with the region, that magic space
@@ -9,10 +12,12 @@
 
 #include <stdio.h>
 
+#include "buffer.h"
 #include "estruct.h"
-#include "edef.h"
-#include "efunc.h"
 #include "line.h"
+#include "log.h"
+#include "random.h"
+#include "window.h"
 
 /*
  * Kill the region. Ask "getregion"
@@ -69,7 +74,7 @@ int copyregion(int f, int n)
 			++loffs;
 		}
 	}
-	mlwrite("(region copied)");
+	logwrite("(region copied)");
 	return TRUE;
 }
 
@@ -166,7 +171,7 @@ int getregion(struct region *rp)
 	long bsize;
 
 	if (curwp->w_markp == NULL) {
-		mlwrite("No mark set in this window");
+		logwrite("No mark set in this window");
 		return FALSE;
 	}
 	if (curwp->w_dotp == curwp->w_markp) {
@@ -208,6 +213,6 @@ int getregion(struct region *rp)
 			}
 		}
 	}
-	mlwrite("Bug: lost mark");
+	logwrite("Bug: lost mark");
 	return FALSE;
 }

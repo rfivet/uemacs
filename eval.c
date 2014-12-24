@@ -1,3 +1,6 @@
+/* eval.c -- implements eval.h */
+#include "eval.h"
+
 /*	eval.c
  *
  *	Expression evaluation functions
@@ -7,19 +10,288 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include "basic.h"
+#include "bind.h"
+#include "buffer.h"
+#include "display.h"
 #include "estruct.h"
-#include "edef.h"
-#include "efunc.h"
-#include "evar.h"
+#include "exec.h"
+#include "execute.h"
+#include "flook.h"
+#include "input.h"
 #include "line.h"
-#include "util.h"
+#include "random.h"
+#include "search.h"
+#include "terminal.h"
+#include "termio.h"
 #include "version.h"
+#include "window.h"
 
 #define	MAXVARS	255
 
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+
+#if	DEBUGM
+/*	vars needed for macro debugging output	*/
+char outline[ NSTRING] ;	/* global string to hold debug line text */
+#endif
+
+int gflags = GFREAD ;		/* global control flag		*/
+int macbug = FALSE ;		/* macro debuging flag          */
+int cmdstatus = TRUE ;		/* last command status          */
+int flickcode = FALSE ;		/* do flicker supression?       */
+int rval = 0 ;			/* return value of a subprocess */
+
+
+static int saveflag = 0 ;	/* Flags, saved with the $target var */
+
+
+long envram = 0l ;		/* # of bytes current in use by malloc */
+
+
+/* Max #chars in a var name. */
+#define	NVSIZE	10
+
+/* Structure to hold user variables and their definitions. */
+struct user_variable {
+	char u_name[NVSIZE + 1]; /* name of user variable */
+	char *u_value;		 /* value (string) */
+};
+
+static char errorm[] = "ERROR" ;	/* error literal                */
+
+static int seed = 0 ;			/* random number seed           */
+
+static char *ltos( int val) ;
+
+/* List of recognized environment variables. */
+
+static const char *envars[] = {
+	"fillcol",		/* current fill column */
+	"pagelen",		/* number of lines used by editor */
+	"curcol",		/* current column pos of cursor */
+	"curline",		/* current line in file */
+	"ram",			/* ram in use by malloc */
+	"flicker",		/* flicker supression */
+	"curwidth",		/* current screen width */
+	"cbufname",		/* current buffer name */
+	"cfname",		/* current file name */
+	"sres",			/* current screen resolution */
+	"debug",		/* macro debugging */
+	"status",		/* returns the status of the last command */
+	"palette",		/* current palette string */
+	"asave",		/* # of chars between auto-saves */
+	"acount",		/* # of chars until next auto-save */
+	"lastkey",		/* last keyboard char struck */
+	"curchar",		/* current character under the cursor */
+	"discmd",		/* display commands on command line */
+	"version",		/* current version number */
+	"progname",		/* returns current prog name - "MicroEMACS" */
+	"seed",			/* current random number seed */
+	"disinp",		/* display command line input characters */
+	"wline",		/* # of lines in current window */
+	"cwline",		/* current screen line in window */
+	"target",		/* target for line moves */
+	"search",		/* search pattern */
+	"replace",		/* replacement pattern */
+	"match",		/* last matched magic pattern */
+	"kill",			/* kill buffer (read only) */
+	"cmode",		/* mode of current buffer */
+	"gmode",		/* global modes */
+	"tpause",		/* length to pause for paren matching */
+	"pending",		/* type ahead pending flag */
+	"lwidth",		/* width of current line */
+	"line",			/* text of current line */
+	"gflags",		/* global internal emacs flags */
+	"rval",			/* child process return value */
+	"tab",			/* tab 4 or 8 */
+	"overlap",
+	"jump",
+#if SCROLLCODE
+	"scroll",		/* scroll enabled */
+#endif
+};
+
+/* And its preprocesor definitions. */
+
+#define	EVFILLCOL	0
+#define	EVPAGELEN	1
+#define	EVCURCOL	2
+#define	EVCURLINE	3
+#define	EVRAM		4
+#define	EVFLICKER	5
+#define	EVCURWIDTH	6
+#define	EVCBUFNAME	7
+#define	EVCFNAME	8
+#define	EVSRES		9
+#define	EVDEBUG		10
+#define	EVSTATUS	11
+#define	EVPALETTE	12
+#define	EVASAVE		13
+#define	EVACOUNT	14
+#define	EVLASTKEY	15
+#define	EVCURCHAR	16
+#define	EVDISCMD	17
+#define	EVVERSION	18
+#define	EVPROGNAME	19
+#define	EVSEED		20
+#define	EVDISINP	21
+#define	EVWLINE		22
+#define EVCWLINE	23
+#define	EVTARGET	24
+#define	EVSEARCH	25
+#define	EVREPLACE	26
+#define	EVMATCH		27
+#define	EVKILL		28
+#define	EVCMODE		29
+#define	EVGMODE		30
+#define	EVTPAUSE	31
+#define	EVPENDING	32
+#define	EVLWIDTH	33
+#define	EVLINE		34
+#define	EVGFLAGS	35
+#define	EVRVAL		36
+#define EVTAB		37
+#define EVOVERLAP	38
+#define EVSCROLLCOUNT	39
+#define EVSCROLL	40
+
+enum function_type {
+	NILNAMIC = 0,
+	MONAMIC,
+	DYNAMIC,
+	TRINAMIC,
+};
+
+/* List of recognized user functions. */
+static struct {
+	const char f_name[ 4] ;
+	const enum function_type f_type ;
+} funcs[] = {
+	{ "add", DYNAMIC },	/* add two numbers together */
+	{ "sub", DYNAMIC },	/* subtraction */
+	{ "tim", DYNAMIC },	/* multiplication */
+	{ "div", DYNAMIC },	/* division */
+	{ "mod", DYNAMIC },	/* mod */
+	{ "neg", MONAMIC },	/* negate */
+	{ "cat", DYNAMIC },	/* concatinate string */
+	{ "lef", DYNAMIC },	/* left string(string, len) */
+	{ "rig", DYNAMIC },	/* right string(string, pos) */
+	{ "mid", TRINAMIC },	/* mid string(string, pos, len) */
+	{ "not", MONAMIC },	/* logical not */
+	{ "equ", DYNAMIC },	/* logical equality check */
+	{ "les", DYNAMIC },	/* logical less than */
+	{ "gre", DYNAMIC },	/* logical greater than */
+	{ "seq", DYNAMIC },	/* string logical equality check */
+	{ "sle", DYNAMIC },	/* string logical less than */
+	{ "sgr", DYNAMIC },	/* string logical greater than */
+	{ "ind", MONAMIC },	/* evaluate indirect value */
+	{ "and", DYNAMIC },	/* logical and */
+	{ "or", DYNAMIC },	/* logical or */
+	{ "len", MONAMIC },	/* string length */
+	{ "upp", MONAMIC },	/* uppercase string */
+	{ "low", MONAMIC },	/* lower case string */
+	{ "tru", MONAMIC },	/* Truth of the universe logical test */
+	{ "asc", MONAMIC },	/* char to integer conversion */
+	{ "chr", MONAMIC },	/* integer to char conversion */
+	{ "gtk", NILNAMIC },	/* get 1 charater */
+	{ "rnd", MONAMIC },	/* get a random number */
+	{ "abs", MONAMIC },	/* absolute value of a number */
+	{ "sin", DYNAMIC },	/* find the index of one string in another */
+	{ "env", MONAMIC },	/* retrieve a system environment var */
+	{ "bin", MONAMIC },	/* loopup what function name is bound to a key */
+	{ "exi", MONAMIC },	/* check if a file exists */
+	{ "fin", MONAMIC },	/* look for a file on the path... */
+	{ "ban", DYNAMIC },	/* bitwise and   9-10-87  jwm */
+	{ "bor", DYNAMIC },	/* bitwise or    9-10-87  jwm */
+	{ "bxo", DYNAMIC },	/* bitwise xor   9-10-87  jwm */
+	{ "bno", MONAMIC },	/* bitwise not */
+	{ "xla", TRINAMIC },	/* XLATE character string translation */
+};
+
+/* And its preprocesor definitions. */
+
+#define	UFADD		0
+#define	UFSUB		1
+#define	UFTIMES		2
+#define	UFDIV		3
+#define	UFMOD		4
+#define	UFNEG		5
+#define	UFCAT		6
+#define	UFLEFT		7
+#define	UFRIGHT		8
+#define	UFMID		9
+#define	UFNOT		10
+#define	UFEQUAL		11
+#define	UFLESS		12
+#define	UFGREATER	13
+#define	UFSEQUAL	14
+#define	UFSLESS		15
+#define	UFSGREAT	16
+#define	UFIND		17
+#define	UFAND		18
+#define	UFOR		19
+#define	UFLENGTH	20
+#define	UFUPPER		21
+#define	UFLOWER		22
+#define	UFTRUTH		23
+#define	UFASCII		24
+#define	UFCHR		25
+#define	UFGTKEY		26
+#define	UFRND		27
+#define	UFABS		28
+#define	UFSINDEX	29
+#define	UFENV		30
+#define	UFBIND		31
+#define	UFEXIST		32
+#define	UFFIND		33
+#define UFBAND		34
+#define UFBOR		35
+#define UFBXOR		36
+#define	UFBNOT		37
+#define	UFXLATE		38
+
 /* User variables */
 static struct user_variable uv[MAXVARS + 1];
+
+/* When emacs' command interpetor needs to get a variable's name,
+ * rather than it's value, it is passed back as a variable description
+ * structure. The v_num field is a index into the appropriate variable table.
+ */
+struct variable_description {
+	int v_type;  /* Type of variable. */
+	int v_num;   /* Ordinal pointer to variable in list. */
+};
+
+static void findvar( char *var, struct variable_description *vd, int size) ;
+static int svar( struct variable_description *var, char *value) ;
+
+/*
+ * putctext:
+ *	replace the current line with the passed in text
+ *
+ * char *iline;			contents of new line
+ */
+static int putctext( char *iline)
+{
+	int status;
+
+	/* delete the current line */
+	curwp->w_doto = 0;	/* starting at the beginning of the line */
+	if ((status = killtext(TRUE, 1)) != TRUE)
+		return status;
+
+	/* insert the new line */
+	if ((status = linstr(iline)) != TRUE)
+		return status;
+	status = lnewline();
+	backline(TRUE, 1);
+	return status;
+}
+
 
 /* Initialize the user variable list. */
 void varinit(void)
@@ -76,17 +348,17 @@ char *gtfun(char *fname)
 	/* and now evaluate it! */
 	switch (fnum) {
 	case UFADD:
-		return itoa(atoi(arg1) + atoi(arg2));
+		return i_to_a(atoi(arg1) + atoi(arg2));
 	case UFSUB:
-		return itoa(atoi(arg1) - atoi(arg2));
+		return i_to_a(atoi(arg1) - atoi(arg2));
 	case UFTIMES:
-		return itoa(atoi(arg1) * atoi(arg2));
+		return i_to_a(atoi(arg1) * atoi(arg2));
 	case UFDIV:
-		return itoa(atoi(arg1) / atoi(arg2));
+		return i_to_a(atoi(arg1) / atoi(arg2));
 	case UFMOD:
-		return itoa(atoi(arg1) % atoi(arg2));
+		return i_to_a(atoi(arg1) % atoi(arg2));
 	case UFNEG:
-		return itoa(-atoi(arg1));
+		return i_to_a(-atoi(arg1));
 	case UFCAT:
 		strcpy(result, arg1);
 		return strcat(result, arg2);
@@ -119,7 +391,7 @@ char *gtfun(char *fname)
 	case UFOR:
 		return ltos(stol(arg1) || stol(arg2));
 	case UFLENGTH:
-		return itoa(strlen(arg1));
+		return i_to_a(strlen(arg1));
 	case UFUPPER:
 		return mkupper(arg1);
 	case UFLOWER:
@@ -127,7 +399,7 @@ char *gtfun(char *fname)
 	case UFTRUTH:
 		return ltos(atoi(arg1) == 42);
 	case UFASCII:
-		return itoa((int) arg1[0]);
+		return i_to_a((int) arg1[0]);
 	case UFCHR:
 		result[0] = atoi(arg1);
 		result[1] = 0;
@@ -137,11 +409,11 @@ char *gtfun(char *fname)
 		result[1] = 0;
 		return result;
 	case UFRND:
-		return itoa((ernd() % abs(atoi(arg1))) + 1);
+		return i_to_a((ernd() % abs(atoi(arg1))) + 1);
 	case UFABS:
-		return itoa(abs(atoi(arg1)));
+		return i_to_a(abs(atoi(arg1)));
 	case UFSINDEX:
-		return itoa(sindex(arg1, arg2));
+		return i_to_a(sindex(arg1, arg2));
 	case UFENV:
 #if	ENVFUNC
 		tsp = getenv(arg1);
@@ -157,13 +429,13 @@ char *gtfun(char *fname)
 		tsp = flook(arg1, TRUE);
 		return tsp == NULL ? "" : tsp;
 	case UFBAND:
-		return itoa(atoi(arg1) & atoi(arg2));
+		return i_to_a(atoi(arg1) & atoi(arg2));
 	case UFBOR:
-		return itoa(atoi(arg1) | atoi(arg2));
+		return i_to_a(atoi(arg1) | atoi(arg2));
 	case UFBXOR:
-		return itoa(atoi(arg1) ^ atoi(arg2));
+		return i_to_a(atoi(arg1) ^ atoi(arg2));
 	case UFBNOT:
-		return itoa(~atoi(arg1));
+		return i_to_a(~atoi(arg1));
 	case UFXLATE:
 		return xlat(arg1, arg2, arg3);
 	}
@@ -192,8 +464,6 @@ char *gtusr(char *vname)
 	/* return errorm if we run off the end */
 	return errorm;
 }
-
-extern char *getkill(void);
 
 /*
  * gtenv()
@@ -227,19 +497,19 @@ char *gtenv(char *vname)
 	/* otherwise, fetch the appropriate value */
 	switch (vnum) {
 	case EVFILLCOL:
-		return itoa(fillcol);
+		return i_to_a(fillcol);
 	case EVPAGELEN:
-		return itoa(term.t_nrow + 1);
+		return i_to_a(term.t_nrow + 1);
 	case EVCURCOL:
-		return itoa(getccol(FALSE));
+		return i_to_a(getccol(FALSE));
 	case EVCURLINE:
-		return itoa(getcline());
+		return i_to_a(getcline());
 	case EVRAM:
-		return itoa((int) (envram / 1024l));
+		return i_to_a((int) (envram / 1024l));
 	case EVFLICKER:
 		return ltos(flickcode);
 	case EVCURWIDTH:
-		return itoa(term.t_ncol);
+		return i_to_a(term.t_ncol);
 	case EVCBUFNAME:
 		return curbp->b_bname;
 	case EVCFNAME:
@@ -250,18 +520,22 @@ char *gtenv(char *vname)
 		return ltos(macbug);
 	case EVSTATUS:
 		return ltos(cmdstatus);
-	case EVPALETTE:
+	case EVPALETTE: {
+		static char palstr[ 49] = "" ; /* palette string */
+		
 		return palstr;
+	    }
+
 	case EVASAVE:
-		return itoa(gasave);
+		return i_to_a(gasave);
 	case EVACOUNT:
-		return itoa(gacount);
+		return i_to_a(gacount);
 	case EVLASTKEY:
-		return itoa(lastkey);
+		return i_to_a(lastkey);
 	case EVCURCHAR:
 		return (curwp->w_dotp->l_used ==
-			curwp->w_doto ? itoa('\n') :
-			itoa(lgetc(curwp->w_dotp, curwp->w_doto)));
+			curwp->w_doto ? i_to_a('\n') :
+			i_to_a(lgetc(curwp->w_dotp, curwp->w_doto)));
 	case EVDISCMD:
 		return ltos(discmd);
 	case EVVERSION:
@@ -269,16 +543,16 @@ char *gtenv(char *vname)
 	case EVPROGNAME:
 		return PROGRAM_NAME_LONG;
 	case EVSEED:
-		return itoa(seed);
+		return i_to_a(seed);
 	case EVDISINP:
 		return ltos(disinp);
 	case EVWLINE:
-		return itoa(curwp->w_ntrows);
+		return i_to_a(curwp->w_ntrows);
 	case EVCWLINE:
-		return itoa(getwpos());
+		return i_to_a(getwpos());
 	case EVTARGET:
 		saveflag = lastflag;
-		return itoa(curgoal);
+		return i_to_a(curgoal);
 	case EVSEARCH:
 		return pat;
 	case EVREPLACE:
@@ -288,11 +562,11 @@ char *gtenv(char *vname)
 	case EVKILL:
 		return getkill();
 	case EVCMODE:
-		return itoa(curbp->b_mode);
+		return i_to_a(curbp->b_mode);
 	case EVGMODE:
-		return itoa(gmode);
+		return i_to_a(gmode);
 	case EVTPAUSE:
-		return itoa(term.t_pause);
+		return i_to_a(term.t_pause);
 	case EVPENDING:
 #if	TYPEAH
 		return ltos(typahead());
@@ -300,19 +574,19 @@ char *gtenv(char *vname)
 		return falsem;
 #endif
 	case EVLWIDTH:
-		return itoa(llength(curwp->w_dotp));
+		return i_to_a(llength(curwp->w_dotp));
 	case EVLINE:
 		return getctext();
 	case EVGFLAGS:
-		return itoa(gflags);
+		return i_to_a(gflags);
 	case EVRVAL:
-		return itoa(rval);
+		return i_to_a(rval);
 	case EVTAB:
-		return itoa(tabmask + 1);
+		return i_to_a(tabmask + 1);
 	case EVOVERLAP:
-		return itoa(overlap);
+		return i_to_a(overlap);
 	case EVSCROLLCOUNT:
-		return itoa(scrollcount);
+		return i_to_a(scrollcount);
 #if SCROLLCODE
 	case EVSCROLL:
 		return ltos(term.t_scroll != NULL);
@@ -325,30 +599,6 @@ char *gtenv(char *vname)
 }
 
 /*
- * return some of the contents of the kill buffer
- */
-char *getkill(void)
-{
-	int size;	/* max number of chars to return */
-	static char value[NSTRING];	/* temp buffer for value */
-
-	if (kbufh == NULL)
-		/* no kill buffer....just a null string */
-		value[0] = 0;
-	else {
-		/* copy in the contents... */
-		if (kused < NSTRING)
-			size = kused;
-		else
-			size = NSTRING - 1;
-		strncpy(value, kbufh->d_chunk, size);
-	}
-
-	/* and return the constructed value */
-	return value;
-}
-
-/*
  * set a variable
  *
  * int f;		default flag
@@ -357,10 +607,6 @@ char *getkill(void)
 int setvar(int f, int n)
 {
 	int status;	/* status return */
-#if	DEBUGM
-	char *sp;	/* temp string pointer */
-	char *ep;	/* ptr to end of outline */
-#endif
 	struct variable_description vd;		/* variable num/type */
 	char var[NVSIZE + 1];	/* name of variable to fetch */
 	char value[NSTRING];	/* value to set variable to */
@@ -386,7 +632,7 @@ int setvar(int f, int n)
 
 	/* get the value for that variable */
 	if (f == TRUE)
-		strcpy(value, itoa(n));
+		strcpy(value, i_to_a(n));
 	else {
 		status = mlreply("Value: ", &value[0], NSTRING);
 		if (status != TRUE)
@@ -401,6 +647,8 @@ int setvar(int f, int n)
 	   that effect here. */
 
 	if (macbug) {
+		char *sp ;	/* temp string pointer */
+
 		strcpy(outline, "(((");
 
 		/* assignment status */
@@ -419,6 +667,8 @@ int setvar(int f, int n)
 		sp = outline;
 		while (*sp)
 			if (*sp++ == '%') {
+				char *ep ;	/* ptr to end of outline */
+
 				/* advance to the end */
 				ep = --sp;
 				while (*ep++);
@@ -455,7 +705,7 @@ int setvar(int f, int n)
  * @vd: structure to hold type and pointer.
  * @size: size of variable array.
  */
-void findvar(char *var, struct variable_description *vd, int size)
+static void findvar(char *var, struct variable_description *vd, int size)
 {
 	int vnum;	/* subscript in variable arrays */
 	int vtype;	/* type to return */
@@ -513,7 +763,7 @@ fvar:
  * @var: variable to set.
  * @value: value to set to.
  */
-int svar(struct variable_description *var, char *value)
+static int svar(struct variable_description *var, char *value)
 {
 	int vnum;	/* ordinal number of var refrenced */
 	int vtype;	/* type of variable to set */
@@ -679,14 +929,16 @@ int svar(struct variable_description *var, char *value)
 }
 
 /*
- * itoa:
+ * i_to_a:
  *	integer to ascii string.......... This is too
  *	inconsistant to use the system's
  *
  * int i;		integer to translate to a string
  */
-char *itoa(int i)
+char *i_to_a(int i)
 {
+	#define	INTWIDTH	sizeof( int) * 3
+
 	int digit;	/* current digit being used */
 	char *sp;	/* pointer into result */
 	int sign;	/* sign of resulting number */
@@ -869,8 +1121,11 @@ int stol(char *val)
  *
  * int val;		value to translate
  */
-char *ltos(int val)
+static char *ltos( int val)
 {
+	static char truem[] = "TRUE" ;		/* true literal  */
+	static char falsem[] = "FALSE" ;	/* false literal */
+
 	if (val)
 		return truem;
 	else

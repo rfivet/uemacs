@@ -1,3 +1,6 @@
+/* search.c -- implements search.h */
+#include "search.h"
+
 /*	search.c
  *
  * The functions in this file implement commands that search in the forward
@@ -58,13 +61,90 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include "basic.h"
+#include "buffer.h"
+#include "display.h"
 #include "estruct.h"
-#include "edef.h"
-#include "efunc.h"
+#include "input.h"
 #include "line.h"
+#include "log.h"
+#include "terminal.h"
+#include "window.h"
+
+/* The variable matchlen holds the length of the matched
+ * string - used by the replace functions.
+ * The variable patmatch holds the string that satisfies
+ * the search command.
+ * The variables matchline and matchoff hold the line and
+ * offset position of the *start* of match.
+ */
+unsigned int matchlen = 0 ;
+static unsigned int mlenold = 0 ;
+char *patmatch = NULL ;
+static struct line *matchline = NULL;
+static int matchoff = 0;
+
+spat_t pat ;	/* Search pattern               */
+spat_t tap ;	/* Reversed pattern array.      */
+spat_t rpat ;	/* replacement pattern          */
+
 
 #if defined(MAGIC)
+/*
+ * Defines for the metacharacters in the regular expression
+ * search routines.
+ */
+#define	MCNIL		0	/* Like the '\0' for strings. */
+#define	LITCHAR		1	/* Literal character, or string. */
+#define	ANY		2
+#define	CCL		3
+#define	NCCL		4
+#define	BOL		5
+#define	EOL		6
+#define	DITTO		7
+#define	CLOSURE		256	/* An or-able value. */
+#define	MASKCL		(CLOSURE - 1)
+
+#define	MC_ANY		'.'	/* 'Any' character (except newline). */
+#define	MC_CCL		'['	/* Character class. */
+#define	MC_NCCL		'^'	/* Negate character class. */
+#define	MC_RCCL		'-'	/* Range in character class. */
+#define	MC_ECCL		']'	/* End of character class. */
+#define	MC_BOL		'^'	/* Beginning of line. */
+#define	MC_EOL		'$'	/* End of line. */
+#define	MC_CLOSURE	'*'	/* Closure - does not extend past newline. */
+#define	MC_DITTO	'&'	/* Use matched string in replacement. */
+#define	MC_ESC		'\\'	/* Escape - suppress meta-meaning. */
+
+#define	BIT(n)		(1 << (n))	/* An integer with one bit set. */
+#define	CHCASE(c)	((c) ^ DIFCASE)	/* Toggle the case of a letter. */
+
+/* HICHAR - 1 is the largest character we will deal with.
+ * HIBYTE represents the number of bytes in the bitmap.
+ */
+#define	HICHAR		256
+#define	HIBYTE		HICHAR >> 3
+
+/* Typedefs that define the meta-character structure for MAGIC mode searching
+ * (struct magic), and the meta-character structure for MAGIC mode replacement
+ * (struct magic_replacement).
+ */
+struct magic {
+	short int mc_type;
+	union {
+		int lchar;
+		char *cclmap;
+	} u;
+};
+
+struct magic_replacement {
+	short int mc_type;
+	char *rstr;
+};
+
 /*
  * The variables magical and rmagical determine if there
  * were actual metacharacters in the search and replace strings -
@@ -76,6 +156,8 @@ static short int rmagical;
 static struct magic mcpat[NPAT]; /* The magic pattern. */
 static struct magic tapcm[NPAT]; /* The reversed magic patterni. */
 static struct magic_replacement rmcpat[NPAT]; /* The replacement magic array. */
+
+static int mcscanner( struct magic *mcpatrn, int direct, int beg_or_end) ;
 #endif
 
 static int amatch(struct magic *mcptr, int direct, struct line **pcwline, int *pcwoff);
@@ -301,7 +383,7 @@ int backhunt(int f, int n)
  * int direct;			which way to go.
  * int beg_or_end;		put point at beginning or end of pattern.
  */
-int mcscanner(struct magic *mcpatrn, int direct, int beg_or_end)
+static int mcscanner(struct magic *mcpatrn, int direct, int beg_or_end)
 {
 	struct line *curline;		/* current line during scan */
 	int curoff;		/* position within current line */
@@ -733,11 +815,15 @@ static int replaces(int kind, int f, int n)
 	int nlflag;		/* last char of search string a <NL>? */
 	int nlrepl;		/* was a replace done on the last line? */
 	char c;			/* input char for query */
-	char tpat[NPAT];	/* temporary to hold search pattern */
+	spat_t tpat ;	/* temporary to hold search pattern */
 	struct line *origline;		/* original "." position */
 	int origoff;		/* and offset (for . query option) */
 	struct line *lastline;		/* position of last replace and */
 	int lastoff;		/* offset (for 'u' query option) */
+
+/* rfi */
+	lastline = NULL ;
+	lastoff = 0 ;
 
 	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
 		return rdonly();	/* we are in read only mode     */
@@ -1384,7 +1470,6 @@ static int mceq(int bc, struct magic *mt)
 	return result;
 }
 
-extern char *clearbits(void);
 
 /*
  * cclmake -- create the bitmap for the character class.

@@ -1,3 +1,6 @@
+/* exec.c -- implements exec.h */
+#include "exec.h"
+
 /*	exec.c
  *
  *	This file is for functions dealing with execution of
@@ -8,11 +11,74 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include "buffer.h"
+#include "bind.h"
+#include "display.h"
 #include "estruct.h"
-#include "edef.h"
-#include "efunc.h"
+#include "eval.h"
+#include "file.h"
+#include "flook.h"
+#include "input.h"
 #include "line.h"
+#include "random.h"
+#include "window.h"
+
+
+char *execstr = NULL ;		/* pointer to string to execute */
+boolean clexec = FALSE ;	/* command line execution flag  */
+
+
+
+/*	Directive definitions	*/
+
+#define	DIF		0
+#define DELSE		1
+#define DENDIF		2
+#define DGOTO		3
+#define DRETURN		4
+#define DENDM		5
+#define DWHILE		6
+#define	DENDWHILE	7
+#define	DBREAK		8
+#define DFORCE		9
+
+#define NUMDIRS		10
+
+/* The !WHILE directive in the execution language needs to
+ * stack references to pending whiles. These are stored linked
+ * to each currently open procedure via a linked list of
+ * the following structure.
+*/
+struct while_block {
+	struct line *w_begin;        /* ptr to !while statement */
+	struct line *w_end;          /* ptr to the !endwhile statement */
+	int w_type;		     /* block type */
+	struct while_block *w_next;  /* next while */
+};
+
+#define	BTWHILE		1
+#define	BTBREAK		2
+
+/* directive name table:
+	This holds the names of all the directives....	*/
+
+static const char *dname[] = {
+	"if", "else", "endif",
+	"goto", "return", "endm",
+	"while", "endwhile", "break",
+	"force"
+};
+
+static char golabel[ NSTRING] = "" ;	/* current line to go to        */
+static int execlevel = 0 ;			/* execution IF level           */
+static struct buffer *bstore = NULL ;	/* buffer to store macro text to */
+static int mstore = FALSE ;			/* storing text to macro flag   */
+
+static int dobuf( struct buffer *bp) ;
+static void freewhile( struct while_block *wp) ;
 
 /*
  * Execute a named command even if it is not bound.
@@ -34,6 +100,8 @@ int namedcmd(int f, int n)
 	/* and then execute the command */
 	return kfunc(f, n);
 }
+
+static int docmd( char *cline) ;
 
 /*
  * execcmd:
@@ -68,13 +136,12 @@ int execcmd(int f, int n)
  *
  * char *cline;		command line to execute
  */
-int docmd(char *cline)
-{
+static int docmd( char *cline) {
 	int f;		/* default argument flag */
 	int n;		/* numeric repeat value */
 	fn_t fnc;		/* function to execute */
 	int status;		/* return status of function */
-	int oldcle;		/* old contents of clexec flag */
+	boolean oldcle ;	/* old contents of clexec flag */
 	char *oldestr;		/* original exec string */
 	char tkn[NSTRING];	/* next token off of command line */
 
@@ -208,7 +275,7 @@ char *token(char *src, char *tok, int size)
  */
 int macarg(char *tok)
 {
-	int savcle;		/* buffer to store original clexec */
+	boolean savcle ;	/* buffer to store original clexec */
 	int status;
 
 	savcle = clexec;	/* save execution mode */
@@ -222,12 +289,12 @@ int macarg(char *tok)
  * nextarg:
  *	get the next argument
  *
- * char *prompt;		prompt to use if we must be interactive
+ * const char *prompt;		prompt to use if we must be interactive
  * char *buffer;		buffer to put token into
  * int size;			size of the buffer
  * int terminator;		terminating char to be used on interactive fetch
  */
-int nextarg(char *prompt, char *buffer, int size, int terminator)
+int nextarg(const char *prompt, char *buffer, int size, int terminator)
 {
 	/* if we are interactive, go get it! */
 	if (clexec == FALSE)
@@ -237,7 +304,8 @@ int nextarg(char *prompt, char *buffer, int size, int terminator)
 	execstr = token(execstr, buffer, size);
 
 	/* evaluate it */
-	strcpy(buffer, getval(buffer));
+	strncpy( buffer, getval( buffer), size - 1) ;
+	buffer[ size - 1] = '\0' ;
 	return TRUE;
 }
 
@@ -252,7 +320,7 @@ int nextarg(char *prompt, char *buffer, int size, int terminator)
 int storemac(int f, int n)
 {
 	struct buffer *bp;	/* pointer to macro buffer */
-	char bname[NBUFN];	/* name of buffer to use */
+	bname_t bname ;	/* name of buffer to use */
 
 	/* must have a numeric argument to this function */
 	if (f == FALSE) {
@@ -299,7 +367,7 @@ int storeproc(int f, int n)
 {
 	struct buffer *bp;	/* pointer to macro buffer */
 	int status;	/* return status */
-	char bname[NBUFN];	/* name of buffer to use */
+	bname_t bname ;	/* name of buffer to use */
 
 	/* a numeric argument means its a numbered macro */
 	if (f == TRUE)
@@ -307,7 +375,7 @@ int storeproc(int f, int n)
 
 	/* get the name of the procedure */
 	if ((status =
-	     mlreply("Procedure name: ", &bname[1], NBUFN - 2)) != TRUE)
+	     mlreply("Procedure name: ", &bname[1], sizeof bname - 2)) != TRUE)
 		return status;
 
 	/* construct the macro buffer name */
@@ -374,10 +442,10 @@ int execbuf(int f, int n)
 {
 	struct buffer *bp;	/* ptr to buffer to execute */
 	int status;	/* status return */
-	char bufn[NSTRING];	/* name of buffer to execute */
+	bname_t bufn ;	/* name of buffer to execute */
 
 	/* find out what buffer the user wants to execute */
-	if ((status = mlreply("Execute buffer: ", bufn, NBUFN)) != TRUE)
+	if ((status = mlreply("Execute buffer: ", bufn, sizeof bufn)) != TRUE)
 		return status;
 
 	/* find the pointer to that buffer */
@@ -416,7 +484,7 @@ int execbuf(int f, int n)
  *
  * struct buffer *bp;		buffer to execute
  */
-int dobuf(struct buffer *bp)
+static int dobuf(struct buffer *bp)
 {
 	int status;	/* status return */
 	struct line *lp;	/* pointer to line to execute */
@@ -426,7 +494,6 @@ int dobuf(struct buffer *bp)
 	int dirnum;		/* directive index */
 	int linlen;		/* length of line to execute */
 	int i;			/* index */
-	int c;			/* temp character */
 	int force;		/* force TRUE result? */
 	struct window *wp;		/* ptr to windows to scan */
 	struct while_block *whlist;	/* ptr to !WHILE list */
@@ -435,11 +502,6 @@ int dobuf(struct buffer *bp)
 	char *einit;		/* initial value of eline */
 	char *eline;		/* text of line to execute */
 	char tkn[NSTRING];	/* buffer to evaluate an expresion in */
-
-#if	DEBUGM
-	char *sp;		/* temp for building debug string */
-	char *ep;	/* ptr to end of outline */
-#endif
 
 	/* clear IF level flags/while ptr */
 	execlevel = 0;
@@ -557,6 +619,9 @@ int dobuf(struct buffer *bp)
 		   ^G will abort the command */
 
 		if (macbug) {
+			char *sp ;	/* temp for building debug string */
+			int c ;		/* temp character */
+
 			strcpy(outline, "<<<");
 
 			/* debug macro name */
@@ -564,7 +629,7 @@ int dobuf(struct buffer *bp)
 			strcat(outline, ":");
 
 			/* debug if levels */
-			strcat(outline, itoa(execlevel));
+			strcat(outline, i_to_a(execlevel));
 			strcat(outline, ":");
 
 			/* and lastly the line */
@@ -575,6 +640,8 @@ int dobuf(struct buffer *bp)
 			sp = outline;
 			while (*sp)
 				if (*sp++ == '%') {
+					char *ep ; /* ptr to end of outline */
+
 					/* advance to the end */
 					ep = --sp;
 					while (*ep++);
@@ -732,7 +799,7 @@ int dobuf(struct buffer *bp)
 
 					/* grab label to jump to */
 					eline =
-					    token(eline, golabel, NPAT);
+					    token( eline, golabel, sizeof golabel) ;
 					linlen = strlen(golabel);
 					glp = hlp->l_fp;
 					while (glp != hlp) {
@@ -833,7 +900,7 @@ int dobuf(struct buffer *bp)
  *
  * struct while_block *wp;		head of structure to free
  */
-void freewhile(struct while_block *wp)
+static void freewhile(struct while_block *wp)
 {
 	if (wp == NULL)
 		return;
@@ -886,7 +953,7 @@ int dofile(char *fname)
 	struct buffer *bp;	/* buffer to place file to exeute */
 	struct buffer *cb;	/* temp to hold current buf while we read */
 	int status;	/* results of various calls */
-	char bname[NBUFN];	/* name of buffer */
+	bname_t bname ;	/* name of buffer */
 
 	makename(bname, fname);	/* derive the name of the buffer */
 	unqname(bname);		/* make sure we don't stomp things */

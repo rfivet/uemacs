@@ -1,11 +1,11 @@
+/* pklock.c -- implements pklock.h */
+#include "estruct.h"
+#include "pklock.h"
+
 /*	PKLOCK.C
  *
  *	locking routines as modified by Petri Kutvonen
  */
-
-#include "estruct.h"
-#include "edef.h"
-#include "efunc.h"
 
 #if (FILOCK && BSD) || SVR4
 #include <sys/types.h>
@@ -41,7 +41,7 @@ int gethostname(char *name, int namelen)
  * if other error, returns "LOCK ERROR: explanation"
  *
  *********************/
-char *dolock(char *fname)
+char *dolock( const char *fname)
 {
 	int fd, n;
 	static char lname[MAXLOCK], locker[MAXNAME + 1];
@@ -102,7 +102,7 @@ char *dolock(char *fname)
  *
  *********************/
 
-char *undolock(char *fname)
+char *undolock( const char *fname)
 {
 	static char lname[MAXLOCK];
 

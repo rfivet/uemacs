@@ -1,8 +1,10 @@
 #ifndef WRAPPER_H_
 #define WRAPPER_H_
 
-extern int xmkstemp(char *template);
+#include <stdlib.h>
 
-extern void *xmalloc(size_t size);
+void xmkstemp( char *template) ;
+
+void *xmalloc( size_t size) ;
 
 #endif  /* WRAPPER_H_ */
