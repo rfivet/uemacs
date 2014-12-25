@@ -51,6 +51,16 @@ extern void sizesignal(int);
 #include	<process.h>
 #endif
 
+static void ue_system( char *cmd) {
+	int ret ;
+
+	ret = system( cmd) ;
+	if( ret == -1) {
+	/* some actual handling needed here */
+	}
+}
+
+
 /*
  * Create a subjob with a copy of the command intrepreter in it. When the
  * command interpreter exits, mark the screen as garbage so that you do a full
@@ -94,12 +104,12 @@ int spawncli(int f, int n)
 	TTclose();		/* stty to old settings */
 	TTkclose();		/* Close "keyboard" */
 	if ((cp = getenv("SHELL")) != NULL && *cp != '\0')
-		system(cp);
+		ue_system( cp) ;
 	else
 #if	BSD
 		system("exec /bin/csh");
 #else
-		system("exec /bin/sh");
+		ue_system( "exec /bin/sh") ;
 #endif
 	sgarbf = TRUE;
 	usleep( 2000000L) ;
@@ -191,7 +201,7 @@ int spawn(int f, int n)
 	TTflush();
 	TTclose();		/* stty to old modes    */
 	TTkclose();
-	system(line);
+	ue_system( line) ;
 	fflush(stdout);		/* to be sure P.K.      */
 	TTopen();
 
@@ -257,7 +267,7 @@ int execprg(int f, int n)
 	TTflush();
 	TTclose();		/* stty to old modes    */
 	TTkclose();
-	system(line);
+	ue_system( line) ;
 	fflush(stdout);		/* to be sure P.K.      */
 	TTopen();
 	mlputs("(End)");	/* Pause.               */
@@ -360,7 +370,7 @@ int pipecmd(int f, int n)
 	TTkclose();
 	strcat(line, ">");
 	strcat(line, filnam);
-	system(line);
+	ue_system( line) ;
 	TTopen();
 	TTkopen();
 	TTflush();
@@ -450,7 +460,7 @@ int filter_buffer(int f, int n)
 	TTclose();		/* stty to old modes    */
 	TTkclose();
 	strcat(line, " <fltinp >fltout");
-	system(line);
+	ue_system( line) ;
 	TTopen();
 	TTkopen();
 	TTflush();

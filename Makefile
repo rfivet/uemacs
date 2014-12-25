@@ -1,8 +1,8 @@
-# Makefile for emacs, updated Mon, Nov 17, 2014  1:05:02 PM
+# Makefile for emacs, updated Thu Dec 25 10:14:11 CST 2014
 
-SRC=ansi.c basic.c bind.c bindable.c buffer.c crypt.c display.c ebind.c eval.c exec.c execute.c file.c fileio.c flook.c ibmpc.c input.c isearch.c line.c lock.c log.c main.c mingw32.c names.c pklock.c posix.c random.c region.c search.c spawn.c tcap.c termio.c utf8.c vmsvt.c vt52.c window.c word.c wrapper.c wscreen.c
-OBJ=ansi.o basic.o bind.o bindable.o buffer.o crypt.o display.o ebind.o eval.o exec.o execute.o file.o fileio.o flook.o ibmpc.o input.o isearch.o line.o lock.o log.o main.o mingw32.o names.o pklock.o posix.o random.o region.o search.o spawn.o tcap.o termio.o utf8.o vmsvt.o vt52.o window.o word.o wrapper.o wscreen.o
-HDR=basic.h bind.h bindable.h buffer.h crypt.h defines.h display.h ebind.h estruct.h eval.h exec.h execute.h file.h fileio.h flook.h input.h isearch.h line.h lock.h log.h names.h pklock.h random.h region.h retcode.h search.h spawn.h terminal.h termio.h utf8.h version.h window.h word.h wrapper.h wscreen.h
+SRC=ansi.c basic.c bindable.c bind.c buffer.c crypt.c display.c ebind.c eval.c exec.c execute.c file.c fileio.c flook.c ibmpc.c input.c isearch.c line.c lock.c log.c main.c mingw32.c names.c pklock.c posix.c random.c region.c search.c spawn.c tcap.c termio.c utf8.c vmsvt.c vt52.c window.c word.c wrapper.c wscreen.c
+OBJ=ansi.o basic.o bindable.o bind.o buffer.o crypt.o display.o ebind.o eval.o exec.o execute.o file.o fileio.o flook.o ibmpc.o input.o isearch.o line.o lock.o log.o main.o mingw32.o names.o pklock.o posix.o random.o region.o search.o spawn.o tcap.o termio.o utf8.o vmsvt.o vt52.o window.o word.o wrapper.o wscreen.o
+HDR=basic.h bindable.h bind.h buffer.h crypt.h defines.h display.h ebind.h estruct.h eval.h exec.h execute.h file.h fileio.h flook.h input.h isearch.h line.h lock.h log.h names.h pklock.h random.h region.h retcode.h search.h spawn.h terminal.h termio.h utf8.h version.h window.h word.h wrapper.h wscreen.h
 
 # DO NOT ADD OR MODIFY ANY LINES ABOVE THIS -- make source creates them
 
@@ -31,6 +31,7 @@ CFLAGS=-O2 $(WARNINGS)
 #CFLAGS=-O -qchars=signed	# RS/6000
 ifeq ($(uname_S),Linux)
  DEFINES=-DAUTOCONF -DPOSIX -DUSG -D_BSD_SOURCE -D_SVID_SOURCE -D_XOPEN_SOURCE=600
+ LIBS=-lcurses
 endif
 ifeq ($(uname_S),FreeBSD)
  DEFINES=-DAUTOCONF -DPOSIX -DSYSV -D_FREEBSD_C_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE -D_XOPEN_SOURCE=600
@@ -136,12 +137,12 @@ ansi.o: ansi.c estruct.h
 basic.o: basic.c basic.h buffer.h crypt.h line.h utf8.h display.h \
  estruct.h input.h bind.h random.h terminal.h defines.h retcode.h \
  window.h
-bind.o: bind.c bind.h estruct.h bindable.h buffer.h crypt.h line.h utf8.h \
- display.h ebind.h exec.h retcode.h file.h flook.h input.h names.h \
- window.h defines.h
 bindable.o: bindable.c bindable.h defines.h buffer.h crypt.h line.h \
  utf8.h display.h estruct.h file.h retcode.h input.h bind.h lock.h \
  terminal.h
+bind.o: bind.c bind.h estruct.h bindable.h buffer.h crypt.h line.h utf8.h \
+ display.h ebind.h exec.h retcode.h file.h flook.h input.h names.h \
+ window.h defines.h
 buffer.o: buffer.c buffer.h crypt.h line.h utf8.h defines.h display.h \
  estruct.h file.h retcode.h input.h bind.h window.h
 crypt.o: crypt.c crypt.h
@@ -171,7 +172,8 @@ isearch.o: isearch.c isearch.h basic.h buffer.h crypt.h line.h utf8.h \
  defines.h window.h
 line.o: line.c line.h utf8.h buffer.h crypt.h estruct.h log.h retcode.h \
  window.h defines.h
-lock.o: lock.c estruct.h lock.h
+lock.o: lock.c estruct.h lock.h defines.h display.h input.h bind.h \
+ retcode.h pklock.h
 log.o: log.c log.h retcode.h
 main.o: main.c estruct.h basic.h bind.h bindable.h buffer.h crypt.h \
  line.h utf8.h display.h eval.h execute.h file.h retcode.h input.h lock.h \
@@ -181,7 +183,7 @@ names.o: names.c names.h basic.h bind.h bindable.h buffer.h crypt.h \
  line.h utf8.h display.h eval.h exec.h retcode.h file.h isearch.h \
  region.h random.h search.h spawn.h window.h defines.h word.h
 pklock.o: pklock.c estruct.h pklock.h
-posix.o: posix.c termio.h
+posix.o: posix.c termio.h estruct.h retcode.h utf8.h
 random.o: random.c random.h basic.h buffer.h crypt.h line.h utf8.h \
  display.h estruct.h execute.h input.h bind.h log.h retcode.h search.h \
  terminal.h defines.h window.h
@@ -195,7 +197,7 @@ spawn.o: spawn.c spawn.h defines.h buffer.h crypt.h line.h utf8.h \
  terminal.h window.h
 tcap.o: tcap.c terminal.h defines.h retcode.h display.h estruct.h \
  termio.h
-termio.o: termio.c termio.h estruct.h retcode.h utf8.h
+termio.o: termio.c termio.h
 utf8.o: utf8.c utf8.h
 vmsvt.o: vmsvt.c estruct.h
 vt52.o: vt52.c estruct.h
