@@ -106,26 +106,15 @@ source:
 	@sed -n -e '/^# DO NOT ADD OR MODIFY/,$$p' <Makefile.bak >>Makefile
 
 depend: ${SRC}
+	@mv Makefile Makefile.bak
+	@sed -n -e '1,/^# DO NOT DELETE THIS LINE/p' Makefile.bak > Makefile
+	@echo >> Makefile
 	@for i in ${SRC}; do\
-	    cc ${DEFINES} -MM $$i ; done >makedep
-	@echo '/^# DO NOT DELETE THIS LINE/+2,$$d' >eddep
-	@echo '$$r ./makedep' >>eddep
-	@echo 'w' >>eddep
-	@cp Makefile Makefile.bak
-	@ed - Makefile <eddep
-	@rm eddep makedep
+	    cc ${DEFINES} -MM $$i ; done >> Makefile
 	@echo '' >>Makefile
 	@echo '# DEPENDENCIES MUST END AT END OF FILE' >>Makefile
 	@echo '# IF YOU PUT STUFF HERE IT WILL GO AWAY' >>Makefile
 	@echo '# see make depend above' >>Makefile
-
-#	@for i in ${SRC}; do\
-#	    cc ${DEFINES} -M $$i | sed -e 's, \./, ,' | grep -v '/usr/include' | \
-#	    awk '{ if ($$1 != prev) { if (rec != "") print rec; \
-#		rec = $$0; prev = $$1; } \
-#		else { if (length(rec $$2) > 78) { print rec; rec = $$0; } \
-#		else rec = rec " " $$2 } } \
-#		END { print rec }'; done >makedep
 
 .c.o:
 	$(E) "  CC      " $@
@@ -172,8 +161,7 @@ isearch.o: isearch.c isearch.h basic.h buffer.h crypt.h line.h utf8.h \
  defines.h window.h
 line.o: line.c line.h utf8.h buffer.h crypt.h estruct.h log.h retcode.h \
  window.h defines.h
-lock.o: lock.c estruct.h lock.h defines.h display.h input.h bind.h \
- retcode.h pklock.h
+lock.o: lock.c estruct.h lock.h
 log.o: log.c log.h retcode.h
 main.o: main.c estruct.h basic.h bind.h bindable.h buffer.h crypt.h \
  line.h utf8.h display.h eval.h execute.h file.h retcode.h input.h lock.h \
@@ -183,7 +171,7 @@ names.o: names.c names.h basic.h bind.h bindable.h buffer.h crypt.h \
  line.h utf8.h display.h eval.h exec.h retcode.h file.h isearch.h \
  region.h random.h search.h spawn.h window.h defines.h word.h
 pklock.o: pklock.c estruct.h pklock.h
-posix.o: posix.c termio.h estruct.h retcode.h utf8.h
+posix.o: posix.c termio.h
 random.o: random.c random.h basic.h buffer.h crypt.h line.h utf8.h \
  display.h estruct.h execute.h input.h bind.h log.h retcode.h search.h \
  terminal.h defines.h window.h
@@ -197,7 +185,7 @@ spawn.o: spawn.c spawn.h defines.h buffer.h crypt.h line.h utf8.h \
  terminal.h window.h
 tcap.o: tcap.c terminal.h defines.h retcode.h display.h estruct.h \
  termio.h
-termio.o: termio.c termio.h
+termio.o: termio.c termio.h estruct.h retcode.h utf8.h
 utf8.o: utf8.c utf8.h
 vmsvt.o: vmsvt.c estruct.h
 vt52.o: vt52.c estruct.h
