@@ -1,7 +1,7 @@
-/* wscreen.c -- windows screen console */
-#include "wscreen.h"
-
+/* wscreen.c -- windows screen console for MINGW32 */
 #ifdef MINGW32
+
+#include "wscreen.h"
 
 #include <windows.h>
 #include <stdlib.h>
@@ -112,6 +112,6 @@ void wtitle( const char *title) {
     SetConsoleTitle( title) ;
 }
 
-#endif
+#endif /* MINGW32 */
 
 /* end of wscreen.c */

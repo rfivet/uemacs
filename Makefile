@@ -171,7 +171,7 @@ names.o: names.c names.h basic.h bind.h bindable.h buffer.h crypt.h \
  line.h utf8.h display.h eval.h exec.h retcode.h file.h isearch.h \
  region.h random.h search.h spawn.h window.h defines.h word.h
 pklock.o: pklock.c estruct.h pklock.h
-posix.o: posix.c termio.h
+posix.o: posix.c
 random.o: random.c random.h basic.h buffer.h crypt.h line.h utf8.h \
  display.h estruct.h execute.h input.h bind.h log.h retcode.h search.h \
  terminal.h defines.h window.h
@@ -194,7 +194,7 @@ window.o: window.c window.h defines.h buffer.h crypt.h line.h utf8.h \
 word.o: word.c word.h basic.h buffer.h crypt.h line.h utf8.h estruct.h \
  log.h retcode.h random.h region.h window.h defines.h
 wrapper.o: wrapper.c wrapper.h
-wscreen.o: wscreen.c wscreen.h
+wscreen.o: wscreen.c
 
 # DEPENDENCIES MUST END AT END OF FILE
 # IF YOU PUT STUFF HERE IT WILL GO AWAY

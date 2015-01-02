@@ -1,4 +1,6 @@
-/* posix.c -- implements termio.h */
+/* posix.c -- posix implementation of termio.h */
+#ifdef POSIX
+
 #include "termio.h"
 
 /*	posix.c
@@ -12,8 +14,6 @@
  *	based on termio.c, with all the old cruft removed, and
  *	fixed for termios rather than the old termio.. Linus Torvalds
  */
-
-#ifdef POSIX
 
 #include <errno.h>
 #include <fcntl.h>

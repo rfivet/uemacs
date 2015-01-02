@@ -1,3 +1,6 @@
+/* termio.c -- implements termio.h */
+#if !defined( POSIX) && !defined( MINGW32)
+
 #include "termio.h"
 
 /*  TERMIO.C
@@ -8,8 +11,6 @@
  *
  *  modified by Petri Kutvonen
  */
-
-#if !defined( POSIX) && !defined( MINGW32)
 
 #include <stdio.h>
 #include <stdlib.h>
