@@ -80,6 +80,15 @@ static int mstore = FALSE ;			/* storing text to macro flag   */
 static int dobuf( struct buffer *bp) ;
 static void freewhile( struct while_block *wp) ;
 
+void ue_system( const char *cmd) {
+	int ret ;
+
+	ret = system( cmd) ;
+	if( ret == -1) {
+	/* some actual handling needed here */
+	}
+}
+
 /*
  * Execute a named command even if it is not bound.
  */

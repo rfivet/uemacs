@@ -17,6 +17,7 @@ extern boolean clexec ;	/* command line execution flag  */
 
 
 
+void ue_system( const char *cmd) ;
 int namedcmd( int f, int n) ;
 int execcmd( int f, int n) ;
 char *token( char *src, char *tok, int size) ;

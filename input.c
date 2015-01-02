@@ -619,7 +619,7 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
                 xmkstemp(tmp);
                 strcat(ffbuf, tmp);
                 strcat(ffbuf, " 2>&1");
-                system(ffbuf);
+                ue_system( ffbuf) ;
                 tmpf = fopen(tmp, "r");
 #endif
 #if MSDOS

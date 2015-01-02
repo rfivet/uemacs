@@ -51,15 +51,6 @@ extern void sizesignal(int);
 #include	<process.h>
 #endif
 
-static void ue_system( char *cmd) {
-	int ret ;
-
-	ret = system( cmd) ;
-	if( ret == -1) {
-	/* some actual handling needed here */
-	}
-}
-
 
 /*
  * Create a subjob with a copy of the command intrepreter in it. When the

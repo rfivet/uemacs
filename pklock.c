@@ -84,7 +84,16 @@ char *dolock( const char *fname)
 		cuserid(locker);
 		strcat(locker + strlen(locker), "@");
 		gethostname(locker + strlen(locker), 64);
-		write(fd, locker, strlen(locker));
+		{
+			int ret, locker_size ;
+
+			locker_size = strlen( locker) ;
+			ret = write( fd, locker, locker_size) ;
+			if( ret != locker_size) {
+			/* some error handling here */
+			}
+		}
+
 		close(fd);
 		return NULL;
 	}

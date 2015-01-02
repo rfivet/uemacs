@@ -164,7 +164,13 @@ void vttidy(void)
 	TTclose();
 	TTkclose();
 #ifdef PKCODE
-	write(1, "\r", 1);
+	{
+		int ret ;
+		ret = write( 1, "\r", 1) ;
+		if( ret != 1) {
+		/* some error handling here */
+		}
+	}
 #endif
 }
 
