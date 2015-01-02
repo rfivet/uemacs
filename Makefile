@@ -135,7 +135,7 @@ bind.o: bind.c bind.h estruct.h bindable.h buffer.h crypt.h line.h utf8.h \
 buffer.o: buffer.c buffer.h crypt.h line.h utf8.h defines.h display.h \
  estruct.h file.h retcode.h input.h bind.h window.h
 crypt.o: crypt.c crypt.h
-display.o: display.c display.h buffer.h crypt.h line.h utf8.h estruct.h \
+display.o: display.c display.h estruct.h buffer.h crypt.h line.h utf8.h \
  input.h bind.h termio.h terminal.h defines.h retcode.h version.h \
  wrapper.h window.h
 ebind.o: ebind.c ebind.h basic.h bind.h estruct.h bindable.h buffer.h \
@@ -168,8 +168,8 @@ main.o: main.c estruct.h basic.h bind.h bindable.h buffer.h crypt.h \
  log.h random.h search.h terminal.h defines.h termio.h version.h window.h
 mingw32.o: mingw32.c
 names.o: names.c names.h basic.h bind.h bindable.h buffer.h crypt.h \
- line.h utf8.h display.h eval.h exec.h retcode.h file.h isearch.h \
- region.h random.h search.h spawn.h window.h defines.h word.h
+ line.h utf8.h display.h estruct.h eval.h exec.h retcode.h file.h \
+ isearch.h region.h random.h search.h spawn.h window.h defines.h word.h
 pklock.o: pklock.c estruct.h pklock.h
 posix.o: posix.c
 random.o: random.c random.h basic.h buffer.h crypt.h line.h utf8.h \

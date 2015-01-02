@@ -1,6 +1,8 @@
 #ifndef _DISPLAY_H_
 #define _DISPLAY_H_
 
+#include "estruct.h"
+
 extern int mpresf ;		/* Stuff in message line */
 extern int scrollcount ;	/* number of lines to scroll */
 extern int discmd ;		/* display command flag         */
@@ -25,8 +27,13 @@ void mlforce( char *s) ;
 void mlputs( char *s) ;
 void getscreensize( int *widthp, int *heightp) ;
 
+#if UNIX
+#include <signal.h>
 #ifdef SIGWINCH
+extern int chg_width, chg_height ;
+
 void sizesignal( int signr) ;
+#endif
 #endif
 
 #endif

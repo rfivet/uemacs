@@ -1550,9 +1550,9 @@ void sizesignal(int signr)
 
 	getscreensize(&w, &h);
 
-	if( h && w) {
-		term.t_mrow = h ;
-		term.t_mcol = w ;
+	if( h > 0 && w > 0) {
+		term.t_mrow = h = h < MAXROW ? h : MAXROW ;
+		term.t_mcol = w = w < MAXCOL ? w : MAXCOL ;
 		if( h - 1 != term.t_nrow || w != term.t_ncol)
 			newscreensize( h, w) ;
 	}
