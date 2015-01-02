@@ -10,6 +10,6 @@ Cigue is uEMACS (ue) on Cygwin/Linux, based on uEmacs/PK from kernel.org.
 * Some defaults changed due to 'finger habits': ue instead of em, ^S in commands mapping...
 
 ### How to build ###
-* dependencies: libncurses5-dev, ed if you use 'make depend'
+* dependencies: libncurses5-dev.
 * make source ; make depend ; make
 * MINGW32 target is experimental and lacks screen/kbd support.
