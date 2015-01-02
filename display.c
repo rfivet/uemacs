@@ -1550,8 +1550,12 @@ void sizesignal(int signr)
 
 	getscreensize(&w, &h);
 
-	if (h && w && (h - 1 != term.t_nrow || w != term.t_ncol))
-		newscreensize(h, w);
+	if( h && w) {
+		term.t_mrow = h ;
+		term.t_mcol = w ;
+		if( h - 1 != term.t_nrow || w != term.t_ncol)
+			newscreensize( h, w) ;
+	}
 
 	signal(SIGWINCH, sizesignal);
 	errno = old_errno;
@@ -1566,9 +1570,9 @@ static int newscreensize(int h, int w)
 		return FALSE;
 	}
 	chg_width = chg_height = 0;
-	if (h - 1 < term.t_mrow)
+	if( h <= term.t_mrow)
 		newsize(TRUE, h);
-	if (w < term.t_mcol)
+	if( w <= term.t_mcol)
 		newwidth(TRUE, w);
 
 	update(TRUE);

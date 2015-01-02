@@ -161,8 +161,8 @@ static void tcapopen(void)
 			exit(1);
 		}
 #ifdef SIGWINCH
-		term.t_mrow = MAXROW;
-		term.t_mcol = MAXCOL;
+		term.t_mrow = int_row > MAXROW ? MAXROW : int_row ;
+		term.t_mcol = int_col > MAXCOL ? MAXCOL : int_col ;
 #else
 		term.t_mrow = term.t_nrow > MAXROW ? MAXROW : term.t_nrow;
 		term.t_mcol = term.t_ncol > MAXCOL ? MAXCOL : term.t_ncol;

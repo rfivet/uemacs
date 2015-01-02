@@ -599,10 +599,10 @@ int newsize(int f, int n)
 
 	/* if the command defaults, assume the largest */
 	if (f == FALSE)
-		n = term.t_mrow + 1;
+		n = term.t_mrow ;
 
 	/* make sure it's in range */
-	if (n < 3 || n > term.t_mrow + 1) {
+	if (n < 3 || n > term.t_mrow) {
 		mlwrite("%%Screen size out of range");
 		return FALSE;
 	}
