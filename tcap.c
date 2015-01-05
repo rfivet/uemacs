@@ -164,6 +164,11 @@ static void tcapopen(void)
 /* At initialization we use maximum size even if current OS window is smaller */
 		term.t_mrow = MAXROW ;
 		term.t_mcol = MAXCOL ;
+		if( term.t_nrow >= term.t_mrow)
+			term.t_nrow = term.t_mrow - 1 ;
+
+		if( term.t_ncol > term.t_mcol)
+			term.t_ncol = term.t_mcol ;
 #else
 		term.t_mrow = term.t_nrow > MAXROW ? MAXROW : term.t_nrow;
 		term.t_mcol = term.t_ncol > MAXCOL ? MAXCOL : term.t_ncol;

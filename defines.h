@@ -14,5 +14,7 @@
 #define CTLX    0x40000000	/* ^X flag, or'ed in            */
 #define	SPEC	0x80000000	/* special key (function keys)  */
 
-#define MAXCOL	500
-#define MAXROW	500
+/* Actual 380x134 on a 1920x1080 screen in landscape,
+   if smaller font or portrait orientation limit to 400x150 */
+#define MAXCOL	400
+#define MAXROW	150
