@@ -362,14 +362,29 @@ char *gtfun(char *fname)
 	case UFCAT:
 		strcpy(result, arg1);
 		return strcat(result, arg2);
-	case UFLEFT:
-		return strncpy(result, arg1, atoi(arg2));
+	case UFLEFT: {
+		int sz ;
+		
+		sz = atoi( arg2) ;
+		if( sz >= sizeof result)
+			sz = sizeof result - 1 ;
+		strncpy( result, arg1, sz) ;
+		result[ sz] = 0 ;
+		return result ;
+	}
 	case UFRIGHT:
 		return (strcpy(result,
 			       &arg1[(strlen(arg1) - atoi(arg2))]));
-	case UFMID:
-		return (strncpy(result, &arg1[atoi(arg2) - 1],
-				atoi(arg3)));
+	case UFMID: {
+		int sz ;
+		
+		sz = atoi( arg3) ;
+		if( sz >= sizeof result)
+			sz = sizeof result - 1 ;
+		strncpy( result, &arg1[ atoi( arg2) - 1], sz) ;
+		result[ sz] = 0 ;
+		return result ;
+	}
 	case UFNOT:
 		return ltos(stol(arg1) == FALSE);
 	case UFEQUAL:
