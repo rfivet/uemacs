@@ -314,7 +314,13 @@ char *gtfun(char *fname)
 	char arg1[NSTRING];	/* value of first argument */
 	char arg2[NSTRING];	/* value of second argument */
 	char arg3[NSTRING];	/* value of third argument */
-	static char result[2 * NSTRING];	/* string result */
+	static char *result ;		/* string result */
+	static int ressize = 0 ;	/* mark result as uninitialized */
+
+	if( ressize == 0) {
+		result = malloc( NSTRING + 1) ;
+		ressize = NSTRING + 1 ;
+	}
 
 	/* look the function up in the function table */
 	fname[3] = 0;		/* only first 3 chars significant */
@@ -359,15 +365,27 @@ char *gtfun(char *fname)
 		return i_to_a(atoi(arg1) % atoi(arg2));
 	case UFNEG:
 		return i_to_a(-atoi(arg1));
-	case UFCAT:
-		strcpy(result, arg1);
-		return strcat(result, arg2);
+	case UFCAT: {
+		int sz1, sz ;
+
+		sz1 = strlen( arg1) ;
+		sz = sz1 + strlen( arg2) + 1 ;
+		if( sz > ressize) {
+			free( result) ;
+			result = malloc( sz) ;
+			ressize = sz ;
+		}
+
+		strcpy( result, arg1) ;
+		strcat( &result[ sz1], arg2) ;
+		return result ;
+	}
 	case UFLEFT: {
 		int sz ;
 		
 		sz = atoi( arg2) ;
-		if( sz >= sizeof result)
-			sz = sizeof result - 1 ;
+		if( sz >= ressize)
+			sz = ressize - 1 ;
 		strncpy( result, arg1, sz) ;
 		result[ sz] = 0 ;
 		return result ;
@@ -379,8 +397,8 @@ char *gtfun(char *fname)
 		int sz ;
 		
 		sz = atoi( arg3) ;
-		if( sz >= sizeof result)
-			sz = sizeof result - 1 ;
+		if( sz >= ressize)
+			sz = ressize - 1 ;
 		strncpy( result, &arg1[ atoi( arg2) - 1], sz) ;
 		result[ sz] = 0 ;
 		return result ;
