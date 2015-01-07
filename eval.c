@@ -384,21 +384,38 @@ char *gtfun(char *fname)
 		int sz ;
 		
 		sz = atoi( arg2) ;
-		if( sz >= ressize)
-			sz = ressize - 1 ;
+		if( sz >= ressize) {
+			free( result) ;
+			result = malloc( sz + 1) ;
+			ressize = sz + 1 ;
+		}
+
 		strncpy( result, arg1, sz) ;
 		result[ sz] = 0 ;
 		return result ;
 	}
-	case UFRIGHT:
-		return (strcpy(result,
-			       &arg1[(strlen(arg1) - atoi(arg2))]));
+	case UFRIGHT: {
+		int sz ;
+
+		sz = atoi( arg2) ;
+		if( sz >= ressize) {
+			free( result) ;
+			result = malloc( sz + 1) ;
+			ressize = sz + 1 ;
+		}
+		
+		return strcpy( result, &arg1[ strlen( arg1) - sz]) ;
+	}
 	case UFMID: {
 		int sz ;
 		
 		sz = atoi( arg3) ;
-		if( sz >= ressize)
-			sz = ressize - 1 ;
+		if( sz >= ressize) {
+			free( result) ;
+			result = malloc( sz + 1) ;
+			ressize = sz + 1 ;
+		}
+
 		strncpy( result, &arg1[ atoi( arg2) - 1], sz) ;
 		result[ sz] = 0 ;
 		return result ;
