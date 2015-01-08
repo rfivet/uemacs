@@ -720,7 +720,7 @@ int setvar(int f, int n)
 	int status;	/* status return */
 	struct variable_description vd;		/* variable num/type */
 	char var[NVSIZE + 1];	/* name of variable to fetch */
-	char value[NSTRING];	/* value to set variable to */
+	char value[ 2 * NSTRING] ;	/* value to set variable to */
 
 	/* first get the variable to set.. */
 	if (clexec == FALSE) {
@@ -745,7 +745,7 @@ int setvar(int f, int n)
 	if (f == TRUE)
 		strcpy(value, i_to_a(n));
 	else {
-		status = mlreply("Value: ", &value[0], NSTRING);
+		status = mlreply( "Value: ", value, sizeof value);
 		if (status != TRUE)
 			return status;
 	}
