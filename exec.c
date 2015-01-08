@@ -167,7 +167,8 @@ static int docmd( char *cline) {
 	lastflag = thisflag;
 	thisflag = 0;
 
-	if ((status = macarg(tkn)) != TRUE) {	/* and grab the first token */
+	status = macarg( tkn, sizeof tkn) ;
+	if( status != TRUE) {	/* and grab the first token */
 		execstr = oldestr;
 		return status;
 	}
@@ -179,7 +180,8 @@ static int docmd( char *cline) {
 		n = atoi(tkn);
 
 		/* and now get the command to execute */
-		if ((status = macarg(tkn)) != TRUE) {
+		status = macarg( tkn, sizeof tkn) ;
+		if( status != TRUE) {
 			execstr = oldestr;
 			return status;
 		}
@@ -282,14 +284,14 @@ char *token(char *src, char *tok, int size)
  *
  * char *tok;		buffer to place argument
  */
-int macarg(char *tok)
+int macarg( char *tok, int toksz)
 {
 	boolean savcle ;	/* buffer to store original clexec */
 	int status;
 
 	savcle = clexec;	/* save execution mode */
 	clexec = TRUE;		/* get the argument */
-	status = nextarg("", tok, NSTRING, ctoec('\n'));
+	status = nextarg("", tok, toksz, ctoec('\n'));
 	clexec = savcle;	/* restore execution mode */
 	return status;
 }
@@ -748,7 +750,7 @@ static int dobuf(struct buffer *bp)
 			case DIF:	/* IF directive */
 				/* grab the value of the logical exp */
 				if (execlevel == 0) {
-					if (macarg(tkn) != TRUE)
+					if( macarg( tkn, sizeof tkn) != TRUE)
 						goto eexec;
 					if (stol(tkn) == FALSE)
 						++execlevel;
@@ -759,7 +761,7 @@ static int dobuf(struct buffer *bp)
 			case DWHILE:	/* WHILE directive */
 				/* grab the value of the logical exp */
 				if (execlevel == 0) {
-					if (macarg(tkn) != TRUE)
+					if( macarg( tkn, sizeof tkn) != TRUE)
 						goto eexec;
 					if (stol(tkn) == TRUE)
 						goto onward;

@@ -21,7 +21,7 @@ void ue_system( const char *cmd) ;
 int namedcmd( int f, int n) ;
 int execcmd( int f, int n) ;
 char *token( char *src, char *tok, int size) ;
-int macarg( char *tok) ;
+int macarg( char *tok, int toksz) ;
 int nextarg( const char *prompt, char *buffer, int size, int terminator) ;
 int storemac( int f, int n) ;
 int execbuf( int f, int n) ;

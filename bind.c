@@ -444,7 +444,7 @@ unsigned int getckey(int mflag)
 
     /* check to see if we are executing a command line */
     if (clexec) {
-        macarg(tok);    /* get the next token */
+        macarg( tok, sizeof tok) ;    /* get the next token */
         return stock(tok);
     }
 

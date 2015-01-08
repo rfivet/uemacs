@@ -309,7 +309,6 @@ void varinit(void)
 char *gtfun(char *fname)
 {
 	int fnum;	/* index to function to eval */
-	int status;	/* return status */
 	char *tsp;	/* temporary string pointer */
 	char arg1[NSTRING];	/* value of first argument */
 	char arg2[NSTRING];	/* value of second argument */
@@ -335,17 +334,17 @@ char *gtfun(char *fname)
 
 	/* if needed, retrieve the first argument */
 	if (funcs[fnum].f_type >= MONAMIC) {
-		if ((status = macarg(arg1)) != TRUE)
+		if( macarg( arg1, sizeof arg1) != TRUE)
 			return errorm;
 
 		/* if needed, retrieve the second argument */
 		if (funcs[fnum].f_type >= DYNAMIC) {
-			if ((status = macarg(arg2)) != TRUE)
+			if( macarg( arg2, sizeof arg2) != TRUE)
 				return errorm;
 
 			/* if needed, retrieve the third argument */
 			if (funcs[fnum].f_type >= TRINAMIC)
-				if ((status = macarg(arg3)) != TRUE)
+				if( macarg( arg3, sizeof arg3) != TRUE)
 					return errorm;
 		}
 	}
