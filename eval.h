@@ -45,8 +45,5 @@ char *getval( char *token) ;
 int stol( char *val) ;
 char *mklower( char *str) ;
 int abs( int x) ;
-int ernd( void) ;
-int sindex( char *source, char *pattern) ;
-char *xlat( char *source, char *lookup, char *trans) ;
 
 #endif

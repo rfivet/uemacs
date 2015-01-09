@@ -297,6 +297,10 @@ static int putctext( char *iline)
 static char *result ;		/* string result */
 static int ressize = 0 ;	/* mark result as uninitialized */
 
+static int ernd( void) ;
+static int sindex( char *source, char *pattern) ;
+static char *xlat( char *source, char *lookup, char *trans) ;
+
 /* Initialize the user variable list. */
 void varinit(void)
 {
@@ -1295,8 +1299,7 @@ int abs(int x)
 /*
  * returns a random integer
  */
-int ernd(void)
-{
+static int ernd( void) {
 	seed = abs(seed * 1721 + 10007);
 	return seed;
 }
@@ -1307,8 +1310,7 @@ int ernd(void)
  * char *source;	source string to search
  * char *pattern;	string to look for
  */
-int sindex(char *source, char *pattern)
-{
+static int sindex( char *source, char *pattern) {
 	char *sp;		/* ptr to current position to scan */
 	char *csp;		/* ptr to source string during comparison */
 	char *cp;		/* ptr to place to check for equality */
@@ -1343,8 +1345,7 @@ int sindex(char *source, char *pattern)
  * char *lookup;	characters to translate
  * char *trans;		resulting translated characters
  */
-char *xlat(char *source, char *lookup, char *trans)
-{
+static char *xlat( char *source, char *lookup, char *trans) {
 	char *sp;	/* pointer into source table */
 	char *lp;	/* pointer into lookup table */
 	char *rp;	/* pointer into result */
