@@ -34,6 +34,22 @@
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
+/*	Macro argument token types					*/
+
+#define	TKNUL	0		/* end-of-string                */
+#define	TKARG	1		/* interactive argument         */
+#define	TKBUF	2		/* buffer argument              */
+#define	TKVAR	3		/* user variables               */
+#define	TKENV	4		/* environment variables        */
+#define	TKFUN	5		/* function....                 */
+#define	TKDIR	6		/* directive                    */
+#define	TKLBL	7		/* line label                   */
+#define	TKLIT	8		/* numeric literal              */
+#define	TKSTR	9		/* quoted string literal        */
+#define	TKCMD	10		/* command name                 */
+
+static int gettyp( char *token) ;
+
 #if	DEBUGM
 /*	vars needed for macro debugging output	*/
 char outline[ NSTRING] ;	/* global string to hold debug line text */
@@ -1093,8 +1109,7 @@ char *i_to_a(int i)
  *
  * char *token;		token to analyze
  */
-int gettyp(char *token)
-{
+static int gettyp( char *token) {
 	char c;	/* first char in token */
 
 	/* grab the first char (this is all we need) */
@@ -1130,6 +1145,10 @@ int gettyp(char *token)
 	default:
 		return TKCMD;
 	}
+}
+
+int is_it_cmd( char *token) {
+	return TKCMD == gettyp( token) ;
 }
 
 /*
