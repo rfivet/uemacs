@@ -46,7 +46,6 @@ int setvar( int f, int n) ;
 char *i_to_a( int i) ;
 char *getval( char *token) ;
 int stol( char *val) ;
-char *mkupper( char *str) ;
 char *mklower( char *str) ;
 int abs( int x) ;
 int ernd( void) ;

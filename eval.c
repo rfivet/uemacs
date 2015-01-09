@@ -66,6 +66,7 @@ static char errorm[] = "ERROR" ;	/* error literal                */
 static int seed = 0 ;			/* random number seed           */
 
 static char *ltos( int val) ;
+static char *mkupper( char *str) ;
 
 /* List of recognized environment variables. */
 
@@ -396,7 +397,7 @@ char *gtfun(char *fname)
 		}
 
 		strcpy( result, arg1) ;
-		strcat( &result[ sz1], argx) ;
+		strcpy( &result[ sz1], argx) ;
 		retstr = result ;
 	}
 		break ;
@@ -468,10 +469,26 @@ char *gtfun(char *fname)
 		retstr = i_to_a( strlen( argx)) ;
 		break ;
 	case UFUPPER:
-		retstr = mkupper( argx) ;
+		sz = strlen( argx) ;
+		if( sz >= ressize) {
+			free( result) ;
+			result = malloc( sz + 1) ;
+			ressize = sz + 1 ;
+		}
+
+		strcpy( result, argx) ;	/* result is at least as long as argx */
+		retstr = mkupper( result) ;
 		break ;
 	case UFLOWER:
-		retstr = mklower( argx) ;
+		sz = strlen( argx) ;
+		if( sz >= ressize) {
+			free( result) ;
+			result = malloc( sz + 1) ;
+			ressize = sz + 1 ;
+		}
+
+		strcpy( result, argx) ;	/* result is at least as long as argx */
+		retstr = mklower( result) ;
 		break ;
 	case UFTRUTH:
 		retstr = ltos( atoi( argx) == 42) ;
@@ -1240,7 +1257,7 @@ static char *ltos( int val)
  *
  * char *str;		string to upper case
  */
-char *mkupper(char *str)
+static char *mkupper( char *str)
 {
 	char *sp;
 
