@@ -39,9 +39,6 @@ extern long envram ;		/* # of bytes current in use by malloc */
 int gettyp( char *token) ;
 
 void varinit( void) ;
-char *gtfun( char *fname) ;
-char *gtusr( char *vname) ;
-char *gtenv( char *vname) ;
 int setvar( int f, int n) ;
 char *i_to_a( int i) ;
 char *getval( char *token) ;

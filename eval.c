@@ -294,12 +294,20 @@ static int putctext( char *iline)
 }
 
 
+static char *result ;		/* string result */
+static int ressize = 0 ;	/* mark result as uninitialized */
+
 /* Initialize the user variable list. */
 void varinit(void)
 {
 	int i;
 	for (i = 0; i < MAXVARS; i++)
 		uv[i].u_name[0] = 0;
+
+	if( ressize == 0) {
+		result = malloc( NSTRING) ;
+		ressize = NSTRING ;
+	}
 }
 
 /*
@@ -307,14 +315,11 @@ void varinit(void)
  *
  * @fname: name of function to evaluate.
  */
-char *gtfun(char *fname)
-{
-	int fnum;	/* index to function to eval */
-	char argx[ 512] ;
+static char *gtfun( char *fname) {
+	int fnum ;					/* index to function to eval */
+	char argx[ 512] ;			/* last argument, fixed sized allocation */
 	char *arg1 ; 				/* value of first argument */
 	char *arg2 ; 				/* value of second argument */
-	static char *result ;		/* string result */
-	static int ressize = 0 ;	/* mark result as uninitialized */
 	char *retstr ;				/* return value */
 
 	/* look the function up in the function table */
@@ -355,12 +360,6 @@ char *gtfun(char *fname)
 				}
 			}
 		}
-	}
-
-
-	if( ressize == 0) {
-		result = malloc( NSTRING) ;
-		ressize = NSTRING ;
 	}
 
 	/* and now evaluate it! */
@@ -554,12 +553,12 @@ char *gtfun(char *fname)
 		exit(-11);		/* never should get here */
 	}
 
+	if( arg2)
+		free( arg2) ;
+
 	if( arg1)
 		free( arg1) ;
 
-	if( arg2)
-		free( arg2) ;
-	
 	return retstr ;
 }
 
@@ -568,9 +567,7 @@ char *gtfun(char *fname)
  *
  * char *vname;			name of user variable to fetch
  */
-char *gtusr(char *vname)
-{
-
+static char *gtusr( char *vname) {
 	int vnum;	/* ordinal number of user var */
 
 	/* scan the list looking for the user var name */
@@ -590,8 +587,7 @@ char *gtusr(char *vname)
  *
  * char *vname;			name of environment variable to retrieve
  */
-char *gtenv(char *vname)
-{
+static char *gtenv( char *vname) {
 	int vnum;	/* ordinal number of var refrenced */
 
 	/* scan the list, looking for the referenced name */
