@@ -55,7 +55,16 @@ static int gettyp( char *token) ;
 char outline[ NSTRING] ;	/* global string to hold debug line text */
 #endif
 
-int gflags = GFREAD ;		/* global control flag		*/
+/* Emacs global flag bit definitions (for gflags). */
+/* if GFREAD is set, current buffer will be set on first file (read in) */
+#define	GFREAD	1
+
+static int gflags = GFREAD ;	/* global control flag		*/
+
+int readfirst_f( void) {
+	return GFREAD == (gflags & GFREAD) ;
+}
+
 int macbug = FALSE ;		/* macro debuging flag          */
 int cmdstatus = TRUE ;		/* last command status          */
 int flickcode = FALSE ;		/* do flicker supression?       */

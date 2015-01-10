@@ -10,18 +10,13 @@
 extern char outline[] ;		/* Global string to hold debug line text. */
 #endif
 
-
-/* Emacs global flag bit definitions (for gflags). */
-
-#define	GFREAD	1
-
-extern int gflags ;		/* global control flag          */
 extern int macbug ;		/* macro debuging flag          */
 extern int cmdstatus ;		/* last command status          */
 extern int flickcode ;		/* do flicker supression?       */
 extern int rval ;		/* return value of a subprocess */
 extern long envram ;		/* # of bytes current in use by malloc */
 
+int readfirst_f( void) ;
 int is_it_cmd( char *token) ;
 
 void varinit( void) ;

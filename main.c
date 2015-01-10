@@ -318,7 +318,7 @@ int main(int argc, char **argv)
 
 	/* if there are any files to read, read the first one! */
 	bp = bfind("main", FALSE, 0);
-	if (firstfile == FALSE && (gflags & GFREAD)) {
+	if (firstfile == FALSE && readfirst_f()) {
 		swbuffer(firstbp);
 		zotbuf(bp);
 	} else
