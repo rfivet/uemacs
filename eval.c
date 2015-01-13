@@ -763,7 +763,7 @@ int setvar(int f, int n)
 			return status;
 	} else {		/* macro line argument */
 		/* grab token and skip it */
-		execstr = token(execstr, var, NVSIZE + 1);
+		gettoken( var, sizeof var) ;
 	}
 
 	/* check the legality and find the var */
@@ -890,7 +890,7 @@ fvar:
 		var[4] = 0;
 		if (strcmp(&var[1], "ind") == 0) {
 			/* grab token, and eval it */
-			execstr = token(execstr, var, size);
+			gettoken( var, size) ;
 			strcpy(var, getval(var));
 			goto fvar;
 		}

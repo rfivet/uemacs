@@ -27,7 +27,7 @@
 #include "window.h"
 
 
-char *execstr = NULL ;      /* pointer to string to execute */
+static char *execstr = NULL ;	/* pointer to string to execute */
 boolean clexec = FALSE ;    /* command line execution flag  */
 
 
@@ -212,8 +212,7 @@ static int docmd( char *cline) {
  * char *src, *tok; source string, destination token string
  * int size;        maximum size of token
  */
-char *token(char *src, char *tok, int size)
-{
+static char *token( char *src, char *tok, int size) {
     int quotef; /* is the current string quoted? */
     char c; /* temporary character */
 
@@ -279,6 +278,10 @@ char *token(char *src, char *tok, int size)
     return src;
 }
 
+void gettoken( char *tok, int maxtoksize) {
+	execstr = token( execstr, tok, maxtoksize) ;
+}
+
 /*
  * get a macro line argument
  *
@@ -312,7 +315,7 @@ int nextarg(const char *prompt, char *buffer, int size, int terminator)
         return getstring(prompt, buffer, size, terminator);
 
     /* grab token and advance past */
-    execstr = token(execstr, buffer, size);
+	gettoken( buffer, size) ;
 
     /* evaluate it */
     strncpy( buffer, getval( buffer), size - 1) ;
