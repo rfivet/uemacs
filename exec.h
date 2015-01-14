@@ -26,7 +26,7 @@ int storemac( int f, int n) ;
 int execbuf( int f, int n) ;
 int execfile( int f, int n) ;
 int dofile( char *fname) ;
-int cbuf( int f, int n, int bufnum) ;
+
 int cbuf1( int f, int n) ;
 int cbuf2( int f, int n) ;
 int cbuf3( int f, int n) ;
