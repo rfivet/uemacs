@@ -1016,10 +1016,9 @@ int adjustmode(int kind, int global)
  *
  * int f, n;		arguments ignored
  */
-int clrmes(int f, int n)
-{
-	mlforce("");
-	return TRUE;
+int clrmes( int f, int n) {
+	mlforce( "") ;
+	return TRUE ;
 }
 
 /*
@@ -1028,31 +1027,17 @@ int clrmes(int f, int n)
  *
  * int f, n;		arguments ignored
  */
-int writemsg(int f, int n)
-{
-	char *sp;	/* pointer into buf to expand %s */
-	char *np;	/* ptr into nbuf */
+int writemsg( int f, int n) {
 	int status;
 	char buf[ NSTRING] ;		/* buffer to recieve message into */
-	char nbuf[ NSTRING * 2] ;	/* buffer to expand string into */
 
-	if ((status =
-	     mlreply("Message to write: ", buf, sizeof buf - 1)) != TRUE)
-		return status;
-
-	/* expand all '%' to "%%" so mlwrite won't expect arguments */
-	sp = buf;
-	np = nbuf;
-	while (*sp) {
-		*np++ = *sp;
-		if (*sp++ == '%')
-			*np++ = '%';
-	}
-	*np = '\0';
+	status = mlreply( "Message to write: ", buf, sizeof buf - 1) ;
+	if( status != TRUE)
+		return status ;
 
 	/* write the message out */
-	mlforce(nbuf);
-	return TRUE;
+	mlforce( buf) ;
+	return TRUE ;
 }
 
 #if	CFENCE

@@ -799,7 +799,6 @@ int setvar(int f, int n)
 int mdbugout( char *fmt, char *s1, char *s2, char *s3) {
 	char outline[ NSTRING] ;	/* global string to hold debug line text */
 	int	c, size ;	/* input from kbd, output to terminal */
-	char *sp ;	/* temp string pointer */
 
 	/* insure debug info fits in terminal and buffer width */
 	size = term.t_ncol + 1 ;
@@ -809,33 +808,14 @@ int mdbugout( char *fmt, char *s1, char *s2, char *s3) {
 	/* assignment status ; variable name ; value we tried to assign  */
 	snprintf( outline, size, fmt, s1, s2, s3) ;
 
-	/* expand '%' to "%%" so mlwrite wont bitch */
-	sp = outline;
-	while (*sp)
-		if (*sp++ == '%') {
-			char *ep ;	/* ptr to end of outline */
-
-			/* advance to the end */
-			ep = --sp;
-			while (*ep++);
-			/* null terminate the string one out */
-			*(ep + 1) = 0;
-			/* copy backwards */
-			while (ep-- > sp)
-				*(ep + 1) = *ep;
-
-			/* and advance sp past the new % */
-			sp += 2;
-		}
-
 	/* write out the debug line */
-	mlforce(outline);
-	update(TRUE);
+	mlforce( outline) ;
+	update( TRUE) ;
 
 	/* and get the keystroke to hold the output */
 	c = get1key() ;
 	if( c == abortc)
-		mlforce("(Macro aborted)");
+		mlforce( "(Macro aborted)") ;
 
 	return c ;
 }

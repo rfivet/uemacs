@@ -1418,13 +1418,12 @@ void mlwrite(const char *fmt, ...)
  *
  * char *s;		string to force out
  */
-void mlforce(char *s)
-{
+void mlforce( char *s) {
 	int oldcmd;	/* original command display flag */
 
 	oldcmd = discmd;	/* save the discmd value */
 	discmd = TRUE;		/* and turn display on */
-	mlwrite(s);		/* write the string out */
+	mlwrite( "%s", s) ;	/* write the string out */
 	discmd = oldcmd;	/* and restore the original setting */
 }
 
