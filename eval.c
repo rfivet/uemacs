@@ -50,11 +50,6 @@
 
 static int gettyp( char *token) ;
 
-#if	DEBUGM
-/*	vars needed for macro debugging output	*/
-char outline[ NSTRING] ;	/* global string to hold debug line text */
-#endif
-
 /* Emacs global flag bit definitions (for gflags). */
 /* if GFREAD is set, current buffer will be set on first file (read in) */
 #define	GFREAD	1
@@ -791,57 +786,55 @@ int setvar(int f, int n)
 	/* if $debug == TRUE, every assignment will echo a statment to
 	   that effect here. */
 
-	if (macbug) {
-		char *sp ;	/* temp string pointer */
-
-		strcpy(outline, "(((");
-
-		/* assignment status */
-		strcat(outline, ltos(status));
-		strcat(outline, ":");
-
-		/* variable name */
-		strcat(outline, var);
-		strcat(outline, ":");
-
-		/* and lastly the value we tried to assign */
-		strcat(outline, value);
-		strcat(outline, ")))");
-
-		/* expand '%' to "%%" so mlwrite wont bitch */
-		sp = outline;
-		while (*sp)
-			if (*sp++ == '%') {
-				char *ep ;	/* ptr to end of outline */
-
-				/* advance to the end */
-				ep = --sp;
-				while (*ep++);
-				/* null terminate the string one out */
-				*(ep + 1) = 0;
-				/* copy backwards */
-				while (ep-- > sp)
-					*(ep + 1) = *ep;
-
-				/* and advance sp past the new % */
-				sp += 2;
-			}
-
-		/* write out the debug line */
-		mlforce(outline);
-		update(TRUE);
-
-		/* and get the keystroke to hold the output */
-		if (get1key() == abortc) {
-			mlforce("(Macro aborted)");
-			status = FALSE;
-		}
-	}
+	if( macbug)
+		if( abortc == mdbugout( "(((%s:%s:%s)))", ltos( status), var, value))
+			status = FALSE ;
 #endif
 
 	/* and return it */
 	return status;
 }
+
+#if DEBUGM
+int mdbugout( char *fmt, char *s1, char *s2, char *s3) {
+	char outline[ NSTRING] ;	/* global string to hold debug line text */
+	int	c ;		/* input from kbd */
+	char *sp ;	/* temp string pointer */
+
+	/* assignment status ; variable name ; value we tried to assign  */
+	sprintf( outline, fmt, s1, s2, s3) ;
+
+	/* expand '%' to "%%" so mlwrite wont bitch */
+	sp = outline;
+	while (*sp)
+		if (*sp++ == '%') {
+			char *ep ;	/* ptr to end of outline */
+
+			/* advance to the end */
+			ep = --sp;
+			while (*ep++);
+			/* null terminate the string one out */
+			*(ep + 1) = 0;
+			/* copy backwards */
+			while (ep-- > sp)
+				*(ep + 1) = *ep;
+
+			/* and advance sp past the new % */
+			sp += 2;
+		}
+
+	/* write out the debug line */
+	mlforce(outline);
+	update(TRUE);
+
+	/* and get the keystroke to hold the output */
+	c = get1key() ;
+	if( c == abortc)
+		mlforce("(Macro aborted)");
+
+	return c ;
+}
+#endif
 
 /*
  * Find a variables type and name.

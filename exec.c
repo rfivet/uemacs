@@ -632,56 +632,18 @@ static int dobuf(struct buffer *bp)
            gets echoed and a key needs to be pressed to continue
            ^G will abort the command */
 
-        if (macbug) {
-            char *sp ;  /* temp for building debug string */
-            int c ;     /* temp character */
-
-            strcpy(outline, "<<<");
-
-            /* debug macro name */
-            strcat(outline, bp->b_bname);
-            strcat(outline, ":");
-
-            /* debug if levels */
-            strcat(outline, i_to_a(execlevel));
-            strcat(outline, ":");
-
-            /* and lastly the line */
-            strcat(outline, eline);
-            strcat(outline, ">>>");
-
-            /* change all '%' to ':' so mlwrite won't expect arguments */
-            sp = outline;
-            while (*sp)
-                if (*sp++ == '%') {
-                    char *ep ; /* ptr to end of outline */
-
-                    /* advance to the end */
-                    ep = --sp;
-                    while (*ep++);
-                    /* null terminate the string one out */
-                    *(ep + 1) = 0;
-                    /* copy backwards */
-                    while (ep-- > sp)
-                        *(ep + 1) = *ep;
-
-                    /* and advance sp past the new % */
-                    sp += 2;
-                }
-
-            /* write out the debug line */
-            mlforce(outline);
-            update(TRUE);
-
-            /* and get the keystroke */
-            if ((c = get1key()) == abortc) {
-                mlforce("(Macro aborted)");
-                freewhile(whlist);
-                return FALSE;
-            }
-
-            if (c == metac)
-                macbug = FALSE;
+		if( macbug) {
+			int c ;
+        	
+            /* debug macro name, if levels and lastly the line */
+			c = mdbugout( "<<<%s:%s:%s>>>", bp->b_bname, i_to_a( execlevel),
+																		eline) ;
+        	if( c == abortc) {
+                freewhile( whlist) ;
+                return FALSE ;
+        	} else if( c == metac) {
+        		macbug = FALSE ;
+        	}
         }
 #endif
 

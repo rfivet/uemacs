@@ -4,11 +4,10 @@
 
 #define DEBUGM	1		/* $debug triggers macro debugging	*/
 
-
 #if	DEBUGM
-/* Vars needed for macro debugging output. */
-extern char outline[] ;		/* Global string to hold debug line text. */
+int mdbugout( char *fmt, char *s1, char *s2, char *s3) ;
 #endif
+
 
 extern int macbug ;		/* macro debuging flag          */
 extern int cmdstatus ;		/* last command status          */
