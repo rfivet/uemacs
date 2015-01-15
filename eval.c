@@ -798,11 +798,16 @@ int setvar(int f, int n)
 #if DEBUGM
 int mdbugout( char *fmt, char *s1, char *s2, char *s3) {
 	char outline[ NSTRING] ;	/* global string to hold debug line text */
-	int	c ;		/* input from kbd */
+	int	c, size ;	/* input from kbd, output to terminal */
 	char *sp ;	/* temp string pointer */
 
+	/* insure debug info fits in terminal and buffer width */
+	size = term.t_ncol + 1 ;
+	if( size > sizeof outline)
+		size = sizeof outline ;
+
 	/* assignment status ; variable name ; value we tried to assign  */
-	sprintf( outline, fmt, s1, s2, s3) ;
+	snprintf( outline, size, fmt, s1, s2, s3) ;
 
 	/* expand '%' to "%%" so mlwrite wont bitch */
 	sp = outline;
