@@ -459,24 +459,17 @@ unsigned int getckey(int mflag)
 /*
  * execute the startup file
  *
- * char *sfname;    name of startup file (null if default)
+ * char *fname;    name of startup file (null if default)
  */
-int startup(char *sfname)
-{
-    char *fname;        /* resulting file name to execute */
+int startup( const char *fname) {
+    if( !fname || *fname == 0)		/* use default if empty parameter */
+    	fname = rcfname ;
 
-    /* look up the startup file */
-    if (*sfname != 0)
-        fname = flook(sfname, TRUE);
-    else
-        fname = flook( rcfname, TRUE);
+	fname = flook( fname, TRUE) ;	/* look up the startup file */
+    if( fname == NULL)    			/* if it isn't around, don't sweat it */
+        return TRUE ;
 
-    /* if it isn't around, don't sweat it */
-    if (fname == NULL)
-        return TRUE;
-
-    /* otherwise, execute the sucker */
-    return dofile(fname);
+    return dofile( fname) ;			/* otherwise, execute the sucker */
 }
 
 /*

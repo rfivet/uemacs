@@ -924,8 +924,7 @@ int execfile(int f, int n)
  *
  * char *fname;     file name to execute
  */
-int dofile(char *fname)
-{
+int dofile( const char *fname) {
     struct buffer *bp;  /* buffer to place file to exeute */
     struct buffer *cb;  /* temp to hold current buf while we read */
     int status; /* results of various calls */

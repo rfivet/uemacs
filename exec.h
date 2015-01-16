@@ -25,7 +25,7 @@ int nextarg( const char *prompt, char *buffer, int size, int terminator) ;
 int storemac( int f, int n) ;
 int execbuf( int f, int n) ;
 int execfile( int f, int n) ;
-int dofile( char *fname) ;
+int dofile( const char *fname) ;
 
 int cbuf1( int f, int n) ;
 int cbuf2( int f, int n) ;

@@ -19,7 +19,7 @@ int unbindchar( int c) ;
 int desbind( int f, int n) ;
 int buildlist( int type, char *mstring) ;
 unsigned int getckey( int mflag) ;
-int startup( char *sfname) ;
+int startup( const char *fname) ;
 void cmdstr( int c, char *seq) ;
 fn_t getbind( int c) ;
 fn_t fncmatch( char *) ;
