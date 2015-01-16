@@ -61,13 +61,10 @@ static const int quotec = 0x11 ;	/* quote char during mlreply()	 */
 int mlyesno( const char *prompt)
 {
     char c;         /* input character */
-    char buf[ NSTRING] ;	/* prompt to user */
 
     for (;;) {
-        /* build and prompt the user */
-        strcpy(buf, prompt);
-        strcat(buf, " (y/n)? ");
-        mlwrite(buf);
+        /* prompt the user */
+		mlwrite( "%s (y/n)? ", prompt) ;
 
         /* get the response */
         c = tgetc();
