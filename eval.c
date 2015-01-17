@@ -86,7 +86,7 @@ static char errorm[] = "ERROR" ;	/* error literal                */
 static int seed = 0 ;			/* random number seed           */
 
 static char *ltos( int val) ;
-static char *mkupper( char *str) ;
+static char *mkupper( char *dst, char *src) ;
 
 /* List of recognized environment variables. */
 
@@ -499,8 +499,7 @@ static char *gtfun( char *fname) {
 			ressize = sz + 1 ;
 		}
 
-		strcpy( result, argx) ;	/* result is at least as long as argx */
-		retstr = mkupper( result) ;
+		retstr = mkupper( result, argx) ;
 		break ;
 	case UFLOWER:
 		sz = strlen( argx) ;
@@ -1247,33 +1246,32 @@ int stol(char *val)
  *
  * int val;		value to translate
  */
-static char *ltos( int val)
-{
-	static char truem[] = "TRUE" ;		/* true literal  */
-	static char falsem[] = "FALSE" ;	/* false literal */
-
-	if (val)
-		return truem;
-	else
-		return falsem;
+static char *ltos( int val) {
+	static char *boolm[] = { "TRUE", "FALSE" } ;
+	
+	return boolm[ !val] ;
 }
 
 /*
  * make a string upper case
  *
- * char *str;		string to upper case
+ * char *src ;		string to upper case
+ * char *dst ;		where to store
+ * dst must be at least as long as src.
  */
-static char *mkupper( char *str)
-{
-	char *sp;
+static char *mkupper( char *dst, char *src) {
+	char c, *sp ;
 
-	sp = str;
-	while (*sp) {
-		if ('a' <= *sp && *sp <= 'z')
-			*sp += 'A' - 'a';
-		++sp;
+	sp = dst ;
+	while( (c = *src++)) {
+		if( 'a' <= c && c <= 'z')
+			c += 'A' - 'a' ;
+			
+		*sp++ = c ;
 	}
-	return str;
+	
+	*sp = 0 ;
+	return dst ;
 }
 
 /*
