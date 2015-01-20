@@ -19,10 +19,10 @@
 #include <stdlib.h>
 
 #include "buffer.h"
-#include "display.h"
 #include "estruct.h"
 #include "input.h"
 #include "line.h"
+#include "log.h"
 #include "random.h"
 #include "terminal.h"
 #include "utf8.h"
@@ -94,17 +94,16 @@ int gotoeol(int f, int n)
  */
 int gotoline(int f, int n)
 {
-	int status;
-	char arg[NSTRING]; /* Buffer to hold argument. */
+	int status ;
+	char arg[ NSTRING] ; /* Buffer to hold argument. */
 
 	/* Get an argument if one doesnt exist. */
-	if (f == FALSE) {
-		if ((status =
-		     mlreply("Line to GOTO: ", arg, NSTRING)) != TRUE) {
-			mlwrite("(Aborted)");
-			return status;
-		}
-		n = atoi(arg);
+	if( f == FALSE) {
+		status = mlreply( "Line to GOTO: ", arg, sizeof arg) ;
+		if( status != TRUE)
+			return logger( status, FALSE, "(Aborted)") ;
+
+		n = atoi( arg) ;
 	}
         /* Handle the case where the user may be passed something like this:
          * em filename +
@@ -314,8 +313,7 @@ int setmark(int f, int n)
 {
 	curwp->w_markp = curwp->w_dotp;
 	curwp->w_marko = curwp->w_doto;
-	mlwrite("(Mark set)");
-	return TRUE;
+	return logger( TRUE, FALSE, "(Mark set)") ;
 }
 
 /*
@@ -329,10 +327,9 @@ int swapmark(int f, int n)
 	struct line *odotp;
 	int odoto;
 
-	if (curwp->w_markp == NULL) {
-		mlwrite("No mark in this window");
-		return FALSE;
-	}
+	if( curwp->w_markp == NULL)
+		return logger( FALSE, FALSE, "No mark in this window") ;
+
 	odotp = curwp->w_dotp;
 	odoto = curwp->w_doto;
 	curwp->w_dotp = curwp->w_markp;

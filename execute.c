@@ -8,7 +8,7 @@
 #include "random.h"
 #include "display.h"
 #include "file.h"
-#include "terminal.h"
+#include "log.h"
 #include "window.h"
 
 int gasave = 256 ;		/* global ASAVE size            */
@@ -100,9 +100,8 @@ int execute(int c, int f, int n)
 		lastflag = thisflag;
 		return status;
 	}
-	TTbeep();
-	mlwrite("(Key not bound)");	/* complain             */
-	lastflag = 0;		/* Fake last flags.     */
-	return FALSE;
+
+	lastflag = 0 ;		/* Fake last flags. */
+	return logger( FALSE, TRUE, "(Key not bound)") ; /* Complain */
 }
 

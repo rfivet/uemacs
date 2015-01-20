@@ -123,11 +123,10 @@ depend: ${SRC}
 # DO NOT DELETE THIS LINE -- make depend uses it
 
 ansi.o: ansi.c estruct.h
-basic.o: basic.c basic.h buffer.h crypt.h line.h utf8.h display.h \
- estruct.h input.h bind.h random.h terminal.h defines.h retcode.h \
- window.h
+basic.o: basic.c basic.h buffer.h crypt.h line.h utf8.h estruct.h input.h \
+ bind.h log.h retcode.h random.h terminal.h defines.h window.h
 bindable.o: bindable.c bindable.h defines.h buffer.h crypt.h line.h \
- utf8.h display.h estruct.h file.h retcode.h input.h bind.h lock.h \
+ utf8.h display.h estruct.h file.h retcode.h input.h bind.h log.h lock.h \
  terminal.h
 bind.o: bind.c bind.h estruct.h bindable.h buffer.h crypt.h line.h utf8.h \
  display.h ebind.h exec.h retcode.h file.h flook.h input.h names.h \
@@ -148,7 +147,7 @@ exec.o: exec.c exec.h retcode.h buffer.h crypt.h line.h utf8.h bind.h \
  display.h estruct.h eval.h file.h flook.h input.h random.h window.h \
  defines.h
 execute.o: execute.c execute.h estruct.h bind.h random.h display.h file.h \
- buffer.h crypt.h line.h utf8.h retcode.h terminal.h defines.h window.h
+ buffer.h crypt.h line.h utf8.h retcode.h log.h window.h defines.h
 file.o: file.c file.h buffer.h crypt.h line.h utf8.h retcode.h defines.h \
  estruct.h execute.h fileio.h input.h bind.h lock.h log.h window.h
 fileio.o: fileio.c fileio.h crypt.h retcode.h defines.h

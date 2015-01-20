@@ -15,23 +15,13 @@ boolean (*logger)( boolean, boolean, const char *, ...) = logit ;
  * tell the user that this command is illegal while we are in
  * VIEW (read-only) mode
  */
-boolean rdonly(void)
-{
-/*	TTbeep();
-	mlwrite("(Key illegal in VIEW mode)");
-	return FALSE;
-*/
+boolean rdonly( void) {
 	return logger( FALSE, TRUE, "(Key illegal in VIEW mode)");
 }
 
 
 
-boolean resterr(void)
-{
-/*	TTbeep();
-	mlwrite("(That command is RESTRICTED)");
-	return FALSE;
-*/
+boolean resterr( void) {
 	return logger( FALSE, TRUE, "(That command is RESTRICTED)");
 }
 

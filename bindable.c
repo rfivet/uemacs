@@ -10,6 +10,7 @@
 #include "estruct.h"
 #include "file.h"
 #include "input.h"
+#include "log.h"
 #include "lock.h"
 #include "terminal.h"
 
@@ -147,12 +148,9 @@ int ctlxe(int f, int n)
  * Beep the beeper. Kill off any keyboard macro, etc., that is in progress.
  * Sometimes called as a routine, to do general aborting of stuff.
  */
-int ctrlg(int f, int n)
-{
-	TTbeep();
-	kbdmode = STOP;
-	mlwrite("(Aborted)");
-	return ABORT;
+int ctrlg( int f, int n) {
+	kbdmode = STOP ;
+	return logger( ABORT, TRUE, "(Aborted)") ;
 }
 
 /* user function that does NOTHING */
