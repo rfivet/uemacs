@@ -1,8 +1,8 @@
 #include "retcode.h"
 
+extern void (*writefmt)( const char *, ...) ;
+
+void writestr( const char *str) ;
+
 boolean rdonly( void) ;
 boolean resterr( void) ;
-
-extern void (*logwrite)( const char *, ...) ;
-extern boolean (*logger)( boolean, const char *, ...) ;
-

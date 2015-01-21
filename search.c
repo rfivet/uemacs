@@ -984,7 +984,8 @@ static int replaces(int kind, int f, int n)
 				curwp->w_flag |= WFMOVE;
 
 			case BELL:	/* abort! and stay */
-				return logger( FALSE, "Aborted!") ;
+				writestr( "Aborted!") ;
+				return FALSE ;
 
 			default:	/* bitch and beep */
 				TTbeep();

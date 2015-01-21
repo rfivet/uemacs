@@ -3,25 +3,24 @@
 static void logdump( const char *buf, ...) {
 }
 
-void (*logwrite)( const char *, ...) = logdump ;
+void (*writefmt)( const char *, ...) = logdump ;
 
-static boolean logit( boolean retcode, const char *buf, ...) {
-	return retcode ;
+void writestr( const char *str) {
+	writefmt( "%s", str) ;
 }
 
-boolean (*logger)( boolean, const char *, ...) = logit ;
 
 /*
  * tell the user that this command is illegal while we are in
  * VIEW (read-only) mode
  */
 boolean rdonly( void) {
-	return logger( FALSE, "%B(Key illegal in VIEW mode)");
+	writefmt( "%B(Key illegal in VIEW mode)") ;
+	return FALSE ;
 }
 
 
 boolean resterr( void) {
-	return logger( FALSE, "%B(That command is RESTRICTED)");
+	writefmt( "%B(That command is RESTRICTED)") ;
+	return FALSE ;
 }
-
-

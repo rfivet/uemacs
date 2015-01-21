@@ -428,7 +428,7 @@ int fillpara(int f, int n)
 	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
 		return rdonly();	/* we are in read only mode     */
 	if (fillcol == 0) {	/* no fill column set */
-		logwrite("No fill column set");
+		writestr( "No fill column set") ;
 		return FALSE;
 	}
 #if	PKCODE
@@ -527,14 +527,14 @@ int justpara(int f, int n)
 	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
 		return rdonly();	/* we are in read only mode     */
 	if (fillcol == 0) {	/* no fill column set */
-		logwrite("No fill column set");
+		writestr( "No fill column set") ;
 		return FALSE;
 	}
 	justflag = TRUE;
 	leftmarg = curwp->w_doto;
 	if (leftmarg + 10 > fillcol) {
 		leftmarg = 0;
-		logwrite("Column too narrow");
+		writestr( "Column too narrow") ;
 		return FALSE;
 	}
 
@@ -719,8 +719,8 @@ int wordcount(int f, int n)
 	else
 		avgch = 0;
 
-	logwrite("Words %D Chars %D Lines %d Avg chars/word %f",
-		nwords, nchars, nlines + 1, avgch);
+	writefmt( "Words %D Chars %D Lines %d Avg chars/word %f",
+		nwords, nchars, nlines + 1, avgch) ;
 	return TRUE;
 }
 #endif

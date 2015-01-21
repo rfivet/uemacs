@@ -169,7 +169,7 @@ int set_encryption_key(int f, int n)
 	strcpy(curbp->b_key, key);
 	cryptbufferkey( curbp) ;
 	
-	logwrite(" ");		/* clear it off the bottom line */
+	writestr( " ") ;	/* clear it off the bottom line */
 	return TRUE;
 }
 
@@ -231,7 +231,7 @@ int getfile( const char *fname, boolean lockfl)
             curwp->w_linep = lp;
             curwp->w_flag |= WFMODE | WFHARD;
             cknewwindow();
-            logwrite("(Old buffer)");
+            writestr( "(Old buffer)") ;
             return TRUE;
         }
     }
@@ -247,7 +247,7 @@ int getfile( const char *fname, boolean lockfl)
         }
     }
     if (bp == NULL && (bp = bfind(bname, TRUE, 0)) == NULL) {
-        logwrite("Cannot create buffer");
+        writestr( "Cannot create buffer") ;
         return FALSE;
     }
     if (--curbp->b_nwnd == 0) { /* Undisplay.           */
@@ -318,12 +318,12 @@ int readin(const char *fname, boolean lockfl)
         goto out;
 
     if (s == FIOFNF) {  /* File not found.      */
-        logwrite("(New file)");
+        writestr( "(New file)") ;
         goto out;
     }
 
     /* read the file in */
-    logwrite("(Reading file)");
+    writestr( "(Reading file)") ;
     nline = 0;
     while ((s = ffgetline()) == FIOSUC) {
         nbytes = fpayload ;
@@ -347,7 +347,7 @@ int readin(const char *fname, boolean lockfl)
     }
     
 	if( s == FIOERR)
-		logwrite( "File read error") ;
+		writestr( "File read error") ;
 
 	switch( ftype) {
     case FTYPE_DOS:
@@ -386,7 +386,7 @@ int readin(const char *fname, boolean lockfl)
     strcat( mesg, ", eol = ") ;
     strcat( mesg, eolname[ found_eol]) ;
     strcat(mesg, ")");
-    logwrite(mesg);
+    writestr( mesg) ;
 
       out:
     for (wp = wheadp; wp != NULL; wp = wp->w_wndp) {
@@ -518,14 +518,14 @@ int filesave(int f, int n)
     if ((curbp->b_flag & BFCHG) == 0)   /* Return, no changes.  */
         return TRUE;
     if (curbp->b_fname[0] == 0) {   /* Must have a name.    */
-        logwrite("No file name");
+        writestr( "No file name") ;
         return FALSE;
     }
 
     /* complain about truncated files */
     if ((curbp->b_flag & BFTRUNC) != 0) {
         if (mlyesno("Truncated file ... write it out") == FALSE) {
-            logwrite("(Aborted)");
+            writestr( "(Aborted)") ;
             return FALSE;
         }
     }
@@ -563,16 +563,16 @@ int writeout( const char *fn)
 #endif
 
     if ((s = ffwopen(fn)) != FIOSUC) {  /* Open writes message. */
-        logwrite( "Cannot open file for writing") ;
+        writestr( "Cannot open file for writing") ;
         return FALSE;
     }
-    logwrite("(Writing...)");    /* tell us were writing */
+    writestr( "(Writing...)") ;	/* tell us were writing */
     lp = lforw(curbp->b_linep); /* First line.          */
     nline = 0;      /* Number of lines.     */
     while (lp != curbp->b_linep) {
         s = ffputline( &lp->l_text[0], llength(lp), curbp->b_mode & MDDOS) ;
         if( s != FIOSUC) {
-	        logwrite( "Write I/O error") ;
+	        writestr( "Write I/O error") ;
             break;
         }
         
@@ -583,11 +583,11 @@ int writeout( const char *fn)
         s = ffclose();
         if (s == FIOSUC) {  /* No close error.      */
             if (nline == 1)
-                logwrite("(Wrote 1 line)");
+                writestr( "(Wrote 1 line)") ;
             else
-                logwrite("(Wrote %d lines)", nline);
+                writefmt( "(Wrote %d lines)", nline) ;
         } else
-			logwrite( "Error closing file") ;
+			writestr( "Error closing file") ;
     } else          /* Ignore close error   */
         ffclose();  /* if a write error.    */
     if (s != FIOSUC)    /* Some sort of error.  */
@@ -650,10 +650,10 @@ int ifile( const char *fname)
     if ((s = ffropen(fname)) == FIOERR) /* Hard file open.      */
         goto out;
     if (s == FIOFNF) {  /* File not found.      */
-        logwrite("(No such file)");
+        writestr( "(No such file)") ;
         return FALSE;
     }
-    logwrite("(Inserting file)");
+    writestr( "(Inserting file)") ;
 
 #if CRYPT
     s = resetkey();
@@ -702,7 +702,7 @@ int ifile( const char *fname)
     if (nline > 1)
         strcat(mesg, "s");
     strcat(mesg, ")");
-    logwrite(mesg);
+    writestr( mesg);
 
       out:
     /* advance to the next line and mark the window for changes */

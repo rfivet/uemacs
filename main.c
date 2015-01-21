@@ -130,11 +130,6 @@ static void usage( void) {
 }
 
 
-static boolean mllog( boolean retcode, const char *buf, ...) {
-	mlwrite( buf) ;
-	return retcode ;
-}
-
 int main(int argc, char **argv)
 {
 	int c = -1;	/* command character */
@@ -187,8 +182,7 @@ int main(int argc, char **argv)
 
 	/* Initialize the editor. */
 	vtinit();		/* Display */
-	logwrite = mlwrite ;
-	logger = mllog ;
+	writefmt = mlwrite ;
 	edinit("main");		/* Buffers, windows */
 	varinit();		/* user variables */
 
@@ -324,11 +318,11 @@ int main(int argc, char **argv)
 	/* Deal with startup gotos and searches */
 	if (gotoflag && searchflag) {
 		update(FALSE);
-		mlwrite("(Can not search and goto at the same time!)");
+		writestr( "(Can not search and goto at the same time!)") ;
 	} else if (gotoflag) {
 		if (gotoline(TRUE, gline) == FALSE) {
 			update(FALSE);
-			mlwrite("(Bogus goto argument)");
+			writestr( "(Bogus goto argument)") ;
 		}
 	} else if (searchflag) {
 		if (forwhunt(FALSE, 0) == FALSE)
@@ -400,9 +394,9 @@ int main(int argc, char **argv)
 				n = n * 10 + (c - '0');
 			}
 			if ((n == 0) && (mflag == -1))	/* lonely - */
-				mlwrite("Arg:");
+				writestr( "Arg:") ;
 			else
-				mlwrite("Arg: %d", n * mflag);
+				writefmt( "Arg: %d", n * mflag) ;
 
 			c = getcmd();	/* get the next key */
 		}
@@ -415,7 +409,7 @@ int main(int argc, char **argv)
 		f = TRUE;
 		n = 4;		/* with argument of 4 */
 		mflag = 0;	/* that can be discarded. */
-		mlwrite("Arg: 4");
+		writestr( "Arg: 4") ;
 		while (((c = getcmd()) >= '0' && c <= '9') || c == reptc
 		       || c == '-') {
 			if (c == reptc)
@@ -444,8 +438,7 @@ int main(int argc, char **argv)
 				}
 				n = 10 * n + c - '0';
 			}
-			mlwrite("Arg: %d",
-				(mflag >= 0) ? n : (n ? -n : -1));
+			writefmt( "Arg: %d", (mflag >= 0) ? n : (n ? -n : -1)) ;
 		}
 		/*
 		 * Make arguments preceded by a minus sign negative and change

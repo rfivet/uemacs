@@ -102,6 +102,7 @@ int execute(int c, int f, int n)
 	}
 
 	lastflag = 0 ;		/* Fake last flags. */
-	return logger( FALSE, "%B(Key not bound)") ; /* Complain */
+	writefmt( "%B(Key not bound)") ;	/* Complain */
+	return FALSE ;
 }
 
