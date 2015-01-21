@@ -68,12 +68,12 @@ int spawncli(int f, int n)
 
 #if     VMS
 	movecursor(term.t_nrow, 0);	/* In last line.        */
-	mlputs("(Starting DCL)\r\n");
+	mlwrite("(Starting DCL)\r\n");
 	TTflush();		/* Ignore "ttcol".      */
 	sgarbf = TRUE;
 	sys(NULL);
 	sleep(1);
-	mlputs("\r\n(Returning from DCL)\r\n");
+	mlwrite("\r\n(Returning from DCL)\r\n");
 	TTflush();
 	sleep(1);
 	return TRUE;
@@ -162,7 +162,7 @@ int spawn(int f, int n)
 	TTflush();
 	s = sys(line);		/* Run the command.     */
 	if (clexec == FALSE) {
-		mlputs("\r\n\n(End)");	/* Pause.               */
+		mlwrite("\r\n\n(End)");	/* Pause.               */
 		TTflush();
 		tgetc();
 	}
@@ -178,7 +178,7 @@ int spawn(int f, int n)
 	TTkopen();
 	/* if we are interactive, pause here */
 	if (clexec == FALSE) {
-		mlputs("\r\n(End)");
+		mlwrite("\r\n(End)");
 		tgetc();
 	}
 	sgarbf = TRUE;
@@ -195,10 +195,10 @@ int spawn(int f, int n)
 	TTopen();
 
 	if (clexec == FALSE) {
-		mlputs("(End)");	/* Pause.               */
+		mlwrite( "(End)") ;	/* Pause.               */
 		TTflush();
 		while ((s = tgetc()) != '\r' && s != ' ');
-		mlputs("\r\n");
+		mlwrite( "\r\n") ;
 	}
 	TTkopen();
 	sgarbf = TRUE;
@@ -226,7 +226,7 @@ int execprg(int f, int n)
 		return s;
 	TTflush();
 	s = sys(line);		/* Run the command.     */
-	mlputs("\r\n\n(End)");	/* Pause.               */
+	mlwrite("\r\n\n(End)");	/* Pause.               */
 	TTflush();
 	tgetc();
 	sgarbf = TRUE;
@@ -242,7 +242,7 @@ int execprg(int f, int n)
 	TTkopen();
 	/* if we are interactive, pause here */
 	if (clexec == FALSE) {
-		mlputs("\r\n(End)");
+		mlwrite("\r\n(End)");
 		tgetc();
 	}
 	sgarbf = TRUE;
@@ -259,7 +259,7 @@ int execprg(int f, int n)
 	ue_system( line) ;
 	fflush(stdout);		/* to be sure P.K.      */
 	TTopen();
-	mlputs("(End)");	/* Pause.               */
+	mlwrite( "(End)") ;	/* Pause.               */
 	TTflush();
 	while ((s = tgetc()) != '\r' && s != ' ');
 	sgarbf = TRUE;
@@ -429,7 +429,7 @@ int filter_buffer(int f, int n)
 
 	/* write it out, checking for errors */
 	if (writeout(filnam1) != TRUE) {
-		mlwrite("(Cannot write filter file)");
+		mlwrite( "(Cannot write filter file)") ;
 		strcpy(bp->b_fname, tmpnam);
 		return FALSE;
 	}
@@ -459,7 +459,7 @@ int filter_buffer(int f, int n)
 
 	/* on failure, escape gracefully */
 	if (s != TRUE || (readin(filnam2, FALSE) == FALSE)) {
-		mlwrite("(Execution failed)");
+		mlwrite( "(Execution failed)") ;
 		strcpy(bp->b_fname, tmpnam);
 		unlink(filnam1);
 		unlink(filnam2);

@@ -87,6 +87,7 @@ static void modeline(struct window *wp);
 static void mlputi(int i, int r);
 static void mlputli(long l, int r);
 static void mlputf(int s);
+static void mlputs( char *s) ;
 #if SIGWINCH
 static int newscreensize(int h, int w);
 #endif
@@ -1436,8 +1437,7 @@ void mlforce( char *s) {
  * the characters in the string all have width "1"; if this is not the case
  * things will get screwed up a little.
  */
-void mlputs(char *s)
-{
+static void mlputs( char *s) {
 	int c;
 
 	while ((c = *s++) != 0) {
