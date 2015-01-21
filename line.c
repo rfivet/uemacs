@@ -269,7 +269,7 @@ int linstr( char *instr) {
 
 			/* Insertion error? */
 			if( status != TRUE)
-				return logger( status, FALSE, "%%Out of memory while inserting") ;
+				return logger( status, "%%Out of memory while inserting") ;
 		}
 	}
 
@@ -419,7 +419,7 @@ int lover( char *ostr) {
 
 			/* Insertion error? */
 			if( status != TRUE)
-				return logger( status, FALSE, "%%Out of memory while overwriting") ;
+				return logger( status, "%%Out of memory while overwriting") ;
 		}
 	}
 	

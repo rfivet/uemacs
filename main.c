@@ -130,10 +130,7 @@ static void usage( void) {
 }
 
 
-static boolean mllog( boolean retcode, boolean beep_f, const char *buf, ...) {
-	if( beep_f)
-		TTbeep() ;
-
+static boolean mllog( boolean retcode, const char *buf, ...) {
 	mlwrite( buf) ;
 	return retcode ;
 }

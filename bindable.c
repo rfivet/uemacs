@@ -150,7 +150,7 @@ int ctlxe(int f, int n)
  */
 int ctrlg( int f, int n) {
 	kbdmode = STOP ;
-	return logger( ABORT, TRUE, "(Aborted)") ;
+	return logger( ABORT, "%B(Aborted)") ;
 }
 
 /* user function that does NOTHING */

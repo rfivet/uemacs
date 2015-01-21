@@ -1396,6 +1396,10 @@ void mlwrite(const char *fmt, ...)
 				mlputf(va_arg(ap, int));
 				break;
 
+			case 'B':	/* ring a bell */
+				TTbeep() ;
+				break ;
+
 			default:
 				TTputc(c);
 				++ttcol;
