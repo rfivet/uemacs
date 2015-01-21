@@ -5,8 +5,6 @@
 
 #include "line.h"
 
-#define	BELL	0x07		/* a bell character             */
-
 typedef char spat_t[ 128] ;		/* search pattern type */
 #define	NPAT sizeof( spat_t)	/* # of bytes, pattern		*/
 

@@ -93,6 +93,9 @@ spat_t rpat ;	/* replacement pattern          */
 
 
 #if defined(MAGIC)
+
+#define	BELL	0x07		/* a bell character             */
+
 /*
  * Defines for the metacharacters in the regular expression
  * search routines.
@@ -981,8 +984,7 @@ static int replaces(int kind, int f, int n)
 				curwp->w_flag |= WFMOVE;
 
 			case BELL:	/* abort! and stay */
-				mlwrite("Aborted!");
-				return FALSE;
+				return logger( FALSE, "Aborted!") ;
 
 			default:	/* bitch and beep */
 				TTbeep();

@@ -300,7 +300,7 @@ static int isearch(int f, int n)
 		pat[cpos] = 0;	/* null terminate the buffer  */
 		col = echo_char(c, col);	/* Echo the character         */
 		if (!status) {	/* If we lost last time       */
-			TTputc(BELL);	/* Feep again                 */
+			TTbeep() ;	/* Feep again                 */
 			TTflush();	/* see that the feep feeps    */
 		} else /* Otherwise, we must have won */ if (!(status = checknext(c, pat, n)))	/* See if match         */
 			status = scanmore(pat, n);	/*  or find the next match    */
@@ -377,7 +377,7 @@ static int scanmore(char *patrn, int dir)	/* search forward or back for a patter
 		sts = scanner(patrn, FORWARD, PTEND);	/* Nope. Go forward   */
 
 	if (!sts) {
-		TTputc(BELL);	/* Feep if search fails       */
+		TTbeep() ;	/* Feep if search fails       */
 		TTflush();	/* see that the feep feeps    */
 	}
 
