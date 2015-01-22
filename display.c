@@ -159,9 +159,7 @@ void vtfree(void)
  */
 void vttidy(void)
 {
-	mlerase();
-	movecursor(term.t_nrow, 0);
-	TTflush();
+	mlerase() ;	/* ends with movecursor( term.t_nrow, 0) and TTflush() */
 	TTclose();
 	TTkclose();
 #ifdef PKCODE
@@ -1309,28 +1307,36 @@ void movecursor(int row, int col)
  * is not considered to be part of the virtual screen. It always works
  * immediately; the terminal buffer is flushed via a call to the flusher.
  */
-void mlerase(void)
-{
-	movecursor(term.t_nrow, 0);
-	if (discmd == FALSE)
-		return;
-
+void mlerase( void) {
+	movecursor( term.t_nrow, 0) ;
+	if( discmd != FALSE) {
 #if	COLOR
-	TTforg(7);
-	TTbacg(0);
+		TTforg( 7) ;
+		TTbacg( 0) ;
 #endif
-	if (eolexist == TRUE)
-		TTeeol();
-	else {
-		int i ;
+		if( eolexist == TRUE)
+			TTeeol() ;
+		else {
+			int i ;
 
-		for( i = 1 ; i < term.t_ncol ; i++)
-			TTputc(' ');
-		movecursor(term.t_nrow, 1);	/* force the move! */
-		movecursor(term.t_nrow, 0);
+			for( i = 1 ; i < term.t_ncol ; i++)
+				TTputc(' ') ;
+
+			movecursor( term.t_nrow, 1) ;	/* force the move! */
+			movecursor( term.t_nrow, 0) ;
+		}
+
+		mpresf = FALSE ;
 	}
-	TTflush();
-	mpresf = FALSE;
+
+	TTflush() ;
+}
+
+static void mlputc( char c) {
+	if( ttcol < term.t_ncol) {
+		TTputc( c) ;
+		++ttcol ;
+	}
 }
 
 /*
@@ -1366,10 +1372,9 @@ void mlwrite(const char *fmt, ...)
 
 	va_start(ap, fmt);
 	while ((c = *fmt++) != 0) {
-		if (c != '%') {
-			TTputc(c);
-			++ttcol;
-		} else {
+		if (c != '%')
+			mlputc( c) ;
+		else {
 			c = *fmt++;
 			switch (c) {
 			case 'd':
@@ -1401,8 +1406,7 @@ void mlwrite(const char *fmt, ...)
 				break ;
 
 			default:
-				TTputc(c);
-				++ttcol;
+				mlputc( c) ;
 			}
 		}
 	}
@@ -1437,11 +1441,11 @@ void mlforce( char *s) {
  * things will get screwed up a little.
  */
 static void mlputs( char *s) {
-	int c;
+	int c ;
 
-	while ((c = *s++) != 0) {
-		TTputc(c);
-		++ttcol;
+	while( ((c = *s++) != 0) && (ttcol < term.t_ncol)) {
+		TTputc( c) ;
+		++ttcol ;
 	}
 }
 
@@ -1449,44 +1453,40 @@ static void mlputs( char *s) {
  * Write out an integer, in the specified radix. Update the physical cursor
  * position.
  */
-static void mlputi(int i, int r)
-{
-	int q;
-	static char hexdigits[] = "0123456789ABCDEF";
+static void mlputi( int i, int r) {
+	int q ;
+	static char hexdigits[] = "0123456789ABCDEF" ;
 
-	if (i < 0) {
-		i = -i;
-		TTputc('-');
+	if( i < 0) {
+		i = -i ;
+		mlputc( '-') ;
 	}
 
-	q = i / r;
+	q = i / r ;
 
-	if (q != 0)
-		mlputi(q, r);
+	if( q != 0)
+		mlputi( q, r) ;
 
-	TTputc(hexdigits[i % r]);
-	++ttcol;
+	mlputc( hexdigits[ i % r]) ;
 }
 
 /*
  * do the same except as a long integer.
  */
-static void mlputli(long l, int r)
-{
-	long q;
+static void mlputli( long l, int r) {
+	long q ;
 
-	if (l < 0) {
-		l = -l;
-		TTputc('-');
+	if( l < 0) {
+		l = -l ;
+		mlputc( '-') ;
 	}
 
-	q = l / r;
+	q = l / r ;
 
-	if (q != 0)
-		mlputli(q, r);
+	if( q != 0)
+		mlputli( q, r) ;
 
-	TTputc((int) (l % r) + '0');
-	++ttcol;
+	mlputc( (int) (l % r) + '0') ;
 }
 
 /*
@@ -1494,21 +1494,19 @@ static void mlputli(long l, int r)
  *
  * int s;		scaled integer to output
  */
-static void mlputf(int s)
-{
-	int i;			/* integer portion of number */
-	int f;			/* fractional portion of number */
+static void mlputf( int s) {
+	int i ;		/* integer portion of number */
+	int f ;		/* fractional portion of number */
 
 	/* break it up */
-	i = s / 100;
-	f = s % 100;
+	i = s / 100 ;
+	f = s % 100 ;
 
 	/* send out the integer portion */
-	mlputi(i, 10);
-	TTputc('.');
-	TTputc((f / 10) + '0');
-	TTputc((f % 10) + '0');
-	ttcol += 3;
+	mlputi( i, 10) ;
+	mlputc('.') ;
+	mlputc((f / 10) + '0') ;
+	mlputc((f % 10) + '0') ;
 }
 
 #if RAINBOW
