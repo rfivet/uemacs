@@ -1311,8 +1311,6 @@ void movecursor(int row, int col)
  */
 void mlerase(void)
 {
-	int i;
-
 	movecursor(term.t_nrow, 0);
 	if (discmd == FALSE)
 		return;
@@ -1324,7 +1322,9 @@ void mlerase(void)
 	if (eolexist == TRUE)
 		TTeeol();
 	else {
-		for (i = 0; i < term.t_ncol - 1; i++)
+		int i ;
+
+		for( i = 1 ; i < term.t_ncol ; i++)
 			TTputc(' ');
 		movecursor(term.t_nrow, 1);	/* force the move! */
 		movecursor(term.t_nrow, 0);
@@ -1359,12 +1359,11 @@ void mlwrite(const char *fmt, ...)
 #endif
 
 	/* if we can not erase to end-of-line, do it manually */
-	if (eolexist == FALSE) {
-		mlerase();
-		TTflush();
-	}
+	if( eolexist == FALSE)
+		mlerase() ;	/* ends with movecursor( term.t_nrow, 0) and TTflush() */
+	else
+		movecursor( term.t_nrow, 0) ;
 
-	movecursor(term.t_nrow, 0);
 	va_start(ap, fmt);
 	while ((c = *fmt++) != 0) {
 		if (c != '%') {
