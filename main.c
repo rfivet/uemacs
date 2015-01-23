@@ -196,6 +196,9 @@ int main(int argc, char **argv)
 	cryptflag = FALSE;	/* no encryption by default */
 #endif
 
+	/* Insure screen is initialized before startup and goto/search */
+	update( FALSE) ;
+
 	/* Parse the command line */
 	for (carg = 1; carg < argc; ++carg) {
 		/* Process Switches */
@@ -316,18 +319,14 @@ int main(int argc, char **argv)
 		bp->b_mode |= gmode;
 
 	/* Deal with startup gotos and searches */
-	if (gotoflag && searchflag) {
-		update(FALSE);
+	if( gotoflag && searchflag)
 		writestr( "(Can not search and goto at the same time!)") ;
-	} else if (gotoflag) {
-		if (gotoline(TRUE, gline) == FALSE) {
-			update(FALSE);
+	else if( gotoflag) {
+		if( gotoline( TRUE, gline) == FALSE)
 			writestr( "(Bogus goto argument)") ;
-		}
-	} else if (searchflag) {
-		if (forwhunt(FALSE, 0) == FALSE)
-			update(FALSE);
-	}
+	} else if( searchflag)
+		if( forwhunt( FALSE, 0))
+			writefmt( "Found on line %d", getcline()) ;
 
 	/* Setup to process commands. */
 	lastflag = 0;  /* Fake last flags. */
