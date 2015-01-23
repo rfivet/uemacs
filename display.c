@@ -1317,12 +1317,9 @@ void mlerase( void) {
 		if( eolexist == TRUE)
 			TTeeol() ;
 		else {
-			int i ;
+			for( ttcol = 0 ; ttcol < term.t_ncol ; ttcol++)
+				TTputc( ' ') ;
 
-			for( i = 1 ; i < term.t_ncol ; i++)
-				TTputc(' ') ;
-
-			movecursor( term.t_nrow, 1) ;	/* force the move! */
 			movecursor( term.t_nrow, 0) ;
 		}
 
