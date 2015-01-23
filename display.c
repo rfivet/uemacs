@@ -1413,8 +1413,9 @@ void mlwrite(const char *fmt, ...)
 	va_end(ap);
 
 	/* if we can, erase to the end of screen */
-	if (eolexist == TRUE)
-		TTeeol();
+	if( eolexist == TRUE && ttcol < term.t_ncol)
+		TTeeol() ;
+
 	TTflush();
 	mpresf = TRUE;
 }
