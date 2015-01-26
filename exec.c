@@ -310,16 +310,20 @@ int macarg( char *tok, int toksz)
  */
 int nextarg(const char *prompt, char *buffer, int size, int terminator)
 {
+	char *tmpbuf ;
+	
     /* if we are interactive, go get it! */
     if (clexec == FALSE)
         return getstring(prompt, buffer, size, terminator);
 
+	tmpbuf = malloc( size) ;
     /* grab token and advance past */
-	gettoken( buffer, size) ;
+	gettoken( tmpbuf, size) ;
 
     /* evaluate it */
-    strncpy( buffer, getval( buffer), size - 1) ;
+    strncpy( buffer, getval( tmpbuf), size - 1) ;
     buffer[ size - 1] = '\0' ;
+    free( tmpbuf) ;
     return TRUE;
 }
 
