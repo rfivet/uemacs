@@ -315,8 +315,10 @@ int main(int argc, char **argv)
 	if (firstfile == FALSE && readfirst_f()) {
 		swbuffer(firstbp);
 		zotbuf(bp);
-	} else
+	} else {
 		bp->b_mode |= gmode;
+		upmode() ;
+	}
 
 	/* Deal with startup gotos and searches */
 	if( gotoflag && searchflag)
