@@ -1,8 +1,8 @@
-# Makefile for emacs, updated Thu Dec 25 10:14:11 CST 2014
+# Makefile for emacs, updated Thu, Jan 29, 2015 10:01:30 PM
 
-SRC=ansi.c basic.c bindable.c bind.c buffer.c crypt.c display.c ebind.c eval.c exec.c execute.c file.c fileio.c flook.c ibmpc.c input.c isearch.c line.c lock.c log.c main.c mingw32.c names.c pklock.c posix.c random.c region.c search.c spawn.c tcap.c termio.c utf8.c vmsvt.c vt52.c window.c word.c wrapper.c wscreen.c
-OBJ=ansi.o basic.o bindable.o bind.o buffer.o crypt.o display.o ebind.o eval.o exec.o execute.o file.o fileio.o flook.o ibmpc.o input.o isearch.o line.o lock.o log.o main.o mingw32.o names.o pklock.o posix.o random.o region.o search.o spawn.o tcap.o termio.o utf8.o vmsvt.o vt52.o window.o word.o wrapper.o wscreen.o
-HDR=basic.h bindable.h bind.h buffer.h crypt.h defines.h display.h ebind.h estruct.h eval.h exec.h execute.h file.h fileio.h flook.h input.h isearch.h line.h lock.h log.h names.h pklock.h random.h region.h retcode.h search.h spawn.h terminal.h termio.h utf8.h version.h window.h word.h wrapper.h wscreen.h
+SRC=basic.c bind.c bindable.c buffer.c crypt.c display.c ebind.c eval.c exec.c execute.c file.c fileio.c flook.c input.c isearch.c line.c lock.c log.c main.c mingw32.c names.c pklock.c posix.c random.c region.c search.c spawn.c tcap.c termio.c utf8.c window.c word.c wrapper.c wscreen.c
+OBJ=basic.o bind.o bindable.o buffer.o crypt.o display.o ebind.o eval.o exec.o execute.o file.o fileio.o flook.o input.o isearch.o line.o lock.o log.o main.o mingw32.o names.o pklock.o posix.o random.o region.o search.o spawn.o tcap.o termio.o utf8.o window.o word.o wrapper.o wscreen.o
+HDR=basic.h bind.h bindable.h buffer.h crypt.h defines.h display.h ebind.h estruct.h eval.h exec.h execute.h file.h fileio.h flook.h input.h isearch.h line.h lock.h log.h names.h pklock.h random.h region.h retcode.h search.h spawn.h terminal.h termio.h utf8.h version.h window.h word.h wrapper.h wscreen.h
 
 # DO NOT ADD OR MODIFY ANY LINES ABOVE THIS -- make source creates them
 
@@ -122,15 +122,14 @@ depend: ${SRC}
 
 # DO NOT DELETE THIS LINE -- make depend uses it
 
-ansi.o: ansi.c estruct.h
 basic.o: basic.c basic.h buffer.h crypt.h line.h utf8.h estruct.h input.h \
  bind.h log.h retcode.h random.h terminal.h defines.h window.h
-bindable.o: bindable.c bindable.h defines.h buffer.h crypt.h line.h \
- utf8.h display.h estruct.h file.h retcode.h input.h bind.h log.h lock.h \
- terminal.h
 bind.o: bind.c bind.h estruct.h bindable.h buffer.h crypt.h line.h utf8.h \
  display.h ebind.h exec.h retcode.h file.h flook.h input.h names.h \
  window.h defines.h
+bindable.o: bindable.c bindable.h defines.h buffer.h crypt.h line.h \
+ utf8.h display.h estruct.h file.h retcode.h input.h bind.h log.h lock.h \
+ terminal.h
 buffer.o: buffer.c buffer.h crypt.h line.h utf8.h defines.h display.h \
  estruct.h file.h retcode.h input.h bind.h window.h
 crypt.o: crypt.c crypt.h
@@ -152,7 +151,6 @@ file.o: file.c file.h buffer.h crypt.h line.h utf8.h retcode.h defines.h \
  estruct.h execute.h fileio.h input.h bind.h lock.h log.h window.h
 fileio.o: fileio.c fileio.h crypt.h retcode.h defines.h
 flook.o: flook.c flook.h retcode.h defines.h fileio.h crypt.h
-ibmpc.o: ibmpc.c estruct.h
 input.o: input.c input.h bind.h estruct.h bindable.h display.h exec.h \
  retcode.h names.h terminal.h defines.h wrapper.h
 isearch.o: isearch.c isearch.h basic.h buffer.h crypt.h line.h utf8.h \
@@ -186,8 +184,6 @@ tcap.o: tcap.c terminal.h defines.h retcode.h display.h estruct.h \
  termio.h
 termio.o: termio.c termio.h estruct.h retcode.h utf8.h
 utf8.o: utf8.c utf8.h
-vmsvt.o: vmsvt.c estruct.h
-vt52.o: vt52.c estruct.h
 window.o: window.c window.h defines.h buffer.h crypt.h line.h utf8.h \
  basic.h display.h estruct.h execute.h terminal.h retcode.h wrapper.h
 word.o: word.c word.h basic.h buffer.h crypt.h line.h utf8.h estruct.h \
