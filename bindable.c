@@ -14,15 +14,6 @@
 #include "lock.h"
 #include "terminal.h"
 
-#if VMS
-#include <ssdef.h>
-#define GOOD    (SS$_NORMAL)
-#endif
-
-#ifndef GOOD
-#define GOOD    0
-#endif
-
 /*
  * Fancy quit command, as implemented by Norm. If the any buffer has
  * changed do a write on that buffer and exit emacs, otherwise simply exit.
@@ -76,14 +67,14 @@ int quit(int f, int n)
 			TTputc('\r');
 			TTclose();
 			TTkclose();
-			exit(1);
+			exit( EXIT_FAILURE) ;
 		}
 #endif
 		vttidy();
 		if (f)
 			exit(n);
 		else
-			exit(GOOD);
+			exit( EXIT_SUCCESS) ;
 	}
 	mlwrite("");
 	return s;
