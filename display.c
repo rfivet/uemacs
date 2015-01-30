@@ -576,6 +576,12 @@ void updpos(void)
 		i += bytes;
 		if (c == '\t')
 			curcol |= tabmask;
+		else if( bytes == 1) {
+			if( c < 0x20 || c == 0x7F)
+				curcol += 1 ;	/* displayed as ^c */
+			else if( c >= 0x80 && c <= 0xA0)
+				curcol += 2 ;	/* displayed as \xx */
+		}
 
 		++curcol;
 	}
