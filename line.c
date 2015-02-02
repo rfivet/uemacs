@@ -32,6 +32,10 @@ int tabmask = 0x07 ;		/* tabulator mask */
 
 static int ldelnewline( void) ;
 
+static inline int is_beginning_utf8( unsigned char c) {
+	return (c & 0xc0) != 0x80;
+}
+
 /* The editor holds deleted text chunks in the struct kill buffer. The
  * kill buffer is logically a stream of ascii characters, however
  * due to its unpredicatable size, it gets implemented as a linked
@@ -261,11 +265,11 @@ int linstr( char *instr) {
 	int status = TRUE ;
 
 	if( instr != NULL) {
-		char tmpc ;
+		unicode_t tmpc ;
 
-		while( (tmpc = *instr++)) {
+		while( (tmpc = *instr++ & 0xFF)) {
 			status =
-			    (tmpc == '\n' ? lnewline() : linsert( 1, tmpc & 0xFF)) ;
+			    (tmpc == '\n' ? lnewline() : linsert( 1, tmpc)) ;
 
 			/* Insertion error? */
 			if( status != TRUE) {
@@ -369,8 +373,7 @@ static int linsert_byte(int n, int c)
 	return TRUE;
 }
 
-int linsert(int n, int c)
-{
+int linsert( int n, unicode_t c) {
 	char utf8[6];
 	int bytes, i ;
 

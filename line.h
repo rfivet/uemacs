@@ -38,7 +38,7 @@ void lfree( struct line *lp) ;
 void lchange( int flag) ;
 int insspace( int f, int n) ;
 int linstr( char *instr) ;
-int linsert( int n, int c) ;
+int linsert( int n, unicode_t c) ;
 int lover( char *ostr) ;
 int lnewline( void) ;
 int ldelete( long n, int kflag) ;
