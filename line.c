@@ -265,7 +265,7 @@ int linstr( char *instr) {
 
 		while( (tmpc = *instr++)) {
 			status =
-			    (tmpc == '\n' ? lnewline() : linsert( 1, tmpc)) ;
+			    (tmpc == '\n' ? lnewline() : linsert( 1, tmpc & 0xFF)) ;
 
 			/* Insertion error? */
 			if( status != TRUE) {

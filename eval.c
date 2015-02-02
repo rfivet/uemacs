@@ -516,7 +516,7 @@ static char *gtfun( char *fname) {
 		retstr = ltos( atoi( argx) == 42) ;
 		break ;
 	case UFASCII:
-		retstr = i_to_a( (int) argx[ 0]) ;
+		retstr = i_to_a( (int) argx[ 0] & 0xFF) ;
 		break ;
 	case UFCHR:
 		result[0] = atoi(argx);
