@@ -1155,9 +1155,10 @@ static void modeline(struct window *wp)
 	else
 		vtputc(lchar);
 
-	n = 2;
+	vtputc( ' ') ;
+	n = 3 ;
 
-	cp = " " PROGRAM_NAME_LONG " " VERSION ": " ;
+	cp = &PROGRAM_NAME_LONG " " VERSION ": " [ 1] ;	/* Start past utf8 mark */
 	while ((c = *cp++) != 0) {
 		vtputc(c);
 		++n;
