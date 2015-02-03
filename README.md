@@ -1,6 +1,6 @@
 # README #
 
-Cigue is uEMACS (ue) on Cygwin/Linux, based on uEmacs/PK from kernel.org.
+Cigue is µEMACS (ue) on Cygwin/Linux, based on uEmacs/PK from kernel.org.
 
 ### Changes compare to uEmacs/PK ###
 * Line termination detection with new buffer mode (either Unix or DOS).
