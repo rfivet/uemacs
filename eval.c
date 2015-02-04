@@ -515,13 +515,18 @@ static char *gtfun( char *fname) {
 	case UFTRUTH:
 		retstr = ltos( atoi( argx) == 42) ;
 		break ;
-	case UFASCII:
-		retstr = i_to_a( (int) argx[ 0] & 0xFF) ;
+	case UFASCII: {
+		unicode_t	c ;
+		
+		utf8_to_unicode( argx, 0, 4, &c) ;
+		retstr = i_to_a( c) ;
+		}
+
 		break ;
 	case UFCHR:
-		result[0] = atoi(argx);
-		result[1] = 0;
-		retstr = result ;
+		sz = unicode_to_utf8( atoi( argx), result) ;
+		result[ sz] = 0 ;
+		retstr = result ;		
 		break ;
 	case UFGTKEY:
 		result[0] = tgetc();

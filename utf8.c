@@ -15,19 +15,19 @@
  */
 unsigned utf8_to_unicode(char *line, unsigned index, unsigned len, unicode_t *res)
 {
-	unsigned value;
+	unicode_t	value ;
 	unsigned char c = line[index];
 	unsigned bytes, mask, i;
 
 	*res = c;
-	line += index;
-	len -= index;
 
 	/*
-	 * 0xxxxxxx is valid utf8
-	 * 10xxxxxx is invalid UTF-8, we assume it is Latin1
+	 * 0xxxxxxx is valid one byte utf8
+	 * 10xxxxxx is invalid UTF-8 start byte, we assume it is Latin1
+	 * 1100000x is start of overlong encoding sequence
+	 * Sequence longer than 4 bytes are invalid
 	 */
-	if (c < 0xc0)
+	if( c <= 0xc0 || c > 0xF4 || c == 0xC1)
 		return 1;
 
 	/* Ok, it's 11xxxxxx, do a stupid decode */
@@ -39,20 +39,27 @@ unsigned utf8_to_unicode(char *line, unsigned index, unsigned len, unicode_t *re
 	}
 
 	/* Invalid? Do it as a single byte Latin1 */
-	if (bytes > 6)
-		return 1;
+/*	if (bytes > 6)	* bytes is <= 4 as we limit c value to max 0xF4
+		return 1;	*
+*/
+	len -= index;
 	if (bytes > len)
 		return 1;
 
 	value = c & (mask-1);
 
 	/* Ok, do the bytes */
+	line += index;
 	for (i = 1; i < bytes; i++) {
 		c = line[i];
 		if ((c & 0xc0) != 0x80)
 			return 1;
 		value = (value << 6) | (c & 0x3f);
 	}
+	
+	if( value > 0x10FFFF)
+		return 1 ;
+
 	*res = value;
 	return bytes;
 }

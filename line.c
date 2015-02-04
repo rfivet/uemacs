@@ -141,13 +141,11 @@ int forwchar(int f, int n)
 			curwp->w_doto = 0;
 			curwp->w_flag |= WFMOVE;
 		} else {
-			do {
-				unsigned char c;
-				curwp->w_doto++;
-				c = lgetc(curwp->w_dotp, curwp->w_doto);
-				if (is_beginning_utf8(c))
-					break;
-			} while (curwp->w_doto < len);
+			unicode_t unc ;
+			unsigned bytes ;
+			
+			bytes = utf8_to_unicode( curwp->w_dotp->l_text, curwp->w_doto, len, &unc) ;
+			curwp->w_doto += bytes ;
 		}
 	}
 	return TRUE;
@@ -257,6 +255,8 @@ int insspace(int f, int n)
 	return TRUE;
 }
 
+static int linsert_byte( int n, int c) ;
+
 /*
  * linstr -- Insert a string at the current point
  */
@@ -269,7 +269,7 @@ int linstr( char *instr) {
 
 		while( (tmpc = *instr++ & 0xFF)) {
 			status =
-			    (tmpc == '\n' ? lnewline() : linsert( 1, tmpc)) ;
+			    (tmpc == '\n' ? lnewline() : linsert_byte( 1, tmpc)) ;
 
 			/* Insertion error? */
 			if( status != TRUE) {

@@ -570,18 +570,14 @@ void updpos(void)
 	i = 0;
 	while (i < curwp->w_doto) {
 		unicode_t c;
-		int bytes;
 
-		bytes = utf8_to_unicode(lp->l_text, i, curwp->w_doto, &c);
-		i += bytes;
-		if (c == '\t')
-			curcol |= tabmask;
-		else if( bytes == 1) {
-			if( c < 0x20 || c == 0x7F)
+		i += utf8_to_unicode( lp->l_text, i, curwp->w_doto, &c) ;
+		if( c == '\t')
+			curcol |= tabmask ;
+		else if( c < 0x20 || c == 0x7F)
 				curcol += 1 ;	/* displayed as ^c */
-			else if( c >= 0x80 && c <= 0xA0)
+		else if( c >= 0x80 && c <= 0xA0)
 				curcol += 2 ;	/* displayed as \xx */
-		}
 
 		++curcol;
 	}
