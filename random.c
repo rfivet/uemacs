@@ -73,7 +73,7 @@ int showcpos(int f, int n)
 	int numlines;	/* # of lines in file */
 	long predchars;	/* # chars preceding point */
 	int predlines;	/* # lines preceding point */
-	int curchar;	/* character under cursor */
+	unicode_t curchar ;	/* character under cursor */
 	int ratio;
 	int col;
 	int savepos;		/* temp save for current offset */
@@ -91,12 +91,15 @@ int showcpos(int f, int n)
 	while (lp != curbp->b_linep) {
 		/* if we are on the current line, record it */
 		if (lp == curwp->w_dotp) {
+			int len ;
+			
 			predlines = numlines;
 			predchars = numchars + curwp->w_doto;
-			if ((curwp->w_doto) == llength(lp))
+			len = llength( lp) ;				
+			if( (curwp->w_doto) == len)
 				curchar = '\n';
 			else
-				curchar = lgetc(lp, curwp->w_doto);
+				(void) utf8_to_unicode( lp->l_text, curwp->w_doto, len, &curchar) ;
 		}
 		/* on to the next line */
 		++numlines;
