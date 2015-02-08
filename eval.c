@@ -523,10 +523,19 @@ static char *gtfun( char *fname) {
 		}
 
 		break ;
-	case UFCHR:
-		sz = unicode_to_utf8( atoi( argx), result) ;
-		result[ sz] = 0 ;
-		retstr = result ;		
+	case UFCHR: {
+			unicode_t c ;
+
+			c = atoi( argx) ;
+			if( c > 0x10FFFF)
+				retstr = errorm ;
+			else {
+				sz = unicode_to_utf8( c, result) ;
+				result[ sz] = 0 ;
+				retstr = result ;
+			}
+		}
+
 		break ;
 	case UFGTKEY:
 		result[0] = tgetc();

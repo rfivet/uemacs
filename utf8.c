@@ -1,5 +1,7 @@
 #include "utf8.h"
 
+#include <assert.h>
+
 /*
  * utf8_to_unicode()
  *
@@ -84,11 +86,11 @@ static void reverse_string(char *begin, char *end)
  * possible sequence, while utf8_to_unicode() accepts both Latin1 and
  * overlong utf-8 sequences.
  */
-unsigned unicode_to_utf8(unsigned int c, char *utf8)
-{
-	int bytes = 1;
+unsigned unicode_to_utf8( unicode_t c, char *utf8) {
+	int bytes = 1 ;
 
-	*utf8 = c;
+	assert( c <= 0x10FFFF) ;
+	*utf8 = c ;
 	if (c > 0x7f) {
 		int prefix = 0x40;
 		char *p = utf8;
