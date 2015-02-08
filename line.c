@@ -32,10 +32,6 @@ int tabmask = 0x07 ;		/* tabulator mask */
 
 static int ldelnewline( void) ;
 
-static inline int is_beginning_utf8( unsigned char c) {
-	return (c & 0xc0) != 0x80;
-}
-
 /* The editor holds deleted text chunks in the struct kill buffer. The
  * kill buffer is logically a stream of ascii characters, however
  * due to its unpredicatable size, it gets implemented as a linked
@@ -96,30 +92,52 @@ char *getkill( void) {
  * location. Error if you try and move out of the buffer. Set the flag if the
  * line pointer for dot changes.
  */
-int backchar(int f, int n)
-{
-	struct line *lp;
+int backchar( int f, int n) {
+	if( n < 0)
+		return forwchar( f, -n) ;
 
-	if (n < 0)
-		return forwchar(f, -n);
-	while (n--) {
-		if (curwp->w_doto == 0) {
-			if ((lp = lback(curwp->w_dotp)) == curbp->b_linep)
-				return FALSE;
-			curwp->w_dotp = lp;
-			curwp->w_doto = llength(lp);
-			curwp->w_flag |= WFMOVE;
+	while( n--) {
+		if( curwp->w_doto == 0) {
+			struct line *lp ;
+
+			lp = lback( curwp->w_dotp) ;
+			if( lp == curbp->b_linep)
+				return FALSE ;
+
+			curwp->w_dotp = lp ;
+			curwp->w_doto = llength( lp) ;
+			curwp->w_flag |= WFMOVE ;
 		} else {
-			do {
-				unsigned char c;
-				curwp->w_doto--;
-				c = lgetc(curwp->w_dotp, curwp->w_doto);
-				if (is_beginning_utf8(c))
-					break;
-			} while (curwp->w_doto);
+			unsigned pos ;
+			
+			pos = curwp->w_doto -= 1 ;
+			if( pos > 0) {
+				unsigned char *p ;
+
+				p = (unsigned char *) &( (curwp->w_dotp)->l_text[ pos]) ;
+				if( (*p & 0xC0) == 0x80) {
+					unsigned char c ;
+					int delta = 0 ;
+
+					c = *--p ;
+					if( (c & 0xE0) == 0xC0)	/* valid 2 bytes unicode seq */
+						delta = 1 ;
+					else if( ((c & 0xC0) == 0x80) && (pos > 1)) {
+						c = *--p ;
+						if( (c & 0xF0) == 0xE0)	/* valid 3 bytes unicode seq */
+							delta = 2 ;
+						else if( ((c & 0xC0) == 0x80) && (pos > 2))
+							if( (p[ -1] & 0xF8) == 0xF0)	/* valid 4 bytes unicode seq */
+								delta = 3 ;
+					}
+
+					curwp->w_doto -= delta ;
+				}
+			}
 		}
 	}
-	return TRUE;
+
+	return TRUE ;
 }
 
 /*
