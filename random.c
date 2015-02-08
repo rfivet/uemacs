@@ -74,6 +74,7 @@ int showcpos(int f, int n)
 	long predchars;	/* # chars preceding point */
 	int predlines;	/* # lines preceding point */
 	unicode_t curchar ;	/* character under cursor */
+	unsigned bytes ;	/* length of unicode sequence */
 	int ratio;
 	int col;
 	int savepos;		/* temp save for current offset */
@@ -88,6 +89,7 @@ int showcpos(int f, int n)
 	predchars = 0;
 	predlines = 0;
 	curchar = 0;
+	bytes = 1 ;
 	while (lp != curbp->b_linep) {
 		/* if we are on the current line, record it */
 		if (lp == curwp->w_dotp) {
@@ -99,7 +101,7 @@ int showcpos(int f, int n)
 			if( (curwp->w_doto) == len)
 				curchar = '\n';
 			else
-				(void) utf8_to_unicode( lp->l_text, curwp->w_doto, len, &curchar) ;
+				bytes = utf8_to_unicode( lp->l_text, curwp->w_doto, len, &curchar) ;
 		}
 		/* on to the next line */
 		++numlines;
@@ -128,9 +130,9 @@ int showcpos(int f, int n)
 		ratio = (100L * predchars) / numchars;
 
 	/* summarize and report the info */
-	mlwrite("Line %d/%d Col %d/%d Char %D/%D (%d%%) char = 0x%x",
+	mlwrite("Line %d/%d Col %d/%d Char %D/%D (%d%%) char = %s%x",
 		predlines + 1, numlines + 1, col, ecol,
-		predchars, numchars, ratio, curchar);
+		predchars, numchars, ratio, (bytes > 1) ? "\\u" : "0x", curchar);
 	return TRUE;
 }
 
