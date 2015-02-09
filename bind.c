@@ -81,7 +81,9 @@ int deskey(int f, int n)
 
     /* get the command sequence to describe
        change it to something we can print as well */
-    cmdstr(c = getckey(FALSE), &outseq[0]);
+    c = getckey( FALSE) ;
+    mlwrite( ": describe-key 0x%x, ", c) ;
+    cmdstr( c, &outseq[ 0]) ;
 
     /* and dump it out */
     ostring(outseq);

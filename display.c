@@ -1456,19 +1456,22 @@ static void mlputs( char *s) {
  */
 static void mlputi( int i, int r) {
 	int q ;
+	unsigned u ;
 	static char hexdigits[] = "0123456789ABCDEF" ;
 
-	if( i < 0) {
-		i = -i ;
+	if( r == 16 || i >= 0)
+		u = i ;
+	else {
+		u = -i ;
 		mlputc( '-') ;
 	}
 
-	q = i / r ;
+	q = u / r ;
 
 	if( q != 0)
 		mlputi( q, r) ;
 
-	mlputc( hexdigits[ i % r]) ;
+	mlputc( hexdigits[ u % r]) ;
 }
 
 /*

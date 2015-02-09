@@ -737,9 +737,9 @@ void outstring(char *s)
  *
  * char *s;     string to output
  */
-void ostring(char *s)
+void ostring( char *s)
 {
     if (discmd)
         while (*s)
-            TTputc(*s++);
+            TTputc( *s++ & 0xFF) ;
 }
