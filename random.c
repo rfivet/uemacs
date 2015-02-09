@@ -173,13 +173,13 @@ int getccol(int bflg)
 		unicode_t c;
 
 		i += utf8_to_unicode(dlp->l_text, i, len, &c);
-		if (c != ' ' && c != '\t' && bflg)
+		if( bflg && c != ' ' && c != '\t')	/* Request Stop at first non-blank */
 			break;
 		if (c == '\t')
 			col |= tabmask;
-		else if (c < 0x20 || c == 0x7F)
+		else if (c < 0x20 || c == 0x7F)		/* displayed as ^c */
 			++col;
-		else if (c >= 0xc0 && c <= 0xa0)
+		else if (c >= 0x80 && c <= 0xa0)	/* displayed as \xx */
 			col += 2;
 		++col;
 	}
