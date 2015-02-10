@@ -17,62 +17,60 @@
  */
 unsigned utf8_to_unicode(char *line, unsigned index, unsigned len, unicode_t *res)
 {
-	unicode_t	value ;
-	unsigned char c = line[index];
-	unsigned bytes, mask, i;
+    unicode_t   value ;
+    unsigned char c = line[index];
+    unsigned bytes, mask, i;
 
-	*res = c;
+    *res = c;
 
-	/*
-	 * 0xxxxxxx is valid one byte utf8
-	 * 10xxxxxx is invalid UTF-8 start byte, we assume it is Latin1
-	 * 1100000x is start of overlong encoding sequence
-	 * Sequence longer than 4 bytes are invalid
-	 */
-	if( c <= 0xC1 || c > 0xF4)
-		return 1;
+    /*
+     * 0xxxxxxx is valid one byte utf8
+     * 10xxxxxx is invalid UTF-8 start byte, we assume it is Latin1
+     * 1100000x is start of overlong encoding sequence
+     * Sequence longer than 4 bytes are invalid
+     * Last valid code is 0x10FFFF, encoding start with 0xF4
+     */
+    if( c <= 0xC1 || c > 0xF4)
+        return 1;
 
-	/* Ok, it's 11xxxxxx, do a stupid decode */
-	mask = 0x20;
-	bytes = 2;
-	while (c & mask) {
-		bytes++;
-		mask >>= 1;
-	}
+    /* Ok, it's 11xxxxxx, do a stupid decode */
+    mask = 0x20;
+    bytes = 2;
+    while (c & mask) {
+        bytes++;
+        mask >>= 1;
+    }
 
-	/* Invalid? Do it as a single byte Latin1 */
-/*	if (bytes > 6)	* bytes is <= 4 as we limit c value to max 0xF4
-		return 1;	*
-*/
-	len -= index;
-	if (bytes > len)
-		return 1;
+	/* bytes is in range [2..4] */
+    len -= index;
+    if (bytes > len)
+        return 1;
 
-	value = c & (mask-1);
+    value = c & (mask-1);
 
-	/* Ok, do the bytes */
-	line += index;
-	for (i = 1; i < bytes; i++) {
-		c = line[i];
-		if ((c & 0xc0) != 0x80)
-			return 1;
-		value = (value << 6) | (c & 0x3f);
-	}
-	
-	if( value > 0x10FFFF)
-		return 1 ;
+    /* Ok, do the bytes */
+    line += index;
+    for (i = 1; i < bytes; i++) {
+        c = line[i];
+        if ((c & 0xc0) != 0x80)
+            return 1;
+        value = (value << 6) | (c & 0x3f);
+    }
 
-	*res = value;
-	return bytes;
+    if( value > 0x10FFFF) /* Avoid 110000 - 13FFFF */
+        return 1 ;
+
+    *res = value;
+    return bytes;
 }
 
 static void reverse_string(char *begin, char *end)
 {
-	do {
-		char a = *begin, b = *end;
-		*end = a; *begin = b;
-		begin++; end--;
-	} while (begin < end);
+    do {
+        char a = *begin, b = *end;
+        *end = a; *begin = b;
+        begin++; end--;
+    } while (begin < end);
 }
 
 /*
@@ -87,21 +85,21 @@ static void reverse_string(char *begin, char *end)
  * overlong utf-8 sequences.
  */
 unsigned unicode_to_utf8( unicode_t c, char *utf8) {
-	int bytes = 1 ;
+    int bytes = 1 ;
 
-	assert( c <= 0x10FFFF) ;
-	*utf8 = c ;
-	if (c > 0x7f) {
-		int prefix = 0x40;
-		char *p = utf8;
-		do {
-			*p++ = 0x80 + (c & 0x3f);
-			bytes++;
-			prefix >>= 1;
-			c >>= 6;
-		} while( c >= prefix) ;
-		*p = c - 2*prefix;
-		reverse_string(utf8, p);
-	}
-	return bytes;
+    assert( c <= 0x10FFFF) ;
+    *utf8 = c ;
+    if (c > 0x7f) {
+        int prefix = 0x40;
+        char *p = utf8;
+        do {
+            *p++ = 0x80 + (c & 0x3f);
+            bytes++;
+            prefix >>= 1;
+            c >>= 6;
+        } while( c >= prefix) ;
+        *p = c - 2*prefix;
+        reverse_string(utf8, p);
+    }
+    return bytes;
 }

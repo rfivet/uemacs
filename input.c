@@ -455,21 +455,19 @@ handle_CSI:
         return CTLX | c;
     }
 
+	/* Accept UTF-8 sequence */
 	if( c <= 0xC1 || c > 0xF4)
 		return c ;
 	else {
 		char utf[ 4] ;
+		char cc ;
 
 		utf[ 0] = c ;
-		if( (c & 0xE0) == 0xC0)
-			utf[ 1] = get1key() ;
-		else if( (c & 0xF0) == 0xE0) {
-			utf[ 1] = get1key() ;
-			utf[ 2] = get1key() ;
-		} else if( (c & 0xF8) == 0xF0) {
-			utf[ 1] = get1key() ;
-			utf[ 2] = get1key() ;
-			utf[ 3] = get1key() ;
+		utf[ 1] = cc = get1key() ;
+		if( (c & 0x20) && ((cc & 0xC0) == 0x80)) { /* at least 3 bytes and a valid encoded char */
+			utf[ 2] = cc = get1key() ;
+			if( (c & 0x10) && ((cc & 0xC0) == 0x80)) /* at least 4 bytes and a valid encoded char */
+				utf[ 3] = get1key() ;
 		}
 
 		utf8_to_unicode( utf, 0, sizeof utf, (unicode_t *) &c) ;
