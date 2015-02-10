@@ -21,6 +21,7 @@
 #include "exec.h"
 #include "names.h"
 #include "terminal.h"
+#include "utf8.h"
 #include "wrapper.h"
 
 #if PKCODE
@@ -454,6 +455,26 @@ handle_CSI:
         return CTLX | c;
     }
 
+	if( c <= 0xC1 || c > 0xF4)
+		return c ;
+	else {
+		char utf[ 4] ;
+
+		utf[ 0] = c ;
+		if( (c & 0xE0) == 0xC0)
+			utf[ 1] = get1key() ;
+		else if( (c & 0xF0) == 0xE0) {
+			utf[ 1] = get1key() ;
+			utf[ 2] = get1key() ;
+		} else if( (c & 0xF8) == 0xF0) {
+			utf[ 1] = get1key() ;
+			utf[ 2] = get1key() ;
+			utf[ 3] = get1key() ;
+		}
+
+		utf8_to_unicode( utf, 0, sizeof utf, (unicode_t *) &c) ;
+	}
+	
     /* otherwise, just return it */
     return c;
 }

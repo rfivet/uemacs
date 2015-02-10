@@ -29,7 +29,7 @@ unsigned utf8_to_unicode(char *line, unsigned index, unsigned len, unicode_t *re
 	 * 1100000x is start of overlong encoding sequence
 	 * Sequence longer than 4 bytes are invalid
 	 */
-	if( c <= 0xc0 || c > 0xF4 || c == 0xC1)
+	if( c <= 0xC1 || c > 0xF4)
 		return 1;
 
 	/* Ok, it's 11xxxxxx, do a stupid decode */
