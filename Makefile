@@ -1,4 +1,4 @@
-# Makefile for emacs, updated Thu, Jan 29, 2015 10:01:30 PM
+# Makefile for emacs, updated Wed, Feb 11, 2015  8:16:12 PM
 
 SRC=basic.c bind.c bindable.c buffer.c crypt.c display.c ebind.c eval.c exec.c execute.c file.c fileio.c flook.c input.c isearch.c line.c lock.c log.c main.c mingw32.c names.c pklock.c posix.c random.c region.c search.c spawn.c tcap.c termio.c utf8.c window.c word.c wrapper.c wscreen.c
 OBJ=basic.o bind.o bindable.o buffer.o crypt.o display.o ebind.o eval.o exec.o execute.o file.o fileio.o flook.o input.o isearch.o line.o lock.o log.o main.o mingw32.o names.o pklock.o posix.o random.o region.o search.o spawn.o tcap.o termio.o utf8.o window.o word.o wrapper.o wscreen.o
@@ -98,9 +98,14 @@ source:
 	@mv Makefile Makefile.bak
 	@echo "# Makefile for emacs, updated `date`" >Makefile
 	@echo '' >>Makefile
+#Sorted
 	@echo SRC=`ls *.c` >>Makefile
 	@echo OBJ=`ls *.c | sed s/c$$/o/` >>Makefile
 	@echo HDR=`ls *.h` >>Makefile
+#UnSorted
+#	@echo SRC=$(wildcard *.c) >>Makefile
+#	@echo OBJ=$(patsubst %.c,%.o,$(wildcard *.c)) >>Makefile
+#	@echo HDR=$(wildcard *.h) >>Makefile
 	@echo '' >>Makefile
 	@sed -n -e '/^# DO NOT ADD OR MODIFY/,$$p' <Makefile.bak >>Makefile
 
@@ -151,7 +156,7 @@ file.o: file.c file.h buffer.h crypt.h line.h utf8.h retcode.h defines.h \
 fileio.o: fileio.c fileio.h crypt.h retcode.h defines.h
 flook.o: flook.c flook.h retcode.h defines.h fileio.h crypt.h
 input.o: input.c input.h bind.h estruct.h bindable.h display.h exec.h \
- retcode.h names.h terminal.h defines.h wrapper.h
+ retcode.h names.h terminal.h defines.h utf8.h wrapper.h
 isearch.o: isearch.c isearch.h basic.h buffer.h crypt.h line.h utf8.h \
  display.h estruct.h exec.h retcode.h input.h bind.h search.h terminal.h \
  defines.h window.h
