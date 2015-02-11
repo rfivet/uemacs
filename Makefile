@@ -19,6 +19,9 @@ endif
 export E Q
 
 uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
+# for windows based target, insure we strip the variant part
+# CYGWIN_NT-6.1, CYGWIN_NT-6.1-WOW, CYGWIN_NT-6.1-WOW64, MINGW32_NT-6.1
+uname_S := $(shell sh -c 'echo $(uname_S) | sed s/_.*$$//')
 
 PROGRAM=ue
 
@@ -39,15 +42,11 @@ endif
 ifeq ($(uname_S),Darwin)
  DEFINES=-DAUTOCONF -DPOSIX -DSYSV -D_DARWIN_C_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE -D_XOPEN_SOURCE=600
 endif
-ifeq ($(uname_S),CYGWIN_NT-6.1-WOW64)
+ifeq ($(uname_S),CYGWIN)
  DEFINES=-DAUTOCONF -DPROGRAM=$(PROGRAM)
  LIBS=-lcurses			# SYSV
 endif
-ifeq ($(uname_S),CYGWIN_NT-6.1)
- DEFINES=-DAUTOCONF -DPROGRAM=$(PROGRAM)
- LIBS=-lcurses			# SYSV
-endif
-ifeq ($(uname_S),MINGW32_NT-6.1)
+ifeq ($(uname_S),MINGW32)
  DEFINES=-DAUTOCONF -DSYSV -DMINGW32 -DPROGRAM=$(PROGRAM)
  LIBS=
 endif
