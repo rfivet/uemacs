@@ -4,7 +4,11 @@
 
 /*
  *	main.c
-
+ *
+ *	µEMACS 4.2
+ *
+ *	Based on:
+ *
  *	uEmacs/PK 4.0
  *
  *	Based on:
@@ -53,9 +57,13 @@
  *
  * 4.0	Petri Kutvonen, 1-Sep-91
  *
- * This modified version is now called uEmacs/rf.
+ * This modified version is now called uEMACS.
  *
  * 4.1	Renaud Fivet, 1-May-13
+ *
+ * Renamed as µEMACS to emphasize UTF-8 support.
+ *
+ * 4.2	Renaud Fivet, 2015-02-12
  *
  */
 
@@ -106,7 +114,7 @@ static void emergencyexit(int signr)
 static void edinit( char *bname) ;
 
 static void version( void) {
-    fputs( PROGRAM_NAME_LONG " version " VERSION "\n", stdout) ;
+    fputs( PROGRAM_NAME_PFX PROGRAM_NAME_LONG " version " VERSION "\n", stdout) ;
 }
 
 

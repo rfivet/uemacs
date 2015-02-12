@@ -88,6 +88,12 @@ unsigned unicode_to_utf8( unicode_t c, char *utf8) {
     int bytes = 1 ;
 
     assert( c <= 0x10FFFF) ;
+
+#ifdef NDEBUG
+	if( c > 0x10FFFF)	/* Let's assume this is due to sign extension */
+		c &= 0xFF ;
+#endif
+
     *utf8 = c ;
     if (c > 0x7f) {
         int prefix = 0x40;

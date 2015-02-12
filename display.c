@@ -87,7 +87,7 @@ static void modeline(struct window *wp);
 static void mlputi(int i, int r);
 static void mlputli(long l, int r);
 static void mlputf(int s);
-static void mlputs( char *s) ;
+static void mlputs( unsigned char *s) ;
 #if SIGWINCH
 static int newscreensize(int h, int w);
 #endif
@@ -1154,7 +1154,7 @@ static void modeline(struct window *wp)
 	vtputc( ' ') ;
 	n = 3 ;
 
-	cp = &PROGRAM_NAME_LONG " " VERSION ": " [ 1] ;	/* Start past utf8 mark */
+	cp = PROGRAM_NAME_LONG " " VERSION ": " ;
 	while ((c = *cp++) != 0) {
 		vtputc(c);
 		++n;
@@ -1394,7 +1394,7 @@ void mlwrite(const char *fmt, ...)
 				break;
 
 			case 's':
-				mlputs(va_arg(ap, char *));
+				mlputs( (unsigned char *) va_arg( ap, char *)) ;
 				break;
 
 			case 'f':
@@ -1441,10 +1441,28 @@ void mlforce( char *s) {
  * the characters in the string all have width "1"; if this is not the case
  * things will get screwed up a little.
  */
-static void mlputs( char *s) {
-	int c ;
+static void mlputs( unsigned char *s) {
+	unicode_t c ;
 
 	while( ((c = *s++) != 0) && (ttcol < term.t_ncol)) {
+		/* Accept UTF-8 sequence */
+		if( c > 0xC1 && c <= 0xF4) {
+			char utf[ 4] ;
+			char cc ;
+			int bytes ;
+
+			utf[ 0] = c ;
+			utf[ 1] = cc = *s ;
+			if( (c & 0x20) && ((cc & 0xC0) == 0x80)) { /* at least 3 bytes and a valid encoded char */
+				utf[ 2] = cc = s[ 1] ;
+				if( (c & 0x10) && ((cc & 0xC0) == 0x80)) /* at least 4 bytes and a valid encoded char */
+					utf[ 3] = s[ 2] ;
+			}
+
+			bytes = utf8_to_unicode( utf, 0, sizeof utf, (unicode_t *) &c) ;
+			s += bytes - 1 ;
+		}
+
 		TTputc( c) ;
 		++ttcol ;
 	}
