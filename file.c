@@ -50,6 +50,11 @@ static const char *eolname[] = {
 
 boolean restflag = FALSE ;	/* restricted use?              */
 
+boolean resterr( void) {
+	writefmt( "%B(That command is RESTRICTED)") ;
+	return FALSE ;
+}
+
 /*
  * Read a file into the current
  * buffer. This is really easy; all you do it

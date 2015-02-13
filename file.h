@@ -11,6 +11,7 @@ int  set_encryption_key( int f, int n) ;
 #endif
 
 extern boolean restflag ;		/* restricted use?              */
+boolean resterr( void) ;		/* restricted error message		*/
 
 int fileread( int f, int n) ;
 int insfile( int f, int n) ;

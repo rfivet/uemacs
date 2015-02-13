@@ -18,9 +18,3 @@ boolean rdonly( void) {
 	writefmt( "%B(Key illegal in VIEW mode)") ;
 	return FALSE ;
 }
-
-
-boolean resterr( void) {
-	writefmt( "%B(That command is RESTRICTED)") ;
-	return FALSE ;
-}
