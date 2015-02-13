@@ -174,7 +174,7 @@ int set_encryption_key(int f, int n)
 	strcpy(curbp->b_key, key);
 	cryptbufferkey( curbp) ;
 	
-	mloutstr( " ") ;	/* clear it off the bottom line */
+	mloutstr( "") ;	/* clear the message line */
 	return TRUE;
 }
 

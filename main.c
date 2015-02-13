@@ -375,7 +375,7 @@ int main(int argc, char **argv)
 #endif
 	/* if there is something on the command line, clear it */
 	if (mpresf != FALSE) {
-		mlerase();
+		mloutstr( "") ;
 		update(FALSE);
 #if	CLRMSG
 		if (c == ' ')	/* ITS EMACS does this  */

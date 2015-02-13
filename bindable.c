@@ -32,10 +32,10 @@ int quickexit(int f, int n)
 		    && (bp->b_flag & BFTRUNC) == 0	/* Not truncated P.K.   */
 		    && (bp->b_flag & BFINVS) == 0) {	/* Real.                */
 			curbp = bp;	/* make that buffer cur */
-			mlwrite("(Saving %s)", bp->b_fname);
+			mloutfmt( "(Saving %s)", bp->b_fname) ;
 #if	PKCODE
 #else
-			mlwrite("\n");
+			mloutstr( "\n") ;
 #endif
 			if ((status = filesave(f, n)) != TRUE) {
 				curbp = oldcb;	/* restore curbp */
@@ -76,7 +76,7 @@ int quit(int f, int n)
 		else
 			exit( EXIT_SUCCESS) ;
 	}
-	mlwrite("");
+	mloutstr( "") ;
 	return s;
 }
 
@@ -88,10 +88,10 @@ int quit(int f, int n)
 int ctlxlp(int f, int n)
 {
 	if (kbdmode != STOP) {
-		mlwrite("%%Macro already active");
+		mloutstr( "%Macro already active") ;
 		return FALSE;
 	}
-	mlwrite("(Start macro)");
+	mloutstr( "(Start macro)") ;
 	kbdptr = &kbdm[0];
 	kbdend = kbdptr;
 	kbdmode = RECORD;
@@ -105,11 +105,11 @@ int ctlxlp(int f, int n)
 int ctlxrp(int f, int n)
 {
 	if (kbdmode == STOP) {
-		mlwrite("%%Macro not active");
+		mloutstr( "%Macro not active") ;
 		return FALSE;
 	}
 	if (kbdmode == RECORD) {
-		mlwrite("(End macro)");
+		mloutstr( "(End macro)") ;
 		kbdmode = STOP;
 	}
 	return TRUE;
@@ -123,7 +123,7 @@ int ctlxrp(int f, int n)
 int ctlxe(int f, int n)
 {
 	if (kbdmode != STOP) {
-		mlwrite("%%Macro already active");
+		mloutstr( "%Macro already active") ;
 		return FALSE;
 	}
 	if (n <= 0)

@@ -30,7 +30,6 @@ int tgetc( void) ;
 int get1key( void) ;
 int getcmd( void) ;
 int getstring( const char *prompt, char *buf, int nbuf, int eolchar) ;
-void outstring( char *s) ;
 void ostring( char *s) ;
 
 #endif

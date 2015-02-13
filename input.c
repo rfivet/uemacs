@@ -54,6 +54,8 @@ int abortc = CONTROL | 'G' ;		/* current abort command char	 */
 
 static const int quotec = 0x11 ;	/* quote char during mlreply()	 */
 
+static void outstring( char *s) ;
+
 /*
  * Ask a yes or no question in the message line. Return either TRUE, FALSE, or
  * ABORT. The ABORT status is returned if the user bumps out of the question
@@ -740,15 +742,14 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
 }
 
 /*
- * output a string of characters
+ * output a string of characters when display input is enabled
  *
  * char *s;     string to output
  */
-void outstring(char *s)
-{
-    if (disinp)
-        while (*s)
-            TTputc(*s++);
+static void outstring( char *s) {
+    if( disinp)
+        while( *s)
+            TTputc( *s++) ;
 }
 
 /*

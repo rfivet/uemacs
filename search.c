@@ -216,7 +216,7 @@ int forwsearch(int f, int n)
 		if (status == TRUE)
 			savematch();
 		else
-			mlwrite("Not found");
+			mloutstr( "Not found") ;
 	}
 	return status;
 }
@@ -239,7 +239,7 @@ int forwhunt(int f, int n)
 	 * into MAGIC mode until after we entered the pattern.
 	 */
 	if (pat[0] == '\0') {
-		mlwrite("No pattern set");
+		mloutstr( "No pattern set") ;
 		return FALSE;
 	}
 #if	MAGIC
@@ -269,7 +269,7 @@ int forwhunt(int f, int n)
 	if (status == TRUE)
 		savematch();
 	else
-		mlwrite("Not found");
+		mloutstr( "Not found") ;
 
 	return status;
 }
@@ -317,7 +317,7 @@ int backsearch(int f, int n)
 		if (status == TRUE)
 			savematch();
 		else
-			mlwrite("Not found");
+			mloutstr( "Not found") ;
 	}
 	return status;
 }
@@ -341,7 +341,7 @@ int backhunt(int f, int n)
 	 * into MAGIC mode until after we entered the pattern.
 	 */
 	if (tap[0] == '\0') {
-		mlwrite("No pattern set");
+		mloutstr( "No pattern set") ;
 		return FALSE;
 	}
 #if	MAGIC
@@ -371,7 +371,7 @@ int backhunt(int f, int n)
 	if (status == TRUE)
 		savematch();
 	else
-		mlwrite("Not found");
+		mloutstr( "Not found") ;
 
 	return status;
 }
@@ -909,12 +909,12 @@ static int replaces(int kind, int f, int n)
 		if (kind) {
 			/* Get the query.
 			 */
-		      pprompt:mlwrite(&tpat[0], &pat[0],
-				&rpat[0]);
-		      qprompt:
+		pprompt:
+			mloutfmt( &tpat[ 0], &pat[ 0], &rpat[ 0]) ;
+		qprompt:
 			update(TRUE);	/* show the proposed place to change */
 			c = tgetc();	/* and input */
-			mlwrite("");	/* and clear it */
+			mloutstr( "") ;	/* and clear it */
 
 			/* And respond appropriately.
 			 */
@@ -991,8 +991,8 @@ static int replaces(int kind, int f, int n)
 				TTbeep();
 
 			case '?':	/* help me */
-				mlwrite
-				    ("(Y)es, (N)o, (!)Do rest, (U)ndo last, (^G)Abort, (.)Abort back, (?)Help: ");
+				mloutstr(
+					"(Y)es, (N)o, (!)Do rest, (U)ndo last, (^G)Abort, (.)Abort back, (?)Help: ") ;
 				goto qprompt;
 
 			}	/* end of switch */
@@ -1020,7 +1020,7 @@ static int replaces(int kind, int f, int n)
 
 	/* And report the results.
 	 */
-	mlwrite("%d substitutions", numsub);
+	mloutfmt( "%d substitutions", numsub) ;
 	return TRUE;
 }
 
@@ -1040,7 +1040,7 @@ int delins(int dlength, char *instr, int use_meta)
 	 * and insert its replacement.
 	 */
 	if ((status = ldelete((long) dlength, FALSE)) != TRUE)
-		mlwrite("%%ERROR while deleting");
+		mloutstr( "%ERROR while deleting") ;
 	else
 #if	MAGIC
 	if ((rmagical && use_meta) &&
@@ -1327,7 +1327,7 @@ static int rmcstr(void)
 				rmcptr->mc_type = LITCHAR;
 				if ((rmcptr->rstr =
 				     malloc(mj + 1)) == NULL) {
-					mlwrite("%%Out of memory");
+					mloutstr( "%Out of memory") ;
 					status = FALSE;
 					break;
 				}
@@ -1348,7 +1348,7 @@ static int rmcstr(void)
 			 * current character.
 			 */
 			if ((rmcptr->rstr = malloc(mj + 2)) == NULL) {
-				mlwrite("%%Out of memory");
+				mloutstr( "%Out of memory") ;
 				status = FALSE;
 				break;
 			}
@@ -1377,7 +1377,7 @@ static int rmcstr(void)
 	if (rmagical && mj > 0) {
 		rmcptr->mc_type = LITCHAR;
 		if ((rmcptr->rstr = malloc(mj + 1)) == NULL) {
-			mlwrite("%%Out of memory.");
+			mloutstr( "%Out of memory") ;
 			status = FALSE;
 		}
 		strncpy(rmcptr->rstr, patptr - mj, mj);
@@ -1464,7 +1464,7 @@ static int mceq(int bc, struct magic *mt)
 		break;
 
 	default:
-		mlwrite("mceq: what is %d?", mt->mc_type);
+		mloutfmt( "mceq: what is %d?", mt->mc_type) ;
 		result = FALSE;
 		break;
 
@@ -1486,7 +1486,7 @@ static int cclmake(char **ppatptr, struct magic *mcptr)
 	int pchr, ochr;
 
 	if ((bmap = clearbits()) == NULL) {
-		mlwrite("%%Out of memory");
+		mloutstr( "%Out of memory") ;
 		return FALSE;
 	}
 
@@ -1506,7 +1506,7 @@ static int cclmake(char **ppatptr, struct magic *mcptr)
 		mcptr->mc_type = CCL;
 
 	if ((ochr = *patptr) == MC_ECCL) {
-		mlwrite("%%No characters in character class");
+		mloutstr( "%No characters in character class") ;
 		return FALSE;
 	} else {
 		if (ochr == MC_ESC)
@@ -1547,7 +1547,7 @@ static int cclmake(char **ppatptr, struct magic *mcptr)
 	*ppatptr = patptr;
 
 	if (ochr == '\0') {
-		mlwrite("%%Character class not ended");
+		mloutstr( "%Character class not ended") ;
 		free(bmap);
 		return FALSE;
 	}
