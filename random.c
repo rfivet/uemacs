@@ -1014,36 +1014,6 @@ int adjustmode(int kind, int global)
 	return FALSE;
 }
 
-/*
- * This function simply clears the message line,
- * mainly for macro usage
- *
- * int f, n;		arguments ignored
- */
-int clrmes( int f, int n) {
-	mlforce( "") ;
-	return TRUE ;
-}
-
-/*
- * This function writes a string on the message line
- * mainly for macro usage
- *
- * int f, n;		arguments ignored
- */
-int writemsg( int f, int n) {
-	int status;
-	char buf[ NSTRING] ;		/* buffer to recieve message into */
-
-	status = mlreply( "Message to write: ", buf, sizeof buf - 1) ;
-	if( status != TRUE)
-		return status ;
-
-	/* write the message out */
-	mlforce( buf) ;
-	return TRUE ;
-}
-
 #if	CFENCE
 /*
  * the cursor is moved to a matching fence

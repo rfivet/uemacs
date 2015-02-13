@@ -1421,22 +1421,6 @@ void mlwrite(const char *fmt, ...)
 }
 
 /*
- * Force a string out to the message line regardless of the
- * current $discmd setting. This is needed when $debug is TRUE
- * and for the write-message and clear-message-line commands
- *
- * char *s;		string to force out
- */
-void mlforce( char *s) {
-	int oldcmd;	/* original command display flag */
-
-	oldcmd = discmd;	/* save the discmd value */
-	discmd = TRUE;		/* and turn display on */
-	mlwrite( (*s) ? "%s" : "", s) ;	/* write the string out or erase line */
-	discmd = oldcmd;	/* and restore the original setting */
-}
-
-/*
  * Write out a string. Update the physical cursor position. This assumes that
  * the characters in the string all have width "1"; if this is not the case
  * things will get screwed up a little.

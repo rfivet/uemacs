@@ -23,7 +23,6 @@ void upmode( void) ;
 void movecursor( int row, int col) ;
 void mlerase( void) ;
 void mlwrite( const char *fmt, ...) ;
-void mlforce( char *s) ;
 void getscreensize( int *widthp, int *heightp) ;
 
 #if UNIX

@@ -42,8 +42,6 @@ int delmode( int f, int n) ;
 int setgmode( int f, int n) ;
 int delgmode( int f, int n) ;
 int adjustmode( int kind, int global) ;
-int clrmes( int f, int n) ;
-int writemsg( int f, int n) ;
 int getfence( int f, int n) ;
 int fmatch( int ch) ;
 int istring( int f, int n) ;

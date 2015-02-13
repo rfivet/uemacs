@@ -808,6 +808,8 @@ int setvar(int f, int n)
 	return status;
 }
 
+static void mlforce( char *s) ;
+
 #if DEBUGM
 int mdbugout( char *fmt, char *s1, char *s2, char *s3) {
 	char outline[ NSTRING] ;	/* global string to hold debug line text */
@@ -1393,3 +1395,51 @@ static char *xlat( char *source, char *lookup, char *trans) {
 	*rp = 0;
 	return result;
 }
+
+/*
+ * Force a string out to the message line regardless of the
+ * current $discmd setting. This is needed when $debug is TRUE
+ * and for the write-message and clear-message-line commands
+ *
+ * char *s;		string to force out
+ */
+static void mlforce( char *s) {
+	int oldcmd;	/* original command display flag */
+
+	oldcmd = discmd;	/* save the discmd value */
+	discmd = TRUE;		/* and turn display on */
+	mlwrite( (*s) ? "%s" : "", s) ;	/* write the string out or erase line */
+	discmd = oldcmd;	/* and restore the original setting */
+}
+
+/*
+ * This function simply clears the message line,
+ * mainly for macro usage
+ *
+ * int f, n;		arguments ignored
+ */
+int clrmes( int f, int n) {
+	mlforce( "") ;
+	return TRUE ;
+}
+
+/*
+ * This function writes a string on the message line
+ * mainly for macro usage
+ *
+ * int f, n;		arguments ignored
+ */
+int writemsg( int f, int n) {
+	int status;
+	char buf[ NSTRING] ;		/* buffer to recieve message into */
+
+	status = mlreply( "Message to write: ", buf, sizeof buf - 1) ;
+	if( status != TRUE)
+		return status ;
+
+	/* write the message out */
+	mlforce( buf) ;
+	return TRUE ;
+}
+
+
