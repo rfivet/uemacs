@@ -21,7 +21,6 @@
 #include "execute.h"
 #include "input.h"
 #include "line.h"
-#include "log.h"
 #include "search.h"
 #include "terminal.h"
 #include "window.h"

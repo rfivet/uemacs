@@ -22,7 +22,7 @@
 
 #include "buffer.h"
 #include "estruct.h"
-#include "log.h"
+#include "mlout.h"
 #include "window.h"
 
 
@@ -184,7 +184,7 @@ struct line *lalloc(int used)
 	if (size == 0)	/* Assume that is an empty. */
 		size = BLOCK_SIZE;  /* Line is for type-in. */
 	if ((lp = (struct line *)malloc(sizeof(struct line) + size)) == NULL) {
-		writestr( "(OUT OF MEMORY)") ;
+		mloutstr( "(OUT OF MEMORY)") ;
 		return NULL;
 	}
 	lp->l_size = size;
@@ -291,7 +291,7 @@ int linstr( char *instr) {
 
 			/* Insertion error? */
 			if( status != TRUE) {
-				writestr( "%Out of memory while inserting") ;
+				mloutstr( "%Out of memory while inserting") ;
 				return status ;
 			}
 		}
@@ -330,7 +330,7 @@ static int linsert_byte(int n, int c)
 	lp1 = curwp->w_dotp;	/* Current line         */
 	if (lp1 == curbp->b_linep) {	/* At the end: special  */
 		if (curwp->w_doto != 0) {
-			writestr( "bug: linsert") ;
+			mloutstr( "bug: linsert") ;
 			return FALSE;
 		}
 		if ((lp2 = lalloc(n)) == NULL)	/* Allocate new line        */
@@ -442,7 +442,7 @@ int lover( char *ostr) {
 
 			/* Insertion error? */
 			if( status != TRUE) {
-				writestr( "%Out of memory while overwriting") ;
+				mloutstr( "%Out of memory while overwriting") ;
 				return status ;
 			}
 		}
@@ -838,6 +838,6 @@ int yank(int f, int n)
  * VIEW (read-only) mode
  */
 boolean rdonly( void) {
-	writefmt( "%B(Key illegal in VIEW mode)") ;
+	mloutfmt( "%B(Key illegal in VIEW mode)") ;
 	return FALSE ;
 }

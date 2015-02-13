@@ -22,7 +22,7 @@
 #include "estruct.h"
 #include "input.h"
 #include "line.h"
-#include "log.h"
+#include "mlout.h"
 #include "random.h"
 #include "terminal.h"
 #include "utf8.h"
@@ -101,7 +101,7 @@ int gotoline(int f, int n)
 	if( f == FALSE) {
 		status = mlreply( "Line to GOTO: ", arg, sizeof arg) ;
 		if( status != TRUE) {
-			writestr( "(Aborted)") ;
+			mloutstr( "(Aborted)") ;
 			return status ;
 		}
 
@@ -315,7 +315,7 @@ int setmark(int f, int n)
 {
 	curwp->w_markp = curwp->w_dotp;
 	curwp->w_marko = curwp->w_doto;
-	writestr( "(Mark set)") ;
+	mloutstr( "(Mark set)") ;
 	return TRUE ;
 }
 
@@ -331,7 +331,7 @@ int swapmark(int f, int n)
 	int odoto;
 
 	if( curwp->w_markp == NULL) {
-		writestr( "No mark in this window") ;
+		mloutstr( "No mark in this window") ;
 		return FALSE ;
 	}
 

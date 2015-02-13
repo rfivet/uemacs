@@ -10,8 +10,8 @@
 #include "estruct.h"
 #include "file.h"
 #include "input.h"
-#include "log.h"
 #include "lock.h"
+#include "mlout.h"
 #include "terminal.h"
 
 /*
@@ -141,7 +141,7 @@ int ctlxe(int f, int n)
  */
 int ctrlg( int f, int n) {
 	kbdmode = STOP ;
-	writefmt( "%B(Aborted)") ;
+	mloutfmt( "%B(Aborted)") ;
 	return ABORT ;
 }
 

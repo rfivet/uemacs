@@ -70,7 +70,7 @@
 #include "estruct.h"
 #include "input.h"
 #include "line.h"
-#include "log.h"
+#include "mlout.h"
 #include "terminal.h"
 #include "window.h"
 
@@ -984,7 +984,7 @@ static int replaces(int kind, int f, int n)
 				curwp->w_flag |= WFMOVE;
 
 			case BELL:	/* abort! and stay */
-				writestr( "Aborted!") ;
+				mloutstr( "Aborted!") ;
 				return FALSE ;
 
 			default:	/* bitch and beep */

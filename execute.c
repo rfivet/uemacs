@@ -8,7 +8,7 @@
 #include "random.h"
 #include "display.h"
 #include "file.h"
-#include "log.h"
+#include "mlout.h"
 #include "window.h"
 
 int gasave = 256 ;		/* global ASAVE size            */
@@ -102,7 +102,7 @@ int execute(int c, int f, int n)
 	}
 
 	lastflag = 0 ;		/* Fake last flags. */
-	writefmt( "%B(Key not bound)") ;	/* Complain */
+	mloutfmt( "%B(Key not bound)") ;	/* Complain */
 	return FALSE ;
 }
 

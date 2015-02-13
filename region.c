@@ -15,7 +15,7 @@
 #include "buffer.h"
 #include "estruct.h"
 #include "line.h"
-#include "log.h"
+#include "mlout.h"
 #include "random.h"
 #include "window.h"
 
@@ -74,7 +74,7 @@ int copyregion(int f, int n)
 			++loffs;
 		}
 	}
-	writestr( "(region copied)") ;
+	mloutstr( "(region copied)") ;
 	return TRUE;
 }
 
@@ -171,7 +171,7 @@ int getregion(struct region *rp)
 	long bsize;
 
 	if (curwp->w_markp == NULL) {
-		writestr( "No mark set in this window") ;
+		mloutstr( "No mark set in this window") ;
 		return FALSE;
 	}
 	if (curwp->w_dotp == curwp->w_markp) {
@@ -213,6 +213,6 @@ int getregion(struct region *rp)
 			}
 		}
 	}
-	writestr( "Bug: lost mark") ;
+	mloutstr( "Bug: lost mark") ;
 	return FALSE;
 }
