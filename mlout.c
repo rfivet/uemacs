@@ -9,7 +9,7 @@ static void mloutdump( const char *buf, ...) {
 void (*mloutfmt)( const char *, ...) = mloutdump ;
 
 void mloutstr( const char *str) {
-	mloutfmt( "%s", str) ;
+	mloutfmt( (*str) ? "%s" : "", str) ;
 }
 
 /* end of mlout.c */

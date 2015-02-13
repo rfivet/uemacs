@@ -17,10 +17,10 @@
 #include <string.h>
 
 #include "defines.h"
-#include "display.h"
 #include "estruct.h"
 #include "file.h"
 #include "input.h"
+#include "mlout.h"
 #include "window.h"
 
 
@@ -189,7 +189,7 @@ int zotbuf(struct buffer *bp)
 	int s;
 
 	if (bp->b_nwnd != 0) {	/* Error if on screen.  */
-		mlwrite("Buffer is being displayed");
+		mloutstr("Buffer is being displayed");
 		return FALSE;
 	}
 	if ((s = bclear(bp)) != TRUE)	/* Blow text away.      */
@@ -238,7 +238,7 @@ int namebuffer(int f, int n)
 
 	strcpy(curbp->b_bname, bufn);	/* copy buffer name to structure */
 	curwp->w_flag |= WFMODE;	/* make mode line replot */
-	mlerase();
+	mloutstr( "") ; /* erase message line */
 	return TRUE;
 }
 

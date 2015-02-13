@@ -135,7 +135,7 @@ bindable.o: bindable.c bindable.h defines.h buffer.h crypt.h line.h \
  retcode.h utf8.h display.h estruct.h file.h input.h bind.h lock.h \
  mlout.h terminal.h
 buffer.o: buffer.c buffer.h crypt.h line.h retcode.h utf8.h defines.h \
- display.h estruct.h file.h input.h bind.h window.h
+ estruct.h file.h input.h bind.h mlout.h window.h
 crypt.o: crypt.c crypt.h
 display.o: display.c display.h estruct.h buffer.h crypt.h line.h \
  retcode.h utf8.h input.h bind.h termio.h terminal.h defines.h version.h \
@@ -164,8 +164,8 @@ line.o: line.c line.h retcode.h utf8.h buffer.h crypt.h estruct.h mlout.h \
  window.h defines.h
 lock.o: lock.c estruct.h lock.h
 main.o: main.c estruct.h basic.h bind.h bindable.h buffer.h crypt.h \
- line.h retcode.h utf8.h display.h eval.h execute.h file.h input.h \
- mlout.h lock.h random.h search.h terminal.h defines.h termio.h version.h \
+ line.h retcode.h utf8.h display.h eval.h execute.h file.h input.h lock.h \
+ mlout.h random.h search.h terminal.h defines.h termio.h version.h \
  window.h
 mingw32.o: mingw32.c
 mlout.o: mlout.c mlout.h

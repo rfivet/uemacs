@@ -1370,6 +1370,7 @@ void mlwrite(const char *fmt, ...)
 	else
 		movecursor( term.t_nrow, 0) ;
 
+	mpresf = *fmt ? TRUE : FALSE ;	/* flag if line has content or not */
 	va_start(ap, fmt);
 	while ((c = *fmt++) != 0) {
 		if (c != '%')
@@ -1417,7 +1418,6 @@ void mlwrite(const char *fmt, ...)
 		TTeeol() ;
 
 	TTflush();
-	mpresf = TRUE;
 }
 
 /*
@@ -1432,7 +1432,7 @@ void mlforce( char *s) {
 
 	oldcmd = discmd;	/* save the discmd value */
 	discmd = TRUE;		/* and turn display on */
-	mlwrite( "%s", s) ;	/* write the string out */
+	mlwrite( (*s) ? "%s" : "", s) ;	/* write the string out or erase line */
 	discmd = oldcmd;	/* and restore the original setting */
 }
 
