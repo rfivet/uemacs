@@ -1,6 +1,7 @@
 #ifndef LINE_H_
 #define LINE_H_
 
+#include "retcode.h"
 #include "utf8.h"
 
 #define NLINE   256		/* # of bytes, input line       */
@@ -49,5 +50,7 @@ void kdelete( void) ;
 int kinsert( int c) ;
 int yank( int f, int n) ;
 struct line *lalloc( int) ;  /* Allocate a line. */
+
+boolean rdonly( void) ;		/* Read Only error message */
 
 #endif  /* LINE_H_ */

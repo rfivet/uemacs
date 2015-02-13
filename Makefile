@@ -126,72 +126,72 @@ depend: ${SRC}
 
 # DO NOT DELETE THIS LINE -- make depend uses it
 
-basic.o: basic.c basic.h buffer.h crypt.h line.h utf8.h estruct.h input.h \
- bind.h log.h retcode.h random.h terminal.h defines.h window.h
-bind.o: bind.c bind.h estruct.h bindable.h buffer.h crypt.h line.h utf8.h \
- display.h ebind.h exec.h retcode.h file.h flook.h input.h names.h \
+basic.o: basic.c basic.h buffer.h crypt.h line.h retcode.h utf8.h \
+ estruct.h input.h bind.h log.h random.h terminal.h defines.h window.h
+bind.o: bind.c bind.h estruct.h bindable.h buffer.h crypt.h line.h \
+ retcode.h utf8.h display.h ebind.h exec.h file.h flook.h input.h names.h \
  window.h defines.h
 bindable.o: bindable.c bindable.h defines.h buffer.h crypt.h line.h \
- utf8.h display.h estruct.h file.h retcode.h input.h bind.h log.h lock.h \
+ retcode.h utf8.h display.h estruct.h file.h input.h bind.h log.h lock.h \
  terminal.h
-buffer.o: buffer.c buffer.h crypt.h line.h utf8.h defines.h display.h \
- estruct.h file.h retcode.h input.h bind.h window.h
+buffer.o: buffer.c buffer.h crypt.h line.h retcode.h utf8.h defines.h \
+ display.h estruct.h file.h input.h bind.h window.h
 crypt.o: crypt.c crypt.h
-display.o: display.c display.h estruct.h buffer.h crypt.h line.h utf8.h \
- input.h bind.h termio.h terminal.h defines.h retcode.h version.h \
+display.o: display.c display.h estruct.h buffer.h crypt.h line.h \
+ retcode.h utf8.h input.h bind.h termio.h terminal.h defines.h version.h \
  wrapper.h window.h
 ebind.o: ebind.c ebind.h basic.h bind.h estruct.h bindable.h buffer.h \
- crypt.h line.h utf8.h eval.h exec.h retcode.h file.h isearch.h random.h \
+ crypt.h line.h retcode.h utf8.h eval.h exec.h file.h isearch.h random.h \
  region.h search.h spawn.h window.h defines.h word.h
-eval.o: eval.c eval.h basic.h bind.h buffer.h crypt.h line.h utf8.h \
- display.h estruct.h exec.h retcode.h execute.h flook.h input.h random.h \
+eval.o: eval.c eval.h basic.h bind.h buffer.h crypt.h line.h retcode.h \
+ utf8.h display.h estruct.h exec.h execute.h flook.h input.h random.h \
  search.h terminal.h defines.h termio.h version.h window.h
 exec.o: exec.c exec.h retcode.h buffer.h crypt.h line.h utf8.h bind.h \
  display.h estruct.h eval.h file.h flook.h input.h random.h window.h \
  defines.h
 execute.o: execute.c execute.h estruct.h bind.h random.h display.h file.h \
- buffer.h crypt.h line.h utf8.h retcode.h log.h window.h defines.h
-file.o: file.c file.h buffer.h crypt.h line.h utf8.h retcode.h defines.h \
+ buffer.h crypt.h line.h retcode.h utf8.h log.h window.h defines.h
+file.o: file.c file.h buffer.h crypt.h line.h retcode.h utf8.h defines.h \
  estruct.h execute.h fileio.h input.h bind.h lock.h log.h window.h
 fileio.o: fileio.c fileio.h crypt.h retcode.h defines.h
 flook.o: flook.c flook.h retcode.h defines.h fileio.h crypt.h
 input.o: input.c input.h bind.h estruct.h bindable.h display.h exec.h \
  retcode.h names.h terminal.h defines.h utf8.h wrapper.h
-isearch.o: isearch.c isearch.h basic.h buffer.h crypt.h line.h utf8.h \
- display.h estruct.h exec.h retcode.h input.h bind.h search.h terminal.h \
+isearch.o: isearch.c isearch.h basic.h buffer.h crypt.h line.h retcode.h \
+ utf8.h display.h estruct.h exec.h input.h bind.h search.h terminal.h \
  defines.h window.h
-line.o: line.c line.h utf8.h buffer.h crypt.h estruct.h log.h retcode.h \
+line.o: line.c line.h retcode.h utf8.h buffer.h crypt.h estruct.h log.h \
  window.h defines.h
 lock.o: lock.c estruct.h lock.h
-log.o: log.c log.h retcode.h
+log.o: log.c log.h
 main.o: main.c estruct.h basic.h bind.h bindable.h buffer.h crypt.h \
- line.h utf8.h display.h eval.h execute.h file.h retcode.h input.h lock.h \
+ line.h retcode.h utf8.h display.h eval.h execute.h file.h input.h lock.h \
  log.h random.h search.h terminal.h defines.h termio.h version.h window.h
 mingw32.o: mingw32.c
 names.o: names.c names.h basic.h bind.h bindable.h buffer.h crypt.h \
- line.h utf8.h display.h estruct.h eval.h exec.h retcode.h file.h \
+ line.h retcode.h utf8.h display.h estruct.h eval.h exec.h file.h \
  isearch.h region.h random.h search.h spawn.h window.h defines.h word.h
 pklock.o: pklock.c estruct.h pklock.h
 posix.o: posix.c
-random.o: random.c random.h basic.h buffer.h crypt.h line.h utf8.h \
- display.h estruct.h execute.h input.h bind.h log.h retcode.h search.h \
+random.o: random.c random.h basic.h buffer.h crypt.h line.h retcode.h \
+ utf8.h display.h estruct.h execute.h input.h bind.h log.h search.h \
  terminal.h defines.h window.h
-region.o: region.c region.h line.h utf8.h buffer.h crypt.h estruct.h \
- log.h retcode.h random.h window.h defines.h
-search.o: search.c search.h line.h utf8.h basic.h buffer.h crypt.h \
- display.h estruct.h input.h bind.h log.h retcode.h terminal.h defines.h \
+region.o: region.c region.h line.h retcode.h utf8.h buffer.h crypt.h \
+ estruct.h log.h random.h window.h defines.h
+search.o: search.c search.h line.h retcode.h utf8.h basic.h buffer.h \
+ crypt.h display.h estruct.h input.h bind.h log.h terminal.h defines.h \
  window.h
-spawn.o: spawn.c spawn.h defines.h buffer.h crypt.h line.h utf8.h \
- display.h estruct.h exec.h retcode.h file.h flook.h input.h bind.h log.h \
+spawn.o: spawn.c spawn.h defines.h buffer.h crypt.h line.h retcode.h \
+ utf8.h display.h estruct.h exec.h file.h flook.h input.h bind.h log.h \
  terminal.h window.h
 tcap.o: tcap.c terminal.h defines.h retcode.h display.h estruct.h \
  termio.h
 termio.o: termio.c termio.h estruct.h retcode.h utf8.h
 utf8.o: utf8.c utf8.h
-window.o: window.c window.h defines.h buffer.h crypt.h line.h utf8.h \
- basic.h display.h estruct.h execute.h terminal.h retcode.h wrapper.h
-word.o: word.c word.h basic.h buffer.h crypt.h line.h utf8.h estruct.h \
- log.h retcode.h random.h region.h window.h defines.h
+window.o: window.c window.h defines.h buffer.h crypt.h line.h retcode.h \
+ utf8.h basic.h display.h estruct.h execute.h terminal.h wrapper.h
+word.o: word.c word.h basic.h buffer.h crypt.h line.h retcode.h utf8.h \
+ estruct.h log.h random.h region.h window.h defines.h
 wrapper.o: wrapper.c wrapper.h
 wscreen.o: wscreen.c
 
