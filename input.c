@@ -457,6 +457,7 @@ handle_CSI:
         return CTLX | c;
     }
 
+#ifdef CYGWIN
 	/* Accept UTF-8 sequence */
 	if( c <= 0xC1 || c > 0xF4)
 		return c ;
@@ -474,6 +475,7 @@ handle_CSI:
 
 		utf8_to_unicode( utf, 0, sizeof utf, (unicode_t *) &c) ;
 	}
+#endif
 	
     /* otherwise, just return it */
     return c;
