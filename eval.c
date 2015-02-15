@@ -816,19 +816,15 @@ static void mlforce( char *s) ;
 
 #if DEBUGM
 int mdbugout( char *fmt, char *s1, char *s2, char *s3) {
-	char outline[ NSTRING] ;	/* global string to hold debug line text */
-	int	c, size ;	/* input from kbd, output to terminal */
-
-	/* insure debug info fits in terminal and buffer width */
-	size = term.t_ncol + 1 ;
-	if( size > sizeof outline)
-		size = sizeof outline ;
+	int	c ;	/* input from kbd, output to terminal */
+	int savediscmd ;
 
 	/* assignment status ; variable name ; value we tried to assign  */
-	snprintf( outline, size, fmt, s1, s2, s3) ;
-
 	/* write out the debug line */
-	mlforce( outline) ;
+	savediscmd = discmd ;
+	discmd = TRUE ;
+	mlwrite( fmt, s1, s2, s3) ;
+	discmd = savediscmd ;
 	update( TRUE) ;
 
 	/* and get the keystroke to hold the output */

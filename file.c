@@ -655,7 +655,7 @@ int ifile( const char *fname)
     int s;
     int nbytes;
     int nline;
-    char mesg[NSTRING];
+    char *errmsg ;
 
     bp = curbp;     /* Cheap.               */
     bp->b_flag |= BFCHG;    /* we have changed      */
@@ -702,22 +702,21 @@ int ifile( const char *fname)
     }
     ffclose();      /* Ignore errors.       */
     curwp->w_markp = lforw(curwp->w_markp);
-    strcpy(mesg, "(");
-    if (s == FIOERR) {
-        strcat(mesg, "I/O ERROR, ");
+	if( s == FIOERR) {
+        errmsg = "I/O ERROR, " ;
+        curbp->b_flag |= BFTRUNC ;
+	} else if( s == FIOMEM) {
+		errmsg = "OUT OF MEMORY, " ;
         curbp->b_flag |= BFTRUNC;
-    }
-    if (s == FIOMEM) {
-        strcat(mesg, "OUT OF MEMORY, ");
-        curbp->b_flag |= BFTRUNC;
-    }
-    sprintf(&mesg[strlen(mesg)], "Inserted %d line", nline);
-    if (nline > 1)
-        strcat(mesg, "s");
-    strcat(mesg, ")");
-    mloutstr( mesg);
+	} else
+		errmsg = "" ;
+		
+	mloutfmt( "(%sInserted %d line%s)",
+		errmsg,
+		nline,
+		(nline > 1) ? "s" : "") ;
 
-      out:
+out:
     /* advance to the next line and mark the window for changes */
     curwp->w_dotp = lforw(curwp->w_dotp);
     curwp->w_flag |= WFHARD | WFMODE;

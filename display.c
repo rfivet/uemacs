@@ -1246,7 +1246,7 @@ static void modeline(struct window *wp)
 		}
 		if (!msg) {
 			struct line *lp;
-			int numlines, predlines, ratio;
+			int numlines, predlines ;
 
 			lp = lforw(bp->b_linep);
 			numlines = 0;
@@ -1261,13 +1261,23 @@ static void modeline(struct window *wp)
 			if (wp->w_dotp == bp->b_linep) {
 				msg = " Bot ";
 			} else {
-				ratio = 0;
+				int ratio = 0 ;
+
 				if (numlines != 0)
 					ratio =
 					    (100L * predlines) / numlines;
 				if (ratio > 99)
 					ratio = 99;
-				sprintf(tline, " %2d%% ", ratio);
+
+				tline[ 0] = ' ' ;
+				tline[ 1] = ratio / 10 + '0' ;
+				tline[ 2] = ratio % 10 + '0' ;
+				tline[ 3] = '%' ;
+				tline[ 4] = ' ' ;
+				tline[ 5] = 0 ;
+				if( tline[ 1] == '0')
+					tline[ 1] = ' ' ;
+
 				msg = tline;
 			}
 		}
