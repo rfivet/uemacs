@@ -48,6 +48,13 @@ static const char *eolname[] = {
 	"MIXED"
 } ;
 
+static const char *codename[] = {
+	"ASCII",
+	"UTF-8",
+	"EXTENDED",
+	"MIXED"
+} ;
+
 boolean restflag = FALSE ;	/* restricted use?              */
 
 boolean resterr( void) {
@@ -290,7 +297,7 @@ int readin(const char *fname, boolean lockfl)
     eoltype found_eol ;
     int nbytes;
     int nline;
-    char mesg[NSTRING];
+	char *errmsg ;
 
 #if (FILOCK && BSD) || SVR4
     if (lockfl && lockchk(fname) == ABORT)
@@ -370,28 +377,29 @@ int readin(const char *fname, boolean lockfl)
     	break ;
     default:
     	found_eol = EOL_MIXED ;
-		curbp->b_mode |= MDVIEW ;	/* add view mode as we have lost
-									** information */
+		curbp->b_mode |= MDVIEW ;	/* force view mode as we have lost
+									** EOL information */
 	}
 
-    ffclose();      /* Ignore errors.       */
-    strcpy(mesg, "(");
-    if (s == FIOERR) {
-        strcat(mesg, "I/O ERROR, ");
-        curbp->b_flag |= BFTRUNC;
-    }
-    if (s == FIOMEM) {
-        strcat(mesg, "OUT OF MEMORY, ");
-        curbp->b_flag |= BFTRUNC;
-    }
-    sprintf(&mesg[strlen(mesg)], "Read %d line", nline);
-    if (nline != 1)
-        strcat(mesg, "s");
+	if( fcode == FCODE_UTF_8)
+		curbp->b_mode |= MDUTF8 ;
 
-    strcat( mesg, ", eol = ") ;
-    strcat( mesg, eolname[ found_eol]) ;
-    strcat(mesg, ")");
-    mloutstr( mesg) ;
+    if( s == FIOERR) {
+		errmsg = "I/O ERROR, " ;
+        curbp->b_flag |= BFTRUNC ;
+    } else if( s == FIOMEM) {
+        errmsg = "OUT OF MEMORY, " ;
+        curbp->b_flag |= BFTRUNC ;
+    } else
+    	errmsg = "" ;
+
+	mloutfmt( "(%sRead %d line%s, code/eol: %s/%s)",
+		errmsg,
+		nline,
+		(nline != 1) ? "s" : "",
+		codename[ fcode & (FCODE_MASK -1)],
+		eolname[ found_eol]) ;
+    ffclose();      /* Ignore errors.       */
 
       out:
     for (wp = wheadp; wp != NULL; wp = wp->w_wndp) {

@@ -21,6 +21,7 @@
 
 #include "defines.h"
 #include "retcode.h"
+#include "utf8.h"
 
 #if CRYPT
 boolean	is_crypted ;		/* currently encrypting?   */
@@ -29,6 +30,7 @@ boolean	is_crypted ;		/* currently encrypting?   */
 char	*fline = NULL ;		/* dynamic return line     */
 int		flen = 0 ;			/* current allocated length of fline */
 int		ftype ;
+int		fcode ;				/* encoding type FCODE_xxxxx */
 int		fpayload ;			/* actual length of fline content */
 
 
@@ -45,6 +47,7 @@ fio_code ffropen( const char *fn)
         return FIOFNF;
     eofflag = FALSE;
     ftype = FTYPE_NONE ;
+    fcode = FCODE_ASCII ;
     return FIOSUC;
 }
 
@@ -79,6 +82,7 @@ fio_code ffclose(void)
     }
     eofflag = FALSE;
     ftype = FTYPE_NONE ;
+    fcode = FCODE_ASCII ;
 
 #if MSDOS & CTRLZ
     fputc(26, ffp);     /* add a ^Z at the end of the file */
@@ -136,6 +140,7 @@ fio_code ffgetline(void)
 {
     int c;      /* current character read */
     int i;      /* current index into fline */
+    int lcode = FCODE_ASCII ;	/* line encoding, defaults to ASCII */
 
     /* if we are at the end...return it */
     if (eofflag)
@@ -156,6 +161,7 @@ fio_code ffgetline(void)
     i = 0;
     while ((c = fgetc(ffp)) != EOF && c != '\r' && c != '\n') {
 		fline[i++] = c;
+		lcode |= c ;
         /* if it's longer, get more room */
         if (i >= flen) {
 		    char *tmpline;  /* temp storage for expanding line */
@@ -173,6 +179,24 @@ fio_code ffgetline(void)
     }
 
 	fpayload = i ;
+	lcode &= FCODE_MASK ;
+	if( lcode && (fcode != FCODE_MIXED)) {	/* line contains extended chars */
+	/* Check if consistent UTF-8 encoding */
+		int bytes ;
+		int pos = 0 ;
+		unicode_t uc ;
+
+		while( (pos < i) && (lcode != FCODE_MIXED)) {
+			bytes = utf8_to_unicode( fline, pos, i, &uc) ;
+			pos += bytes ;
+			if( bytes > 1)		/* Multi byte UTF-8 sequence */
+				lcode |= FCODE_UTF_8 ;
+			else if( uc > 127)	/* Extended ASCII */
+				lcode |= FCODE_EXTND ;
+		}
+
+		fcode |= lcode ;
+	}
 
     /* test for any errors that may have occured */
     if (c == EOF) {

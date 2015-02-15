@@ -18,6 +18,12 @@ typedef enum {
 #define FTYPE_MAC   4
 /*      FTYPE_MIXED [ 3, 5, 6, 7] */
 
+#define FCODE_ASCII 0
+#define FCODE_MASK  0x80
+#define FCODE_UTF_8 0x81
+#define FCODE_EXTND 0x82
+#define FCODE_MIXED 0x83
+
 #if CRYPT
 #include "retcode.h"
 
@@ -27,6 +33,7 @@ extern boolean	is_crypted ;	/* currently encrypting?   */
 extern char		*fline ;		/* dynamic return line     */
 extern int 		flen ;			/* current allocated length of fline */
 extern int 		ftype ;
+extern int		fcode ;			/* encoding type */
 extern int		fpayload ;		/* actual length of fline content */
 
 fio_code ffclose( void) ;
