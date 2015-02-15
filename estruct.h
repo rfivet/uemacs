@@ -297,7 +297,7 @@ void release( void *ptr) ;
 #if	CLEAN
 #define	exit(a)	cexit(a)
 
-int cexit( int status) ;
+void cexit( int status) ;
 #endif
 
 #endif

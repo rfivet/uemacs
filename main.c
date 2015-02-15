@@ -592,8 +592,7 @@ static void dspram( void)
  *
  * int status;		return status of emacs
  */
-int cexit(int status)
-{
+void cexit( int status) {
 	struct buffer *bp;	/* buffer list pointer */
 	struct window *wp;	/* window list pointer */
 	struct window *tp;	/* temporary window pointer */

@@ -153,7 +153,7 @@ execute.o: execute.c execute.h estruct.h bind.h random.h display.h file.h \
  buffer.h crypt.h line.h retcode.h utf8.h mlout.h window.h defines.h
 file.o: file.c file.h buffer.h crypt.h line.h retcode.h utf8.h defines.h \
  estruct.h execute.h fileio.h input.h bind.h lock.h mlout.h window.h
-fileio.o: fileio.c fileio.h crypt.h retcode.h defines.h
+fileio.o: fileio.c fileio.h crypt.h retcode.h defines.h utf8.h
 flook.o: flook.c flook.h retcode.h defines.h fileio.h crypt.h
 input.o: input.c input.h bind.h estruct.h bindable.h display.h exec.h \
  retcode.h names.h terminal.h defines.h utf8.h wrapper.h

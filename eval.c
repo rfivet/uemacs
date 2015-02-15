@@ -9,6 +9,7 @@
  *	modified by Petri Kutvonen
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -587,7 +588,8 @@ static char *gtfun( char *fname) {
 		retstr = xlat( arg1, arg2, argx) ;
 		break ;
 	default:
-		exit(-11);		/* never should get here */
+		assert( FALSE) ;	/* never should get here */
+		retstr = errorm ;
 	}
 
 	if( arg2)
@@ -748,7 +750,9 @@ static char *gtenv( char *vname) {
 		return ltos(0);
 #endif
 	}
-	exit(-12);		/* again, we should never get here */
+
+	assert( FALSE) ;	/* again, we should never get here */
+	return errorm ;
 }
 
 /*
