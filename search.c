@@ -909,9 +909,9 @@ static int replaces(int kind, int f, int n)
 		if (kind) {
 			/* Get the query.
 			 */
-		pprompt:
-			mloutfmt( &tpat[ 0], &pat[ 0], &rpat[ 0]) ;
-		qprompt:
+pprompt:
+			mloutstr( tpat) ;
+qprompt:
 			update(TRUE);	/* show the proposed place to change */
 			c = tgetc();	/* and input */
 			mloutstr( "") ;	/* and clear it */
@@ -1090,12 +1090,7 @@ int expandp(char *srcstr, char *deststr, int maxlength)
 			*deststr++ = '^';
 			*deststr++ = c ^ 0x40;
 			maxlength -= 2;
-		} else if (c == '%') {
-			*deststr++ = '%';
-			*deststr++ = '%';
-			maxlength -= 2;
 		} else {	/* any other character */
-
 			*deststr++ = c;
 			maxlength--;
 		}

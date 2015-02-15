@@ -512,7 +512,7 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
     quotef = FALSE;
 
     /* prompt the user for the input string */
-    mlwrite(prompt);
+    mlwrite( "%s", prompt);
 
     for (;;) {
 #if COMPLC
