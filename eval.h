@@ -11,7 +11,6 @@ int mdbugout( char *fmt, char *s1, char *s2, char *s3) ;
 
 extern int macbug ;		/* macro debuging flag          */
 extern int cmdstatus ;		/* last command status          */
-extern int flickcode ;		/* do flicker supression?       */
 extern int rval ;		/* return value of a subprocess */
 extern long envram ;		/* # of bytes current in use by malloc */
 

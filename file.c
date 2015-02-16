@@ -57,6 +57,10 @@ static const char *codename[] = {
 
 boolean restflag = FALSE ;	/* restricted use?              */
 
+
+static int ifile( const char *fname) ;
+
+
 boolean resterr( void) {
 	mloutfmt( "%B(That command is RESTRICTED)") ;
 	return FALSE ;
@@ -646,8 +650,7 @@ int filename(int f, int n)
  * buffer, Called by insert file command. Return the final
  * status of the read.
  */
-int ifile( const char *fname)
-{
+static int ifile( const char *fname) {
     struct line *lp0;
     struct line *lp1;
     struct line *lp2;

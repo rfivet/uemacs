@@ -28,7 +28,7 @@ boolean	is_crypted ;		/* currently encrypting?   */
 #endif
 
 char	*fline = NULL ;		/* dynamic return line     */
-int		flen = 0 ;			/* current allocated length of fline */
+static int	flen = 0 ;		/* current allocated length of fline */
 int		ftype ;
 int		fcode ;				/* encoding type FCODE_xxxxx */
 int		fpayload ;			/* actual length of fline content */

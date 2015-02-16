@@ -25,6 +25,5 @@ int filewrite( int f, int n) ;
 int filesave( int f, int n) ;
 int writeout( const char *fn) ;
 int filename( int f, int n) ;
-int ifile( const char *fname) ;
 
 #endif

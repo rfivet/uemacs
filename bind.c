@@ -27,7 +27,17 @@
 #include "window.h"
 
 
+#if APROP
+static int strinc( char *source, char *sub) ;
+#endif
+
+static void cmdstr( int c, char *seq) ;
+static unsigned int getckey( int mflag) ;
+static unsigned int stock( char *keyname) ;
+static int buildlist( int type, char *mstring) ;
+static int unbindchar( int c) ;
 static char *getfname( fn_t) ;
+
 
 int help(int f, int n)
 {               /* give me some help!!!!
@@ -223,8 +233,7 @@ int unbindkey(int f, int n)
  *
  * int c;       command key to unbind
  */
-int unbindchar(int c)
-{
+static int unbindchar( int c) {
     struct key_tab *ktp;   /* pointer into the command table */
     struct key_tab *sktp;  /* saved pointer into the command table */
     int found;             /* matched command flag */
@@ -289,7 +298,7 @@ int apro(int f, int n)
  * int type;        true = full list,   false = partial list
  * char *mstring;   match string if a partial list
  */
-int buildlist(int type, char *mstring)
+static int buildlist( int type, char *mstring)
 #endif
 {
     struct window *wp;         /* scanning pointer to windows */
@@ -403,8 +412,7 @@ int buildlist(int type, char *mstring)
  * char *source;    string to search in
  * char *sub;       substring to look for
  */
-int strinc(char *source, char *sub)
-{
+static int strinc( char *source, char *sub) {
     char *sp;       /* ptr into source */
     char *nxtsp;        /* next ptr into source */
     char *tp;       /* ptr into substring */
@@ -439,8 +447,7 @@ int strinc(char *source, char *sub)
  *
  * int mflag;       going for a meta sequence?
  */
-unsigned int getckey(int mflag)
-{
+static unsigned int getckey( int mflag) {
     unsigned int c; /* character fetched */
     char tok[NSTRING];  /* command incoming */
 
@@ -480,8 +487,7 @@ int startup( const char *fname) {
  * int c;       sequence to translate
  * char *seq;       destination string for sequence
  */
-void cmdstr(int c, char *seq)
-{
+static void cmdstr( int c, char *seq) {
     char *ptr;      /* pointer into current position in sequence */
 
     ptr = seq;
@@ -581,8 +587,7 @@ int (*fncmatch(char *fname)) (int, int)
  *
  * char *keyname;   name of key to translate to Command key form
  */
-unsigned int stock(char *keyname)
-{
+static unsigned int stock( char *keyname) {
     unsigned int c; /* key sequence to return */
 
     /* parse it up */

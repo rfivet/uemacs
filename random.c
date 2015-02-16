@@ -48,6 +48,9 @@ int thisflag ;			/* Flags, this command		*/
 int lastflag ;			/* Flags, last command		*/
 
 
+static int adjustmode( int kind, int global) ;
+static int cinsert( void) ;
+
 /*
  * Set fill column to n.
  */
@@ -526,7 +529,7 @@ int insert_newline(int f, int n)
 	return TRUE;
 }
 
-int cinsert(void)
+static int cinsert(void)
 {				/* insert a newline and indentation for C */
 	char *cptr;	/* string pointer into text to copy */
 	int tptr;	/* index to scan into line */
@@ -936,8 +939,7 @@ int delgmode(int f, int n)
  * int kind;		true = set,          false = delete
  * int global;		true = global flag,  false = current buffer flag
  */
-int adjustmode(int kind, int global)
-{
+static int adjustmode( int kind, int global) {
 	int i;		/* loop index */
 	int status;	/* error return on input */
 	char prompt[50];	/* string to prompt user with */
