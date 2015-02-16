@@ -1,3 +1,5 @@
+/* utf8.c -- implements utf8.h, converts between unicode and UTF-8 */
+
 #include "utf8.h"
 
 #include <assert.h>
@@ -18,8 +20,8 @@
 unsigned utf8_to_unicode(char *line, unsigned index, unsigned len, unicode_t *res)
 {
     unicode_t   value ;
-    unsigned char c = line[index];
-    unsigned bytes, mask, i;
+    unsigned	c = line[ index] & 0xFFU ;
+    unsigned	bytes, mask, i;
 
     *res = c;
 
@@ -36,12 +38,12 @@ unsigned utf8_to_unicode(char *line, unsigned index, unsigned len, unicode_t *re
     /* Ok, it's 11xxxxxx, do a stupid decode */
     mask = 0x20;
     bytes = 2;
-    while (c & mask) {
+    while( (c & mask) != 0) {
         bytes++;
         mask >>= 1;
     }
 
-	/* bytes is in range [2..4] */
+	/* bytes is in range [2..4] as c was in range [C2..F4] */
     len -= index;
     if (bytes > len)
         return 1;
@@ -51,7 +53,7 @@ unsigned utf8_to_unicode(char *line, unsigned index, unsigned len, unicode_t *re
     /* Ok, do the bytes */
     line += index;
     for (i = 1; i < bytes; i++) {
-        c = line[i];
+        c = line[i] & 0xFFU ;
         if ((c & 0xc0) != 0x80)
             return 1;
         value = (value << 6) | (c & 0x3f);
@@ -85,7 +87,7 @@ static void reverse_string(char *begin, char *end)
  * overlong utf-8 sequences.
  */
 unsigned unicode_to_utf8( unicode_t c, char *utf8) {
-    int bytes = 1 ;
+    unsigned bytes = 1 ;
 
     assert( c <= 0x10FFFF) ;
 
@@ -94,18 +96,24 @@ unsigned unicode_to_utf8( unicode_t c, char *utf8) {
 		c &= 0xFF ;
 #endif
 
-    *utf8 = c ;
-    if (c > 0x7f) {
-        int prefix = 0x40;
-        char *p = utf8;
+    if( c <= 0x7f)
+	    *utf8 = (char) c ;
+    else {
+        unsigned prefix = 0x40 ;
+        char *p = utf8 ;
         do {
-            *p++ = 0x80 + (c & 0x3f);
-            bytes++;
-            prefix >>= 1;
-            c >>= 6;
+            *p++ = (char) (0x80 + (c & 0x3f)) ;
+            bytes++ ;
+            prefix >>= 1 ;
+            c >>= 6 ;
         } while( c >= prefix) ;
-        *p = c - 2*prefix;
-        reverse_string(utf8, p);
+
+        *p = (char) (c - 2 * prefix) ;
+        reverse_string( utf8, p) ;
     }
-    return bytes;
+
+    return bytes ;
 }
+
+
+/* end of utf8.c */

@@ -1,3 +1,9 @@
+/* defines.h -- */
+
+#ifndef __DEFINES_H__
+#define __DEFINES_H__
+
+
 /* Must define one of
 	VMS | V7 | USG | BSD | MSDOS
 */
@@ -18,3 +24,7 @@
    if smaller font or portrait orientation limit to 400x150 */
 #define MAXCOL	400
 #define MAXROW	150
+
+#endif
+
+/* end of defines.h */

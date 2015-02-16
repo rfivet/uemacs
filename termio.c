@@ -20,7 +20,6 @@
 #include "utf8.h"
 
 
-/* rfi */
 #include <unistd.h>
 #include <sys/ioctl.h>
 
@@ -58,12 +57,12 @@ int nxtchar = -1;       /* character held from type ahead    */
 #include    <signal.h>
 #include    <termio.h>
 #include    <fcntl.h>
-int kbdflgs;            /* saved keyboard fd flags      */
-int kbdpoll;            /* in O_NDELAY mode                     */
-int kbdqp;          /* there is a char in kbdq      */
-char kbdq;          /* char we've already read      */
-struct termio otermio;      /* original terminal characteristics */
-struct termio ntermio;      /* charactoristics to use inside */
+static int kbdflgs ;	/* saved keyboard fd flags      */
+static int kbdpoll ;	/* in O_NDELAY mode				*/
+static int kbdqp ;		/* there is a char in kbdq      */
+static char kbdq ;		/* char we've already read      */
+static struct termio otermio ;	/* original terminal characteristics	*/
+static struct termio ntermio ;	/* characteristics to use inside		*/
 #if XONXOFF
 #define XXMASK  0016000
 #endif

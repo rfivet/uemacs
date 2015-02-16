@@ -43,7 +43,7 @@ ifeq ($(uname_S),Darwin)
  DEFINES=-DAUTOCONF -DPOSIX -DSYSV -D_DARWIN_C_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE -D_XOPEN_SOURCE=600
 endif
 ifeq ($(uname_S),CYGWIN)
- DEFINES=-DAUTOCONF -DCYGWIN -DPROGRAM=$(PROGRAM)
+ DEFINES=-DAUTOCONF -DCYGWIN -DSYSV -DPROGRAM=$(PROGRAM)
  LIBS=-lcurses
 endif
 ifeq ($(uname_S),MINGW32)
@@ -85,6 +85,9 @@ lint:	${SRC}
 	@rm -f lintout
 	lint ${LFLAGS} ${SRC} >lintout
 	cat lintout
+
+splint:
+	splint $(DEFINES) $(SRC) -booltype boolean -booltrue TRUE -boolfalse FALSE +posixlib
 
 errs:
 	@rm -f makeout
