@@ -1077,7 +1077,6 @@ char *i_to_a(int i)
 {
 	#define	INTWIDTH	sizeof( int) * 3
 
-	int digit;	/* current digit being used */
 	char *sp;	/* pointer into result */
 	int sign;	/* sign of resulting number */
 	static char result[INTWIDTH + 1];	/* resulting string */
@@ -1093,8 +1092,7 @@ char *i_to_a(int i)
 	sp = result + INTWIDTH;
 	*sp = 0;
 	do {
-		digit = i % 10;
-		*(--sp) = '0' + digit;	/* and install the new digit */
+		*(--sp) = '0' + i % 10 ;	/* install the new digit */
 		i = i / 10;
 	} while (i);
 
@@ -1201,8 +1199,8 @@ char *getval(char *token)
 
 		/* grab the line as an argument */
 		blen = bp->b_dotp->l_used - bp->b_doto;
-		if (blen > NSTRING)
-			blen = NSTRING;
+		if( blen >= sizeof buf)
+			blen = sizeof buf - 1 ;
 		strncpy(buf, bp->b_dotp->l_text + bp->b_doto, blen);
 		buf[blen] = 0;
 
@@ -1332,12 +1330,13 @@ static int ernd( void) {
  */
 static int sindex( char *source, char *pattern) {
 	char *sp;		/* ptr to current position to scan */
-	char *csp;		/* ptr to source string during comparison */
-	char *cp;		/* ptr to place to check for equality */
 
 	/* scanning through the source string */
 	sp = source;
 	while (*sp) {
+		char *csp;		/* ptr to source string during comparison */
+		char *cp;		/* ptr to place to check for equality */
+		
 		/* scan through the pattern */
 		cp = pattern;
 		csp = sp;
