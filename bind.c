@@ -28,13 +28,13 @@
 
 
 #if APROP
+static int buildlist( char *mstring) ;
 static int strinc( char *source, char *sub) ;
 #endif
 
 static void cmdstr( int c, char *seq) ;
 static unsigned int getckey( int mflag) ;
 static unsigned int stock( char *keyname) ;
-static int buildlist( int type, char *mstring) ;
 static int unbindchar( int c) ;
 static char *getfname( fn_t) ;
 
@@ -276,7 +276,7 @@ static int unbindchar( int c) {
 int desbind(int f, int n)
 #if APROP
 {
-    buildlist(TRUE, "");
+    buildlist( "") ;
     return TRUE;
 }
 
@@ -286,26 +286,24 @@ int apro(int f, int n)
     int status;     /* status return */
 
     status = mlreply("Apropos string: ", mstring, NSTRING - 1);
-    if (status != TRUE)
+    if (status == ABORT)
         return status;
 
-    return buildlist(FALSE, mstring);
+    return buildlist( mstring) ;
 }
 
 /*
  * build a binding list (limited or full)
  *
- * int type;        true = full list,   false = partial list
- * char *mstring;   match string if a partial list
+ * char *mstring;   match string if a partial list, "" matches all
  */
-static int buildlist( int type, char *mstring)
+static int buildlist( char *mstring)
 #endif
 {
     struct window *wp;         /* scanning pointer to windows */
     struct key_tab *ktp;  /* pointer into the command table */
     struct name_bind *nptr;          /* pointer into the name binding table */
     struct buffer *bp;    /* buffer to put binding list into */
-    int cpos;             /* current position to use in outseq */
     char outseq[80];      /* output buffer for keystroke sequence */
 
     /* split the current window to make room for the binding list */
@@ -344,20 +342,19 @@ static int buildlist( int type, char *mstring)
     wp->w_marko = 0;
 
     /* build the contents of this window, inserting it line by line */
-    nptr = &names[0];
-    while (nptr->n_func != NULL) {
+    for( nptr = &names[ 0] ; nptr->n_func != NULL ; nptr++) {
+	    int cpos ;	/* current position to use in outseq */
 
+#if APROP
+        /* if we are executing an apropos command..... */
+            /* and current string doesn't include the search string */
+        if( *mstring && strinc( nptr->n_name, mstring) == FALSE)
+			continue ;
+#endif
         /* add in the command name */
         strcpy(outseq, nptr->n_name);
         cpos = strlen(outseq);
 
-#if APROP
-        /* if we are executing an apropos command..... */
-        if (type == FALSE &&
-            /* and current string doesn't include the search string */
-            strinc(outseq, mstring) == FALSE)
-            goto fail;
-#endif
         /* search down any keys bound to this */
         ktp = &keytab[0];
         while (ktp->k_fp != NULL) {
@@ -386,9 +383,6 @@ static int buildlist( int type, char *mstring)
             if (linstr(outseq) != TRUE)
                 return FALSE;
         }
-
-          fail:     /* and on to the next name */
-        ++nptr;
     }
 
     curwp->w_bufp->b_mode |= MDVIEW;    /* put this buffer view mode */
@@ -413,32 +407,24 @@ static int buildlist( int type, char *mstring)
  * char *sub;       substring to look for
  */
 static int strinc( char *source, char *sub) {
-    char *sp;       /* ptr into source */
-    char *nxtsp;        /* next ptr into source */
-    char *tp;       /* ptr into substring */
-
     /* for each character in the source string */
-    sp = source;
-    while (*sp) {
-        tp = sub;
-        nxtsp = sp;
+    for( ; *source ; source++) {
+		char *nxtsp ;   /* next ptr into source */
+		char *tp ;		/* ptr into substring */
+
+        nxtsp = source;
 
         /* is the substring here? */
-        while (*tp) {
-            if (*nxtsp++ != *tp)
-                break;
-            else
-                tp++;
-        }
+        for( tp = sub ; *tp ; tp++)
+            if( *nxtsp++ != *tp)
+                break ;
 
         /* yes, return a success */
-        if (*tp == 0)
-            return TRUE;
-
-        /* no, onward */
-        sp++;
+        if( *tp == 0)
+            return TRUE ;
     }
-    return FALSE;
+
+    return FALSE ;
 }
 #endif
 
@@ -449,10 +435,11 @@ static int strinc( char *source, char *sub) {
  */
 static unsigned int getckey( int mflag) {
     unsigned int c; /* character fetched */
-    char tok[NSTRING];  /* command incoming */
 
     /* check to see if we are executing a command line */
     if (clexec) {
+	    char tok[ NSTRING] ;  /* command incoming */
+
         macarg( tok, sizeof tok) ;    /* get the next token */
         return stock(tok);
     }
@@ -627,7 +614,7 @@ static unsigned int stock( char *keyname) {
         *keyname -= 32;
 
     /* the final sequence... */
-    c |= *keyname;
+    c |= *keyname & 0xFFU ;
     return c;
 }
 
