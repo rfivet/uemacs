@@ -35,7 +35,7 @@ static int strinc( char *source, char *sub) ;
 static void cmdstr( int c, char *seq) ;
 static unsigned int getckey( int mflag) ;
 static unsigned int stock( char *keyname) ;
-static int unbindchar( int c) ;
+static int unbindchar( unsigned c) ;
 static char *getfname( fn_t) ;
 
 
@@ -233,7 +233,7 @@ int unbindkey(int f, int n)
  *
  * int c;       command key to unbind
  */
-static int unbindchar( int c) {
+static int unbindchar( unsigned c) {
     struct key_tab *ktp;   /* pointer into the command table */
     struct key_tab *sktp;  /* saved pointer into the command table */
     int found;             /* matched command flag */
@@ -514,8 +514,7 @@ static void cmdstr( int c, char *seq) {
  *
  * int c;       key to find what is bound to it
  */
-int (*getbind(int c))(int, int)
-{
+fn_t getbind( unsigned c) {
     struct key_tab *ktp;
 
     ktp = &keytab[0];  /* Look in key table. */

@@ -185,7 +185,7 @@ static int isearch(int f, int n)
 {
 	int status;		/* Search status */
 	int col;		/* prompt column */
-	int cpos;	/* character number in search string  */
+	unsigned cpos ;	/* character number in search string  */
 	int c;		/* current input character */
 	int expc;	/* function expanded input char       */
 	spat_t pat_save ;	/* Saved copy of the old pattern str  */
@@ -397,7 +397,7 @@ static int scanmore(char *patrn, int dir)	/* search forward or back for a patter
  */
 static int match_pat(char *patrn)	/* See if the pattern string matches string at "."   */
 {
-	int i;		/* Generic loop index/offset          */
+	unsigned i ;	/* Generic loop index/offset          */
 	int buffchar;	/* character at current position      */
 	struct line *curline;	/* current line during scan           */
 	int curoff;	/* position within current line       */

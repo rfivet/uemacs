@@ -16,7 +16,7 @@ int bindtokey( int f, int n) ;
 int unbindkey( int f, int n) ;
 int desbind( int f, int n) ;
 int startup( const char *fname) ;
-fn_t getbind( int c) ;
+fn_t getbind( unsigned keycode) ;
 fn_t fncmatch( char *) ;
 char *transbind( char *skey) ;
 

@@ -1,6 +1,6 @@
 /* Structure for the table of initial key bindings. */
 struct key_tab {
-	int k_code ;			 /* Key code */
+	unsigned k_code ;			 /* Key code */
 	int (*k_fp)( int, int) ;	 /* Routine to handle it */
 } ;
 

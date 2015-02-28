@@ -76,7 +76,7 @@ boolean fexist( const char *fname)
  */
 char *flook( const char *fname, boolean hflag)
 {
-	int i;		/* index */
+	unsigned i ;	/* index */
 	static char fspec[NSTRING];	/* full path spec to search */
 
 #if	ENVFUNC

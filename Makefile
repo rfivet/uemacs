@@ -26,7 +26,7 @@ uname_S := $(shell sh -c 'echo $(uname_S) | sed s/_.*$$//')
 PROGRAM=ue
 
 CC=gcc
-WARNINGS=-Wall -Wstrict-prototypes
+WARNINGS=-Wall -Wextra -Wstrict-prototypes -Wno-unused-parameter
 CFLAGS=-O2 $(WARNINGS)
 #CC=c89 +O3			# HP
 #CFLAGS= -D_HPUX_SOURCE -DSYSV
@@ -87,7 +87,7 @@ lint:	${SRC}
 	cat lintout
 
 splint:
-	splint $(DEFINES) $(SRC) -booltype boolean -booltrue TRUE -boolfalse FALSE +posixlib
+	splint -weak $(DEFINES) $(SRC) -booltype boolean -booltrue TRUE -boolfalse FALSE +posixlib
 
 errs:
 	@rm -f makeout

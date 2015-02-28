@@ -940,7 +940,7 @@ int delgmode(int f, int n)
  * int global;		true = global flag,  false = current buffer flag
  */
 static int adjustmode( int kind, int global) {
-	int i;		/* loop index */
+	unsigned i ;	/* loop index */
 	int status;	/* error return on input */
 	char prompt[50];	/* string to prompt user with */
 	char cbuf[ NSTRING] ;	/* buffer to recieve mode name into */

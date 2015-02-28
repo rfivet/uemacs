@@ -341,7 +341,7 @@ void varinit(void)
  * @fname: name of function to evaluate.
  */
 static char *gtfun( char *fname) {
-	int fnum ;					/* index to function to eval */
+	unsigned fnum ;				/* index to function to eval */
 	char argx[ 512] ;			/* last argument, fixed sized allocation */
 	char *arg1 ; 				/* value of first argument */
 	char *arg2 ; 				/* value of second argument */
@@ -627,7 +627,7 @@ static char *gtusr( char *vname) {
  * char *vname;			name of environment variable to retrieve
  */
 static char *gtenv( char *vname) {
-	int vnum;	/* ordinal number of var refrenced */
+	unsigned vnum ;	/* ordinal number of var referenced */
 
 	/* scan the list, looking for the referenced name */
 	for (vnum = 0; vnum < ARRAY_SIZE(envars); vnum++)
@@ -845,7 +845,7 @@ int mdbugout( char *fmt, char *s1, char *s2, char *s3) {
  */
 static void findvar(char *var, struct variable_description *vd, int size)
 {
-	int vnum;	/* subscript in variable arrays */
+	unsigned vnum ;	/* subscript in variable arrays */
 	int vtype;	/* type to return */
 
 	vnum = -1;
@@ -1160,7 +1160,7 @@ char *getval(char *token)
 {
 	int status;	/* error return */
 	struct buffer *bp;	/* temp buffer pointer */
-	int blen;	/* length of buffer argument */
+	unsigned blen ;	/* length of buffer argument */
 	int distmp;	/* temporary discmd flag */
 	static char buf[NSTRING];	/* string buffer for some returns */
 

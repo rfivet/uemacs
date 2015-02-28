@@ -741,7 +741,6 @@ static int readpattern(char *prompt, char *apat, int srch)
 void savematch(void)
 {
 	char *ptr;	/* pointer to last match string */
-	int j;
 	struct line *curline;		/* line of last match */
 	int curoff;		/* offset "      "    */
 
@@ -754,6 +753,8 @@ void savematch(void)
 	ptr = patmatch = malloc(matchlen + 1);
 
 	if (ptr != NULL) {
+		unsigned j ;
+
 		curoff = matchoff;
 		curline = matchline;
 
