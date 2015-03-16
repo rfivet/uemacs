@@ -528,8 +528,9 @@ struct buffer *bfind( const char *bname, int cflag, int bflag)
 		bp->b_mode = gmode;
 		bp->b_nwnd = 0;
 		bp->b_linep = lp;
-		strcpy(bp->b_fname, "");
-		strcpy(bp->b_bname, bname);
+		bp->b_fname[ 0] = '\0' ;
+		strncpy( bp->b_bname, bname, sizeof( bname_t) - 1) ;
+		bp->b_bname[ sizeof( bname_t) - 1] = '\0' ;
 #if	CRYPT
 		bp->b_key[0] = 0;
 #endif
