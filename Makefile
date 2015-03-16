@@ -87,7 +87,7 @@ lint:	${SRC}
 	cat lintout
 
 splint:
-	splint -weak $(DEFINES) $(SRC) -booltype boolean -booltrue TRUE -boolfalse FALSE +posixlib
+	splint -weak $(DEFINES) $(SRC) -booltype boolean -booltrue TRUE -boolfalse FALSE +posixlib +matchanyintegral
 
 errs:
 	@rm -f makeout

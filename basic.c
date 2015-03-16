@@ -38,35 +38,33 @@ int curgoal ;			/* Goal for C-P, C-N			*/
  * column, return the best choice for the offset. The offset is returned.
  * Used by "C-N" and "C-P".
  */
-static int getgoal(struct line *dlp)
-{
-	int col;
-	int newcol;
-	int dbo;
-	int len = llength(dlp);
+static unsigned getgoal( struct line *dlp) {
+	int col ;
+	unsigned idx ;
+	const unsigned len = llength( dlp) ;
 
-	col = 0;
-	dbo = 0;
-	while (dbo != len) {
-		unicode_t c;
-		int width = utf8_to_unicode(dlp->l_text, dbo, len, &c);
-		newcol = col;
+	col = 0 ;
+	idx = 0 ;
+	while( idx < len) {
+		unicode_t c ;
+		unsigned width = utf8_to_unicode( dlp->l_text, idx, len, &c) ;
 
 		/* Take tabs, ^X and \xx hex characters into account */
-		if (c == '\t')
-			newcol |= tabmask;
-		else if (c < 0x20 || c == 0x7F)
-			++newcol;
-		else if (c >= 0x80 && c <= 0xa0)
-			newcol += 2;
+		if( c == '\t')
+			col |= tabmask ;
+		else if( c < 0x20 || c == 0x7F)
+			col += 1 ;
+		else if( c >= 0x80 && c <= 0xA0)
+			col += 2 ;
 
-		++newcol;
-		if (newcol > curgoal)
-			break;
-		col = newcol;
-		dbo += width;
+		col += 1 ;
+		if( col > curgoal)
+			break ;
+
+		idx += width ;
 	}
-	return dbo;
+
+	return idx ;
 }
 
 /*
