@@ -983,14 +983,14 @@ qprompt:
 				curwp->w_dotp = origline;
 				curwp->w_doto = origoff;
 				curwp->w_flag |= WFMOVE;
-
+				/* fallthrough */
 			case BELL:	/* abort! and stay */
 				mloutstr( "Aborted!") ;
 				return FALSE ;
 
 			default:	/* bitch and beep */
 				TTbeep();
-
+				/* fallthrough */
 			case '?':	/* help me */
 				mloutstr(
 					"(Y)es, (N)o, (!)Do rest, (U)ndo last, (^G)Abort, (.)Abort back, (?)Help: ") ;
@@ -1251,6 +1251,8 @@ static int mcstr(void)
 				pchr = *++patptr;
 				magical = TRUE;
 			}
+			
+			/* fallthrough */
 		default:
 		      litcase:mcptr->mc_type =
 			    LITCHAR;
@@ -1532,6 +1534,7 @@ static int cclmake(char **ppatptr, struct magic *mcptr)
 			 */
 		case MC_ESC:
 			pchr = *++patptr;
+			/* falltrhough */
 		default:
 			setbit(pchr, bmap);
 			break;
@@ -1556,10 +1559,11 @@ static int cclmake(char **ppatptr, struct magic *mcptr)
 static int biteq(int bc, char *cclmap)
 {
 #if	PKCODE
-	bc = bc & 0xFF;
-#endif
+	bc &= 0xFF ;
+#else
 	if (bc >= HICHAR)
 		return FALSE;
+#endif
 
 	return (*(cclmap + (bc >> 3)) & BIT(bc & 7)) ? TRUE : FALSE;
 }
