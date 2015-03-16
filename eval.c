@@ -1036,7 +1036,7 @@ static int svar(struct variable_description *var, char *value)
 		case EVLWIDTH:
 			break;
 		case EVLINE:
-			putctext(value);
+			return putctext( value) ;
 		case EVGFLAGS:
 			gflags = atoi(value);
 			break;
