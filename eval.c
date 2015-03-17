@@ -401,10 +401,12 @@ static char *gtfun( char *fname) {
 		retstr = i_to_a( atoi( arg1) * atoi( argx)) ;
 		break ;
 	case UFDIV:
-		retstr = i_to_a( atoi( arg1) / atoi( argx)) ;
+		sz = atoi( argx) ;
+		retstr = (sz == 0) ? errorm : i_to_a( atoi( arg1) / sz) ;
 		break ;
 	case UFMOD:
-		retstr = i_to_a( atoi( arg1) % atoi( argx)) ;
+		sz = atoi( argx) ;
+		retstr = (sz == 0) ? errorm : i_to_a( atoi( arg1) % sz) ;
 		break ;
 	case UFNEG:
 		retstr = i_to_a( -atoi( argx)) ;
