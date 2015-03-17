@@ -197,7 +197,7 @@ window.o: window.c window.h defines.h buffer.h crypt.h line.h retcode.h \
 word.o: word.c word.h basic.h buffer.h crypt.h line.h retcode.h utf8.h \
  estruct.h mlout.h random.h region.h window.h defines.h
 wrapper.o: wrapper.c wrapper.h
-wscreen.o: wscreen.c
+wscreen.o: wscreen.c wscreen.h
 
 # DEPENDENCIES MUST END AT END OF FILE
 # IF YOU PUT STUFF HERE IT WILL GO AWAY

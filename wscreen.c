@@ -1,7 +1,7 @@
 /* wscreen.c -- windows screen console for MINGW32 */
-#ifdef MINGW32
-
 #include "wscreen.h"
+
+#ifdef MINGW32
 
 #include <windows.h>
 #include <stdlib.h>
