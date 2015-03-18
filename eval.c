@@ -546,7 +546,13 @@ static char *gtfun( char *fname) {
 		retstr = result ;
 		break ;
 	case UFRND:
-		retstr = i_to_a( (ernd() % abs( atoi( argx))) + 1) ;
+		sz = abs( atoi( argx)) ;
+		if( sz == 0)
+			sz = ernd() ;
+		else
+			sz = ernd() % sz + 1 ;
+
+		retstr = i_to_a( sz) ;
 		break ;
 	case UFABS:
 		retstr = i_to_a( abs( atoi( argx))) ;
