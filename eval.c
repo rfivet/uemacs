@@ -182,99 +182,68 @@ static const char *envars[] = {
 #define EVSCROLL	40
 
 enum function_type {
-	NILNAMIC = 0,
-	MONAMIC,
-	DYNAMIC,
-	TRINAMIC,
-};
+	NILNAMIC	= 0,
+	MONAMIC		= (1 << 6),
+	DYNAMIC		= (2 << 6),
+	TRINAMIC	= (3 << 6),
+} ;
+
+enum function_code {
+	UFADD = 0,	UFSUB,		UFTIMES,	UFDIV,		UFMOD,		UFNEG,
+	UFCAT,		UFLEFT,		UFRIGHT,	UFMID,		UFNOT,		UFEQUAL,
+	UFLESS,		UFGREATER,	UFSEQUAL,	UFSLESS,	UFSGREAT,	UFIND,
+	UFAND,		UFOR,		UFLENGTH,	UFUPPER,	UFLOWER,	UFTRUTH,
+	UFASCII,	UFCHR,		UFGTKEY,	UFRND,		UFABS,		UFSINDEX,
+	UFENV,		UFBIND,		UFEXIST,	UFFIND,		UFBAND,		UFBOR,
+	UFBXOR,		UFBNOT,		UFXLATE,
+} ;
 
 /* List of recognized user functions. */
 static struct {
 	const char f_name[ 4] ;
-	const enum function_type f_type ;
+	const int  f_type ;
 } funcs[] = {
-	{ "add", DYNAMIC },	/* add two numbers together */
-	{ "sub", DYNAMIC },	/* subtraction */
-	{ "tim", DYNAMIC },	/* multiplication */
-	{ "div", DYNAMIC },	/* division */
-	{ "mod", DYNAMIC },	/* mod */
-	{ "neg", MONAMIC },	/* negate */
-	{ "cat", DYNAMIC },	/* concatinate string */
-	{ "lef", DYNAMIC },	/* left string(string, len) */
-	{ "rig", DYNAMIC },	/* right string(string, pos) */
-	{ "mid", TRINAMIC },	/* mid string(string, pos, len) */
-	{ "not", MONAMIC },	/* logical not */
-	{ "equ", DYNAMIC },	/* logical equality check */
-	{ "les", DYNAMIC },	/* logical less than */
-	{ "gre", DYNAMIC },	/* logical greater than */
-	{ "seq", DYNAMIC },	/* string logical equality check */
-	{ "sle", DYNAMIC },	/* string logical less than */
-	{ "sgr", DYNAMIC },	/* string logical greater than */
-	{ "ind", MONAMIC },	/* evaluate indirect value */
-	{ "and", DYNAMIC },	/* logical and */
-	{ "or", DYNAMIC },	/* logical or */
-	{ "len", MONAMIC },	/* string length */
-	{ "upp", MONAMIC },	/* uppercase string */
-	{ "low", MONAMIC },	/* lower case string */
-	{ "tru", MONAMIC },	/* Truth of the universe logical test */
-	{ "asc", MONAMIC },	/* char to integer conversion */
-	{ "chr", MONAMIC },	/* integer to char conversion */
-	{ "gtk", NILNAMIC },	/* get 1 charater */
-	{ "rnd", MONAMIC },	/* get a random number */
-	{ "abs", MONAMIC },	/* absolute value of a number */
-	{ "sin", DYNAMIC },	/* find the index of one string in another */
-	{ "env", MONAMIC },	/* retrieve a system environment var */
-	{ "bin", MONAMIC },	/* loopup what function name is bound to a key */
-	{ "exi", MONAMIC },	/* check if a file exists */
-	{ "fin", MONAMIC },	/* look for a file on the path... */
-	{ "ban", DYNAMIC },	/* bitwise and   9-10-87  jwm */
-	{ "bor", DYNAMIC },	/* bitwise or    9-10-87  jwm */
-	{ "bxo", DYNAMIC },	/* bitwise xor   9-10-87  jwm */
-	{ "bno", MONAMIC },	/* bitwise not */
-	{ "xla", TRINAMIC },	/* XLATE character string translation */
-};
+	{ "add", UFADD		| DYNAMIC },	/* add two numbers together */
+	{ "sub", UFSUB		| DYNAMIC },	/* subtraction */
+	{ "tim", UFTIMES	| DYNAMIC },	/* multiplication */
+	{ "div", UFDIV		| DYNAMIC },	/* division */
+	{ "mod", UFMOD		| DYNAMIC },	/* mod */
+	{ "neg", UFNEG		| MONAMIC },	/* negate */
+	{ "cat", UFCAT		| DYNAMIC },	/* concatinate string */
+	{ "lef", UFLEFT		| DYNAMIC },	/* left string(string, len) */
+	{ "rig", UFRIGHT	| DYNAMIC },	/* right string(string, pos) */
+	{ "mid", UFMID		| TRINAMIC },	/* mid string(string, pos, len) */
+	{ "not", UFNOT		| MONAMIC },	/* logical not */
+	{ "equ", UFEQUAL	| DYNAMIC },	/* logical equality check */
+	{ "les", UFLESS		| DYNAMIC },	/* logical less than */
+	{ "gre", UFGREATER	| DYNAMIC },	/* logical greater than */
+	{ "seq", UFSEQUAL	| DYNAMIC },	/* string logical equality check */
+	{ "sle", UFSLESS	| DYNAMIC },	/* string logical less than */
+	{ "sgr", UFSGREAT	| DYNAMIC },	/* string logical greater than */
+	{ "ind", UFIND		| MONAMIC },	/* evaluate indirect value */
+	{ "and", UFAND		| DYNAMIC },	/* logical and */
+	{ "or",  UFOR		| DYNAMIC },	/* logical or */
+	{ "len", UFLENGTH	| MONAMIC },	/* string length */
+	{ "upp", UFUPPER	| MONAMIC },	/* uppercase string */
+	{ "low", UFLOWER	| MONAMIC },	/* lower case string */
+	{ "tru", UFTRUTH	| MONAMIC },	/* Truth of the universe logical test */
+	{ "asc", UFASCII	| MONAMIC },	/* char to integer conversion */
+	{ "chr", UFCHR		| MONAMIC },	/* integer to char conversion */
+	{ "gtk", UFGTKEY	| NILNAMIC },	/* get 1 charater */
+	{ "rnd", UFRND		| MONAMIC },	/* get a random number */
+	{ "abs", UFABS		| MONAMIC },	/* absolute value of a number */
+	{ "sin", UFSINDEX	| DYNAMIC },	/* find the index of one string in another */
+	{ "env", UFENV		| MONAMIC },	/* retrieve a system environment var */
+	{ "bin", UFBIND		| MONAMIC },	/* loopup what function name is bound to a key */
+	{ "exi", UFEXIST	| MONAMIC },	/* check if a file exists */
+	{ "fin", UFFIND		| MONAMIC },	/* look for a file on the path... */
+	{ "ban", UFBAND		| DYNAMIC },	/* bitwise and   9-10-87  jwm */
+	{ "bor", UFBOR		| DYNAMIC },	/* bitwise or    9-10-87  jwm */
+	{ "bxo", UFBXOR		| DYNAMIC },	/* bitwise xor   9-10-87  jwm */
+	{ "bno", UFBNOT		| MONAMIC },	/* bitwise not */
+	{ "xla", UFXLATE	| TRINAMIC },	/* XLATE character string translation */
+} ;
 
-/* And its preprocesor definitions. */
-
-#define	UFADD		0
-#define	UFSUB		1
-#define	UFTIMES		2
-#define	UFDIV		3
-#define	UFMOD		4
-#define	UFNEG		5
-#define	UFCAT		6
-#define	UFLEFT		7
-#define	UFRIGHT		8
-#define	UFMID		9
-#define	UFNOT		10
-#define	UFEQUAL		11
-#define	UFLESS		12
-#define	UFGREATER	13
-#define	UFSEQUAL	14
-#define	UFSLESS		15
-#define	UFSGREAT	16
-#define	UFIND		17
-#define	UFAND		18
-#define	UFOR		19
-#define	UFLENGTH	20
-#define	UFUPPER		21
-#define	UFLOWER		22
-#define	UFTRUTH		23
-#define	UFASCII		24
-#define	UFCHR		25
-#define	UFGTKEY		26
-#define	UFRND		27
-#define	UFABS		28
-#define	UFSINDEX	29
-#define	UFENV		30
-#define	UFBIND		31
-#define	UFEXIST		32
-#define	UFFIND		33
-#define UFBAND		34
-#define UFBOR		35
-#define UFBXOR		36
-#define	UFBNOT		37
-#define	UFXLATE		38
 
 /* User variables */
 static struct user_variable uv[MAXVARS + 1];
@@ -388,30 +357,30 @@ static char *gtfun( char *fname) {
 	}
 
 	/* and now evaluate it! */
-	switch (fnum) {
+	switch( funcs[ fnum].f_type) {
 		int sz ;
 
-	case UFADD:
+	case UFADD | DYNAMIC:
 		retstr = i_to_a( atoi( arg1) + atoi( argx)) ;
 		break ;
-	case UFSUB:
+	case UFSUB | DYNAMIC:
 		retstr = i_to_a( atoi( arg1) - atoi( argx)) ;
 		break ;
-	case UFTIMES:
+	case UFTIMES | DYNAMIC:
 		retstr = i_to_a( atoi( arg1) * atoi( argx)) ;
 		break ;
-	case UFDIV:
+	case UFDIV | DYNAMIC:
 		sz = atoi( argx) ;
 		retstr = (sz == 0) ? errorm : i_to_a( atoi( arg1) / sz) ;
 		break ;
-	case UFMOD:
+	case UFMOD | DYNAMIC:
 		sz = atoi( argx) ;
 		retstr = (sz == 0) ? errorm : i_to_a( atoi( arg1) % sz) ;
 		break ;
-	case UFNEG:
+	case UFNEG | MONAMIC:
 		retstr = i_to_a( -atoi( argx)) ;
 		break ;
-	case UFCAT: {
+	case UFCAT | DYNAMIC: {
 		int sz1 ;
 
 		sz1 = strlen( arg1) ;
@@ -427,7 +396,7 @@ static char *gtfun( char *fname) {
 		retstr = result ;
 	}
 		break ;
-	case UFLEFT:
+	case UFLEFT | DYNAMIC:
 		sz = atoi( argx) ;
 		if( sz >= ressize) {
 			free( result) ;
@@ -439,7 +408,7 @@ static char *gtfun( char *fname) {
 		result[ sz] = 0 ;
 		retstr = result ;
 		break ;
-	case UFRIGHT:
+	case UFRIGHT | DYNAMIC:
 		sz = atoi( argx) ;
 		if( sz >= ressize) {
 			free( result) ;
@@ -449,7 +418,7 @@ static char *gtfun( char *fname) {
 		
 		retstr = strcpy( result, &arg1[ strlen( arg1) - sz]) ;
 		break ;
-	case UFMID:
+	case UFMID | TRINAMIC:
 		sz = atoi( argx) ;
 		if( sz >= ressize) {
 			free( result) ;
@@ -461,40 +430,48 @@ static char *gtfun( char *fname) {
 		result[ sz] = 0 ;
 		retstr = result ;
 		break ;
-	case UFNOT:
+	case UFNOT | MONAMIC:
 		retstr = ltos( stol( argx) == FALSE) ;
 		break ;
-	case UFEQUAL:
+	case UFEQUAL | DYNAMIC:
 		retstr = ltos( atoi( arg1) == atoi( argx)) ;
 		break ;
-	case UFLESS:
+	case UFLESS | DYNAMIC:
 		retstr = ltos( atoi( arg1) < atoi( argx)) ;
 		break ;
-	case UFGREATER:
+	case UFGREATER | DYNAMIC:
 		retstr = ltos( atoi( arg1) > atoi( argx)) ;
 		break ;
-	case UFSEQUAL:
+	case UFSEQUAL | DYNAMIC:
 		retstr = ltos( strcmp( arg1, argx) == 0) ;
 		break ;
-	case UFSLESS:
+	case UFSLESS | DYNAMIC:
 		retstr = ltos( strcmp( arg1, argx) < 0) ;
 		break ;
-	case UFSGREAT:
+	case UFSGREAT | DYNAMIC:
 		retstr = ltos( strcmp( arg1, argx) > 0) ;
 		break ;
-	case UFIND:
-		retstr = strcpy( result, getval( argx)) ;
+	case UFIND | MONAMIC:
+		retstr = getval( argx) ;
+		sz = strlen( retstr) + 1 ;
+		if( sz > ressize) {
+			free( result) ;
+			result = malloc( sz) ;
+			ressize = sz ;
+		}
+
+		retstr = strcpy( result, retstr) ;
 		break ;
-	case UFAND:
+	case UFAND | DYNAMIC:
 		retstr = ltos( stol( arg1) && stol( argx)) ;
 		break ;
-	case UFOR:
+	case UFOR | DYNAMIC:
 		retstr = ltos( stol( arg1) || stol( argx)) ;
 		break ;
-	case UFLENGTH:
+	case UFLENGTH | MONAMIC:
 		retstr = i_to_a( strlen( argx)) ;
 		break ;
-	case UFUPPER:
+	case UFUPPER | MONAMIC:
 		sz = strlen( argx) ;
 		if( sz >= ressize) {
 			free( result) ;
@@ -504,7 +481,7 @@ static char *gtfun( char *fname) {
 
 		retstr = mkupper( result, argx) ;
 		break ;
-	case UFLOWER:
+	case UFLOWER | MONAMIC:
 		sz = strlen( argx) ;
 		if( sz >= ressize) {
 			free( result) ;
@@ -515,10 +492,10 @@ static char *gtfun( char *fname) {
 		strcpy( result, argx) ;	/* result is at least as long as argx */
 		retstr = mklower( result) ;
 		break ;
-	case UFTRUTH:
+	case UFTRUTH | MONAMIC:
 		retstr = ltos( atoi( argx) == 42) ;
 		break ;
-	case UFASCII: {
+	case UFASCII | MONAMIC: {
 		unicode_t	c ;
 		
 		utf8_to_unicode( argx, 0, 4, &c) ;
@@ -526,7 +503,7 @@ static char *gtfun( char *fname) {
 		}
 
 		break ;
-	case UFCHR: {
+	case UFCHR | MONAMIC: {
 			unicode_t c ;
 
 			c = atoi( argx) ;
@@ -540,12 +517,12 @@ static char *gtfun( char *fname) {
 		}
 
 		break ;
-	case UFGTKEY:
+	case UFGTKEY | NILNAMIC:
 		result[0] = tgetc();
 		result[1] = 0;
 		retstr = result ;
 		break ;
-	case UFRND:
+	case UFRND | MONAMIC:
 		sz = abs( atoi( argx)) ;
 		if( sz == 0)
 			sz = ernd() ;
@@ -554,13 +531,13 @@ static char *gtfun( char *fname) {
 
 		retstr = i_to_a( sz) ;
 		break ;
-	case UFABS:
+	case UFABS | MONAMIC:
 		retstr = i_to_a( abs( atoi( argx))) ;
 		break ;
-	case UFSINDEX:
+	case UFSINDEX | DYNAMIC:
 		retstr = i_to_a( sindex( arg1, argx)) ;
 		break ;
-	case UFENV:
+	case UFENV | MONAMIC:
 #if	ENVFUNC
 		retstr = getenv( argx) ;
 		if( retstr == NULL)
@@ -569,30 +546,30 @@ static char *gtfun( char *fname) {
 		retstr = "" ;
 #endif
 		break ;
-	case UFBIND:
+	case UFBIND | MONAMIC:
 		retstr = transbind( argx) ;
 		break ;
-	case UFEXIST:
+	case UFEXIST | MONAMIC:
 		retstr = ltos( fexist( argx)) ;
 		break ;
-	case UFFIND:
+	case UFFIND | MONAMIC:
 		retstr = flook( argx, TRUE) ;
 		if( retstr == NULL)
 			retstr = "" ;
 		break ;
-	case UFBAND:
+	case UFBAND | DYNAMIC:
 		retstr = i_to_a( atoi( arg1) & atoi( argx)) ;
 		break ;
-	case UFBOR:
+	case UFBOR | DYNAMIC:
 		retstr = i_to_a( atoi( arg1) | atoi( argx)) ;
 		break ;
-	case UFBXOR:
+	case UFBXOR | DYNAMIC:
 		retstr = i_to_a( atoi( arg1) ^ atoi( argx)) ;
 		break ;
-	case UFBNOT:
+	case UFBNOT | DYNAMIC:
 		retstr = i_to_a( ~atoi( argx)) ;
 		break ;
-	case UFXLATE:
+	case UFXLATE | TRINAMIC:
 		retstr = xlat( arg1, arg2, argx) ;
 		break ;
 	default:
