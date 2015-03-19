@@ -176,7 +176,8 @@ static int docmd( char *cline) {
     /* process leadin argument */
     if( !is_it_cmd( tkn)) {
         f = TRUE;
-        strcpy(tkn, getval(tkn));
+        strncpy( tkn, getval( tkn), sizeof tkn - 1) ;
+        tkn[ sizeof tkn - 1] = '\0' ;
         n = atoi(tkn);
 
         /* and now get the command to execute */

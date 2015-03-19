@@ -796,9 +796,11 @@ int setvar(int f, int n)
 	}
 
 	/* get the value for that variable */
-	if (f == TRUE)
-		strcpy(value, i_to_a(n));
-	else {
+	if( f == TRUE) {
+		/* a bit overcautious here in using strncpy */
+		strncpy( value, i_to_a( n), sizeof value - 1) ;
+		value[ sizeof value - 1] = '\0' ;
+	} else {
 		status = mlreply( "Value: ", value, sizeof value);
 		if (status != TRUE)
 			return status;

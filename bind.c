@@ -352,7 +352,8 @@ static int buildlist( char *mstring)
 			continue ;
 #endif
         /* add in the command name */
-        strcpy(outseq, nptr->n_name);
+        strncpy( outseq, nptr->n_name, sizeof outseq - 1) ;
+        outseq[ sizeof outseq - 1] = '\0' ;
         cpos = strlen(outseq);
 
         /* search down any keys bound to this */
