@@ -620,8 +620,9 @@ static char *gtusr( char *vname) {
 	/* scan the list looking for the user var name */
 	for (vnum = 0; vnum < MAXVARS; vnum++) {
 		if (uv[vnum].u_name[0] == 0)
-			return errorm;
-		if (strcmp(vname, uv[vnum].u_name) == 0)
+			break ;
+
+		if( strncmp( vname, uv[ vnum].u_name, NVSIZE) == 0)
 			return uv[vnum].u_value;
 	}
 
@@ -773,12 +774,12 @@ int setvar(int f, int n)
 {
 	int status;	/* status return */
 	struct variable_description vd;		/* variable num/type */
-	char var[NVSIZE + 1];	/* name of variable to fetch */
+	char var[NVSIZE + 2];	/* name of variable to fetch %1234567890\0 */
 	char value[ 2 * NSTRING] ;	/* value to set variable to */
 
 	/* first get the variable to set.. */
 	if (clexec == FALSE) {
-		status = mlreply("Variable to set: ", &var[0], NVSIZE);
+		status = mlreply( "Variable to set: ", var, sizeof var) ;
 		if (status != TRUE)
 			return status;
 	} else {		/* macro line argument */
@@ -787,7 +788,7 @@ int setvar(int f, int n)
 	}
 
 	/* check the legality and find the var */
-	findvar(var, &vd, NVSIZE + 1);
+	findvar( var, &vd, sizeof var) ;
 
 	/* if its not legal....bitch */
 	if (vd.v_type == -1) {
@@ -855,10 +856,9 @@ int mdbugout( char *fmt, char *s1, char *s2, char *s3) {
  */
 static void findvar(char *var, struct variable_description *vd, int size)
 {
-	unsigned vnum ;	/* subscript in variable arrays */
+	unsigned vnum = 0 ;	/* subscript in variable arrays */
 	int vtype;	/* type to return */
 
-	vnum = -1;
 fvar:
 	vtype = -1;
 	switch (var[0]) {
@@ -884,7 +884,8 @@ fvar:
 		for (vnum = 0; vnum < MAXVARS; vnum++)
 			if (uv[vnum].u_name[0] == 0) {
 				vtype = TKVAR;
-				strcpy(uv[vnum].u_name, &var[1]);
+				strncpy( uv[ vnum].u_name, &var[ 1], NVSIZE) ;
+				uv[ vnum].u_name[ NVSIZE] = '\0' ;
 				break;
 			}
 		break;
@@ -894,7 +895,8 @@ fvar:
 		if (strcmp(&var[1], "ind") == 0) {
 			/* grab token, and eval it */
 			gettoken( var, size) ;
-			strcpy(var, getval(var));
+			strncpy( var, getval( var), size - 1) ;
+			var[ size - 1] = '\0' ;
 			goto fvar;
 		}
 	}

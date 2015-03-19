@@ -318,6 +318,9 @@ int nextarg(const char *prompt, char *buffer, int size, int terminator)
         return getstring(prompt, buffer, size, terminator);
 
 	tmpbuf = malloc( size) ;
+	if( tmpbuf == NULL)
+		return FALSE ;
+
     /* grab token and advance past */
 	gettoken( tmpbuf, size) ;
 
