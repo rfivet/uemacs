@@ -364,10 +364,10 @@ int pipecmd(int f, int n)
 	TTflush();
 	sgarbf = TRUE;
 	s = TRUE;
-#endif
-
+#else
 	if (s != TRUE)
 		return s;
+#endif
 
 	/* split the current window to make room for the command output */
 	if (splitwind(FALSE, 1) == FALSE)
