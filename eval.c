@@ -203,44 +203,44 @@ static struct {
 	const char f_name[ 4] ;
 	const int  f_type ;
 } funcs[] = {
-	{ "add", UFADD		| DYNAMIC },	/* add two numbers together */
-	{ "sub", UFSUB		| DYNAMIC },	/* subtraction */
-	{ "tim", UFTIMES	| DYNAMIC },	/* multiplication */
-	{ "div", UFDIV		| DYNAMIC },	/* division */
-	{ "mod", UFMOD		| DYNAMIC },	/* mod */
-	{ "neg", UFNEG		| MONAMIC },	/* negate */
-	{ "cat", UFCAT		| DYNAMIC },	/* concatinate string */
-	{ "lef", UFLEFT		| DYNAMIC },	/* left string(string, len) */
-	{ "rig", UFRIGHT	| DYNAMIC },	/* right string(string, pos) */
-	{ "mid", UFMID		| TRINAMIC },	/* mid string(string, pos, len) */
-	{ "not", UFNOT		| MONAMIC },	/* logical not */
-	{ "equ", UFEQUAL	| DYNAMIC },	/* logical equality check */
-	{ "les", UFLESS		| DYNAMIC },	/* logical less than */
-	{ "gre", UFGREATER	| DYNAMIC },	/* logical greater than */
-	{ "seq", UFSEQUAL	| DYNAMIC },	/* string logical equality check */
-	{ "sle", UFSLESS	| DYNAMIC },	/* string logical less than */
-	{ "sgr", UFSGREAT	| DYNAMIC },	/* string logical greater than */
-	{ "ind", UFIND		| MONAMIC },	/* evaluate indirect value */
-	{ "and", UFAND		| DYNAMIC },	/* logical and */
-	{ "or",  UFOR		| DYNAMIC },	/* logical or */
-	{ "len", UFLENGTH	| MONAMIC },	/* string length */
-	{ "upp", UFUPPER	| MONAMIC },	/* uppercase string */
-	{ "low", UFLOWER	| MONAMIC },	/* lower case string */
-	{ "tru", UFTRUTH	| MONAMIC },	/* Truth of the universe logical test */
-	{ "asc", UFASCII	| MONAMIC },	/* char to integer conversion */
-	{ "chr", UFCHR		| MONAMIC },	/* integer to char conversion */
-	{ "gtk", UFGTKEY	| NILNAMIC },	/* get 1 charater */
-	{ "rnd", UFRND		| MONAMIC },	/* get a random number */
 	{ "abs", UFABS		| MONAMIC },	/* absolute value of a number */
-	{ "sin", UFSINDEX	| DYNAMIC },	/* find the index of one string in another */
-	{ "env", UFENV		| MONAMIC },	/* retrieve a system environment var */
-	{ "bin", UFBIND		| MONAMIC },	/* loopup what function name is bound to a key */
-	{ "exi", UFEXIST	| MONAMIC },	/* check if a file exists */
-	{ "fin", UFFIND		| MONAMIC },	/* look for a file on the path... */
+	{ "add", UFADD		| DYNAMIC },	/* add two numbers together */
+	{ "and", UFAND		| DYNAMIC },	/* logical and */
+	{ "asc", UFASCII	| MONAMIC },	/* char to integer conversion */
 	{ "ban", UFBAND		| DYNAMIC },	/* bitwise and   9-10-87  jwm */
+	{ "bin", UFBIND		| MONAMIC },	/* loopup what function name is bound to a key */
+	{ "bno", UFBNOT		| MONAMIC },	/* bitwise not */
 	{ "bor", UFBOR		| DYNAMIC },	/* bitwise or    9-10-87  jwm */
 	{ "bxo", UFBXOR		| DYNAMIC },	/* bitwise xor   9-10-87  jwm */
-	{ "bno", UFBNOT		| MONAMIC },	/* bitwise not */
+	{ "cat", UFCAT		| DYNAMIC },	/* concatinate string */
+	{ "chr", UFCHR		| MONAMIC },	/* integer to char conversion */
+	{ "div", UFDIV		| DYNAMIC },	/* division */
+	{ "env", UFENV		| MONAMIC },	/* retrieve a system environment var */
+	{ "equ", UFEQUAL	| DYNAMIC },	/* logical equality check */
+	{ "exi", UFEXIST	| MONAMIC },	/* check if a file exists */
+	{ "fin", UFFIND		| MONAMIC },	/* look for a file on the path... */
+	{ "gre", UFGREATER	| DYNAMIC },	/* logical greater than */
+	{ "gtk", UFGTKEY	| NILNAMIC },	/* get 1 charater */
+	{ "ind", UFIND		| MONAMIC },	/* evaluate indirect value */
+	{ "lef", UFLEFT		| DYNAMIC },	/* left string(string, len) */
+	{ "len", UFLENGTH	| MONAMIC },	/* string length */
+	{ "les", UFLESS		| DYNAMIC },	/* logical less than */
+	{ "low", UFLOWER	| MONAMIC },	/* lower case string */
+	{ "mid", UFMID		| TRINAMIC },	/* mid string(string, pos, len) */
+	{ "mod", UFMOD		| DYNAMIC },	/* mod */
+	{ "neg", UFNEG		| MONAMIC },	/* negate */
+	{ "not", UFNOT		| MONAMIC },	/* logical not */
+	{ "or",  UFOR		| DYNAMIC },	/* logical or */
+	{ "rig", UFRIGHT	| DYNAMIC },	/* right string(string, pos) */
+	{ "rnd", UFRND		| MONAMIC },	/* get a random number */
+	{ "seq", UFSEQUAL	| DYNAMIC },	/* string logical equality check */
+	{ "sgr", UFSGREAT	| DYNAMIC },	/* string logical greater than */
+	{ "sin", UFSINDEX	| DYNAMIC },	/* find the index of one string in another */
+	{ "sle", UFSLESS	| DYNAMIC },	/* string logical less than */
+	{ "sub", UFSUB		| DYNAMIC },	/* subtraction */
+	{ "tim", UFTIMES	| DYNAMIC },	/* multiplication */
+	{ "tru", UFTRUTH	| MONAMIC },	/* Truth of the universe logical test */
+	{ "upp", UFUPPER	| MONAMIC },	/* uppercase string */
 	{ "xla", UFXLATE	| TRINAMIC },	/* XLATE character string translation */
 } ;
 
@@ -315,13 +315,27 @@ static char *gtfun( char *fname) {
 	char *arg1 ; 				/* value of first argument */
 	char *arg2 ; 				/* value of second argument */
 	char *retstr ;				/* return value */
+	int	low, high ;				/* binary search indexes */
 
 	/* look the function up in the function table */
 	fname[3] = 0;		/* only first 3 chars significant */
 	mklower(fname);		/* and let it be upper or lower case */
-	for (fnum = 0; fnum < ARRAY_SIZE(funcs); fnum++)
-		if (strcmp(fname, funcs[fnum].f_name) == 0)
-			break;
+	fnum = ARRAY_SIZE( funcs) ;
+	low = 0 ;
+	high = fnum - 1 ;
+	while( low <= high) {
+		int s, cur ;
+
+		cur = (high - low + 1) / 2 + low ;
+		s = strcmp( fname, funcs[ cur].f_name) ;
+		if( s == 0) {
+			fnum = cur ;
+			break ;
+		} else if( s < 0)
+			high = cur - 1 ;
+		else
+			low = cur + 1 ;
+	}
 
 	/* return errorm on a bad reference */
 	if (fnum == ARRAY_SIZE(funcs))
