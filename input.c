@@ -539,6 +539,11 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
             mlwrite("");
             TTflush();
 
+			if( tmpf != NULL) {
+				fclose( tmpf) ;
+				unlink( tmp) ;
+			}
+
             /* if we default the buffer, return FALSE */
             if (buf[0] == 0)
                 return FALSE;
@@ -553,6 +558,11 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
             /* Abort the input? */
             ctrlg(FALSE, 0);
             TTflush();
+			if( tmpf != NULL) {
+				fclose( tmpf) ;
+				unlink( tmp) ;
+			}
+
             return ABORT;
         } else if ((c == 0x7F || c == 0x08) && quotef == FALSE) {
             /* rubout/erase */
@@ -628,8 +638,12 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
             if (nskip < 0) {
                 buf[ocpos] = 0;
 #if UNIX
-                if (tmpf != NULL)
+                if (tmpf != NULL) {
                     fclose(tmpf);
+                    tmpf = NULL ;
+                    unlink( tmp) ;
+                }
+
                 strcpy(tmp, "/tmp/meXXXXXX");
                 strcpy(ffbuf, "echo ");
                 strcat(ffbuf, buf);
@@ -712,7 +726,6 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
             TTflush();
 #if UNIX
             rewind(tmpf);
-            unlink(tmp);
 #endif
 #endif
 
