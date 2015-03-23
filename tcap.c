@@ -126,22 +126,21 @@ static void tcapopen(void)
 	char *t, *p;
 	char tcbuf[1024];
 	char *tv_stype;
-	char err_str[72];
 	int int_col, int_row;
 
 #if PKCODE && USE_BROKEN_OPTIMIZATION
 	if (!term_init_ok) {
 #endif
 		if ((tv_stype = getenv("TERM")) == NULL) {
-			puts("Environment variable TERM not defined!");
-			exit(1);
+			fputs( "Environment variable TERM not defined!\n", stderr) ;
+			exit( EXIT_FAILURE) ;
 		}
 
 		if ((tgetent(tcbuf, tv_stype)) != 1) {
-			sprintf(err_str, "Unknown terminal type %s!",
-				tv_stype);
-			puts(err_str);
-			exit(1);
+			fputs( "Unknown terminal type ", stderr) ;
+			fputs( tv_stype, stderr) ;
+			fputs( "!\n", stderr) ;
+			exit( EXIT_FAILURE) ;
 		}
 
 		/* Get screen size from system, or else from termcap.  */
@@ -151,14 +150,14 @@ static void tcapopen(void)
 
 		if ((term.t_nrow <= 0)
 		    && (term.t_nrow = (short) tgetnum("li") - 1) == -1) {
-			puts("termcap entry incomplete (lines)");
-			exit(1);
+			fputs( "termcap entry incomplete (lines)\n", stderr) ;
+			exit( EXIT_FAILURE) ;
 		}
 
 		if ((term.t_ncol <= 0)
 		    && (term.t_ncol = (short) tgetnum("co")) == -1) {
-			puts("Termcap entry incomplete (columns)");
-			exit(1);
+			fputs( "Termcap entry incomplete (columns)\n", stderr) ;
+			exit( EXIT_FAILURE) ;
 		}
 #ifdef SIGWINCH
 /* At initialization we use maximum size even if current OS window is smaller */
@@ -199,8 +198,8 @@ static void tcapopen(void)
 #endif
 
 		if (CL == NULL || CM == NULL || UP == NULL) {
-			puts("Incomplete termcap entry\n");
-			exit(1);
+			fputs( "Incomplete termcap entry\n", stderr) ;
+			exit( EXIT_FAILURE) ;
 		}
 
 		if (CE == NULL)	/* will we be able to use clear to EOL? */
@@ -224,8 +223,8 @@ static void tcapopen(void)
 #endif
 
 		if (p >= &tcapbuf[TCAPSLEN]) {
-			puts("Terminal description too big!\n");
-			exit(1);
+			fputs( "Terminal description too big!\n", stderr) ;
+			exit( EXIT_FAILURE) ;
 		}
 #if PKCODE && USE_BROKEN_OPTIMIZATION
 		term_init_ok = 1;
