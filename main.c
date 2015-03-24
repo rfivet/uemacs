@@ -320,6 +320,12 @@ int main(int argc, char **argv)
 
 	/* if there are any files to read, read the first one! */
 	bp = bfind("main", FALSE, 0);
+	if( bp == NULL) {
+	/* "main" buffer has been created during early initialisation */
+		fputs( "Initialisation failure!\n", stderr) ;
+		exit( EXIT_FAILURE) ;
+	}
+
 	if (firstfile == FALSE && readfirst_f()) {
 		swbuffer(firstbp);
 		zotbuf(bp);
@@ -478,8 +484,11 @@ static void edinit(char *bname)
 	bp = bfind(bname, TRUE, 0);	/* First buffer         */
 	blistp = bfind("*List*", TRUE, BFINVS);	/* Buffer list buffer   */
 	wp = (struct window *)malloc(sizeof(struct window));	/* First window         */
-	if (bp == NULL || wp == NULL || blistp == NULL)
-		exit(1);
+	if (bp == NULL || wp == NULL || blistp == NULL) {
+		fputs( "First initialisation failed!\n", stderr) ;
+		exit( EXIT_FAILURE) ;
+	}
+
 	curbp = bp;		/* Make this current    */
 	wheadp = wp;
 	curwp = wp;
