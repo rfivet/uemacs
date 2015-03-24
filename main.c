@@ -275,7 +275,12 @@ int main(int argc, char **argv)
 			unqname(bname);
 
 			/* set this to inactive */
-			bp = bfind(bname, TRUE, 0);
+			bp = bfind( bname, TRUE, 0) ;
+			if( bp == NULL) {
+				fputs( "Buffer creation failed!\n", stderr) ;
+				exit( EXIT_FAILURE) ;
+			}
+
 			strncpy( bp->b_fname, argv[ carg], sizeof bp->b_fname - 1) ; /* max filename length limited to NFILEN - 1 (79) */
 			bp->b_fname[ sizeof bp->b_fname - 1] = 0 ;
 			bp->b_active = FALSE;
