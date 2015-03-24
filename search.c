@@ -1377,9 +1377,10 @@ static int rmcstr(void)
 		if ((rmcptr->rstr = malloc(mj + 1)) == NULL) {
 			mloutstr( "%Out of memory") ;
 			status = FALSE;
+		} else {
+			strncpy(rmcptr->rstr, patptr - mj, mj);
+			rmcptr++;
 		}
-		strncpy(rmcptr->rstr, patptr - mj, mj);
-		rmcptr++;
 	}
 
 	rmcptr->mc_type = MCNIL;
