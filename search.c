@@ -513,8 +513,7 @@ static int amatch(struct magic *mcptr, int direct, struct line **pcwline, int *p
 			mcptr++;
 
 			for (;;) {
-				c = nextch(&curline, &curoff,
-					   direct ^ REVERSE);
+				(void) nextch( &curline, &curoff, direct ^ REVERSE) ;
 
 				if (amatch
 				    (mcptr, direct, &curline, &curoff)) {
@@ -699,7 +698,8 @@ static int readpattern(char *prompt, char *apat, int srch)
 	int status;
 	char tpat[NPAT + 20];
 
-	strcpy(tpat, prompt);	/* copy prompt to output string */
+	strncpy( tpat, prompt, 14) ;	/* copy prompt to output string */
+	tpat[ 14] = '\0' ;	/* longest prompt is "Reverse Search" */
 	strcat(tpat, " (");	/* build new prompt string */
 	expandp(&apat[0], &tpat[strlen(tpat)], NPAT / 2);	/* add old pattern */
 	strcat(tpat, ")<Meta>: ");
