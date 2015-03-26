@@ -39,6 +39,8 @@ int delins( int dlength, char *instr, int use_meta) ;
 int expandp( char *srcstr, char *deststr, int maxlength) ;
 int boundry( struct line *curline, int curoff, int dir) ;
 
+void setprompt( char *tpat, unsigned tpat_size, char *prompt, char *apat) ;
+
 #if MAGIC
 void mcclear( void) ;
 void rmcclear( void) ;

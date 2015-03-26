@@ -682,6 +682,14 @@ int eq(unsigned char bc, unsigned char pc)
 	return bc == pc;
 }
 
+void setprompt( char *tpat, unsigned tpat_size, char *prompt, char *apat) {
+	strncpy( tpat, prompt, 14) ;	/* copy prompt to output string */
+	tpat[ 14] = '\0' ;				/* longest prompt is "Reverse Search" */
+	strcat( tpat, " (") ;			/* build new prompt string */
+	expandp( apat, &tpat[ strlen( tpat)], tpat_size) ;	/* add old pattern */
+	strcat( tpat, ")<Meta>: ") ;
+}
+
 /*
  * readpattern -- Read a pattern.  Stash it in apat.  If it is the
  *	search string, create the reverse pattern and the magic
@@ -698,11 +706,7 @@ static int readpattern(char *prompt, char *apat, int srch)
 	int status;
 	char tpat[NPAT + 20];
 
-	strncpy( tpat, prompt, 14) ;	/* copy prompt to output string */
-	tpat[ 14] = '\0' ;	/* longest prompt is "Reverse Search" */
-	strcat(tpat, " (");	/* build new prompt string */
-	expandp(&apat[0], &tpat[strlen(tpat)], NPAT / 2);	/* add old pattern */
-	strcat(tpat, ")<Meta>: ");
+	setprompt( tpat, NPAT / 2, prompt, apat) ;
 
 	/* Read a pattern.  Either we get one,
 	 * or we just get the META charater, and use the previous pattern.

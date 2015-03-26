@@ -209,7 +209,7 @@ static int isearch(int f, int n)
       start_over:
 
 	/* ask the user for the text of a pattern */
-	col = promptpattern( "I-Search") ;	/* Prompt, remember the col   */
+	col = promptpattern( "ISearch") ;	/* Prompt, remember the col   */
 
 	cpos = 0;		/* Start afresh               */
 	status = TRUE;		/* Assume everything's cool   */
@@ -432,11 +432,7 @@ static int promptpattern(char *prompt)
 {
 	char tpat[NPAT + 20];
 
-	strncpy( tpat, prompt, 8) ;	/* copy prompt to output string */
-	tpat[ 8] = '\0' ;	/* only one pattern "I-Search" */
-	strcat(tpat, " (");	/* build new prompt string */
-	expandp(pat, &tpat[strlen(tpat)], NPAT / 2);	/* add old pattern */
-	strcat(tpat, ")<Meta>: ");
+	setprompt( tpat, NPAT / 2, prompt, pat) ;
 
 	/* check to see if we are executing a command line */
 	if (!clexec) {
