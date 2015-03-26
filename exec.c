@@ -129,7 +129,10 @@ int execcmd(int f, int n)
         return status;
 
     execlevel = 0;
-    return docmd(cmdstr);
+    while( status == TRUE && n-- > 0)
+    	status = docmd( cmdstr) ;
+
+	return status ;
 }
 
 /*
