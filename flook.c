@@ -77,32 +77,43 @@ boolean fexist( const char *fname)
 char *flook( const char *fname, boolean hflag)
 {
 	unsigned i ;	/* index */
+	int len ;
 	static char fspec[NSTRING];	/* full path spec to search */
 
 #if	ENVFUNC
 	char *path;	/* environmental PATH variable */
+#endif
 
+	len = sizeof fspec - strlen( fname) - 1 ;
+	if( len < 0)
+		return NULL ;
+
+#if	ENVFUNC
 	if (hflag) {
 		char *home;	/* path to home directory */
 
 		home = getenv("HOME");
 		if (home != NULL) {
+			if( len > (int) strlen( home) + 1) {
 			/* build home dir file spec */
-			strcpy(fspec, home);
-			strcat(fspec, "/");
-			strcat(fspec, fname);
+				strcpy( fspec, home) ;
+				strcat(fspec, "/");
+				strcat(fspec, fname);
 
 			/* and try it out */
-			if( fexist( fspec))
-				return fspec ;
+				if( fexist( fspec))
+					return fspec ;
+			}
 		}
 	}
 #endif
 
 	/* always try the current directory first */
-	strcpy( fspec, fname) ;
-	if( fexist( fspec))
-		return fspec ;
+	if( len >= 0) {
+		strcpy( fspec, fname) ;
+		if( fexist( fspec))
+			return fspec ;
+	}
 
 #if	ENVFUNC
 #if	V7 | USG | BSD
@@ -116,21 +127,29 @@ char *flook( const char *fname, boolean hflag)
 	if (path != NULL)
 		while (*path) {
 			char *sp;	/* pointer into path spec */
+			int cnt ;
 
+			cnt = len ;
 			/* build next possible file spec */
 			sp = fspec;
-			while (*path && (*path != PATHCHR))
-				*sp++ = *path++;
+			while( *path && (*path != PATHCHR)) {
+				if( cnt-- > 0)
+					*sp++ = *path ;
 
+				path += 1 ;
+			}
+
+			if( cnt >= 0) {
 			/* add a terminating dir separator if we need it */
-			if (sp != fspec)
-				*sp++ = '/';
-			*sp = 0;
-			strcat(fspec, fname);
+				if (sp != fspec)
+					*sp++ = '/';
+				*sp = 0;
+				strcat(fspec, fname);
 
 			/* and try it out */
-			if( fexist( fspec))
-				return fspec ;
+				if( fexist( fspec))
+					return fspec ;
+			}
 
 			if (*path == PATHCHR)
 				++path;
@@ -138,14 +157,15 @@ char *flook( const char *fname, boolean hflag)
 #endif
 
 	/* look it up via the old table method */
-	for( i = 2; i < PATHNAME_SIZE ; i++) {
-		strcpy(fspec, pathname[i]);
-		strcat(fspec, fname);
+	for( i = 2; i < PATHNAME_SIZE ; i++)
+		if( len >= (int) strlen( pathname[ i])) {
+			strcpy( fspec, pathname[ i]) ;
+			strcat( fspec, fname);
 
 		/* and try it out */
-		if( fexist( fspec))
-			return fspec ;
-	}
+			if( fexist( fspec))
+				return fspec ;
+		}
 
 	return NULL;		/* no such luck */
 }
