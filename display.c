@@ -243,6 +243,17 @@ static void vtputc(int c)
 	++vtcol;
 }
 
+static int vtputs( const char *s) {
+	int n = 0 ;
+
+	while( *s) {
+		vtputc( *s++) ;
+		n += 1 ;
+	}
+
+	return n ;
+}
+
 /*
  * Erase from the end of the software cursor to the end of the line on which
  * the software cursor is located.
@@ -1108,14 +1119,11 @@ static int updateline(int row, struct video *vp1, struct video *vp2)
  */
 static void modeline(struct window *wp)
 {
-	char *cp;
-	int c;
 	int n;		/* cursor position count */
 	struct buffer *bp;
 	int i;		/* loop index */
 	int lchar;	/* character to draw line in buffer with */
 	int firstm;	/* is this the first mode? */
-	char tline[NLINE];	/* buffer for part of mode line */
 
 	n = wp->w_toprow + wp->w_ntrows;	/* Location. */
 	vscreen[n]->v_flag |= VFCHG | VFREQ | VFCOL;	/* Redraw next time. */
@@ -1154,64 +1162,37 @@ static void modeline(struct window *wp)
 	vtputc( ' ') ;
 	n = 3 ;
 
-	cp = PROGRAM_NAME_LONG " " VERSION ": " ;
-	while ((c = *cp++) != 0) {
-		vtputc(c);
-		++n;
-	}
-
-	cp = &bp->b_bname[0];
-	while ((c = *cp++) != 0) {
-		vtputc(c);
-		++n;
-	}
-
-	strcpy(tline, " (");
+	n += vtputs( PROGRAM_NAME_LONG " " VERSION ": ") ;
+	n += vtputs( bp->b_bname) ;
+	n += vtputs( " (") ;
 
 	/* display the modes */
 
-	firstm = TRUE;
 	if ((bp->b_flag & BFTRUNC) != 0) {
 		firstm = FALSE;
-		strcat(tline, "Truncated");
-	}
+		n += vtputs( "Truncated") ;
+	} else
+		firstm = TRUE ;
+
 	for (i = 0; i < NUMMODES; i++)	/* add in the mode flags */
 		if (wp->w_bufp->b_mode & (1 << i)) {
 			if (firstm != TRUE)
-				strcat(tline, " ");
-			firstm = FALSE;
-			strcat( tline, modename[ i]) ;
-		}
-	strcat(tline, ") ");
+				n += vtputs( " ") ;
+			else
+				firstm = FALSE ;
 
-	cp = &tline[0];
-	while ((c = *cp++) != 0) {
-		vtputc(c);
-		++n;
-	}
+			n += vtputs( modename[ i]) ;
+		}
+
+	n += vtputs( ") ") ;
 
 #if	PKCODE
-	if (bp->b_fname[0] != 0 && strcmp(bp->b_bname, bp->b_fname) != 0)
+	if (bp->b_fname[0] != 0 && strcmp(bp->b_bname, bp->b_fname) != 0) {
 #else
-	if (bp->b_fname[0] != 0)	/* File name. */
+	if (bp->b_fname[0] != 0) {	/* File name. */
+		n += vtputs( "File: ") ;
 #endif
-	{
-#if	PKCODE == 0
-		cp = "File: ";
-
-		while ((c = *cp++) != 0) {
-			vtputc(c);
-			++n;
-		}
-#endif
-
-		cp = &bp->b_fname[0];
-
-		while ((c = *cp++) != 0) {
-			vtputc(c);
-			++n;
-		}
-
+		n += vtputs( bp->b_fname) ;
 		vtputc(' ');
 		++n;
 	}
@@ -1225,6 +1206,7 @@ static void modeline(struct window *wp)
 		struct line *lp = wp->w_linep;
 		int rows = wp->w_ntrows;
 		char *msg = NULL;
+		char tline[ 6] ;	/* buffer for part of mode line */
 
 		vtcol = n - 7;	/* strlen(" top ") plus a couple */
 		while (rows--) {
@@ -1282,11 +1264,7 @@ static void modeline(struct window *wp)
 			}
 		}
 
-		cp = msg;
-		while ((c = *cp++) != 0) {
-			vtputc(c);
-			++n;
-		}
+		n += vtputs( msg) ;
 	}
 }
 
