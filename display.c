@@ -1160,9 +1160,12 @@ static void modeline(struct window *wp)
 		vtputc(lchar);
 
 	vtputc( ' ') ;
-	n = 3 ;
 
-	n += vtputs( PROGRAM_NAME_LONG " " VERSION ": ") ;
+	if( n == term.t_nrow - 1)
+		n = 3 + vtputs( PROGRAM_NAME_LONG " " VERSION ": ") ;
+	else
+		n = 3 ;
+
 	n += vtputs( bp->b_bname) ;
 	n += vtputs( " (") ;
 
