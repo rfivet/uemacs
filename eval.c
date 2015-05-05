@@ -1047,7 +1047,7 @@ static int svar(struct variable_description *var, char *value)
 			break;
 		case EVTAB:
 			tabmask = atoi(value) - 1;
-			if (tabmask != 0x07 && tabmask != 0x03)
+			if( tabmask != 0x07 && tabmask != 0x03 && tabmask != 1)
 				tabmask = 0x07;
 			curwp->w_flag |= WFHARD;
 			break;
