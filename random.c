@@ -101,13 +101,13 @@ int showcpos(int f, int n)
 			predchars = numchars + curwp->w_doto;
 			len = llength( lp) ;				
 			if( (curwp->w_doto) == len)
-				curchar = '\n';
+				curchar = (curbp->b_mode & MDDOS) ? '\r' : '\n' ;
 			else
 				bytes = utf8_to_unicode( lp->l_text, curwp->w_doto, len, &curchar) ;
 		}
 		/* on to the next line */
 		++numlines;
-		numchars += llength(lp) + 1;
+		numchars += llength( lp) + ((curbp->b_mode & MDDOS) ? 2 : 1) ;
 		lp = lforw(lp);
 	}
 
