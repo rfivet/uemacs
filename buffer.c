@@ -310,6 +310,7 @@ static int makelist( int iflag)
 	int s;
 	int i;
 	long nbytes;		/* # of bytes in current buffer */
+	long nlines ;		/* # of lines in current buffer */
 	char b[ 8 + 1] ;
 	char line[MAXLINE];
 
@@ -318,7 +319,7 @@ static int makelist( int iflag)
 		return s;
 	strcpy(blistp->b_fname, "");
 	if(		addline("ACT MODES          Size Buffer          File") == FALSE
-	    ||	addline("--- -----          ---- ------          ----") == FALSE)
+	    ||	addline("‾‾‾ ‾‾‾‾‾          ‾‾‾‾ ‾‾‾‾‾‾          ‾‾‾‾") == FALSE)
 		return FALSE;
 	bp = bheadp;		/* For all buffers      */
 
@@ -380,11 +381,17 @@ static int makelist( int iflag)
 	
 	/* Buffer size */
 		nbytes = 0L;	/* Count bytes in buf.  */
+		nlines = 0 ;
 		lp = lforw(bp->b_linep);
 		while (lp != bp->b_linep) {
 			nbytes += (long) llength(lp) + 1L;
+			nlines += 1 ;
 			lp = lforw(lp);
 		}
+
+		if( curbp->b_mode & MDDOS)
+			nbytes += nlines ;
+
 		l_to_a( b, sizeof b, nbytes) ;	/* 8 digits string buffer size. */
 		cp2 = &b[0];
 		while ((c = *cp2++) != 0)
