@@ -389,7 +389,7 @@ static int makelist( int iflag)
 			lp = lforw(lp);
 		}
 
-		if( curbp->b_mode & MDDOS)
+		if( bp->b_mode & MDDOS)
 			nbytes += nlines ;
 
 		l_to_a( b, sizeof b, nbytes) ;	/* 8 digits string buffer size. */
