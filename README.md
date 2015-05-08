@@ -14,3 +14,6 @@ Ciguë is µEMACS (ue) on Cygwin/Linux, based on uEmacs/PK (em) from kernel.org.
 * dependencies: ncurses.
 * make depend ; make
 * MINGW32 target is experimental and lacks screen/kbd support.
+
+### Badges ###
+[![Coverity Status](https://scan.coverity.com/projects/4449/badge.svg)](https://scan.coverity.com/projects/4449)
