@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-void xmkstemp( char *template) ;
+void xmkstemp( char *fname_template) ;
 
 void *xmalloc( size_t size) ;
 
