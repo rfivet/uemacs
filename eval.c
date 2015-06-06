@@ -1076,35 +1076,30 @@ static int svar(struct variable_description *var, char *value)
  *
  * int i;		integer to translate to a string
  */
-char *i_to_a(int i)
-{
-	#define	INTWIDTH	sizeof( int) * 3
+char *i_to_a( int i) {
+	unsigned u ;
+	int sign ;	/* sign of resulting number */
+	/* returns result string: sign digits null */
+	static char result[ 1 + (sizeof i * 5 + 1) / 2 + 1] ;
+	char *sp = &result[ sizeof result - 1] ; /* points on result's last byte */
 
-	char *sp;	/* pointer into result */
-	int sign;	/* sign of resulting number */
-	static char result[INTWIDTH + 1];	/* resulting string */
+	*sp = 0 ;
 
 	/* record the sign... */
-	sign = 1;
-	if (i < 0) {
-		sign = -1;
-		i = -i;
-	}
+	sign = i < 0 ;
+	u = sign ? -i : i ;
 
 	/* and build the string (backwards!) */
-	sp = result + INTWIDTH;
-	*sp = 0;
 	do {
-		*(--sp) = '0' + i % 10 ;	/* install the new digit */
-		i = i / 10;
-	} while (i);
+		*(--sp) = '0' + u % 10 ;	/* install the new digit */
+		u = u / 10 ;
+	} while( u) ;
 
 	/* and fix the sign */
-	if (sign == -1) {
+	if( sign)
 		*(--sp) = '-';	/* and install the minus sign */
-	}
 
-	return sp;
+	return sp ;
 }
 
 /*
