@@ -259,6 +259,7 @@ struct variable_description {
 
 static void findvar( char *var, struct variable_description *vd, int size) ;
 static int svar( struct variable_description *var, char *value) ;
+static char *i_to_a( int i) ;
 
 /*
  * putctext:
@@ -817,15 +818,18 @@ int setvar(int f, int n)
 static void mlforce( char *s) ;
 
 #if DEBUGM
-int mdbugout( char *fmt, char *s1, char *s2, char *s3) {
+int mdbugout( char *fmt, ...) {
 	int	c ;	/* input from kbd, output to terminal */
 	int savediscmd ;
+	va_list	ap ;
 
 	/* assignment status ; variable name ; value we tried to assign  */
 	/* write out the debug line */
 	savediscmd = discmd ;
 	discmd = TRUE ;
-	mlwrite( fmt, s1, s2, s3) ;
+	va_start( ap, fmt) ;
+	vmlwrite( fmt, ap) ;
+	va_end( ap) ;
 	discmd = savediscmd ;
 	update( TRUE) ;
 
@@ -1076,7 +1080,7 @@ static int svar(struct variable_description *var, char *value)
  *
  * int i;		integer to translate to a string
  */
-char *i_to_a( int i) {
+static char *i_to_a( int i) {
 	unsigned u ;
 	int sign ;	/* sign of resulting number */
 	/* returns result string: sign digits null */

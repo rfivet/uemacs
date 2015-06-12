@@ -1339,10 +1339,8 @@ static void mlputc( char c) {
  * char *fmt;		format string for output
  * char *arg;		pointer to first argument to print
  */
-void mlwrite(const char *fmt, ...)
-{
+void vmlwrite( const char *fmt, va_list ap) {
 	int c;		/* current char in format string */
-	va_list ap;
 
 	/* if we are not currently echoing on the command line, abort this */
 	if (discmd == FALSE) {
@@ -1362,7 +1360,6 @@ void mlwrite(const char *fmt, ...)
 		movecursor( term.t_nrow, 0) ;
 
 	mpresf = *fmt ? TRUE : FALSE ;	/* flag if line has content or not */
-	va_start(ap, fmt);
 	while ((c = *fmt++) != 0) {
 		if (c != '%')
 			mlputc( c) ;
@@ -1402,13 +1399,20 @@ void mlwrite(const char *fmt, ...)
 			}
 		}
 	}
-	va_end(ap);
 
 	/* if we can, erase to the end of screen */
 	if( eolexist == TRUE && ttcol < term.t_ncol)
 		TTeeol() ;
 
 	TTflush();
+}
+
+void mlwrite( const char *fmt, ...) {
+	va_list ap ;
+	
+	va_start( ap, fmt) ;
+	vmlwrite( fmt, ap) ;
+	va_end( ap) ;
 }
 
 /*

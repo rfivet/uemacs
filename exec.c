@@ -647,8 +647,7 @@ static int dobuf(struct buffer *bp)
 			int c ;
         	
             /* debug macro name, if levels and lastly the line */
-			c = mdbugout( "<<<%s:%s:%s>>>", bp->b_bname, i_to_a( execlevel),
-																		eline) ;
+			c = mdbugout( "<<<%s:%d:%s>>>", bp->b_bname, execlevel, eline) ;
         	if( c == abortc) {
                 freewhile( whlist) ;
                 return FALSE ;

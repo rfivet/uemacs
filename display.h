@@ -1,6 +1,8 @@
 #ifndef _DISPLAY_H_
 #define _DISPLAY_H_
 
+#include <stdarg.h>
+
 #include "estruct.h"
 
 extern int mpresf ;		/* Stuff in message line */
@@ -22,6 +24,7 @@ int updupd( int force) ;
 void upmode( void) ;
 void movecursor( int row, int col) ;
 void mlerase( void) ;
+void vmlwrite( const char *fmt, va_list ap) ;
 void mlwrite( const char *fmt, ...) ;
 void getscreensize( int *widthp, int *heightp) ;
 

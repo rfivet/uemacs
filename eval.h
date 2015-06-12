@@ -5,7 +5,7 @@
 #define DEBUGM	1		/* $debug triggers macro debugging	*/
 
 #if	DEBUGM
-int mdbugout( char *fmt, char *s1, char *s2, char *s3) ;
+int mdbugout( char *fmt, ...) ;
 #endif
 
 
@@ -19,7 +19,6 @@ int is_it_cmd( char *token) ;
 
 void varinit( void) ;
 int setvar( int f, int n) ;
-char *i_to_a( int i) ;
 char *getval( char *token) ;
 int stol( char *val) ;
 char *mklower( char *str) ;
