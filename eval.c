@@ -1122,7 +1122,7 @@ static int gettyp( char *token) {
 		return TKNUL;
 
 	/* a numeric literal? */
-	if (c >= '0' && c <= '9')
+	if( (c >= '0' && c <= '9') || c == '-')
 		return TKLIT;
 
 	switch (c) {
