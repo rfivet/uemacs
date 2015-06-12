@@ -1420,8 +1420,9 @@ static void mlputs( unsigned char *s) {
 	unicode_t c ;
 
 	while( ((c = *s++) != 0) && (ttcol < term.t_ncol)) {
-		/* Accept UTF-8 sequence */
-		if( c > 0xC1 && c <= 0xF4) {
+		if( c == '\t')						/* Don't render tabulation */
+			c = ' ' ;
+		else if( c > 0xC1 && c <= 0xF4) {	/* Accept UTF-8 sequence */
 			char utf[ 4] ;
 			char cc ;
 			int bytes ;
