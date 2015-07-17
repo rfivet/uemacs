@@ -644,15 +644,14 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
                     unlink( tmp) ;
                 }
 
-                strcpy(tmp, "/tmp/meXXXXXX");
-                strcpy(ffbuf, "echo ");
-                strcat(ffbuf, buf);
-                if (!iswild)
-                    strcat(ffbuf, "*");
-                strcat(ffbuf, " >");
-                xmkstemp(tmp);
-                strcat(ffbuf, tmp);
-                strcat(ffbuf, " 2>&1");
+                strcpy( tmp, "/tmp/meXXXXXX") ;
+                xmkstemp( tmp) ;
+                if( strlen( buf) < sizeof ffbuf - 26 - 1)
+					sprintf( ffbuf, "echo %s%s >%s 2>&1", buf,
+													!iswild ? "*" : "", tmp) ;
+				else
+					sprintf( ffbuf, "echo ERROR >%s 2>&1", tmp) ;
+
                 ue_system( ffbuf) ;
                 tmpf = fopen(tmp, "r");
 #endif
