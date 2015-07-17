@@ -435,22 +435,24 @@ static int strinc( char *source, char *sub) {
  * int mflag;       going for a meta sequence?
  */
 static unsigned int getckey( int mflag) {
-    unsigned int c; /* character fetched */
+    unsigned int c ;	/* character fetched */
 
     /* check to see if we are executing a command line */
-    if (clexec) {
+    if( clexec) {
 	    char tok[ NSTRING] ;  /* command incoming */
 
-        macarg( tok, sizeof tok) ;    /* get the next token */
-        return stock(tok);
-    }
+		if( TRUE != macarg( tok, sizeof tok))	/* get the next token */
+			c = 0 ;	/* return dummy key on failure */
+		else
+			c = stock( tok) ;
+    } else {	/* or the normal way */
+	    if( mflag)
+    	    c = get1key() ;
+    	else
+			c = getcmd() ;
+	}
 
-    /* or the normal way */
-    if (mflag)
-        c = get1key();
-    else
-        c = getcmd();
-    return c;
+	return c ;
 }
 
 /*
