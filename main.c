@@ -107,7 +107,7 @@ extern unsigned _stklen = 32766;
 static void emergencyexit(int signr)
 {
 	quickexit(FALSE, 0);
-	quit(TRUE, 0);
+	quit( TRUE, 0) ; /* If quickexit fails (to save changes), do a force quit */
 }
 #endif
 
