@@ -324,10 +324,10 @@ static char *gtfun( char *fname) {
 	fnum = ARRAY_SIZE( funcs) ;
 	low = 0 ;
 	high = fnum - 1 ;
-	while( low <= high) {
+	do {
 		int s, cur ;
 
-		cur = (high - low + 1) / 2 + low ;
+		cur = (high + low) / 2 ;
 		s = strcmp( fname, funcs[ cur].f_name) ;
 		if( s == 0) {
 			fnum = cur ;
@@ -336,7 +336,7 @@ static char *gtfun( char *fname) {
 			high = cur - 1 ;
 		else
 			low = cur + 1 ;
-	}
+	} while( low <= high) ;
 
 	/* return errorm on a bad reference */
 	if (fnum == ARRAY_SIZE(funcs))
