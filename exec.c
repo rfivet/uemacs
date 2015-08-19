@@ -635,7 +635,7 @@ static int dobuf(struct buffer *bp)
             ++eline;
 
         /* dump comments and blank lines */
-        if (*eline == ';' || *eline == 0)
+        if (*eline == ';' || *eline == '#' || *eline == 0)
             goto onward;
 
 #if DEBUGM
