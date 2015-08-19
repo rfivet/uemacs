@@ -1117,15 +1117,9 @@ static int gettyp( char *token) {
 	/* grab the first char (this is all we need) */
 	c = *token;
 
-	/* no blanks!!! */
-	if (c == 0)
-		return TKNUL;
-
-	/* a numeric literal? */
-	if( (c >= '0' && c <= '9') || c == '-')
-		return TKLIT;
-
 	switch (c) {
+	case 0:	/* no blanks!!! */
+		return TKNUL ;
 	case '"':
 		return TKSTR;
 
@@ -1133,7 +1127,7 @@ static int gettyp( char *token) {
 		return TKDIR;
 	case '@':
 		return TKARG;
-	case '#':
+	case '=':
 		return TKBUF;
 	case '$':
 		return TKENV;
@@ -1145,7 +1139,11 @@ static int gettyp( char *token) {
 		return TKLBL;
 
 	default:
-		return TKCMD;
+		/* a numeric literal? */
+		if( (c >= '0' && c <= '9') || c == '-')
+			return TKLIT;
+		else
+			return TKCMD;
 	}
 }
 
