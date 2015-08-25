@@ -52,6 +52,8 @@ int ctlxc = CONTROL | 'X' ;		/* current control X prefix char */
 int reptc = CONTROL | 'U' ;		/* current universal repeat char */
 int abortc = CONTROL | 'G' ;		/* current abort command char	 */
 
+const int nlc = CONTROL | 'J' ;		/* end of input char */
+
 static const int quotec = 0x11 ;	/* quote char during mlreply()	 */
 
 static void outstring( char *s) ;
@@ -91,14 +93,12 @@ int mlyesno( const char *prompt)
  * return. Handle erase, kill, and abort keys.
  */
 
-int mlreply( const char *prompt, char *buf, int nbuf)
-{
-    return nextarg(prompt, buf, nbuf, ctoec('\n'));
+int mlreply( const char *prompt, char *buf, int nbuf) {
+    return nextarg( prompt, buf, nbuf, nlc) ;
 }
 
-int mlreplyt(const char *prompt, char *buf, int nbuf, int eolchar)
-{
-    return nextarg(prompt, buf, nbuf, eolchar);
+int mlreplyt( const char *prompt, char *buf, int nbuf) {
+    return nextarg( prompt, buf, nbuf, metac) ;
 }
 
 /*
@@ -112,18 +112,6 @@ int ectoc(int c)
         c = c & ~(CONTROL | 0x40);
     if (c & SPEC)
         c = c & 255;
-    return c;
-}
-
-/*
- * ctoec:
- *  character to extended character
- *  pull out the CONTROL and SPEC prefixes (if possible)
- */
-int ctoec(int c)
-{
-    if (c >= 0x00 && c <= 0x1F)
-        c = CONTROL | (c + '@');
     return c;
 }
 

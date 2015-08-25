@@ -298,7 +298,7 @@ int macarg( char *tok, int toksz)
 
     savcle = clexec;    /* save execution mode */
     clexec = TRUE;      /* get the argument */
-    status = nextarg("", tok, toksz, ctoec('\n'));
+    status = mlreply( "", tok, toksz) ;
     clexec = savcle;    /* restore execution mode */
     return status;
 }

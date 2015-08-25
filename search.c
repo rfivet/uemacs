@@ -713,7 +713,8 @@ static int readpattern(char *prompt, char *apat, int srch)
 	 * Then, if it's the search string, make a reversed pattern.
 	 * *Then*, make the meta-pattern, if we are defined that way.
 	 */
-	if ((status = mlreplyt(tpat, tpat, NPAT, metac)) == TRUE) {
+	status = mlreplyt( tpat, tpat, NPAT) ;
+	if( status == TRUE) {
 		strcpy(apat, tpat);
 		if (srch) {	/* If we are doing the search string. */
 			/* Reverse string copy, and remember

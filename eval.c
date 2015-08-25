@@ -1172,7 +1172,7 @@ char *getval(char *token)
 		strcpy(token, getval(&token[1]));
 		distmp = discmd;	/* echo it always! */
 		discmd = TRUE;
-		status = getstring(token, buf, NSTRING, ctoec('\n'));
+		status = getstring( token, buf, NSTRING, nlc) ;
 		discmd = distmp;
 		if (status == ABORT)
 			return errorm;
