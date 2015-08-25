@@ -771,7 +771,7 @@ int setvar(int f, int n)
 
 	/* first get the variable to set.. */
 	if (clexec == FALSE) {
-		status = mlreply( "Variable to set: ", var, sizeof var) ;
+		status = getstring( "Variable to set: ", var, sizeof var, nlc) ;
 		if (status != TRUE)
 			return status;
 	} else {		/* macro line argument */
@@ -889,10 +889,8 @@ fvar:
 		var[4] = 0;
 		if (strcmp(&var[1], "ind") == 0) {
 			/* grab token, and eval it */
-			gettoken( var, size) ;
-			strncpy( var, getval( var), size - 1) ;
-			var[ size - 1] = '\0' ;
-			goto fvar;
+			if( TRUE == gettokval( var, size))
+				goto fvar ;
 		}
 	}
 

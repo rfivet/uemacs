@@ -286,6 +286,23 @@ void gettoken( char *tok, int maxtoksize) {
 	execstr = token( execstr, tok, maxtoksize) ;
 }
 
+boolean gettokval( char *tok, int size) {
+	char *tmpbuf ;
+	
+	tmpbuf = malloc( size) ;
+	if( tmpbuf == NULL)
+		return FALSE ;
+
+    /* grab token and advance past */
+	gettoken( tmpbuf, size) ;
+
+    /* evaluate it */
+    strncpy( tok, getval( tmpbuf), size - 1) ;
+    tok[ size - 1] = '\0' ;
+    free( tmpbuf) ;
+    return TRUE ;
+}
+
 /*
  * get a macro line argument
  *
@@ -301,37 +318,6 @@ int macarg( char *tok, int toksz)
     status = mlreply( "", tok, toksz) ;
     clexec = savcle;    /* restore execution mode */
     return status;
-}
-
-/*
- * nextarg:
- *  get the next argument
- *
- * const char *prompt;      prompt to use if we must be interactive
- * char *buffer;        buffer to put token into
- * int size;            size of the buffer
- * int terminator;      terminating char to be used on interactive fetch
- */
-int nextarg(const char *prompt, char *buffer, int size, int terminator)
-{
-	char *tmpbuf ;
-	
-    /* if we are interactive, go get it! */
-    if (clexec == FALSE)
-        return getstring(prompt, buffer, size, terminator);
-
-	tmpbuf = malloc( size) ;
-	if( tmpbuf == NULL)
-		return FALSE ;
-
-    /* grab token and advance past */
-	gettoken( tmpbuf, size) ;
-
-    /* evaluate it */
-    strncpy( buffer, getval( tmpbuf), size - 1) ;
-    buffer[ size - 1] = '\0' ;
-    free( tmpbuf) ;
-    return TRUE;
 }
 
 /*

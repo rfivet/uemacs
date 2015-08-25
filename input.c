@@ -86,6 +86,23 @@ int mlyesno( const char *prompt)
 }
 
 /*
+ * nextarg:
+ *  get the next argument
+ *
+ * const char *prompt;      prompt to use if we must be interactive
+ * char *buffer;        buffer to put token into
+ * int size;            size of the buffer
+ * int terminator;      terminating char to be used on interactive fetch
+ */
+static int nextarg( const char *prompt, char *buf, int size, int terminator) {
+    /* if we are interactive, go get it! */
+    if( clexec == FALSE)
+        return getstring( prompt, buf, size, terminator) ;
+	else
+		return gettokval( buf, size) ;
+}
+
+/*
  * Write a prompt into the message line, then read back a response. Keep
  * track of the physical position of the cursor. If we are in a keyboard
  * macro throw the prompt away, and return the remembered response. This
