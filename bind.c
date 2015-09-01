@@ -441,7 +441,7 @@ static unsigned int getckey( int mflag) {
     if( clexec) {
 	    char tok[ NSTRING] ;  /* command incoming */
 
-		if( TRUE != macarg( tok, sizeof tok))	/* get the next token */
+		if( TRUE != gettokval( tok, sizeof tok))	/* get the next token */
 			c = 0 ;	/* return dummy key on failure */
 		else
 			c = stock( tok) ;

@@ -344,16 +344,17 @@ static char *gtfun( char *fname) {
 
 	arg1 = arg2 = NULL ;
 
+	assert( clexec == TRUE) ; /* means macarg can be replaced by gettokval */
 	/* if needed, retrieve the first argument */
 	if (funcs[fnum].f_type >= MONAMIC) {
-		if( macarg( argx, sizeof argx) != TRUE)
+		if( TRUE != gettokval( argx, sizeof argx))
 			return errorm;
 
 		/* if needed, retrieve the second argument */
 		if (funcs[fnum].f_type >= DYNAMIC) {
 			arg1 = malloc( strlen( argx) + 1) ;
 			strcpy( arg1, argx) ;
-			if( macarg( argx, sizeof argx) != TRUE) {
+			if( TRUE != gettokval( argx, sizeof argx)) {
 				free( arg1) ;
 				return errorm;
 			}
@@ -362,7 +363,7 @@ static char *gtfun( char *fname) {
 			if (funcs[fnum].f_type >= TRINAMIC) {
 				arg2 = malloc( strlen( argx) + 1) ;
 				strcpy( arg2, argx) ;
-				if( macarg( argx, sizeof argx) != TRUE) {
+				if( TRUE != gettokval( argx, sizeof argx)) {
 					free( arg1) ;
 					free( arg2) ;
 					return errorm;

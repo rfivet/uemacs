@@ -152,7 +152,7 @@ fn_t getname(void)
 
     /* if we are executing a command line get the next arg and match it */
     if (clexec) {
-        if( macarg( buf, sizeof buf) != TRUE)
+		if( TRUE != gettokval( buf, sizeof buf))
             return NULL;
         return fncmatch(&buf[0]);
     }

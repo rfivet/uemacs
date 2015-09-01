@@ -79,6 +79,7 @@ static int mstore = FALSE ;         /* storing text to macro flag   */
 
 static int dobuf( struct buffer *bp) ;
 static void freewhile( struct while_block *wp) ;
+static int macarg( char *tok, int toksz) ;
 
 void ue_system( const char *cmd) {
     int ret ;
@@ -179,8 +180,10 @@ static int docmd( char *cline) {
     /* process leadin argument */
     if( !is_it_cmd( tkn)) {
         f = TRUE;
-        strncpy( tkn, getval( tkn), sizeof tkn - 1) ;
-        tkn[ sizeof tkn - 1] = '\0' ;
+/* macarg already includes a getval, skip for now
+		strncpy( tkn, getval( tkn), sizeof tkn - 1) ;
+       	tkn[ sizeof tkn - 1] = '\0' ;
+*/
         n = atoi(tkn);
 
         /* and now get the command to execute */
@@ -308,16 +311,15 @@ boolean gettokval( char *tok, int size) {
  *
  * char *tok;       buffer to place argument
  */
-int macarg( char *tok, int toksz)
-{
-    boolean savcle ;    /* buffer to store original clexec */
-    int status;
+static int macarg( char *tok, int toksz) {
+	int status ;
+	boolean savcle ;	/* buffer to store original clexec */
 
-    savcle = clexec;    /* save execution mode */
-    clexec = TRUE;      /* get the argument */
-    status = mlreply( "", tok, toksz) ;
-    clexec = savcle;    /* restore execution mode */
-    return status;
+	savcle = clexec ;	/* save execution mode */
+	clexec = TRUE ;		/* get the argument */
+	status = gettokval( tok, toksz) ;
+	clexec = savcle ;	/* restore execution mode */
+	return status ;
 }
 
 /*

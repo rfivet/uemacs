@@ -20,7 +20,6 @@ int namedcmd( int f, int n) ;
 int execcmd( int f, int n) ;
 void gettoken( char *tok, int maxtoksize) ;
 boolean gettokval( char *tok, int maxtoksize) ;
-int macarg( char *tok, int toksz) ;
 int storemac( int f, int n) ;
 int execbuf( int f, int n) ;
 int execfile( int f, int n) ;
