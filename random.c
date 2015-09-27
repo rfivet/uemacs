@@ -12,6 +12,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "basic.h"
@@ -1191,24 +1192,26 @@ int fmatch(int ch)
  */
 int istring(int f, int n)
 {
-	int status;	/* status return code */
-	char tstring[ 512] ;	/* string to add */
+	int status ;	/* status return code */
+	char *tstring ;	/* string to add */
 
 	/* ask for string to insert */
-	status =
-	    mlreplyt( "String to insert<META>: ", tstring, sizeof tstring - 1) ;
-	if (status != TRUE)
-		return status;
+	tstring = newmlreplyt( "String to insert<META>: ") ;
+	if( tstring == NULL)
+		return FALSE ;
 
-	if (f == FALSE)
-		n = 1;
-
-	if (n < 0)
-		n = -n;
+	if( f == FALSE)
+		n = 1 ;
+	else if( n < 0)
+		n = -n ;
 
 	/* insert it */
-	while (n-- && (status = linstr(tstring)));
-	return status;
+	status = TRUE ;
+	while( n-- && status)
+		status = linstr( tstring) ;
+
+	free( tstring) ;
+	return status ;
 }
 
 /*

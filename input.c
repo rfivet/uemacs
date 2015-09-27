@@ -102,6 +102,26 @@ static int nextarg( const char *prompt, char *buf, int size, int terminator) {
 		return gettokval( buf, size) ;
 }
 
+static char *newnextarg( const char *prompt, int terminator) {
+    /* if we are interactive, go get it! */
+    if( clexec == FALSE) {
+    	char	*buf ;
+    	int		size ;
+
+		size = term.t_ncol + 1 ;
+		buf = malloc( size) ;
+		if( buf != NULL) {
+        	if( TRUE != getstring( prompt, buf, size, terminator)) {
+        		free( buf) ;
+        		buf = NULL ;
+        	}
+        }
+        
+		return buf ;
+	} else
+		return getnewtokval() ;
+}
+
 /*
  * Write a prompt into the message line, then read back a response. Keep
  * track of the physical position of the cursor. If we are in a keyboard
@@ -116,6 +136,10 @@ int mlreply( const char *prompt, char *buf, int nbuf) {
 
 int mlreplyt( const char *prompt, char *buf, int nbuf) {
     return nextarg( prompt, buf, nbuf, metac) ;
+}
+
+char *newmlreplyt( const char *prompt) {
+    return newnextarg( prompt, metac) ;
 }
 
 /*
