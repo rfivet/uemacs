@@ -11,6 +11,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "estruct.h"
@@ -439,12 +440,15 @@ static unsigned int getckey( int mflag) {
 
     /* check to see if we are executing a command line */
     if( clexec) {
-	    char tok[ NSTRING] ;  /* command incoming */
-
-		if( TRUE != gettokval( tok, sizeof tok))	/* get the next token */
+		char *tok ;	/* command incoming */
+		
+		tok = getnewtokval() ;	/* get the next token */
+		if( tok == NULL)
 			c = 0 ;	/* return dummy key on failure */
-		else
+		else {
 			c = stock( tok) ;
+			free( tok) ;
+		}
     } else {	/* or the normal way */
 	    if( mflag)
     	    c = get1key() ;

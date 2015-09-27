@@ -327,15 +327,18 @@ void gettoken( char *tok, int maxtoksize) {
 	execstr = token( execstr, tok, maxtoksize) ;
 }
 
-void getnewtoken( char **tokref) {
-	execstr = newtoken( execstr, tokref) ;
+static char *getnewtoken( void) {
+	char *tok ;
+
+	execstr = newtoken( execstr, &tok) ;
+	return tok ;
 }
 
 boolean gettokval( char *tok, int size) {
 	char *tmpbuf ;
 
     /* grab token and advance past */
-	getnewtoken( &tmpbuf) ;
+	tmpbuf = getnewtoken() ;
 	if( tmpbuf == NULL)
 		return FALSE ;
 
@@ -344,6 +347,26 @@ boolean gettokval( char *tok, int size) {
     tok[ size - 1] = '\0' ;
     free( tmpbuf) ;
     return TRUE ;
+}
+
+char *getnewtokval( void) {
+	char *tmpbuf ;
+	char *tmpval ;
+	char *valbuf ;
+
+    /* grab token and advance past */
+	tmpbuf = getnewtoken() ;
+	if( tmpbuf == NULL)
+		return NULL ;
+
+    /* evaluate it */
+    tmpval = getval( tmpbuf) ;
+    valbuf = malloc( strlen( tmpval) + 1 ) ;
+    if( valbuf != NULL)
+		strcpy( valbuf, tmpval) ;
+
+    free( tmpbuf) ;
+    return valbuf ;
 }
 
 /*

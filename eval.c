@@ -312,9 +312,9 @@ void varinit(void)
  */
 static char *gtfun( char *fname) {
 	unsigned fnum ;				/* index to function to eval */
-	char argx[ 512] ;			/* last argument, fixed sized allocation */
 	char *arg1 ; 				/* value of first argument */
 	char *arg2 ; 				/* value of second argument */
+	char *arg3 ;				/* last argument */
 	char *retstr ;				/* return value */
 	int	low, high ;				/* binary search indexes */
 
@@ -342,28 +342,26 @@ static char *gtfun( char *fname) {
 	if (fnum == ARRAY_SIZE(funcs))
 		return errorm;
 
-	arg1 = arg2 = NULL ;
-
+	arg1 = arg2 = arg3 = NULL ;
 	assert( clexec == TRUE) ; /* means macarg can be replaced by gettokval */
 	/* if needed, retrieve the first argument */
 	if (funcs[fnum].f_type >= MONAMIC) {
-		if( TRUE != gettokval( argx, sizeof argx))
+		arg1 = getnewtokval() ;
+		if( arg1 == NULL)
 			return errorm;
 
 		/* if needed, retrieve the second argument */
 		if (funcs[fnum].f_type >= DYNAMIC) {
-			arg1 = malloc( strlen( argx) + 1) ;
-			strcpy( arg1, argx) ;
-			if( TRUE != gettokval( argx, sizeof argx)) {
+			arg2 = getnewtokval() ;
+			if( arg2 == NULL) {
 				free( arg1) ;
 				return errorm;
 			}
 
 			/* if needed, retrieve the third argument */
 			if (funcs[fnum].f_type >= TRINAMIC) {
-				arg2 = malloc( strlen( argx) + 1) ;
-				strcpy( arg2, argx) ;
-				if( TRUE != gettokval( argx, sizeof argx)) {
+				arg3 = getnewtokval() ;
+				if( arg3 == NULL) {
 					free( arg1) ;
 					free( arg2) ;
 					return errorm;
@@ -377,30 +375,30 @@ static char *gtfun( char *fname) {
 		int sz ;
 
 	case UFADD | DYNAMIC:
-		retstr = i_to_a( atoi( arg1) + atoi( argx)) ;
+		retstr = i_to_a( atoi( arg1) + atoi( arg2)) ;
 		break ;
 	case UFSUB | DYNAMIC:
-		retstr = i_to_a( atoi( arg1) - atoi( argx)) ;
+		retstr = i_to_a( atoi( arg1) - atoi( arg2)) ;
 		break ;
 	case UFTIMES | DYNAMIC:
-		retstr = i_to_a( atoi( arg1) * atoi( argx)) ;
+		retstr = i_to_a( atoi( arg1) * atoi( arg2)) ;
 		break ;
 	case UFDIV | DYNAMIC:
-		sz = atoi( argx) ;
+		sz = atoi( arg2) ;
 		retstr = (sz == 0) ? errorm : i_to_a( atoi( arg1) / sz) ;
 		break ;
 	case UFMOD | DYNAMIC:
-		sz = atoi( argx) ;
+		sz = atoi( arg2) ;
 		retstr = (sz == 0) ? errorm : i_to_a( atoi( arg1) % sz) ;
 		break ;
 	case UFNEG | MONAMIC:
-		retstr = i_to_a( -atoi( argx)) ;
+		retstr = i_to_a( -atoi( arg1)) ;
 		break ;
 	case UFCAT | DYNAMIC: {
 		int sz1 ;
 
 		sz1 = strlen( arg1) ;
-		sz = sz1 + strlen( argx) + 1 ;
+		sz = sz1 + strlen( arg2) + 1 ;
 		if( sz > ressize) {
 			free( result) ;
 			result = malloc( sz) ;
@@ -408,12 +406,12 @@ static char *gtfun( char *fname) {
 		}
 
 		strcpy( result, arg1) ;
-		strcpy( &result[ sz1], argx) ;
+		strcpy( &result[ sz1], arg2) ;
 		retstr = result ;
 	}
 		break ;
 	case UFLEFT | DYNAMIC:
-		sz = atoi( argx) ;
+		sz = atoi( arg2) ;
 		if( sz >= ressize) {
 			free( result) ;
 			result = malloc( sz + 1) ;
@@ -425,7 +423,7 @@ static char *gtfun( char *fname) {
 		retstr = result ;
 		break ;
 	case UFRIGHT | DYNAMIC:
-		sz = atoi( argx) ;
+		sz = atoi( arg2) ;
 		if( sz >= ressize) {
 			free( result) ;
 			result = malloc( sz + 1) ;
@@ -435,7 +433,7 @@ static char *gtfun( char *fname) {
 		retstr = strcpy( result, &arg1[ strlen( arg1) - sz]) ;
 		break ;
 	case UFMID | TRINAMIC:
-		sz = atoi( argx) ;
+		sz = atoi( arg3) ;
 		if( sz >= ressize) {
 			free( result) ;
 			result = malloc( sz + 1) ;
@@ -447,28 +445,28 @@ static char *gtfun( char *fname) {
 		retstr = result ;
 		break ;
 	case UFNOT | MONAMIC:
-		retstr = ltos( stol( argx) == FALSE) ;
+		retstr = ltos( stol( arg1) == FALSE) ;
 		break ;
 	case UFEQUAL | DYNAMIC:
-		retstr = ltos( atoi( arg1) == atoi( argx)) ;
+		retstr = ltos( atoi( arg1) == atoi( arg2)) ;
 		break ;
 	case UFLESS | DYNAMIC:
-		retstr = ltos( atoi( arg1) < atoi( argx)) ;
+		retstr = ltos( atoi( arg1) < atoi( arg2)) ;
 		break ;
 	case UFGREATER | DYNAMIC:
-		retstr = ltos( atoi( arg1) > atoi( argx)) ;
+		retstr = ltos( atoi( arg1) > atoi( arg2)) ;
 		break ;
 	case UFSEQUAL | DYNAMIC:
-		retstr = ltos( strcmp( arg1, argx) == 0) ;
+		retstr = ltos( strcmp( arg1, arg2) == 0) ;
 		break ;
 	case UFSLESS | DYNAMIC:
-		retstr = ltos( strcmp( arg1, argx) < 0) ;
+		retstr = ltos( strcmp( arg1, arg2) < 0) ;
 		break ;
 	case UFSGREAT | DYNAMIC:
-		retstr = ltos( strcmp( arg1, argx) > 0) ;
+		retstr = ltos( strcmp( arg1, arg2) > 0) ;
 		break ;
 	case UFIND | MONAMIC:
-		retstr = getval( argx) ;
+		retstr = getval( arg1) ;
 		sz = strlen( retstr) + 1 ;
 		if( sz > ressize) {
 			free( result) ;
@@ -479,42 +477,42 @@ static char *gtfun( char *fname) {
 		retstr = strcpy( result, retstr) ;
 		break ;
 	case UFAND | DYNAMIC:
-		retstr = ltos( stol( arg1) && stol( argx)) ;
+		retstr = ltos( stol( arg1) && stol( arg2)) ;
 		break ;
 	case UFOR | DYNAMIC:
-		retstr = ltos( stol( arg1) || stol( argx)) ;
+		retstr = ltos( stol( arg1) || stol( arg2)) ;
 		break ;
 	case UFLENGTH | MONAMIC:
-		retstr = i_to_a( strlen( argx)) ;
+		retstr = i_to_a( strlen( arg1)) ;
 		break ;
 	case UFUPPER | MONAMIC:
-		sz = strlen( argx) ;
+		sz = strlen( arg1) ;
 		if( sz >= ressize) {
 			free( result) ;
 			result = malloc( sz + 1) ;
 			ressize = sz + 1 ;
 		}
 
-		retstr = mkupper( result, argx) ;
+		retstr = mkupper( result, arg1) ;
 		break ;
 	case UFLOWER | MONAMIC:
-		sz = strlen( argx) ;
+		sz = strlen( arg1) ;
 		if( sz >= ressize) {
 			free( result) ;
 			result = malloc( sz + 1) ;
 			ressize = sz + 1 ;
 		}
 
-		strcpy( result, argx) ;	/* result is at least as long as argx */
+		strcpy( result, arg1) ;	/* result is at least as long as arg1 */
 		retstr = mklower( result) ;
 		break ;
 	case UFTRUTH | MONAMIC:
-		retstr = ltos( atoi( argx) == 42) ;
+		retstr = ltos( atoi( arg1) == 42) ;
 		break ;
 	case UFASCII | MONAMIC: {
 		unicode_t	c ;
 		
-		utf8_to_unicode( argx, 0, 4, &c) ;
+		utf8_to_unicode( arg1, 0, 4, &c) ;
 		retstr = i_to_a( c) ;
 		}
 
@@ -522,7 +520,7 @@ static char *gtfun( char *fname) {
 	case UFCHR | MONAMIC: {
 			unicode_t c ;
 
-			c = atoi( argx) ;
+			c = atoi( arg1) ;
 			if( c > 0x10FFFF)
 				retstr = errorm ;
 			else {
@@ -539,7 +537,7 @@ static char *gtfun( char *fname) {
 		retstr = result ;
 		break ;
 	case UFRND | MONAMIC:
-		sz = abs( atoi( argx)) ;
+		sz = abs( atoi( arg1)) ;
 		if( sz == 0)
 			sz = ernd() ;
 		else
@@ -548,14 +546,14 @@ static char *gtfun( char *fname) {
 		retstr = i_to_a( sz) ;
 		break ;
 	case UFABS | MONAMIC:
-		retstr = i_to_a( abs( atoi( argx))) ;
+		retstr = i_to_a( abs( atoi( arg1))) ;
 		break ;
 	case UFSINDEX | DYNAMIC:
-		retstr = i_to_a( sindex( arg1, argx)) ;
+		retstr = i_to_a( sindex( arg1, arg2)) ;
 		break ;
 	case UFENV | MONAMIC:
 #if	ENVFUNC
-		retstr = getenv( argx) ;
+		retstr = getenv( arg1) ;
 		if( retstr == NULL)
 			retstr = "" ;
 #else
@@ -563,35 +561,38 @@ static char *gtfun( char *fname) {
 #endif
 		break ;
 	case UFBIND | MONAMIC:
-		retstr = transbind( argx) ;
+		retstr = transbind( arg1) ;
 		break ;
 	case UFEXIST | MONAMIC:
-		retstr = ltos( fexist( argx)) ;
+		retstr = ltos( fexist( arg1)) ;
 		break ;
 	case UFFIND | MONAMIC:
-		retstr = flook( argx, TRUE) ;
+		retstr = flook( arg1, TRUE) ;
 		if( retstr == NULL)
 			retstr = "" ;
 		break ;
 	case UFBAND | DYNAMIC:
-		retstr = i_to_a( atoi( arg1) & atoi( argx)) ;
+		retstr = i_to_a( atoi( arg1) & atoi( arg2)) ;
 		break ;
 	case UFBOR | DYNAMIC:
-		retstr = i_to_a( atoi( arg1) | atoi( argx)) ;
+		retstr = i_to_a( atoi( arg1) | atoi( arg2)) ;
 		break ;
 	case UFBXOR | DYNAMIC:
-		retstr = i_to_a( atoi( arg1) ^ atoi( argx)) ;
+		retstr = i_to_a( atoi( arg1) ^ atoi( arg2)) ;
 		break ;
-	case UFBNOT | DYNAMIC:
-		retstr = i_to_a( ~atoi( argx)) ;
+	case UFBNOT | MONAMIC:
+		retstr = i_to_a( ~atoi( arg1)) ;
 		break ;
 	case UFXLATE | TRINAMIC:
-		retstr = xlat( arg1, arg2, argx) ;
+		retstr = xlat( arg1, arg2, arg3) ;
 		break ;
 	default:
 		assert( FALSE) ;	/* never should get here */
 		retstr = errorm ;
 	}
+
+	if( arg3)
+		free( arg3) ;
 
 	if( arg2)
 		free( arg2) ;
