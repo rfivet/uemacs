@@ -212,16 +212,21 @@ static int docmd( char *cline) {
 }
 
 /*
- * token:
+ * new token:
  *  chop a token off a string
  *  return a pointer past the token
  *
- * char *src, *tok; source string, destination token string
- * int size;        maximum size of token
+ * char *src		in, source string
+ * char **tokref	out, destination of newly allocated token string
  */
-static char *token( char *src, char *tok, int size) {
-    int quotef; /* is the current string quoted? */
-    char c; /* temporary character */
+static char *newtoken( char *src, char **tokref) {
+    boolean quotef ;	/* is the current string quoted? */
+    char	*tok ;		/* allocated string */
+    int		size ;		/* allocated size */
+    int		idx = 0 ;	/* insertion point into token string */
+
+	tok = malloc( NSTRING) ;
+	size = (tok == NULL) ? 0 : NSTRING ;
 
     /* first scan past any whitespace in the source string */
     while (*src == ' ' || *src == '\t')
@@ -230,6 +235,8 @@ static char *token( char *src, char *tok, int size) {
     /* scan through the source string */
     quotef = FALSE;
     while (*src) {
+	    char c ;	/* temporary character */
+
         /* process special characters */
         if (*src == '~') {
             ++src;
@@ -254,9 +261,6 @@ static char *token( char *src, char *tok, int size) {
             default:
                 c = *(src - 1);
             }
-            if (--size > 0) {
-                *tok++ = c;
-            }
         } else {
             /* check for the end of the token */
             if (quotef) {
@@ -273,31 +277,67 @@ static char *token( char *src, char *tok, int size) {
 
             /* record the character */
             c = *src++;
-            if (--size > 0)
-                *tok++ = c;
         }
+
+		if( idx < size - 1)
+			tok[ idx++] = c ;
+		else if( size > 1) {
+			char *tmptok ;
+			
+			tmptok = malloc( size + 32) ;
+			if( tmptok == NULL)
+				size = 0 ;
+			else {
+				memcpy( tmptok, tok, idx) ;
+				free( tok) ;
+				tok = tmptok ;
+				size += 32 ;
+				tok[ idx++] = c ;
+			}
+		}
     }
 
     /* terminate the token and exit */
     if (*src)
         ++src;
-    *tok = 0;
+
+	if( tok != NULL)
+		tok[ idx] = 0 ;
+
+	*tokref = tok ;
     return src;
+}
+
+static char *token( char *srcstr, char *tok, int maxtoksize) {
+	char *newtok ;
+
+	srcstr = newtoken( srcstr, &newtok) ;
+	if( newtok == NULL)
+		tok[ 0] = 0 ;
+	else {
+		strncpy( tok, newtok, maxtoksize - 1) ;
+		tok[ maxtoksize - 1] = 0 ;
+		free( newtok) ;
+	}
+
+	return srcstr ;
 }
 
 void gettoken( char *tok, int maxtoksize) {
 	execstr = token( execstr, tok, maxtoksize) ;
 }
 
+void getnewtoken( char **tokref) {
+	execstr = newtoken( execstr, tokref) ;
+}
+
 boolean gettokval( char *tok, int size) {
 	char *tmpbuf ;
-	
-	tmpbuf = malloc( size) ;
-	if( tmpbuf == NULL)
-		return FALSE ;
 
     /* grab token and advance past */
-	gettoken( tmpbuf, size) ;
+	getnewtoken( &tmpbuf) ;
+	if( tmpbuf == NULL)
+		return FALSE ;
 
     /* evaluate it */
     strncpy( tok, getval( tmpbuf), size - 1) ;
@@ -770,10 +810,8 @@ static int dobuf(struct buffer *bp)
             case DGOTO: /* GOTO directive */
                 /* .....only if we are currently executing */
                 if (execlevel == 0) {
-
                     /* grab label to jump to */
-                    eline =
-                        token( eline, golabel, sizeof golabel) ;
+                    eline = token( eline, golabel, sizeof golabel) ;
                     linlen = strlen(golabel);
                     glp = hlp->l_fp;
                     while (glp != hlp) {
