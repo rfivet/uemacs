@@ -102,24 +102,35 @@ static int nextarg( const char *prompt, char *buf, int size, int terminator) {
 		return gettokval( buf, size) ;
 }
 
-static char *newnextarg( const char *prompt, int terminator) {
-    /* if we are interactive, go get it! */
-    if( clexec == FALSE) {
-    	char	*buf ;
-    	int		size ;
+static newarg_t *newnextarg( const char *prompt, int size, int terminator) {
+	newarg_t *argp ;
 
-		size = term.t_ncol + 1 ;
-		buf = malloc( size) ;
-		if( buf != NULL) {
-        	if( TRUE != getstring( prompt, buf, size, terminator)) {
-        		free( buf) ;
-        		buf = NULL ;
-        	}
-        }
-        
-		return buf ;
-	} else
-		return getnewtokval() ;
+	argp = malloc( sizeof( newarg_t)) ;
+	if( argp != NULL) {
+	    /* if we are interactive, go get it! */
+	    if( clexec == FALSE) {
+			if( size <= 1) {
+				size = term.t_ncol - strlen( prompt) + 1 ;
+				if( size < 24)
+					size = 24 ;
+			}
+
+			argp->buf = malloc( size) ;
+			if( argp->buf != NULL) {
+	        	argp->status = getstring( prompt, argp->buf, size, terminator) ;
+	        	if( TRUE != argp->status) {
+	        		free( argp->buf) ;
+	        		argp->buf = NULL ;
+	        	}
+	        } else
+	        	argp->status = FALSE ;
+		} else {
+			argp->buf = getnewtokval() ;
+			argp->status = (argp->buf == NULL) ? FALSE : TRUE ;
+		}
+	}
+	
+	return argp ;
 }
 
 /*
@@ -138,8 +149,8 @@ int mlreplyt( const char *prompt, char *buf, int nbuf) {
     return nextarg( prompt, buf, nbuf, metac) ;
 }
 
-char *newmlreplyt( const char *prompt) {
-    return newnextarg( prompt, metac) ;
+newarg_t *newmlargt( const char *prompt, int size) {
+	return newnextarg( prompt, size, metac) ;
 }
 
 /*

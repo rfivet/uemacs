@@ -4,6 +4,11 @@
 #include "bind.h"
 
 
+typedef struct {
+	int status ;
+	char *buf ;
+} newarg_t ;
+
 typedef enum {
 	STOP, PLAY, RECORD
 } kbdstate ;
@@ -25,7 +30,7 @@ extern const int nlc ;	/* end of input char */
 int mlyesno( const char *prompt) ;
 int mlreply( const char *prompt, char *buf, int nbuf) ;
 int mlreplyt( const char *prompt, char *buf, int nbuf) ;
-char *newmlreplyt( const char *prompt) ;
+newarg_t *newmlargt( const char *prompt, int size) ;
 int ectoc( int c) ;
 fn_t getname( void) ;
 int tgetc( void) ;

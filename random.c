@@ -1185,13 +1185,20 @@ int fmatch(int ch)
 }
 
 static int iovstring( int f, int n, const char *prompt, int (*fun)( char *)) {
+	newarg_t *argp ;
 	int status ;	/* status return code */
 	char *tstring ;	/* string to add */
 
 	/* ask for string to insert */
-	tstring = newmlreplyt( prompt) ;
-	if( tstring == NULL)
+	argp = newmlargt( prompt, 0) ; /* grab as big a token as screen allow */
+	if( argp == NULL)
 		return FALSE ;
+
+	status = argp->status ;
+	tstring = argp->buf ;
+	free( argp) ;
+	if( tstring == NULL)
+		return status ;
 
 	if( f == FALSE)
 		n = 1 ;
@@ -1199,8 +1206,7 @@ static int iovstring( int f, int n, const char *prompt, int (*fun)( char *)) {
 		n = -n ;
 
 	/* insert it */
-	status = TRUE ;
-	while( n-- && status)
+	while( n-- && status == TRUE)
 		status = fun( tstring) ;
 
 	free( tstring) ;
