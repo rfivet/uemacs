@@ -1184,19 +1184,12 @@ int fmatch(int ch)
 	return TRUE;
 }
 
-/*
- * ask for and insert a string into the current
- * buffer at the current point
- *
- * int f, n;		ignored arguments
- */
-int istring(int f, int n)
-{
+static int iovstring( int f, int n, const char *prompt, int (*fun)( char *)) {
 	int status ;	/* status return code */
 	char *tstring ;	/* string to add */
 
 	/* ask for string to insert */
-	tstring = newmlreplyt( "String to insert<META>: ") ;
+	tstring = newmlreplyt( prompt) ;
 	if( tstring == NULL)
 		return FALSE ;
 
@@ -1208,10 +1201,20 @@ int istring(int f, int n)
 	/* insert it */
 	status = TRUE ;
 	while( n-- && status)
-		status = linstr( tstring) ;
+		status = fun( tstring) ;
 
 	free( tstring) ;
 	return status ;
+}
+
+/*
+ * ask for and insert a string into the current
+ * buffer at the current point
+ *
+ * int f, n;		ignored arguments
+ */
+int istring( int f, int n) {
+	return iovstring( f, n, "String to insert<META>: ", linstr) ;
 }
 
 /*
@@ -1220,24 +1223,8 @@ int istring(int f, int n)
  *
  * int f, n;		ignored arguments
  */
-int ovstring(int f, int n)
-{
-	int status;	/* status return code */
-	char tstring[ NSTRING + 1] ;	/* string to add */
-
-	/* ask for string to insert */
-	status =
-	    mlreplyt( "String to overwrite<META>: ", tstring, NSTRING) ;
-	if (status != TRUE)
-		return status;
-
-	if (f == FALSE)
-		n = 1;
-
-	if (n < 0)
-		n = -n;
-
-	/* insert it */
-	while (n-- && (status = lover(tstring)));
-	return status;
+int ovstring( int f, int n) {
+	return iovstring( f, n, "String to overwrite<META>: ", lover) ;
 }
+
+/* end of random.c */
