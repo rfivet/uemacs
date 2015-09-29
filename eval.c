@@ -769,7 +769,7 @@ int setvar(int f, int n)
 	int status;	/* status return */
 	struct variable_description vd;		/* variable num/type */
 	char var[NVSIZE + 2];	/* name of variable to fetch %1234567890\0 */
-	char value[ 2 * NSTRING] ;	/* value to set variable to */
+	char *value ;			/* value to set variable to */
 
 	/* first get the variable to set.. */
 	if (clexec == FALSE) {
@@ -792,11 +792,15 @@ int setvar(int f, int n)
 
 	/* get the value for that variable */
 	if( f == TRUE) {
+		value = malloc( NSTRING) ;
+		if( value == NULL)
+			return FALSE ;
+
 		/* a bit overcautious here in using strncpy */
-		strncpy( value, i_to_a( n), sizeof value - 1) ;
-		value[ sizeof value - 1] = '\0' ;
+		strncpy( value, i_to_a( n), NSTRING - 1) ;
+		value[ NSTRING - 1] = '\0' ;
 	} else {
-		status = mlreply( "Value: ", value, sizeof value);
+		status = newmlarg( &value, "Value: ", 0) ;
 		if (status != TRUE)
 			return status;
 	}
@@ -814,6 +818,7 @@ int setvar(int f, int n)
 #endif
 
 	/* and return it */
+	free( value) ;
 	return status;
 }
 
@@ -1430,20 +1435,15 @@ int clrmes( int f, int n) {
  */
 int writemsg( int f, int n) {
 	int status ;
-	int size ;
 	char *buf ;		/* buffer to receive message into */
 
-	size = term.t_ncol + 1 ;
-	buf = malloc( size) ;
-	if( buf == NULL)
-		return FALSE ;
-
-	status = mlreply( "Message to write: ", buf, size) ;
-	if( status == TRUE)
+	status = newmlarg( &buf, "Message to write: ", 0) ;
+	if( status == TRUE) {
 	/* write the message out */
 		mlforce( buf) ;
+		free( buf) ;
+	}
 
-	free( buf) ;
 	return status ;
 }
 

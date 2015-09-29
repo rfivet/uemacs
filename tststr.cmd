@@ -10,6 +10,7 @@ insert-string %mypath
 newline
 insert-string &cat "Length of $PATH: " &len $PATH
 newline
+insert-string &cat "Length of %mypath: " &cat &len %mypath ~n
 ; Insert string with escaped characters
 insert-string "hello, world~n"
 newline
@@ -35,6 +36,9 @@ set %expect &len %nam
     newline
     set %nam &cat %nam %nam
     set %expect &tim %expect 2
+	!if &not &les %expect 1024
+		!break
+	!endif
 !endwhile
 insert-string %nam
 newline
