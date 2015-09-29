@@ -102,35 +102,36 @@ static int nextarg( const char *prompt, char *buf, int size, int terminator) {
 		return gettokval( buf, size) ;
 }
 
-static newarg_t *newnextarg( const char *prompt, int size, int terminator) {
-	newarg_t *argp ;
+static int newnextarg( char **outbufref, const char *prompt, int size,
+															int terminator) {
+	int status ;
+	char *buf ;
 
-	argp = malloc( sizeof( newarg_t)) ;
-	if( argp != NULL) {
-	    /* if we are interactive, go get it! */
-	    if( clexec == FALSE) {
-			if( size <= 1) {
-				size = term.t_ncol - strlen( prompt) + 1 ;
-				if( size < 24)
-					size = 24 ;
-			}
-
-			argp->buf = malloc( size) ;
-			if( argp->buf != NULL) {
-	        	argp->status = getstring( prompt, argp->buf, size, terminator) ;
-	        	if( TRUE != argp->status) {
-	        		free( argp->buf) ;
-	        		argp->buf = NULL ;
-	        	}
-	        } else
-	        	argp->status = FALSE ;
-		} else {
-			argp->buf = getnewtokval() ;
-			argp->status = (argp->buf == NULL) ? FALSE : TRUE ;
+    /* if we are interactive, go get it! */
+    if( clexec == FALSE) {
+		if( size <= 1) {
+			size = term.t_ncol - strlen( prompt) + 1 ;
+			if( size < 24)
+				size = 24 ;
 		}
+
+		buf = malloc( size) ;
+		if( buf == NULL)
+	    	status = FALSE ;
+		else {
+			status = getstring( prompt, buf, size, terminator) ;
+	        if( TRUE != status) {
+	        	free( buf) ;
+	        	buf = NULL ;
+	        }
+	    }
+	} else {
+		buf = getnewtokval() ;
+		status = (buf == NULL) ? FALSE : TRUE ;
 	}
-	
-	return argp ;
+
+	*outbufref = buf ;	
+	return status ;
 }
 
 /*
@@ -145,12 +146,8 @@ int mlreply( const char *prompt, char *buf, int nbuf) {
     return nextarg( prompt, buf, nbuf, nlc) ;
 }
 
-int mlreplyt( const char *prompt, char *buf, int nbuf) {
-    return nextarg( prompt, buf, nbuf, metac) ;
-}
-
-newarg_t *newmlargt( const char *prompt, int size) {
-	return newnextarg( prompt, size, metac) ;
+int newmlargt( char **outbufref, const char *prompt, int size) {
+	return newnextarg( outbufref, prompt, size, metac) ;
 }
 
 /*

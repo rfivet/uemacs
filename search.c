@@ -705,6 +705,7 @@ static int readpattern(char *prompt, char *apat, int srch)
 {
 	int status;
 	char tpat[NPAT + 20];
+	char *dynpat ;	/* dynamically allocated pattern buffer */
 
 	setprompt( tpat, NPAT / 2, prompt, apat) ;
 
@@ -713,9 +714,11 @@ static int readpattern(char *prompt, char *apat, int srch)
 	 * Then, if it's the search string, make a reversed pattern.
 	 * *Then*, make the meta-pattern, if we are defined that way.
 	 */
-	status = mlreplyt( tpat, tpat, NPAT) ;
+	status = newmlargt( &dynpat, tpat, NPAT) ;
 	if( status == TRUE) {
-		strcpy(apat, tpat);
+		strncpy( apat, dynpat, NPAT - 1) ;
+		apat[ NPAT - 1] = 0 ;
+		free( dynpat) ;
 		if (srch) {	/* If we are doing the search string. */
 			/* Reverse string copy, and remember
 			 * the length for substitution purposes.
