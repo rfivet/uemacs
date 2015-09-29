@@ -146,6 +146,10 @@ int mlreply( const char *prompt, char *buf, int nbuf) {
     return nextarg( prompt, buf, nbuf, nlc) ;
 }
 
+int newmlarg( char **outbufref, const char *prompt, int size) {
+	return newnextarg( outbufref, prompt, size, nlc) ;
+}
+
 int newmlargt( char **outbufref, const char *prompt, int size) {
 	return newnextarg( outbufref, prompt, size, metac) ;
 }

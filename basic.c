@@ -90,25 +90,26 @@ int gotoeol(int f, int n)
  *
  * @n: The specified line position at the current buffer.
  */
-int gotoline(int f, int n)
-{
-	int status ;
-	char arg[ NSTRING] ; /* Buffer to hold argument. */
-
+int gotoline( int f, int n) {
 	/* Get an argument if one doesnt exist. */
 	if( f == FALSE) {
-		status = mlreply( "Line to GOTO: ", arg, sizeof arg) ;
+		int status ;
+		char *arg ;	/* Buffer to hold argument. */
+
+		status = newmlarg( &arg, "Line to GOTO: ", 0) ;
 		if( status != TRUE) {
 			mloutstr( "(Aborted)") ;
 			return status ;
 		}
 
 		n = atoi( arg) ;
+		free( arg) ;
 	}
-        /* Handle the case where the user may be passed something like this:
-         * em filename +
-         * In this case we just go to the end of the buffer.
-         */
+
+	/* Handle the case where the user may be passed something like this:
+	 * em filename +
+	 * In this case we just go to the end of the buffer.
+	 */
 	if (n == 0)
 		return gotoeob(f, n);
 
