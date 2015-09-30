@@ -43,7 +43,7 @@ ifeq ($(uname_S),Darwin)
  DEFINES=-DAUTOCONF -DPOSIX -DSYSV -D_DARWIN_C_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE -D_XOPEN_SOURCE=600
 endif
 ifeq ($(uname_S),CYGWIN)
- DEFINES=-DAUTOCONF -DCYGWIN -DSYSV -DPROGRAM=$(PROGRAM)
+ DEFINES=-DAUTOCONF -DCYGWIN -DPOSIX -DSYSV -DPROGRAM=$(PROGRAM)
  LIBS=-lcurses
 endif
 ifeq ($(uname_S),MINGW32)
@@ -176,7 +176,7 @@ names.o: names.c names.h basic.h bind.h bindable.h buffer.h crypt.h \
  line.h retcode.h utf8.h display.h estruct.h eval.h exec.h file.h \
  isearch.h region.h random.h search.h spawn.h window.h defines.h word.h
 pklock.o: pklock.c estruct.h pklock.h
-posix.o: posix.c
+posix.o: posix.c termio.h estruct.h retcode.h utf8.h
 random.o: random.c random.h basic.h buffer.h crypt.h line.h retcode.h \
  utf8.h display.h estruct.h execute.h input.h bind.h search.h terminal.h \
  defines.h window.h
@@ -190,7 +190,7 @@ spawn.o: spawn.c spawn.h defines.h buffer.h crypt.h line.h retcode.h \
  terminal.h window.h
 tcap.o: tcap.c terminal.h defines.h retcode.h display.h estruct.h \
  termio.h
-termio.o: termio.c termio.h estruct.h retcode.h utf8.h
+termio.o: termio.c
 utf8.o: utf8.c utf8.h
 window.o: window.c window.h defines.h buffer.h crypt.h line.h retcode.h \
  utf8.h basic.h display.h estruct.h execute.h terminal.h wrapper.h
