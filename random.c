@@ -944,7 +944,7 @@ static int adjustmode( int kind, int global) {
 	unsigned i ;	/* loop index */
 	int status;	/* error return on input */
 	char prompt[50];	/* string to prompt user with */
-	char cbuf[ NSTRING] ;	/* buffer to recieve mode name into */
+	char *cbuf ;	/* buffer to recieve mode name into */
 
 	/* build the proper prompt string */
 	if (global)
@@ -959,7 +959,7 @@ static int adjustmode( int kind, int global) {
 
 	/* prompt the user and get an answer */
 
-	status = mlreply( prompt, cbuf, sizeof cbuf - 1) ;
+	status = newmlarg( &cbuf, prompt, 0) ;
 	if (status != TRUE)
 		return status;
 
@@ -987,6 +987,7 @@ static int adjustmode( int kind, int global) {
 			curwp->w_flag |= WFCOLR;
 #endif
 			mlerase();
+			free( cbuf) ;
 			return TRUE;
 		}
 	}
@@ -1009,11 +1010,13 @@ static int adjustmode( int kind, int global) {
 			if (global == 0)
 				upmode();
 			mlerase();	/* erase the junk */
+			free( cbuf) ;
 			return TRUE;
 		}
 	}
 
 	mlwrite("No such mode!");
+	free( cbuf) ;
 	return FALSE;
 }
 
