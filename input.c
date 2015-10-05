@@ -52,7 +52,9 @@ int ctlxc = CONTROL | 'X' ;		/* current control X prefix char */
 int reptc = CONTROL | 'U' ;		/* current universal repeat char */
 int abortc = CONTROL | 'G' ;		/* current abort command char	 */
 
-static const int quotec = 0x11 ;	/* quote char during mlreply()	 */
+const int nlc = CONTROL | 'J' ;		/* end of input char */
+
+static const int quotec = 0x11 ;	/* quote char during getstring()	 */
 
 static void outstring( char *s) ;
 
@@ -84,6 +86,47 @@ int mlyesno( const char *prompt)
 }
 
 /*
+ * newnextarg:
+ *  get the next argument
+ *
+ * char **outbufref ;	buffer to put token into
+ * const char *prompt ;	prompt to use if we must be interactive
+ * int size ;			size of the buffer
+ * int terminator ;		terminating char to be used on interactive fetch
+ */
+static int newnextarg( char **outbufref, const char *prompt, int size,
+															int terminator) {
+	int status ;
+	char *buf ;
+
+    /* if we are interactive, go get it! */
+    if( clexec == FALSE) {
+		if( size <= 1) {
+			size = term.t_ncol - strlen( prompt) + 1 ;
+			if( size < 24)
+				size = 24 ;
+		}
+
+		buf = malloc( size) ;
+		if( buf == NULL)
+	    	status = FALSE ;
+		else {
+			status = getstring( prompt, buf, size, terminator) ;
+	        if( TRUE != status) {
+	        	free( buf) ;
+	        	buf = NULL ;
+	        }
+	    }
+	} else {
+		buf = getnewtokval() ;
+		status = (buf == NULL) ? FALSE : TRUE ;
+	}
+
+	*outbufref = buf ;	
+	return status ;
+}
+
+/*
  * Write a prompt into the message line, then read back a response. Keep
  * track of the physical position of the cursor. If we are in a keyboard
  * macro throw the prompt away, and return the remembered response. This
@@ -91,14 +134,12 @@ int mlyesno( const char *prompt)
  * return. Handle erase, kill, and abort keys.
  */
 
-int mlreply( const char *prompt, char *buf, int nbuf)
-{
-    return nextarg(prompt, buf, nbuf, ctoec('\n'));
+int newmlarg( char **outbufref, const char *prompt, int size) {
+	return newnextarg( outbufref, prompt, size, nlc) ;
 }
 
-int mlreplyt(const char *prompt, char *buf, int nbuf, int eolchar)
-{
-    return nextarg(prompt, buf, nbuf, eolchar);
+int newmlargt( char **outbufref, const char *prompt, int size) {
+	return newnextarg( outbufref, prompt, size, metac) ;
 }
 
 /*
@@ -112,18 +153,6 @@ int ectoc(int c)
         c = c & ~(CONTROL | 0x40);
     if (c & SPEC)
         c = c & 255;
-    return c;
-}
-
-/*
- * ctoec:
- *  character to extended character
- *  pull out the CONTROL and SPEC prefixes (if possible)
- */
-int ctoec(int c)
-{
-    if (c >= 0x00 && c <= 0x1F)
-        c = CONTROL | (c + '@');
     return c;
 }
 
@@ -147,7 +176,7 @@ fn_t getname(void)
 
     /* if we are executing a command line get the next arg and match it */
     if (clexec) {
-        if( macarg( buf, sizeof buf) != TRUE)
+		if( TRUE != gettokval( buf, sizeof buf))
             return NULL;
         return fncmatch(&buf[0]);
     }

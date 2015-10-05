@@ -79,6 +79,7 @@ static int mstore = FALSE ;         /* storing text to macro flag   */
 
 static int dobuf( struct buffer *bp) ;
 static void freewhile( struct while_block *wp) ;
+static int macarg( char *tok, int toksz) ;
 
 void ue_system( const char *cmd) {
     int ret ;
@@ -119,19 +120,20 @@ static int docmd( char *cline) ;
  *
  * int f, n;        default Flag and Numeric argument
  */
-int execcmd(int f, int n)
-{
-    int status; /* status return */
-    char cmdstr[NSTRING];   /* string holding command to execute */
+int execcmd( int f, int n) {
+    int status ;	/* status return */
+    char *cmdstr ;	/* string holding command to execute */
 
     /* get the line wanted */
-    if ((status = mlreply(": ", cmdstr, NSTRING)) != TRUE)
-        return status;
+    status = newmlarg( &cmdstr, ": ", 0) ;
+    if( status != TRUE)
+        return status ;
 
-    execlevel = 0;
+    execlevel = 0 ;
     while( status == TRUE && n-- > 0)
     	status = docmd( cmdstr) ;
 
+	free( cmdstr) ;
 	return status ;
 }
 
@@ -179,8 +181,10 @@ static int docmd( char *cline) {
     /* process leadin argument */
     if( !is_it_cmd( tkn)) {
         f = TRUE;
-        strncpy( tkn, getval( tkn), sizeof tkn - 1) ;
-        tkn[ sizeof tkn - 1] = '\0' ;
+/* macarg already includes a getval, skip for now
+		strncpy( tkn, getval( tkn), sizeof tkn - 1) ;
+       	tkn[ sizeof tkn - 1] = '\0' ;
+*/
         n = atoi(tkn);
 
         /* and now get the command to execute */
@@ -209,16 +213,21 @@ static int docmd( char *cline) {
 }
 
 /*
- * token:
+ * new token:
  *  chop a token off a string
  *  return a pointer past the token
  *
- * char *src, *tok; source string, destination token string
- * int size;        maximum size of token
+ * char *src		in, source string
+ * char **tokref	out, destination of newly allocated token string
  */
-static char *token( char *src, char *tok, int size) {
-    int quotef; /* is the current string quoted? */
-    char c; /* temporary character */
+static char *newtoken( char *src, char **tokref) {
+    boolean quotef ;	/* is the current string quoted? */
+    char	*tok ;		/* allocated string */
+    int		size ;		/* allocated size */
+    int		idx = 0 ;	/* insertion point into token string */
+
+	tok = malloc( NSTRING) ;
+	size = (tok == NULL) ? 0 : NSTRING ;
 
     /* first scan past any whitespace in the source string */
     while (*src == ' ' || *src == '\t')
@@ -227,6 +236,8 @@ static char *token( char *src, char *tok, int size) {
     /* scan through the source string */
     quotef = FALSE;
     while (*src) {
+	    char c ;	/* temporary character */
+
         /* process special characters */
         if (*src == '~') {
             ++src;
@@ -251,9 +262,6 @@ static char *token( char *src, char *tok, int size) {
             default:
                 c = *(src - 1);
             }
-            if (--size > 0) {
-                *tok++ = c;
-            }
         } else {
             /* check for the end of the token */
             if (quotef) {
@@ -270,20 +278,96 @@ static char *token( char *src, char *tok, int size) {
 
             /* record the character */
             c = *src++;
-            if (--size > 0)
-                *tok++ = c;
         }
+
+		if( idx < size - 1)
+			tok[ idx++] = c ;
+		else if( size > 1) {
+			char *tmptok ;
+			
+			tmptok = malloc( size + 32) ;
+			if( tmptok == NULL)
+				size = 0 ;
+			else {
+				memcpy( tmptok, tok, idx) ;
+				free( tok) ;
+				tok = tmptok ;
+				size += 32 ;
+				tok[ idx++] = c ;
+			}
+		}
     }
 
     /* terminate the token and exit */
     if (*src)
         ++src;
-    *tok = 0;
+
+	if( tok != NULL)
+		tok[ idx] = 0 ;
+
+	*tokref = tok ;
     return src;
+}
+
+static char *token( char *srcstr, char *tok, int maxtoksize) {
+	char *newtok ;
+
+	srcstr = newtoken( srcstr, &newtok) ;
+	if( newtok == NULL)
+		tok[ 0] = 0 ;
+	else {
+		strncpy( tok, newtok, maxtoksize - 1) ;
+		tok[ maxtoksize - 1] = 0 ;
+		free( newtok) ;
+	}
+
+	return srcstr ;
 }
 
 void gettoken( char *tok, int maxtoksize) {
 	execstr = token( execstr, tok, maxtoksize) ;
+}
+
+static char *getnewtoken( void) {
+	char *tok ;
+
+	execstr = newtoken( execstr, &tok) ;
+	return tok ;
+}
+
+boolean gettokval( char *tok, int size) {
+	char *tmpbuf ;
+
+    /* grab token and advance past */
+	tmpbuf = getnewtoken() ;
+	if( tmpbuf == NULL)
+		return FALSE ;
+
+    /* evaluate it */
+    strncpy( tok, getval( tmpbuf), size - 1) ;
+    tok[ size - 1] = '\0' ;
+    free( tmpbuf) ;
+    return TRUE ;
+}
+
+char *getnewtokval( void) {
+	char *tmpbuf ;
+	char *tmpval ;
+	char *valbuf ;
+
+    /* grab token and advance past */
+	tmpbuf = getnewtoken() ;
+	if( tmpbuf == NULL)
+		return NULL ;
+
+    /* evaluate it */
+    tmpval = getval( tmpbuf) ;
+    valbuf = malloc( strlen( tmpval) + 1 ) ;
+    if( valbuf != NULL)
+		strcpy( valbuf, tmpval) ;
+
+    free( tmpbuf) ;
+    return valbuf ;
 }
 
 /*
@@ -291,47 +375,15 @@ void gettoken( char *tok, int maxtoksize) {
  *
  * char *tok;       buffer to place argument
  */
-int macarg( char *tok, int toksz)
-{
-    boolean savcle ;    /* buffer to store original clexec */
-    int status;
+static int macarg( char *tok, int toksz) {
+	int status ;
+	boolean savcle ;	/* buffer to store original clexec */
 
-    savcle = clexec;    /* save execution mode */
-    clexec = TRUE;      /* get the argument */
-    status = nextarg("", tok, toksz, ctoec('\n'));
-    clexec = savcle;    /* restore execution mode */
-    return status;
-}
-
-/*
- * nextarg:
- *  get the next argument
- *
- * const char *prompt;      prompt to use if we must be interactive
- * char *buffer;        buffer to put token into
- * int size;            size of the buffer
- * int terminator;      terminating char to be used on interactive fetch
- */
-int nextarg(const char *prompt, char *buffer, int size, int terminator)
-{
-	char *tmpbuf ;
-	
-    /* if we are interactive, go get it! */
-    if (clexec == FALSE)
-        return getstring(prompt, buffer, size, terminator);
-
-	tmpbuf = malloc( size) ;
-	if( tmpbuf == NULL)
-		return FALSE ;
-
-    /* grab token and advance past */
-	gettoken( tmpbuf, size) ;
-
-    /* evaluate it */
-    strncpy( buffer, getval( tmpbuf), size - 1) ;
-    buffer[ size - 1] = '\0' ;
-    free( tmpbuf) ;
-    return TRUE;
+	savcle = clexec ;	/* save execution mode */
+	clexec = TRUE ;		/* get the argument */
+	status = gettokval( tok, toksz) ;
+	clexec = savcle ;	/* restore execution mode */
+	return status ;
 }
 
 /*
@@ -388,38 +440,42 @@ int storemac(int f, int n)
  * int f;       default flag
  * int n;       macro number to use
  */
-int storeproc(int f, int n)
-{
-    struct buffer *bp;  /* pointer to macro buffer */
-    int status; /* return status */
-    bname_t bname ; /* name of buffer to use */
+int storeproc( int f, int n) {
+    struct buffer *bp ;	/* pointer to macro buffer */
+    int status ;		/* return status */
+    bname_t bname ;		/* name of buffer to use */
+    char *name ;
 
     /* a numeric argument means its a numbered macro */
-    if (f == TRUE)
-        return storemac(f, n);
+    if( f == TRUE)
+        return storemac( f, n) ;
 
     /* get the name of the procedure */
-    if ((status =
-         mlreply("Procedure name: ", &bname[1], sizeof bname - 2)) != TRUE)
-        return status;
+    status = newmlarg( &name, "Procedure name: ", sizeof bname - 2) ;
+    if( status != TRUE)
+        return status ;
 
     /* construct the macro buffer name */
-    bname[0] = '*';
-    strcat(bname, "*");
+    bname[ 0] = '*';
+    strncpy( &bname[ 1], name, sizeof bname - 3) ;
+    bname[ sizeof bname - 2] = '\0' ;
+    strcat( bname, "*") ;
+	free( name) ;
 
     /* set up the new macro buffer */
-    if ((bp = bfind(bname, TRUE, BFINVS)) == NULL) {
-        mlwrite("Can not create macro");
-        return FALSE;
+    bp = bfind( bname, TRUE, BFINVS) ;
+    if( bp == NULL) {
+        mlwrite( "Can not create macro") ;
+        return FALSE ;
     }
 
     /* and make sure it is empty */
-    bclear(bp);
+    bclear( bp) ;
 
     /* and set the macro store pointers to it */
-    mstore = TRUE;
-    bstore = bp;
-    return TRUE;
+    mstore = TRUE ;
+    bstore = bp ;
+    return TRUE ;
 }
 
 /*
@@ -428,32 +484,36 @@ int storeproc(int f, int n)
  *
  * int f, n;        default flag and numeric arg
  */
-int execproc(int f, int n)
-{
-    struct buffer *bp;  /* ptr to buffer to execute */
-    int status; /* status return */
-    char bufn[NBUFN + 2];   /* name of buffer to execute */
+int execproc( int f, int n) {
+    struct buffer *bp ;		/* ptr to buffer to execute */
+    int status ;			/* status return */
+    bname_t bufn ;		/* name of buffer to execute */
+    char *name ;
 
     /* find out what buffer the user wants to execute */
-    if ((status =
-         mlreply("Execute procedure: ", &bufn[1], NBUFN)) != TRUE)
-        return status;
+    status = newmlarg( &name, "Execute procedure: ", sizeof bufn - 2) ;
+    if( status != TRUE)
+        return status ;
 
     /* construct the buffer name */
-    bufn[0] = '*';
-    strcat(bufn, "*");
+    bufn[ 0] = '*' ;
+    strncpy( &bufn[ 1], name, sizeof bufn - 3) ;
+    bufn[ sizeof bufn - 2] = '\0' ;
+    strcat( bufn, "*") ;
+    free( name) ;
 
     /* find the pointer to that buffer */
-    if ((bp = bfind(bufn, FALSE, 0)) == NULL) {
-        mlwrite("No such procedure");
-        return FALSE;
+    bp = bfind( bufn, FALSE, 0) ;
+    if( bp == NULL) {
+        mlwrite( "No such procedure") ;
+        return FALSE ;
     }
 
     /* and now execute it as asked */
-    while (n-- > 0)
-        if ((status = dobuf(bp)) != TRUE)
-            return status;
-    return TRUE;
+    while( status == TRUE && n-- > 0)
+        status = dobuf( bp) ;
+
+	return status ;
 }
 #endif
 
@@ -463,27 +523,29 @@ int execproc(int f, int n)
  *
  * int f, n;        default flag and numeric arg
  */
-int execbuf(int f, int n)
-{
-    struct buffer *bp;  /* ptr to buffer to execute */
-    int status; /* status return */
-    bname_t bufn ;  /* name of buffer to execute */
+int execbuf( int f, int n) {
+    struct buffer *bp ;	/* ptr to buffer to execute */
+    int status ;		/* status return */
+    char *bufn ;		/* name of buffer to execute */
 
     /* find out what buffer the user wants to execute */
-    if ((status = mlreply("Execute buffer: ", bufn, sizeof bufn)) != TRUE)
-        return status;
+    status = newmlarg( &bufn, "Execute buffer: ", sizeof( bname_t)) ;
+    if( status != TRUE)
+        return status ;
 
     /* find the pointer to that buffer */
-    if ((bp = bfind(bufn, FALSE, 0)) == NULL) {
-        mlwrite("No such buffer");
-        return FALSE;
+    bp = bfind( bufn, FALSE, 0) ;
+	free( bufn) ;
+    if( bp == NULL) {
+        mlwrite( "No such buffer") ;
+        return FALSE ;
     }
 
     /* and now execute it as asked */
-    while (n-- > 0)
-        if ((status = dobuf(bp)) != TRUE)
-            return status;
-    return TRUE;
+    while( status == TRUE && n-- > 0)
+        status = dobuf( bp) ;
+
+    return status ;
 }
 
 /*
@@ -635,7 +697,7 @@ static int dobuf(struct buffer *bp)
             ++eline;
 
         /* dump comments and blank lines */
-        if (*eline == ';' || *eline == 0)
+        if (*eline == ';' || *eline == '#' || *eline == 0)
             goto onward;
 
 #if DEBUGM
@@ -782,10 +844,8 @@ static int dobuf(struct buffer *bp)
             case DGOTO: /* GOTO directive */
                 /* .....only if we are currently executing */
                 if (execlevel == 0) {
-
                     /* grab label to jump to */
-                    eline =
-                        token( eline, golabel, sizeof golabel) ;
+                    eline = token( eline, golabel, sizeof golabel) ;
                     linlen = strlen(golabel);
                     glp = hlp->l_fp;
                     while (glp != hlp) {
@@ -900,31 +960,28 @@ static void freewhile(struct while_block *wp)
  *
  * int f, n;        default flag and numeric arg to pass on to file
  */
-int execfile(int f, int n)
-{
-    int status; /* return status of name query */
-    char fname[NSTRING];    /* name of file to execute */
-    char *fspec;        /* full file spec */
+int execfile( int f, int n) {
+    int status ;	/* return status of name query */
+    char *fname ;	/* name of file to execute */
+    char *fspec ;	/* full file spec */
 
-    if ((status =
-         mlreply("File to execute: ", fname, NSTRING - 1)) != TRUE)
-        return status;
+    status = newmlarg( &fname, "File to execute: ", 0) ;
+    if( status != TRUE)
+        return status ;
 
-#if 1
-    /* look up the path for the file */
-    fspec = flook(fname, FALSE);    /* used to by TRUE, P.K. */
+/* look up the path for the file */
+    fspec = flook( fname, FALSE) ;    /* used to be TRUE, P.K. */
+    free( fname) ;
 
-    /* if it isn't around */
-    if (fspec == NULL)
-        return FALSE;
+/* if it isn't around */
+    if( fspec == NULL)
+        return FALSE ;
 
-#endif
-    /* otherwise, execute it */
-    while (n-- > 0)
-        if ((status = dofile(fspec)) != TRUE)
-            return status;
+/* otherwise, execute it */
+    while( status == TRUE && n-- > 0)
+        status = dofile( fspec) ;
 
-    return TRUE;
+	return status ;
 }
 
 /*

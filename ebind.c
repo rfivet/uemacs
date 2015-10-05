@@ -301,8 +301,8 @@ struct key_tab keytab[NBINDS] = {
     {META | 'R', sreplace}
     ,
 #if PKCODE
-    {META | 'S', forwsearch}
-    ,           /* alternative P.K.     */
+    {META | 'S', forwhunt}
+    ,
 #else
 #if BSD
     {META | 'S', bktoshell}

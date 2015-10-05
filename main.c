@@ -124,7 +124,7 @@ static void usage( void) {
            "      +<n>          start at line <n>\n"
            "      --help        display this help and exit\n"
            "      --version     output version information and exit\n"
-           "      @cmdfile      execute command file\n"
+           "      @cmdfile      execute startup file\n"
            "      -a|A          process error file\n"
            "      -e|E          edit file\n"
            "      -g|G<n>       go to line <n>\n"
@@ -134,6 +134,8 @@ static void usage( void) {
            "      -r|R          restrictive use\n"
            "      -s|S<string>  search string\n"
            "      -v|V          view file\n"
+           "      -x|Xcmdfile\n"
+           "      -x|X cmdfile  execute command file\n"
            , stdout) ;
 }
 
@@ -254,6 +256,19 @@ int main(int argc, char **argv)
 			case 'V':
 				viewflag = TRUE;
 				break;
+			case 'x':
+			case 'X':
+				if( argv[ carg][ 2]) {			/* -Xfilename */
+					if( startup( &argv[ carg][ 2]) == TRUE)
+						startflag = TRUE ;	/* don't execute emacs.rc */
+				} else if( argv[ carg + 1]) {	/* -X filename */
+					if( startup( &argv[ carg + 1][ 0]) == TRUE)
+						startflag = TRUE ;	/* don't execute emacs.rc */
+					
+					carg += 1 ;
+				}
+
+				break ;
 			default:	/* unknown switch */
 				/* ignore this for now */
 				break;

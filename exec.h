@@ -15,13 +15,12 @@ int execproc( int f, int n) ;
 extern boolean clexec ;	/* command line execution flag  */
 
 
-
 void ue_system( const char *cmd) ;
 int namedcmd( int f, int n) ;
 int execcmd( int f, int n) ;
 void gettoken( char *tok, int maxtoksize) ;
-int macarg( char *tok, int toksz) ;
-int nextarg( const char *prompt, char *buffer, int size, int terminator) ;
+boolean gettokval( char *tok, int maxtoksize) ;
+char *getnewtokval( void) ;
 int storemac( int f, int n) ;
 int execbuf( int f, int n) ;
 int execfile( int f, int n) ;

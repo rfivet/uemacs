@@ -11,6 +11,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "estruct.h"
@@ -273,23 +274,24 @@ static int unbindchar( unsigned c) {
  * bring up a fake buffer and list the key bindings
  * into it with view mode
  */
-int desbind(int f, int n)
+int desbind( int f, int n) {
 #if APROP
-{
-    buildlist( "") ;
-    return TRUE;
+    return buildlist( "") ;
 }
 
-int apro(int f, int n)
-{               /* Apropos (List functions that match a substring) */
-    char mstring[NSTRING];  /* string to match cmd names to */
-    int status;     /* status return */
+/* Apropos (List functions that match a substring) */
+int apro( int f, int n) {
+	char *mstring ;	/* string to match cmd names to */
+	int status ;	/* status return */
 
-    status = mlreply("Apropos string: ", mstring, NSTRING - 1);
-    if (status == ABORT)
-        return status;
+    status = newmlarg( &mstring, "Apropos string: ", 0) ;
+	if( status == TRUE) {
+		status = buildlist( mstring) ;
+		free( mstring) ;
+	} else if( status == FALSE)
+		status = buildlist( "") ;	/* build list of all commands */
 
-    return buildlist( mstring) ;
+    return status ;
 }
 
 /*
@@ -297,9 +299,8 @@ int apro(int f, int n)
  *
  * char *mstring;   match string if a partial list, "" matches all
  */
-static int buildlist( char *mstring)
+static int buildlist( char *mstring) {
 #endif
-{
     struct window *wp;         /* scanning pointer to windows */
     struct key_tab *ktp;  /* pointer into the command table */
     struct name_bind *nptr;          /* pointer into the name binding table */
@@ -439,12 +440,15 @@ static unsigned int getckey( int mflag) {
 
     /* check to see if we are executing a command line */
     if( clexec) {
-	    char tok[ NSTRING] ;  /* command incoming */
-
-		if( TRUE != macarg( tok, sizeof tok))	/* get the next token */
+		char *tok ;	/* command incoming */
+		
+		tok = getnewtokval() ;	/* get the next token */
+		if( tok == NULL)
 			c = 0 ;	/* return dummy key on failure */
-		else
+		else {
 			c = stock( tok) ;
+			free( tok) ;
+		}
     } else {	/* or the normal way */
 	    if( mflag)
     	    c = get1key() ;

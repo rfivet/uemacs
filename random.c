@@ -12,6 +12,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "basic.h"
@@ -943,7 +944,7 @@ static int adjustmode( int kind, int global) {
 	unsigned i ;	/* loop index */
 	int status;	/* error return on input */
 	char prompt[50];	/* string to prompt user with */
-	char cbuf[ NSTRING] ;	/* buffer to recieve mode name into */
+	char *cbuf ;	/* buffer to recieve mode name into */
 
 	/* build the proper prompt string */
 	if (global)
@@ -958,7 +959,7 @@ static int adjustmode( int kind, int global) {
 
 	/* prompt the user and get an answer */
 
-	status = mlreply( prompt, cbuf, sizeof cbuf - 1) ;
+	status = newmlarg( &cbuf, prompt, 0) ;
 	if (status != TRUE)
 		return status;
 
@@ -986,6 +987,7 @@ static int adjustmode( int kind, int global) {
 			curwp->w_flag |= WFCOLR;
 #endif
 			mlerase();
+			free( cbuf) ;
 			return TRUE;
 		}
 	}
@@ -1008,11 +1010,13 @@ static int adjustmode( int kind, int global) {
 			if (global == 0)
 				upmode();
 			mlerase();	/* erase the junk */
+			free( cbuf) ;
 			return TRUE;
 		}
 	}
 
 	mlwrite("No such mode!");
+	free( cbuf) ;
 	return FALSE;
 }
 
@@ -1183,32 +1187,36 @@ int fmatch(int ch)
 	return TRUE;
 }
 
+static int iovstring( int f, int n, const char *prompt, int (*fun)( char *)) {
+	int status ;	/* status return code */
+	char *tstring ;	/* string to add */
+
+	/* ask for string to insert */
+	status = newmlargt( &tstring, prompt, 0) ; /* grab as big a token as screen allow */
+	if( tstring == NULL)
+		return status ;
+
+	if( f == FALSE)
+		n = 1 ;
+	else if( n < 0)
+		n = -n ;
+
+	/* insert it */
+	while( n-- && status == TRUE)
+		status = fun( tstring) ;
+
+	free( tstring) ;
+	return status ;
+}
+
 /*
  * ask for and insert a string into the current
  * buffer at the current point
  *
  * int f, n;		ignored arguments
  */
-int istring(int f, int n)
-{
-	int status;	/* status return code */
-	char tstring[ 512] ;	/* string to add */
-
-	/* ask for string to insert */
-	status =
-	    mlreplyt("String to insert<META>: ", tstring, sizeof tstring - 1, metac) ;
-	if (status != TRUE)
-		return status;
-
-	if (f == FALSE)
-		n = 1;
-
-	if (n < 0)
-		n = -n;
-
-	/* insert it */
-	while (n-- && (status = linstr(tstring)));
-	return status;
+int istring( int f, int n) {
+	return iovstring( f, n, "String to insert<META>: ", linstr) ;
 }
 
 /*
@@ -1217,24 +1225,8 @@ int istring(int f, int n)
  *
  * int f, n;		ignored arguments
  */
-int ovstring(int f, int n)
-{
-	int status;	/* status return code */
-	char tstring[ NSTRING + 1] ;	/* string to add */
-
-	/* ask for string to insert */
-	status =
-	    mlreplyt( "String to overwrite<META>: ", tstring, NSTRING, metac) ;
-	if (status != TRUE)
-		return status;
-
-	if (f == FALSE)
-		n = 1;
-
-	if (n < 0)
-		n = -n;
-
-	/* insert it */
-	while (n-- && (status = lover(tstring)));
-	return status;
+int ovstring( int f, int n) {
+	return iovstring( f, n, "String to overwrite<META>: ", lover) ;
 }
+
+/* end of random.c */

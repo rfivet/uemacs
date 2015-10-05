@@ -55,17 +55,24 @@ static void l_to_a( char *buf, int width, long num) ;
  * if the use count is 0. Otherwise, they come
  * from some other window.
  */
-int usebuffer(int f, int n)
-{
-	struct buffer *bp;
-	int s;
-	bname_t bufn ;
+int usebuffer( int f, int n) {
+	struct buffer *bp ;
+	int status ;
+	char *bufn ;
 
-	if ((s = mlreply("Use buffer: ", bufn, sizeof bufn)) != TRUE)
-		return s;
-	if ((bp = bfind(bufn, TRUE, 0)) == NULL)
-		return FALSE;
-	return swbuffer(bp);
+/* Get buffer name */
+	status = newmlarg( &bufn, "Use buffer: ", sizeof( bname_t)) ;
+	if( status != TRUE)
+		return status ;
+
+/* Find buffer in list */
+	bp = bfind( bufn, TRUE, 0) ;
+	free( bufn) ;
+	if( bp == NULL)
+		return FALSE ;
+
+/* Switch to buffer */
+	return swbuffer( bp) ;
 }
 
 /*
@@ -164,19 +171,26 @@ int swbuffer(struct buffer *bp)
  * if the buffer has been changed). Then free the header
  * line and the buffer header. Bound to "C-X K".
  */
-int killbuffer(int f, int n)
-{
-	struct buffer *bp;
-	int s;
-	bname_t bufn ;
+int killbuffer( int f, int n) {
+	struct buffer *bp ;
+	int status ;
+	char *bufn ;
 
-	if ((s = mlreply("Kill buffer: ", bufn, sizeof bufn)) != TRUE)
-		return s;
-	if ((bp = bfind(bufn, FALSE, 0)) == NULL)	/* Easy if unknown.     */
-		return TRUE;
-	if (bp->b_flag & BFINVS)	/* Deal with special buffers        */
-		return TRUE;	/* by doing nothing.    */
-	return zotbuf(bp);
+/* Get buffer name */
+	status = newmlarg( &bufn, "Kill buffer: ", sizeof( bname_t)) ;
+	if( status != TRUE)
+		return status ;
+
+/* Find buffer in list */
+	bp = bfind( bufn, FALSE, 0) ;
+	free( bufn) ;
+	if( bp == NULL)	/* Easy if unknown.	*/
+		return TRUE ;
+
+	if( bp->b_flag & BFINVS)	/* Deal with special buffers	*/
+		return TRUE ;			/* by doing nothing.			*/
+
+	return zotbuf( bp) ;
 }
 
 /*
@@ -215,31 +229,37 @@ int zotbuf(struct buffer *bp)
  *
  * int f, n;		default Flag & Numeric arg
  */
-int namebuffer(int f, int n)
-{
-	struct buffer *bp;	/* pointer to scan through all buffers */
-	bname_t bufn ;	/* buffer to hold buffer name */
+int namebuffer( int f, int n) {
+	struct buffer *bp ;	/* pointer to scan through all buffers */
+	int status ;
+	char *bufn ;		/* buffer to hold buffer name */
 
-	/* prompt for and get the new buffer name */
-      ask:if (mlreply("Change buffer name to: ", bufn, sizeof bufn) !=
-	    TRUE)
-		return FALSE;
+/* prompt for and get the new buffer name */
+ask:
+    status = newmlarg( &bufn, "Change buffer name to: ", sizeof( bname_t)) ;
+    if( status != TRUE)
+		return status ;
 
-	/* and check for duplicates */
-	bp = bheadp;
-	while (bp != NULL) {
-		if (bp != curbp) {
-			/* if the names the same */
-			if (strcmp(bufn, bp->b_bname) == 0)
-				goto ask;	/* try again */
+/* and check for duplicates */
+	bp = bheadp ;
+	while( bp != NULL) {
+		if( bp != curbp) {
+		/* retry if the names are the same */
+			if( strcmp( bufn, bp->b_bname) == 0) {
+				free( bufn) ;
+				goto ask ;	/* try again */
+			}
 		}
-		bp = bp->b_bufp;	/* onward */
+
+		bp = bp->b_bufp ;	/* onward */
 	}
 
-	strcpy(curbp->b_bname, bufn);	/* copy buffer name to structure */
-	curwp->w_flag |= WFMODE;	/* make mode line replot */
+	strcpy( curbp->b_bname, bufn) ;	/* copy buffer name to structure */
+	free( bufn) ;
+	
+	curwp->w_flag |= WFMODE ;	/* make mode line replot */
 	mloutstr( "") ; /* erase message line */
-	return TRUE;
+	return TRUE ;
 }
 
 /*

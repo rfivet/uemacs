@@ -619,14 +619,24 @@ char *getctext(void)
 	int size;	/* length of line to return */
 	char *sp;	/* string pointer into line */
 	char *dp;	/* string pointer into returned line */
-	static char rline[NSTRING];	/* line to return */
+	static int	rsize = 0 ;
+	static char *rline ;	/* line to return */
 
 	/* find the contents of the current line and its length */
 	lp = curwp->w_dotp;
 	sp = lp->l_text;
 	size = lp->l_used;
-	if (size >= NSTRING)
-		size = NSTRING - 1;
+	if( size >= rsize) {
+		if( rsize)
+			free( rline) ;
+
+		rsize = size + 1 ;
+		rline = malloc( rsize) ;
+		if( rline == NULL) {
+			rsize = 0 ;
+			return "" ;
+		}
+	}
 
 	/* copy it across */
 	dp = rline;
