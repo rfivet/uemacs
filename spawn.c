@@ -145,51 +145,24 @@ void rtfrmshell(void)
  * character to be typed, then mark the screen as garbage so a full repaint is
  * done. Bound to "C-X !".
  */
-int spawn(int f, int n)
-{
-	int s;
-	char line[NLINE];
+int spawn( int f, int n) {
+	int s ;
+	char *line ;
 
 	/* don't allow this command if restricted */
-	if (restflag)
+	if( restflag)
 		return resterr();
 
-#if     VMS
-	if ((s = mlreply("!", line, NLINE)) != TRUE)
-		return s;
-	movecursor(term.t_nrow, 0);
-	TTflush();
-	s = sys(line);		/* Run the command.     */
-	if (clexec == FALSE) {
-		mlwrite("\r\n\n(End)");	/* Pause.               */
-		TTflush();
-		tgetc();
-	}
-	sgarbf = TRUE;
-	return s;
-#endif
-#if     MSDOS
-	if ((s = mlreply("!", line, NLINE)) != TRUE)
-		return s;
-	movecursor(term.t_nrow, 0);
-	TTkclose();
-	shellprog(line);
-	TTkopen();
-	/* if we are interactive, pause here */
-	if (clexec == FALSE) {
-		mlwrite("\r\n(End)");
-		tgetc();
-	}
-	sgarbf = TRUE;
-	return TRUE;
-#endif
 #if     V7 | USG | BSD
-	if ((s = mlreply("!", line, NLINE)) != TRUE)
-		return s;
+	s = newmlarg( &line, "!", 0) ;
+	if( s != TRUE)
+		return s ;
+
 	TTflush();
 	TTclose();		/* stty to old modes    */
 	TTkclose();
 	ue_system( line) ;
+	free( line) ;
 	fflush(stdout);		/* to be sure P.K.      */
 	TTopen();
 
@@ -211,51 +184,25 @@ int spawn(int f, int n)
  * done. Bound to "C-X $".
  */
 
-int execprg(int f, int n)
-{
-	int s;
-	char line[NLINE];
+int execprg( int f, int n) {
+	int s ;
+	char *line ;
 
 	/* don't allow this command if restricted */
-	if (restflag)
-		return resterr();
-
-#if     VMS
-	if ((s = mlreply("!", line, NLINE)) != TRUE)
-		return s;
-	TTflush();
-	s = sys(line);		/* Run the command.     */
-	mlwrite("\r\n\n(End)");	/* Pause.               */
-	TTflush();
-	tgetc();
-	sgarbf = TRUE;
-	return s;
-#endif
-
-#if     MSDOS
-	if ((s = mlreply("$", line, NLINE)) != TRUE)
-		return s;
-	movecursor(term.t_nrow, 0);
-	TTkclose();
-	execprog(line);
-	TTkopen();
-	/* if we are interactive, pause here */
-	if (clexec == FALSE) {
-		mlwrite("\r\n(End)");
-		tgetc();
-	}
-	sgarbf = TRUE;
-	return TRUE;
-#endif
+	if( restflag)
+		return resterr() ;
 
 #if     V7 | USG | BSD
-	if ((s = mlreply("!", line, NLINE)) != TRUE)
-		return s;
+	s = newmlarg( &line, "$", 0) ;
+	if( s != TRUE)
+		return s ;
+
 	TTputc('\n');		/* Already have '\r'    */
 	TTflush();
 	TTclose();		/* stty to old modes    */
 	TTkclose();
 	ue_system( line) ;
+	free( line) ;
 	fflush(stdout);		/* to be sure P.K.      */
 	TTopen();
 	mlwrite( "(End)") ;	/* Pause.               */
@@ -270,48 +217,32 @@ int execprg(int f, int n)
  * Pipe a one line command into a window
  * Bound to ^X @
  */
-int pipecmd(int f, int n)
-{
-	int s;		/* return status from CLI */
-	struct window *wp;	/* pointer to new window */
-	struct buffer *bp;	/* pointer to buffer to zot */
-	char line[NLINE];	/* command line send to shell */
-	static char bname[] = "command";
-
-	static char filnam[NSTRING] = "command";
-
-#if     MSDOS
-	char *tmp;
-	FILE *fp;
-	int len;
-#endif
+int pipecmd( int f, int n) {
+	int s ;		/* return status from CLI */
+	struct window *wp ;	/* pointer to new window */
+	struct buffer *bp ;	/* pointer to buffer to zot */
+	char *mlarg ;
+	char *line ;	/* command line send to shell */
+	static char bname[] = "command" ;
+	static char filnam[ NSTRING] = "command" ;
 
 	/* don't allow this command if restricted */
-	if (restflag)
-		return resterr();
-
-#if	MSDOS
-	if ((tmp = getenv("TMP")) == NULL
-	    && (tmp = getenv("TEMP")) == NULL)
-		strcpy(filnam, "command");
-	else {
-		strcpy(filnam, tmp);
-		len = strlen(tmp);
-		if (len <= 0 || filnam[len - 1] != '\\'
-		    && filnam[len - 1] != '/')
-			strcat(filnam, "\\");
-		strcat(filnam, "command");
-	}
-#endif
-
-#if     VMS
-	mlwrite("Not available under VMS");
-	return FALSE;
-#endif
+	if( restflag)
+		return resterr() ;
 
 	/* get the command to pipe in */
-	if ((s = mlreply("@", line, NLINE)) != TRUE)
-		return s;
+	s = newmlarg( &mlarg, "@", 0) ;
+	if( s != TRUE)
+		return s ;
+
+	line = malloc( strlen( mlarg) + strlen( filnam) + 2) ;
+	if( line == NULL) {
+		free( mlarg) ;
+		return FALSE ;
+	}
+
+	strcpy( line, mlarg) ;
+	free( mlarg) ;
 
 	/* get rid of the command output buffer if it exists */
 	if ((bp = bfind(bname, FALSE, 0)) != FALSE) {
@@ -332,33 +263,20 @@ int pipecmd(int f, int n)
 			}
 			wp = wp->w_wndp;
 		}
-		if (zotbuf(bp) != TRUE)
 
-			return FALSE;
+		if( zotbuf( bp) != TRUE) {
+			free( line) ;
+			return FALSE ;
+		}
 	}
-#if     MSDOS
-	strcat(line, " >>");
-	strcat(line, filnam);
-	movecursor(term.t_nrow, 0);
-	TTkclose();
-	shellprog(line);
-	TTkopen();
-	sgarbf = TRUE;
-	if ((fp = fopen(filnam, "r")) == NULL) {
-		s = FALSE;
-	} else {
-		fclose(fp);
-		s = TRUE;
-	}
-#endif
-
 #if     V7 | USG | BSD
 	TTflush();
 	TTclose();		/* stty to old modes    */
 	TTkclose();
-	strcat(line, ">");
-	strcat(line, filnam);
+	strcat( line, ">") ;
+	strcat( line, filnam) ;
 	ue_system( line) ;
+	free( line) ;
 	TTopen();
 	TTkopen();
 	TTflush();
@@ -394,32 +312,37 @@ int pipecmd(int f, int n)
  * filter a buffer through an external DOS program
  * Bound to ^X #
  */
-int filter_buffer(int f, int n)
-{
-	int s;		/* return status from CLI */
-	struct buffer *bp;	/* pointer to buffer to zot */
-	char line[NLINE];	/* command line send to shell */
+int filter_buffer( int f, int n) {
+	int s ;				/* return status from CLI */
+	struct buffer *bp ;	/* pointer to buffer to zot */
+	char *mlarg ;
+	char *line ;		/* command line send to shell */
 	fname_t tmpnam ;	/* place to store real file name */
-	static char bname1[] = "fltinp";
+	static char bname1[] = "fltinp" ;
 
-	static char filnam1[] = "fltinp";
-	static char filnam2[] = "fltout";
+	static char filnam1[] = "fltinp" ;
+	static char filnam2[] = "fltout" ;
 
 	/* don't allow this command if restricted */
-	if (restflag)
-		return resterr();
+	if( restflag)
+		return resterr() ;
 
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
-
-#if     VMS
-	mlwrite("Not available under VMS");
-	return FALSE;
-#endif
+	if( curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+		return rdonly() ;		/* we are in read only mode     */
 
 	/* get the filter name and its args */
-	if ((s = mlreply("#", line, NLINE)) != TRUE)
-		return s;
+	s = newmlarg( &mlarg, "#", 0) ;
+	if( s != TRUE)
+		return s ;
+
+	line = malloc( strlen( mlarg) + 16 + 1) ;
+	if( line == NULL) {
+		free( mlarg) ;
+		return FALSE ;
+	}
+
+	strcpy( line, mlarg) ;
+	free( mlarg) ;
 
 	/* setup the proper file names */
 	bp = curbp;
@@ -427,20 +350,12 @@ int filter_buffer(int f, int n)
 	strcpy(bp->b_fname, bname1);	/* set it to our new one */
 
 	/* write it out, checking for errors */
-	if (writeout(filnam1) != TRUE) {
+	if( writeout( filnam1) != TRUE) {
 		mlwrite( "(Cannot write filter file)") ;
-		strcpy(bp->b_fname, tmpnam);
-		return FALSE;
+		strcpy( bp->b_fname, tmpnam) ;
+		free( line) ;
+		return FALSE ;
 	}
-#if     MSDOS
-	strcat(line, " <fltinp >fltout");
-	movecursor(term.t_nrow - 1, 0);
-	TTkclose();
-	shellprog(line);
-	TTkopen();
-	sgarbf = TRUE;
-	s = TRUE;
-#endif
 
 #if     V7 | USG | BSD
 	TTputc('\n');		/* Already have '\r'    */
@@ -449,6 +364,7 @@ int filter_buffer(int f, int n)
 	TTkclose();
 	strcat(line, " <fltinp >fltout");
 	ue_system( line) ;
+	free( line) ;
 	TTopen();
 	TTkopen();
 	TTflush();
