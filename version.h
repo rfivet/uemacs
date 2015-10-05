@@ -12,6 +12,6 @@
 # define PROGRAM_NAME_PFX "\xC2"
 # define PROGRAM_NAME_LONG "\xB5""EMACS"	/* UTF-8 µEMACS */
 
-# define VERSION "4.2.0"
+# define VERSION "4.2.1"
 
 #endif  /* VERSION_H_ */
