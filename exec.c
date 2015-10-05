@@ -120,19 +120,20 @@ static int docmd( char *cline) ;
  *
  * int f, n;        default Flag and Numeric argument
  */
-int execcmd(int f, int n)
-{
-    int status; /* status return */
-    char cmdstr[NSTRING];   /* string holding command to execute */
+int execcmd( int f, int n) {
+    int status ;	/* status return */
+    char *cmdstr ;	/* string holding command to execute */
 
     /* get the line wanted */
-    if ((status = mlreply(": ", cmdstr, NSTRING)) != TRUE)
-        return status;
+    status = newmlarg( &cmdstr, ": ", 0) ;
+    if( status != TRUE)
+        return status ;
 
-    execlevel = 0;
+    execlevel = 0 ;
     while( status == TRUE && n-- > 0)
     	status = docmd( cmdstr) ;
 
+	free( cmdstr) ;
 	return status ;
 }
 
@@ -439,38 +440,42 @@ int storemac(int f, int n)
  * int f;       default flag
  * int n;       macro number to use
  */
-int storeproc(int f, int n)
-{
-    struct buffer *bp;  /* pointer to macro buffer */
-    int status; /* return status */
-    bname_t bname ; /* name of buffer to use */
+int storeproc( int f, int n) {
+    struct buffer *bp ;	/* pointer to macro buffer */
+    int status ;		/* return status */
+    bname_t bname ;		/* name of buffer to use */
+    char *name ;
 
     /* a numeric argument means its a numbered macro */
-    if (f == TRUE)
-        return storemac(f, n);
+    if( f == TRUE)
+        return storemac( f, n) ;
 
     /* get the name of the procedure */
-    if ((status =
-         mlreply("Procedure name: ", &bname[1], sizeof bname - 2)) != TRUE)
-        return status;
+    status = newmlarg( &name, "Procedure name: ", sizeof bname - 2) ;
+    if( status != TRUE)
+        return status ;
 
     /* construct the macro buffer name */
-    bname[0] = '*';
-    strcat(bname, "*");
+    bname[ 0] = '*';
+    strncpy( &bname[ 1], name, sizeof bname - 3) ;
+    bname[ sizeof bname - 2] = '\0' ;
+    strcat( bname, "*") ;
+	free( name) ;
 
     /* set up the new macro buffer */
-    if ((bp = bfind(bname, TRUE, BFINVS)) == NULL) {
-        mlwrite("Can not create macro");
-        return FALSE;
+    bp = bfind( bname, TRUE, BFINVS) ;
+    if( bp == NULL) {
+        mlwrite( "Can not create macro") ;
+        return FALSE ;
     }
 
     /* and make sure it is empty */
-    bclear(bp);
+    bclear( bp) ;
 
     /* and set the macro store pointers to it */
-    mstore = TRUE;
-    bstore = bp;
-    return TRUE;
+    mstore = TRUE ;
+    bstore = bp ;
+    return TRUE ;
 }
 
 /*
@@ -479,32 +484,36 @@ int storeproc(int f, int n)
  *
  * int f, n;        default flag and numeric arg
  */
-int execproc(int f, int n)
-{
-    struct buffer *bp;  /* ptr to buffer to execute */
-    int status; /* status return */
-    char bufn[NBUFN + 2];   /* name of buffer to execute */
+int execproc( int f, int n) {
+    struct buffer *bp ;		/* ptr to buffer to execute */
+    int status ;			/* status return */
+    bname_t bufn ;		/* name of buffer to execute */
+    char *name ;
 
     /* find out what buffer the user wants to execute */
-    if ((status =
-         mlreply("Execute procedure: ", &bufn[1], NBUFN)) != TRUE)
-        return status;
+    status = newmlarg( &name, "Execute procedure: ", sizeof bufn - 2) ;
+    if( status != TRUE)
+        return status ;
 
     /* construct the buffer name */
-    bufn[0] = '*';
-    strcat(bufn, "*");
+    bufn[ 0] = '*' ;
+    strncpy( &bufn[ 1], name, sizeof bufn - 3) ;
+    bufn[ sizeof bufn - 2] = '\0' ;
+    strcat( bufn, "*") ;
+    free( name) ;
 
     /* find the pointer to that buffer */
-    if ((bp = bfind(bufn, FALSE, 0)) == NULL) {
-        mlwrite("No such procedure");
-        return FALSE;
+    bp = bfind( bufn, FALSE, 0) ;
+    if( bp == NULL) {
+        mlwrite( "No such procedure") ;
+        return FALSE ;
     }
 
     /* and now execute it as asked */
-    while (n-- > 0)
-        if ((status = dobuf(bp)) != TRUE)
-            return status;
-    return TRUE;
+    while( status == TRUE && n-- > 0)
+        status = dobuf( bp) ;
+
+	return status ;
 }
 #endif
 
@@ -514,27 +523,29 @@ int execproc(int f, int n)
  *
  * int f, n;        default flag and numeric arg
  */
-int execbuf(int f, int n)
-{
-    struct buffer *bp;  /* ptr to buffer to execute */
-    int status; /* status return */
-    bname_t bufn ;  /* name of buffer to execute */
+int execbuf( int f, int n) {
+    struct buffer *bp ;	/* ptr to buffer to execute */
+    int status ;		/* status return */
+    char *bufn ;		/* name of buffer to execute */
 
     /* find out what buffer the user wants to execute */
-    if ((status = mlreply("Execute buffer: ", bufn, sizeof bufn)) != TRUE)
-        return status;
+    status = newmlarg( &bufn, "Execute buffer: ", sizeof( bname_t)) ;
+    if( status != TRUE)
+        return status ;
 
     /* find the pointer to that buffer */
-    if ((bp = bfind(bufn, FALSE, 0)) == NULL) {
-        mlwrite("No such buffer");
-        return FALSE;
+    bp = bfind( bufn, FALSE, 0) ;
+	free( bufn) ;
+    if( bp == NULL) {
+        mlwrite( "No such buffer") ;
+        return FALSE ;
     }
 
     /* and now execute it as asked */
-    while (n-- > 0)
-        if ((status = dobuf(bp)) != TRUE)
-            return status;
-    return TRUE;
+    while( status == TRUE && n-- > 0)
+        status = dobuf( bp) ;
+
+    return status ;
 }
 
 /*
@@ -949,31 +960,28 @@ static void freewhile(struct while_block *wp)
  *
  * int f, n;        default flag and numeric arg to pass on to file
  */
-int execfile(int f, int n)
-{
-    int status; /* return status of name query */
-    char fname[NSTRING];    /* name of file to execute */
-    char *fspec;        /* full file spec */
+int execfile( int f, int n) {
+    int status ;	/* return status of name query */
+    char *fname ;	/* name of file to execute */
+    char *fspec ;	/* full file spec */
 
-    if ((status =
-         mlreply("File to execute: ", fname, NSTRING - 1)) != TRUE)
-        return status;
+    status = newmlarg( &fname, "File to execute: ", 0) ;
+    if( status != TRUE)
+        return status ;
 
-#if 1
-    /* look up the path for the file */
-    fspec = flook(fname, FALSE);    /* used to by TRUE, P.K. */
+/* look up the path for the file */
+    fspec = flook( fname, FALSE) ;    /* used to be TRUE, P.K. */
+    free( fname) ;
 
-    /* if it isn't around */
-    if (fspec == NULL)
-        return FALSE;
+/* if it isn't around */
+    if( fspec == NULL)
+        return FALSE ;
 
-#endif
-    /* otherwise, execute it */
-    while (n-- > 0)
-        if ((status = dofile(fspec)) != TRUE)
-            return status;
+/* otherwise, execute it */
+    while( status == TRUE && n-- > 0)
+        status = dofile( fspec) ;
 
-    return TRUE;
+	return status ;
 }
 
 /*
