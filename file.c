@@ -12,6 +12,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -73,16 +74,20 @@ boolean resterr( void) {
  * "read a file into the current buffer" code.
  * Bound to "C-X C-R".
  */
-int fileread(int f, int n)
-{
-    int s;
-    fname_t fname ;
+int fileread( int f, int n) {
+    int status ;
+    char *fname ;
 
-    if (restflag)       /* don't allow this command if restricted */
-        return resterr();
-    if ((s = mlreply("Read file: ", fname, sizeof fname)) != TRUE)
-        return s;
-    return readin(fname, TRUE);
+    if( restflag)       /* don't allow this command if restricted */
+        return resterr() ;
+
+    status = newmlarg( &fname, "Read file: ", sizeof( fname_t)) ;
+    if( status == TRUE) {
+    	status = readin( fname, TRUE) ;
+    	free( fname) ;
+    }
+
+	return status ;
 }
 
 /*
@@ -92,20 +97,26 @@ int fileread(int f, int n)
  * "insert a file into the current buffer" code.
  * Bound to "C-X C-I".
  */
-int insfile(int f, int n)
-{
-    int s;
-    fname_t fname ;
+int insfile( int f, int n) {
+    int status ;
+    char *fname ;
 
-    if (restflag)       /* don't allow this command if restricted */
-        return resterr();
-    if (curbp->b_mode & MDVIEW) /* don't allow this command if      */
-        return rdonly();    /* we are in read only mode     */
-    if ((s = mlreply("Insert file: ", fname, sizeof fname)) != TRUE)
-        return s;
-    if ((s = ifile(fname)) != TRUE)
-        return s;
-    return reposition(TRUE, -1);
+    if( restflag)       /* don't allow this command if restricted */
+        return resterr() ;
+
+    if( curbp->b_mode & MDVIEW)	/* don't allow this command if	*/
+        return rdonly() ;		/* we are in read only mode     */
+
+    status = newmlarg( &fname, "Insert file: ", sizeof( fname_t)) ;
+    if( status == TRUE) {
+	    status = ifile( fname) ;
+	    free( fname) ;
+	}
+
+	if( status != TRUE)
+        return status ;
+
+    return reposition( TRUE, -1) ;
 }
 
 /*
@@ -117,40 +128,49 @@ int insfile(int f, int n)
  * text, and switch to the new buffer.
  * Bound to C-X C-F.
  */
-int filefind(int f, int n)
-{
-    fname_t fname ; /* file user wishes to find */
-    int s;      /* status return */
+int filefind( int f, int n) {
+    char *fname ;	/* file user wishes to find */
+    int status ;	/* status return */
 
-    if (restflag)       /* don't allow this command if restricted */
-        return resterr();
-    if ((s = mlreply("Find file: ", fname, sizeof fname)) != TRUE)
-        return s;
-    return getfile(fname, TRUE);
+    if( restflag)	/* don't allow this command if restricted */
+        return resterr() ;
+
+    status = newmlarg( &fname, "Find file: ", sizeof( fname_t)) ;
+    if( status == TRUE) {
+		status = getfile( fname, TRUE) ;
+		free( fname) ;
+	}
+
+	return status ;
 }
 
-int viewfile(int f, int n)
-{               /* visit a file in VIEW mode */
-    fname_t fname ; /* file user wishes to find */
-    int s;      /* status return */
-    struct window *wp;  /* scan for windows that need updating */
+int viewfile( int f, int n) {	/* visit a file in VIEW mode */
+    char *fname ;	/* file user wishes to find */
+    int	status ;	/* status return */
 
-    if (restflag)       /* don't allow this command if restricted */
-        return resterr();
-    if ((s = mlreply("View file: ", fname, sizeof fname)) != TRUE)
-        return s;
-    s = getfile(fname, FALSE);
-    if (s) {        /* if we succeed, put it in view mode */
-        curwp->w_bufp->b_mode |= MDVIEW;
+    if( restflag)       /* don't allow this command if restricted */
+        return resterr() ;
+        
+    status = newmlarg( &fname, "View file: ", sizeof( fname_t)) ;
+    if( status == TRUE) {
+		status = getfile(fname, FALSE) ;
+		free( fname) ;
+	}
+
+    if( status == TRUE) {	/* if we succeed, put it in view mode */
+	    struct window *wp ;	/* scan for windows that need updating */
+
+        curwp->w_bufp->b_mode |= MDVIEW ;
 
         /* scan through and update mode lines of all windows */
-        wp = wheadp;
-        while (wp != NULL) {
-            wp->w_flag |= WFMODE;
-            wp = wp->w_wndp;
+        wp = wheadp ;
+        while( wp != NULL) {
+            wp->w_flag |= WFMODE ;
+            wp = wp->w_wndp ;
         }
     }
-    return s;
+
+    return status ;
 }
 
 #if CRYPT
@@ -165,28 +185,29 @@ void cryptbufferkey( struct buffer *bp) {
  * int f;		default flag
  * int n;		numeric argument
  */
-int set_encryption_key(int f, int n)
-{
-	int status;	/* return status */
-	int odisinp;		/* original vlaue of disinp */
-	ekey_t	key ;	/* new encryption string */
+int set_encryption_key( int f, int n) {
+	int status ;	/* return status */
+	int odisinp ;	/* original value of disinp */
+	char *key ;		/* new encryption string */
 
 	/* turn command input echo off */
-	odisinp = disinp;
-	disinp = FALSE;
+	odisinp = disinp ;
+	disinp = FALSE ;
 
 	/* get the string to use as an encrytion string */
-	status = mlreply("Encryption String: ", key, sizeof key - 1);
-	disinp = odisinp;
-	if (status != TRUE)
-		return status;
+	status = newmlarg( &key, "Encryption String: ", sizeof( ekey_t)) ;
+	disinp = odisinp ;
+	if( status != TRUE)
+		return status ;
 
 	/* save it off and encrypt it*/
-	strcpy(curbp->b_key, key);
+	strncpy( curbp->b_key, key, sizeof( ekey_t) - 1) ;
+	curbp->b_key[ sizeof( ekey_t) - 1] = '\0' ;
+	free( key) ;
 	cryptbufferkey( curbp) ;
 	
 	mloutstr( "") ;	/* clear the message line */
-	return TRUE;
+	return TRUE ;
 }
 
 static int resetkey(void)
@@ -253,15 +274,22 @@ int getfile( const char *fname, boolean lockfl)
     }
     makename(bname, fname); /* New buffer name.     */
     while ((bp = bfind(bname, FALSE, 0)) != NULL) {
+    	char *new_bname ;
+
         /* old buffer name conflict code */
-        s = mlreply("Buffer name: ", bname, sizeof bname);
-        if (s == ABORT) /* ^G to just quit      */
-            return s;
-        if (s == FALSE) {   /* CR to clobber it     */
-            makename(bname, fname);
-            break;
+        s = newmlarg( &new_bname, "Buffer name: ", sizeof( bname_t)) ;
+        if( s == ABORT) /* ^G to just quit      */
+            return s ;
+        else if (s == FALSE) {   /* CR to clobber it     */
+            makename( bname, fname) ;
+            break ;
+        } else { /* TRUE */
+        	strncpy( bname, new_bname, sizeof bname - 1) ;
+        	bname[ sizeof bname - 1] = '\0' ;
+        	free( new_bname) ;
         }
     }
+
     if (bp == NULL && (bp = bfind(bname, TRUE, 0)) == NULL) {
         mloutstr( "Cannot create buffer") ;
         return FALSE;
@@ -495,27 +523,35 @@ void unqname(char *name)
  * is more compatable with Gosling EMACS than
  * with ITS EMACS. Bound to "C-X C-W".
  */
-int filewrite(int f, int n)
-{
-    struct window *wp;
-    int s;
-    fname_t fname ;
+int filewrite( int f, int n) {
+    int status ;
+    char *fname ;
 
-    if (restflag)       /* don't allow this command if restricted */
-        return resterr();
-    if ((s = mlreply("Write file: ", fname, sizeof fname)) != TRUE)
-        return s;
-    if ((s = writeout(fname)) == TRUE) {
-        strcpy(curbp->b_fname, fname);
-        curbp->b_flag &= ~BFCHG;
-        wp = wheadp;    /* Update mode lines.   */
-        while (wp != NULL) {
-            if (wp->w_bufp == curbp)
-                wp->w_flag |= WFMODE;
-            wp = wp->w_wndp;
-        }
-    }
-    return s;
+    if( restflag)       /* don't allow this command if restricted */
+        return resterr() ;
+
+    status = newmlarg( &fname, "Write file: ", sizeof( fname_t)) ;
+    if( status == TRUE) {
+	    status = writeout( fname) ;
+	    if( status == TRUE) {
+		    struct window *wp ;
+
+	        strncpy( curbp->b_fname, fname, sizeof( fname_t) - 1) ;
+	        curbp->b_fname[ sizeof( fname_t) - 1] = '\0' ;
+	        curbp->b_flag &= ~BFCHG ;
+	        wp = wheadp ;	/* Update mode lines.   */
+	        while( wp != NULL) {
+	            if( wp->w_bufp == curbp)
+	                wp->w_flag |= WFMODE ;
+
+	            wp = wp->w_wndp ;
+	        }
+	    }
+    
+		free( fname) ;
+	}
+
+    return status ;
 }
 
 /*
@@ -622,28 +658,35 @@ int writeout( const char *fn)
  * as needing an update. You can type a blank line at the
  * prompt if you wish.
  */
-int filename(int f, int n)
-{
-    struct window *wp;
-    int s;
-    fname_t fname ;
+int filename( int f, int n) {
+    struct window *wp ;
+    int status ;
+    char *fname ;
 
-    if (restflag)       /* don't allow this command if restricted */
-        return resterr();
-    if ((s = mlreply("Name: ", fname, sizeof fname)) == ABORT)
-        return s;
-    if (s == FALSE)
-        strcpy(curbp->b_fname, "");
-    else
-        strcpy(curbp->b_fname, fname);
-    wp = wheadp;        /* Update mode lines.   */
-    while (wp != NULL) {
-        if (wp->w_bufp == curbp)
-            wp->w_flag |= WFMODE;
-        wp = wp->w_wndp;
+    if( restflag)       /* don't allow this command if restricted */
+        return resterr() ;
+
+    status = newmlarg( &fname, "Name: ", sizeof( fname_t)) ;
+    if( status == ABORT)
+        return status ;
+    else if( status == FALSE)
+        curbp->b_fname[ 0] = '\0' ;
+    else { /* TRUE */
+        strncpy( curbp->b_fname, fname, sizeof( fname_t) - 1) ;
+        curbp->b_fname[ sizeof( fname_t) - 1] = '\0' ;
+        free( fname) ;
     }
-    curbp->b_mode &= ~MDVIEW;   /* no longer read only mode */
-    return TRUE;
+
+    wp = wheadp ;        /* Update mode lines.   */
+    while( wp != NULL) {
+        if( wp->w_bufp == curbp)
+            wp->w_flag |= WFMODE ;
+
+        wp = wp->w_wndp ;
+    }
+
+    curbp->b_mode &= ~MDVIEW ;   /* no longer read only mode */
+    return TRUE ;
 }
 
 /*
