@@ -254,7 +254,9 @@ ask:
 		bp = bp->b_bufp ;	/* onward */
 	}
 
-	strcpy( curbp->b_bname, bufn) ;	/* copy buffer name to structure */
+/* copy buffer name to structure */
+	strncpy( curbp->b_bname, bufn, sizeof( bname_t) - 1) ;
+	curbp->b_bname[ sizeof( bname_t) - 1] = '\0' ;
 	free( bufn) ;
 	
 	curwp->w_flag |= WFMODE ;	/* make mode line replot */
