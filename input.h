@@ -23,7 +23,6 @@ extern const int nlc ;	/* end of input char */
 
 
 int mlyesno( const char *prompt) ;
-int mlreply( const char *prompt, char *buf, int nbuf) ;
 int newmlarg( char **outbufref, const char *prompt, int size) ;
 int newmlargt( char **outbufref, const char *prompt, int size) ;
 int ectoc( int c) ;

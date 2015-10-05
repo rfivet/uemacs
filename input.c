@@ -54,7 +54,7 @@ int abortc = CONTROL | 'G' ;		/* current abort command char	 */
 
 const int nlc = CONTROL | 'J' ;		/* end of input char */
 
-static const int quotec = 0x11 ;	/* quote char during mlreply()	 */
+static const int quotec = 0x11 ;	/* quote char during getstring()	 */
 
 static void outstring( char *s) ;
 
@@ -86,22 +86,14 @@ int mlyesno( const char *prompt)
 }
 
 /*
- * nextarg:
+ * newnextarg:
  *  get the next argument
  *
- * const char *prompt;      prompt to use if we must be interactive
- * char *buffer;        buffer to put token into
- * int size;            size of the buffer
- * int terminator;      terminating char to be used on interactive fetch
+ * char **outbufref ;	buffer to put token into
+ * const char *prompt ;	prompt to use if we must be interactive
+ * int size ;			size of the buffer
+ * int terminator ;		terminating char to be used on interactive fetch
  */
-static int nextarg( const char *prompt, char *buf, int size, int terminator) {
-    /* if we are interactive, go get it! */
-    if( clexec == FALSE)
-        return getstring( prompt, buf, size, terminator) ;
-	else
-		return gettokval( buf, size) ;
-}
-
 static int newnextarg( char **outbufref, const char *prompt, int size,
 															int terminator) {
 	int status ;
@@ -141,10 +133,6 @@ static int newnextarg( char **outbufref, const char *prompt, int size,
  * lets macros run at full speed. The reply is always terminated by a carriage
  * return. Handle erase, kill, and abort keys.
  */
-
-int mlreply( const char *prompt, char *buf, int nbuf) {
-    return nextarg( prompt, buf, nbuf, nlc) ;
-}
 
 int newmlarg( char **outbufref, const char *prompt, int size) {
 	return newnextarg( outbufref, prompt, size, nlc) ;
