@@ -44,7 +44,6 @@ int help(int f, int n)
 {               /* give me some help!!!!
                    bring up a fake buffer and read the help file
                    into it with view mode                 */
-    struct window *wp;  /* scaning pointer to windows */
     struct buffer *bp;  /* buffer pointer to help */
     char *fname = NULL; /* ptr to file returned by flook() */
 
@@ -73,11 +72,7 @@ int help(int f, int n)
     /* make this window in VIEW mode, update all mode lines */
     curwp->w_bufp->b_mode |= MDVIEW;
     curwp->w_bufp->b_flag |= BFINVS;
-    wp = wheadp;
-    while (wp != NULL) {
-        wp->w_flag |= WFMODE;
-        wp = wp->w_wndp;
-    }
+    upmode() ;
     return TRUE;
 }
 
@@ -387,15 +382,11 @@ static int buildlist( char *mstring) {
         }
     }
 
-    curwp->w_bufp->b_mode |= MDVIEW;    /* put this buffer view mode */
-    curbp->b_flag &= ~BFCHG;    /* don't flag this as a change */
+    bp->b_mode |= MDVIEW;    /* put this buffer view mode */
+    bp->b_flag &= ~BFCHG;    /* don't flag this as a change */
     wp->w_dotp = lforw(bp->b_linep);    /* back to the beginning */
     wp->w_doto = 0;
-    wp = wheadp;        /* and update ALL mode lines */
-    while (wp != NULL) {
-        wp->w_flag |= WFMODE;
-        wp = wp->w_wndp;
-    }
+    upmode() ;			/* and update ALL mode lines */
     mlwrite("");        /* clear the mode line */
     return TRUE;
 }
