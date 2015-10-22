@@ -92,10 +92,6 @@ static void mlputs( unsigned char *s) ;
 static int newscreensize(int h, int w);
 #endif
 
-#if RAINBOW
-static void putline(int row, int col, char *buf);
-#endif
-
 /*
  * Initialize the data structures used by the display code. The edge vectors
  * used to access the screens are set up. The operating system's terminal I/O
@@ -909,8 +905,7 @@ static void updext(void)
 /*
  * Update a single line. This does not know how to use insert or delete
  * character sequences; we are using VT52 functionality. Update the physical
- * row and column variables. It does try an exploit erase to end of line. The
- * RAINBOW version of this routine uses fast video.
+ * row and column variables. It does try an exploit erase to end of line.
  */
 #if	MEMMAP
 /*	UPDATELINE specific code for the IBM-PC and other compatables */
@@ -957,29 +952,6 @@ static int updateline(int row, struct video *vp1, struct video *vp2)
  */
 static int updateline(int row, struct video *vp1, struct video *vp2)
 {
-#if RAINBOW
-/*	UPDATELINE specific code for the DEC rainbow 100 micro	*/
-
-	unicode_t *cp1;
-	unicode_t *cp2;
-	int nch;
-
-	/* since we don't know how to make the rainbow do this, turn it off */
-	flags &= (~VFREV & ~VFREQ);
-
-	cp1 = &vp1->v_text[0];	/* Use fast video. */
-	cp2 = &vp2->v_text[0];
-	putline(row + 1, 1, cp1);
-	nch = term.t_ncol;
-
-	do {
-		*cp2 = *cp1;
-		++cp2;
-		++cp1;
-	}
-	while (--nch);
-	*flags &= ~VFCHG;
-#else
 /*	UPDATELINE code for all other versions		*/
 
 	unicode_t *cp1;
@@ -1004,20 +976,18 @@ static int updateline(int row, struct video *vp1, struct video *vp2)
 #endif
 
 #if	REVSTA | COLOR
-	/* if we need to change the reverse video status of the
-	   current line, we need to re-write the entire line     */
+	/* do a re-write of the entire line if it is reverse or there
+	** is a request to change the reverse status */
 	rev = (vp1->v_flag & VFREV) == VFREV;
 	req = (vp1->v_flag & VFREQ) == VFREQ;
-	if ((rev != req)
+	if( req || (req != rev)
 #if	COLOR
 	    || (vp1->v_fcolor != vp1->v_rfcolor)
 	    || (vp1->v_bcolor != vp1->v_rbcolor)
 #endif
 	    ) {
 		movecursor(row, 0);	/* Go to start of line. */
-		/* set rev video if needed */
-		if (rev != req)
-			(*term.t_rev) (req);
+		TTrev( req) ;		/* set needed rev video state */
 
 		/* scan through the line and dump it to the screen and
 		   the virtual screen array                             */
@@ -1027,9 +997,8 @@ static int updateline(int row, struct video *vp1, struct video *vp2)
 			++ttcol;
 			*cp2++ = *cp1++;
 		}
-		/* turn rev video off */
-		if (rev != req)
-			(*term.t_rev) (FALSE);
+
+		TTrev( FALSE) ;		/* turn rev video off */
 
 		/* update the needed flags */
 		vp1->v_flag &= ~VFCHG;
@@ -1107,7 +1076,6 @@ static int updateline(int row, struct video *vp1, struct video *vp2)
 #endif
 	vp1->v_flag &= ~VFCHG;	/* flag this line as updated */
 	return TRUE;
-#endif
 }
 #endif
 
@@ -1511,18 +1479,6 @@ static void mlputf( int s) {
 	mlputc((f % 10) + '0') ;
 }
 
-#if RAINBOW
-
-static void putline(int row, int col, char *buf)
-{
-	int n;
-
-	n = strlen(buf);
-	if (col + n - 1 > term.t_ncol)
-		n = term.t_ncol - col + 1;
-	Put_Data(row, col, n, buf);
-}
-#endif
 
 /* Get terminal size from system.
    Store number of lines into *heightp and width into *widthp.
