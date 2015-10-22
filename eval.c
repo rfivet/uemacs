@@ -537,11 +537,11 @@ static char *gtfun( char *fname) {
 		retstr = result ;
 		break ;
 	case UFRND | MONAMIC:
-		sz = abs( atoi( arg1)) ;
+		sz = atoi( arg1) ;
 		if( sz == 0)
 			sz = ernd() ;
 		else
-			sz = ernd() % sz + 1 ;
+			sz = ernd() % abs( sz) + 1 ;
 
 		retstr = i_to_a( sz) ;
 		break ;
@@ -1323,8 +1323,9 @@ int abs(int x)
  * returns a random integer
  */
 static int ernd( void) {
-	seed = abs(seed * 1721 + 10007);
-	return seed;
+	seed = seed * 1721 + 10007 ;
+	seed &= ~(1 << 31) ;	/* abs() introduces 176719 periodicity */
+	return seed ;
 }
 
 /*
