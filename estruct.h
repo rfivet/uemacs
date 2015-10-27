@@ -183,12 +183,6 @@
 #define       poke(a,b,c,d)   movedata(FP_SEG(c),FP_OFF(c),a,b,d)
 #endif
 
-#if	VMS
-#define	atoi	xatoi
-#define	abs	xabs
-#define	getname	xgetname
-#endif
-
 #if MSDOS & MSC
 #include	<dos.h>
 #include	<memory.h>
@@ -213,12 +207,6 @@
 #define	ENVFUNC	1
 #else
 #define	ENVFUNC	0
-#endif
-
-/*	Internal defined functions					*/
-
-#ifdef	abs
-#undef	abs
 #endif
 
 /* DIFCASE represents the integer difference between upper

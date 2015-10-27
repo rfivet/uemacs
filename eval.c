@@ -288,7 +288,7 @@ static int putctext( char *iline)
 static char *result ;		/* string result */
 static int ressize = 0 ;	/* mark result as uninitialized */
 
-static int ernd( void) ;
+static int ernd( int i) ;
 static int sindex( char *source, char *pattern) ;
 static char *xlat( char *source, char *lookup, char *trans) ;
 
@@ -537,13 +537,7 @@ static char *gtfun( char *fname) {
 		retstr = result ;
 		break ;
 	case UFRND | MONAMIC:
-		sz = atoi( arg1) ;
-		if( sz == 0)
-			sz = ernd() ;
-		else
-			sz = ernd() % abs( sz) + 1 ;
-
-		retstr = i_to_a( sz) ;
+		retstr = i_to_a( ernd( atoi( arg1))) ;
 		break ;
 	case UFABS | MONAMIC:
 		retstr = i_to_a( abs( atoi( arg1))) ;
@@ -1312,20 +1306,20 @@ char *mklower(char *str)
 }
 
 /*
- * take the absolute value of an integer
- */
-int abs(int x)
-{
-	return x < 0 ? -x : x;
-}
-
-/*
  * returns a random integer
+ *	ernd( 0) [ 0 .. 2147483647]
+ *  ernd( i) [ 1 .. abs( i)]
+ *		ernd( 1) [ 1]
+ *		ernd( -2147483648) [ 1 .. 2147483647] actually 2147482413
  */
-static int ernd( void) {
+static int ernd( int i) {
 	seed = seed * 1721 + 10007 ;
-	seed &= ~(1 << 31) ;	/* abs() introduces 176719 periodicity */
-	return seed ;
+	seed &= ~(1 << 31) ; /* avoid abs() which introduces 176719 periodicity */
+	if( i == 0)
+		return seed ;
+
+	i = i < 0 ? -i : i ;	/* abs( i) */
+	return seed % i + 1 ;
 }
 
 /*

@@ -22,7 +22,6 @@ int setvar( int f, int n) ;
 char *getval( char *token) ;
 int stol( char *val) ;
 char *mklower( char *str) ;
-int abs( int x) ;
 
 int clrmes( int f, int n) ;
 int writemsg( int f, int n) ;
