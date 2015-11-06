@@ -19,6 +19,7 @@
 #include "buffer.h"
 #include "crypt.h"
 #include "defines.h"
+#include "display.h"
 #include "estruct.h"
 #include "execute.h"
 #include "fileio.h"
@@ -205,6 +206,10 @@ int set_encryption_key( int f, int n) {
 	curbp->b_key[ sizeof( ekey_t) - 1] = '\0' ;
 	free( key) ;
 	cryptbufferkey( curbp) ;
+	if( !(curbp->b_mode & MDCRYPT)) {
+		curbp->b_mode |= MDCRYPT ;
+		upmode() ;
+	}
 	
 	mloutstr( "") ;	/* clear the message line */
 	return TRUE ;
