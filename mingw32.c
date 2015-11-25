@@ -1,3 +1,5 @@
+/* mingw32.c -- */
+
 #ifdef MINGW32
 #include "termio.h"
 #include "terminal.h"
@@ -188,4 +190,8 @@ static void ttmove( int l, int c) {
 	wgoxy( c, l) ;
 }
 
+#else
+typedef void _pedantic_empty_translation_unit ;
 #endif
+
+/* end of mingw32.c */

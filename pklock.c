@@ -127,4 +127,9 @@ char *undolock( const char *fname)
 	}
 	return NULL;
 }
+
+#else
+typedef void _pedantic_empty_translation_unit ;
 #endif
+
+/* end of pklock.c */

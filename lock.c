@@ -1,3 +1,5 @@
+/* lock.c -- implements lock.h */
+
 #include "estruct.h"
 #include "lock.h"
 
@@ -167,4 +169,9 @@ void lckerror(char *errstr)
 	strcat(obuf, strerror(errno));
 	mlwrite(obuf);
 }
+
+#else
+typedef void _pedantic_empty_translation_unit ;
 #endif
+
+/* end of lock.c */

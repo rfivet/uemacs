@@ -463,4 +463,8 @@ int typahead( void)
 }
 #endif
 
+#else
+typedef void _pedantic_empty_translation_unit ;
 #endif              /* not POSIX */
+
+/* end of termio.c */

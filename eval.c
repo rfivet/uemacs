@@ -185,7 +185,7 @@ enum function_type {
 	NILNAMIC	= 0,
 	MONAMIC		= (1 << 6),
 	DYNAMIC		= (2 << 6),
-	TRINAMIC	= (3 << 6),
+	TRINAMIC	= (3 << 6)
 } ;
 
 enum function_code {
@@ -195,7 +195,7 @@ enum function_code {
 	UFAND,		UFOR,		UFLENGTH,	UFUPPER,	UFLOWER,	UFTRUTH,
 	UFASCII,	UFCHR,		UFGTKEY,	UFRND,		UFABS,		UFSINDEX,
 	UFENV,		UFBIND,		UFEXIST,	UFFIND,		UFBAND,		UFBOR,
-	UFBXOR,		UFBNOT,		UFXLATE,
+	UFBXOR,		UFBNOT,		UFXLATE
 } ;
 
 /* List of recognized user functions. */

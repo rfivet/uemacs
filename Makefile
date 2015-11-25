@@ -26,7 +26,7 @@ uname_S := $(shell sh -c 'echo $(uname_S) | sed s/_.*$$//')
 PROGRAM=ue
 
 CC=gcc
-WARNINGS=-Wall -Wextra -Wstrict-prototypes -Wno-unused-parameter
+WARNINGS=-pedantic -Wall -Wextra -Wstrict-prototypes -Wno-unused-parameter
 CFLAGS=-O2 $(WARNINGS)
 #CC=c89 +O3			# HP
 #CFLAGS= -D_HPUX_SOURCE -DSYSV
