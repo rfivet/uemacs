@@ -43,7 +43,7 @@ ifeq ($(uname_S),Darwin)
  DEFINES=-DAUTOCONF -DPOSIX -DSYSV -D_DARWIN_C_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE -D_XOPEN_SOURCE=600
 endif
 ifeq ($(uname_S),CYGWIN)
- DEFINES=-DAUTOCONF -DCYGWIN -DPOSIX -DSYSV -DPROGRAM=$(PROGRAM)
+ DEFINES=-DAUTOCONF -DCYGWIN -DSYSV -DPROGRAM=$(PROGRAM)
  LIBS=-lcurses
 endif
 ifeq ($(uname_S),MINGW32)
@@ -155,7 +155,8 @@ exec.o: exec.c exec.h retcode.h buffer.h crypt.h line.h utf8.h bind.h \
 execute.o: execute.c execute.h estruct.h bind.h random.h display.h file.h \
  buffer.h crypt.h line.h retcode.h utf8.h mlout.h window.h defines.h
 file.o: file.c file.h buffer.h crypt.h line.h retcode.h utf8.h defines.h \
- estruct.h execute.h fileio.h input.h bind.h lock.h mlout.h window.h
+ display.h estruct.h execute.h fileio.h input.h bind.h lock.h mlout.h \
+ window.h
 fileio.o: fileio.c fileio.h crypt.h retcode.h defines.h utf8.h
 flook.o: flook.c flook.h retcode.h defines.h fileio.h crypt.h
 input.o: input.c input.h bind.h estruct.h bindable.h display.h exec.h \
@@ -176,7 +177,7 @@ names.o: names.c names.h basic.h bind.h bindable.h buffer.h crypt.h \
  line.h retcode.h utf8.h display.h estruct.h eval.h exec.h file.h \
  isearch.h region.h random.h search.h spawn.h window.h defines.h word.h
 pklock.o: pklock.c estruct.h pklock.h
-posix.o: posix.c termio.h estruct.h retcode.h utf8.h
+posix.o: posix.c
 random.o: random.c random.h basic.h buffer.h crypt.h line.h retcode.h \
  utf8.h display.h estruct.h execute.h input.h bind.h search.h terminal.h \
  defines.h window.h
@@ -190,7 +191,7 @@ spawn.o: spawn.c spawn.h defines.h buffer.h crypt.h line.h retcode.h \
  terminal.h window.h
 tcap.o: tcap.c terminal.h defines.h retcode.h display.h estruct.h \
  termio.h
-termio.o: termio.c
+termio.o: termio.c termio.h estruct.h retcode.h utf8.h
 utf8.o: utf8.c utf8.h
 window.o: window.c window.h defines.h buffer.h crypt.h line.h retcode.h \
  utf8.h basic.h display.h estruct.h execute.h terminal.h wrapper.h

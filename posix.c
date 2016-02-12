@@ -250,4 +250,8 @@ int typahead(void)
 	return x;
 }
 
-#endif				/* POSIX */
+#else
+typedef void _pedantic_empty_translation_unit ;
+#endif              /* not POSIX */
+
+/* end of posix.c */
