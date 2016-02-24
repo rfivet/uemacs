@@ -734,7 +734,7 @@ static char *gtenv( char *vname) {
 	case EVRVAL:
 		return i_to_a(rval);
 	case EVTAB:
-		return i_to_a(tabmask + 1);
+		return i_to_a( tabwidth) ;
 	case EVOVERLAP:
 		return i_to_a(overlap);
 	case EVSCROLLCOUNT:
@@ -1049,10 +1049,13 @@ static int svar(struct variable_description *var, char *value)
 		case EVRVAL:
 			break;
 		case EVTAB:
-			tabmask = atoi(value) - 1;
-			if( tabmask != 0x07 && tabmask != 0x03 && tabmask != 1)
-				tabmask = 0x07;
-			curwp->w_flag |= WFHARD;
+			c = atoi( value) ;
+			if( c > 0) {
+				tabwidth = c ;
+				curwp->w_flag |= WFHARD;
+			} else
+				status = FALSE ;
+
 			break;
 		case EVOVERLAP:
 			overlap = atoi(value);

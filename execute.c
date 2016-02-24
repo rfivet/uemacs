@@ -70,7 +70,7 @@ int execute(int c, int f, int n)
 		if (curwp->w_bufp->b_mode & MDOVER &&
 		    curwp->w_doto < curwp->w_dotp->l_used &&
 		    (lgetc(curwp->w_dotp, curwp->w_doto) != '\t' ||
-		     ((curwp->w_doto) & tabmask) == tabmask))
+		     ((curwp->w_doto) % tabwidth) == (tabwidth - 1)))
 			ldelchar(1, FALSE);
 
 		/* do the appropriate insertion */

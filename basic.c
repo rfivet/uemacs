@@ -51,13 +51,14 @@ static unsigned getgoal( struct line *dlp) {
 
 		/* Take tabs, ^X and \xx hex characters into account */
 		if( c == '\t')
-			col |= tabmask ;
+			col += tabwidth - col % tabwidth ;
 		else if( c < 0x20 || c == 0x7F)
-			col += 1 ;
-		else if( c >= 0x80 && c <= 0xA0)
 			col += 2 ;
+		else if( c >= 0x80 && c <= 0xA0)
+			col += 3 ;
+		else
+			col += 1 ;
 
-		col += 1 ;
 		if( col > curgoal)
 			break ;
 

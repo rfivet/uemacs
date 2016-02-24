@@ -26,7 +26,7 @@
 #include "window.h"
 
 
-int tabmask = 0x07 ;		/* tabulator mask */
+int tabwidth = 8 ;			/* column span of a tab */
 
 #define	BLOCK_SIZE 16 /* Line block chunk size. */
 
@@ -418,13 +418,15 @@ int linsert( int n, unicode_t c) {
  *
  * int c;	character to overwrite on current position
  */
-static int lowrite(int c)
-{
-	if (curwp->w_doto < curwp->w_dotp->l_used &&
-	    (lgetc(curwp->w_dotp, curwp->w_doto) != '\t' ||
-	     ((curwp->w_doto) & tabmask) == tabmask))
-		ldelchar(1, FALSE);
-	return linsert(1, c);
+static int lowrite( int c) {
+	if( curwp->w_doto < curwp->w_dotp->l_used
+	&& (
+		lgetc(curwp->w_dotp, curwp->w_doto) != '\t' ||
+		((curwp->w_doto) % tabwidth) == (tabwidth - 1)
+	))
+		ldelchar( 1, FALSE) ;
+
+	return linsert( 1, c) ;
 }
 
 /*

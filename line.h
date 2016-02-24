@@ -28,7 +28,7 @@ struct line {
 #define lputc(lp, n, c) ((lp)->l_text[(n)]=(c))
 #define llength(lp)     ((lp)->l_used)
 
-extern int tabmask ;
+extern int tabwidth ;
 
 char *getkill( void) ;
 

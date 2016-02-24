@@ -210,8 +210,9 @@ static void vtputc(int c)
 	if (c == '\t') {
 		do {
 			vtputc(' ');
-		} while (((vtcol + taboff) & tabmask) != 0);
-		return;
+		} while( ((vtcol + taboff) % tabwidth) != 0) ;
+
+		return ;
 	}
 
 	if (c < 0x20) {
@@ -580,13 +581,13 @@ void updpos(void)
 
 		i += utf8_to_unicode( lp->l_text, i, curwp->w_doto, &c) ;
 		if( c == '\t')
-			curcol |= tabmask ;
+			curcol += tabwidth - curcol % tabwidth ;
 		else if( c < 0x20 || c == 0x7F)
-				curcol += 1 ;	/* displayed as ^c */
+				curcol += 2 ;	/* displayed as ^c */
 		else if( c >= 0x80 && c <= 0xA0)
-				curcol += 2 ;	/* displayed as \xx */
-
-		++curcol;
+				curcol += 3 ;	/* displayed as \xx */
+		else
+			curcol += 1 ;
 	}
 
 	/* if extended, flag so and update the virtual line image */

@@ -179,12 +179,13 @@ int getccol(int bflg)
 		if( bflg && c != ' ' && c != '\t')	/* Request Stop at first non-blank */
 			break;
 		if (c == '\t')
-			col |= tabmask;
+			col += tabwidth - col % tabwidth ;
 		else if (c < 0x20 || c == 0x7F)		/* displayed as ^c */
-			++col;
+			col += 2 ;
 		else if (c >= 0x80 && c <= 0xa0)	/* displayed as \xx */
-			col += 2;
-		++col;
+			col += 3 ;
+		else
+			col += 1 ;
 	}
 	return col;
 }
@@ -213,10 +214,11 @@ int setccol(int pos)
 		/* advance one character */
 		c = lgetc(curwp->w_dotp, i);
 		if (c == '\t')
-			col |= tabmask;
+			col += tabwidth - col % tabwidth ;
 		else if (c < 0x20 || c == 0x7F)
-			++col;
-		++col;
+			col += 2 ;
+		else
+			col += 1 ;
 	}
 
 	/* set us at the new position */
@@ -329,10 +331,9 @@ int detab(int f, int n)
 			/* if we have a tab */
 			if (lgetc(curwp->w_dotp, curwp->w_doto) == '\t') {
 				ldelchar(1, FALSE);
-				insspace(TRUE,
-					 (tabmask + 1) -
-					 (curwp->w_doto & tabmask));
+				insspace( TRUE, tabwidth - curwp->w_doto % tabwidth);
 			}
+
 			forwchar(FALSE, 1);
 		}
 
@@ -353,7 +354,7 @@ int detab(int f, int n)
  */
 int entab(int f, int n)
 {
-#define	nextab(a)	(a & ~tabmask) + (tabmask+1)
+#define	nextab(a)	(a + tabwidth - a % tabwidth)
 
 	int inc;	/* increment to next line [sgn(n)] */
 	int fspace;	/* pointer to first space if in a run */
@@ -759,38 +760,45 @@ int deblank(int f, int n)
 
 /*
  * Insert a newline, then enough tabs and spaces to duplicate the indentation
- * of the previous line. Assumes tabs are every eight characters. Quite simple.
+ * of the previous line. Assumes tabs are every tabwidth characters.
  * Figure out the indentation of the current line. Insert a newline by calling
  * the standard routine. Insert the indentation by inserting the right number
  * of tabs and spaces. Return TRUE if all ok. Return FALSE if one of the
  * subcomands failed. Normally bound to "C-J".
  */
-int indent(int f, int n)
-{
-	int nicol;
-	int c;
-	int i;
+int indent( int f, int n) {
+	int nicol ;
+	int i ;
 
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
-	if (n < 0)
-		return FALSE;
-	while (n--) {
-		nicol = 0;
-		for (i = 0; i < llength(curwp->w_dotp); ++i) {
-			c = lgetc(curwp->w_dotp, i);
-			if (c != ' ' && c != '\t')
-				break;
-			if (c == '\t')
-				nicol |= tabmask;
-			++nicol;
-		}
-		if (lnewline() == FALSE
-		    || ((i = nicol / 8) != 0 && linsert(i, '\t') == FALSE)
-		    || ((i = nicol % 8) != 0 && linsert(i, ' ') == FALSE))
-			return FALSE;
+	if( curbp->b_mode & MDVIEW)	/* don't allow this command if	*/
+		return rdonly() ;		/* we are in read only mode		*/
+
+	if( n < 0)
+		return FALSE ;
+
+/* number of columns to indent */
+	nicol = 0 ;
+	for( i = 0 ; i < llength( curwp->w_dotp) ; i += 1) {
+		int c ;
+
+		c = lgetc( curwp->w_dotp, i) ;
+		if( c == '\t')
+			nicol += tabwidth - nicol % tabwidth ;
+		else if( c == ' ')
+			nicol += 1 ;
+		else
+			break ;
 	}
-	return TRUE;
+
+	i = nicol / tabwidth ;	/* # of tab to insert */
+	nicol %= tabwidth ;		/* # of space to insert */
+	while( n--)
+		if( lnewline() == FALSE
+		|| ( i != 0 && linsert( i, '\t') == FALSE)
+		|| ( nicol  != 0 && linsert( nicol, ' ') == FALSE))
+			return FALSE ;
+
+	return TRUE ;
 }
 
 /*
