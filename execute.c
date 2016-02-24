@@ -14,6 +14,32 @@
 int gasave = 256 ;		/* global ASAVE size            */
 int gacount = 256 ;		/* count until next ASAVE       */
 
+
+/* insert a # into the text here...we are in CMODE */
+static int inspound( void) {
+/* if we are at the beginning of the line, no go */
+	if( curwp->w_doto != 0) {
+		int i ;
+
+	/* scan to see if all space before this is white space */
+		for( i = curwp->w_doto - 1 ; i >= 0 ; i -= 1) {
+			int ch ;	/* last character before input */
+
+			ch = lgetc( curwp->w_dotp, i) ;
+			if( ch != ' ' && ch != '\t')
+				break ;
+		}
+
+	/* delete back first */
+		if( i < 0)
+			while( getccol( FALSE) >= 1)
+				backdel( FALSE, 1) ;
+	}
+
+/* and insert the required pound */
+	return linsert( 1, '#') ;
+}
+
 /*
  * This is the general command execution routine. It handles the fake binding
  * of all the keys to "self-insert". It also clears out the "thisflag" word,

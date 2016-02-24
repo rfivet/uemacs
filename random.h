@@ -30,7 +30,6 @@ int trim( int f, int n) ;
 int openline( int f, int n) ;
 int insert_newline( int f, int n) ;
 int insbrace( int n, int c) ;
-int inspound( void) ;
 int deblank( int f, int n) ;
 int indent( int f, int n) ;
 int forwdel( int f, int n) ;

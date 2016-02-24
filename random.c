@@ -704,30 +704,6 @@ int insbrace(int n, int c)
 }
 #endif
 
-int inspound(void)
-{				/* insert a # into the text here...we are in CMODE */
-	int ch;	/* last character before input */
-	int i;
-
-	/* if we are at the beginning of the line, no go */
-	if (curwp->w_doto == 0)
-		return linsert(1, '#');
-
-	/* scan to see if all space before this is white space */
-	for (i = curwp->w_doto - 1; i >= 0; --i) {
-		ch = lgetc(curwp->w_dotp, i);
-		if (ch != ' ' && ch != '\t')
-			return linsert(1, '#');
-	}
-
-	/* delete back first */
-	while (getccol(FALSE) >= 1)
-		backdel(FALSE, 1);
-
-	/* and insert the required pound */
-	return linsert(1, '#');
-}
-
 /*
  * Delete blank lines around dot. What this command does depends if dot is
  * sitting on a blank line. If dot is sitting on a blank line, this command
