@@ -16,9 +16,9 @@ int gacount = 256 ;		/* count until next ASAVE       */
 
 
 /* insert a # into the text here...we are in CMODE */
-static int inspound( void) {
+static int inspound( int n) {
 /* if we are at the beginning of the line, no go */
-	if( curwp->w_doto != 0) {
+	if( n == 1 && curwp->w_doto != 0) {
 		int i ;
 
 	/* scan to see if all space before this is white space */
@@ -37,7 +37,7 @@ static int inspound( void) {
 	}
 
 /* and insert the required pound */
-	return linsert( 1, '#') ;
+	return linsert( n, '#') ;
 }
 
 /*
@@ -103,7 +103,7 @@ int execute(int c, int f, int n)
 		if (c == '}' && (curbp->b_mode & MDCMOD) != 0)
 			status = insbrace(n, c);
 		else if (c == '#' && (curbp->b_mode & MDCMOD) != 0)
-			status = inspound();
+			status = inspound( n) ;
 		else
 			status = linsert(n, c);
 
