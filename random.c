@@ -40,7 +40,7 @@ static const char *cname[] = {						/* names of colors */
 int gfcolor = NCOLORS - 1 ;	/* global forgrnd color (white)  */
 int gbcolor = 0 ;		/* global backgrnd color (black) */
 
-static int tabsize ;		/* Tab size (0: use real tabs)   */
+boolean hardtab = TRUE ;	/* use hard tab instead of soft tab */
 int fillcol = 72 ;		/* Current fill column           */
 
 /* uninitialized global definitions */
@@ -292,17 +292,21 @@ int quote(int f, int n)
  * done in this slightly funny way because the tab (in ASCII) has been turned
  * into "C-I" (in 10 bit code) already. Bound to "C-I".
  */
-int insert_tab(int f, int n)
-{
-	if (n < 0)
-		return FALSE;
-	if (n == 0 || n > 1) {
-		tabsize = n;
-		return TRUE;
-	}
-	if (!tabsize)
-		return linsert(1, '\t');
-	return linsert(tabsize - (getccol(FALSE) % tabsize), ' ');
+int insert_tab( int f, int n) {
+	int status ;
+
+	if( n < 0)
+		status = FALSE ;
+	else if( n == 0)
+		status = TRUE ;
+	else if( hardtab == TRUE)
+		status = linsert( n, '\t') ;
+	else					/* softtab */
+		do {
+			status = linsert( tabwidth - getccol( FALSE) % tabwidth, ' ') ;
+		} while( status != FALSE && --n) ;
+
+	return status ;
 }
 
 #if	AEDIT

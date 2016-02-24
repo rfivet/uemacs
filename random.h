@@ -1,9 +1,14 @@
 #ifndef _RANDOM_H_
 #define _RANDOM_H_
 
+
+#include "retcode.h"
+
+
 #define AEDIT 1
 
 extern int fillcol ;	/* Fill column                  */
+extern boolean	hardtab ;	/* Use hard tab instead of soft tab */
 
 
 /* Uninitialized global external declarations. */

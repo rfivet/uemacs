@@ -129,7 +129,8 @@ static const char *envars[] = {
 	"line",			/* text of current line */
 	"gflags",		/* global internal emacs flags */
 	"rval",			/* child process return value */
-	"tab",			/* tab 4 or 8 */
+	"tab",			/* tab width, 1... */
+	"hardtab",		/* TRUE for hard coded tab, FALSE for soft ones */
 	"overlap",
 	"jump",
 #if SCROLLCODE
@@ -177,9 +178,10 @@ static const char *envars[] = {
 #define	EVGFLAGS	35
 #define	EVRVAL		36
 #define EVTAB		37
-#define EVOVERLAP	38
-#define EVSCROLLCOUNT	39
-#define EVSCROLL	40
+#define EVHARDTAB	38
+#define EVOVERLAP	39
+#define EVSCROLLCOUNT	40
+#define EVSCROLL	41
 
 enum function_type {
 	NILNAMIC	= 0,
@@ -735,6 +737,8 @@ static char *gtenv( char *vname) {
 		return i_to_a(rval);
 	case EVTAB:
 		return i_to_a( tabwidth) ;
+	case EVHARDTAB:
+		return ltos( hardtab) ;
 	case EVOVERLAP:
 		return i_to_a(overlap);
 	case EVSCROLLCOUNT:
@@ -1057,6 +1061,9 @@ static int svar(struct variable_description *var, char *value)
 				status = FALSE ;
 
 			break;
+		case EVHARDTAB:
+			hardtab = stol( value) ;
+			break ;
 		case EVOVERLAP:
 			overlap = atoi(value);
 			break;

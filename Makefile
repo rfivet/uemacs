@@ -152,8 +152,9 @@ eval.o: eval.c eval.h basic.h bind.h buffer.h crypt.h line.h retcode.h \
 exec.o: exec.c exec.h retcode.h buffer.h crypt.h line.h utf8.h bind.h \
  display.h estruct.h eval.h file.h flook.h input.h random.h window.h \
  defines.h
-execute.o: execute.c execute.h estruct.h bind.h random.h display.h file.h \
- buffer.h crypt.h line.h retcode.h utf8.h mlout.h window.h defines.h
+execute.o: execute.c execute.h estruct.h bind.h random.h retcode.h \
+ display.h file.h buffer.h crypt.h line.h utf8.h mlout.h window.h \
+ defines.h
 file.o: file.c file.h buffer.h crypt.h line.h retcode.h utf8.h defines.h \
  display.h estruct.h execute.h fileio.h input.h bind.h lock.h mlout.h \
  window.h
@@ -178,7 +179,7 @@ names.o: names.c names.h basic.h bind.h bindable.h buffer.h crypt.h \
  isearch.h region.h random.h search.h spawn.h window.h defines.h word.h
 pklock.o: pklock.c estruct.h pklock.h
 posix.o: posix.c
-random.o: random.c random.h basic.h buffer.h crypt.h line.h retcode.h \
+random.o: random.c random.h retcode.h basic.h buffer.h crypt.h line.h \
  utf8.h display.h estruct.h execute.h input.h bind.h search.h terminal.h \
  defines.h window.h
 region.o: region.c region.h line.h retcode.h utf8.h buffer.h crypt.h \
