@@ -540,8 +540,7 @@ static int cinsert(void)
 	char *cptr;	/* string pointer into text to copy */
 	int tptr;	/* index to scan into line */
 	int bracef;	/* was there a brace at the end of line? */
-	int i;
-	char ichar[NSTRING];	/* buffer to hold indent of last line */
+	int i, nicol ;
 
 	/* grab a pointer to text to copy indentation from */
 	cptr = &curwp->w_dotp->l_text[0];
@@ -551,25 +550,43 @@ static int cinsert(void)
 	bracef = (tptr > 0) && (cptr[ tptr - 1] == '{') ;
 
 	/* save the indent of the previous line */
-	i = 0;
-	while ((i < tptr) && (cptr[i] == ' ' || cptr[i] == '\t')
-	       && (i < NSTRING - 1)) {
-		ichar[i] = cptr[i];
-		++i;
+	nicol = 0 ;
+	for( i = 0 ; i < tptr ; i += 1) {
+		char	ch ;
+		
+		ch = cptr[ i] ;
+		if( ch == ' ')
+			nicol += 1 ;
+		else if( ch == '\t')
+			nicol += tabwidth - nicol % tabwidth ;
+		else
+			break ;
 	}
-	ichar[i] = 0;		/* terminate it */
-
+	
+	if( i == tptr) {	/* all line is blank */
+		curwp->w_doto = 0 ;		/* gotobol */
+		lnewline() ;
+		curwp->w_doto = tptr ;	/* gotoeol */
+	} else {
 	/* put in the newline */
-	if (lnewline() == FALSE)
-		return FALSE;
+		if (lnewline() == FALSE)
+			return FALSE;
 
 	/* and the saved indentation */
-	linstr(ichar);
+		i = nicol % tabwidth ;	/* spaces */
+		nicol /= tabwidth ;		/* tabs */
+		if( bracef) {
+		/* and one more tab for a brace */
+			nicol += 1 ;
+			i = 0 ;
+		}
 
-	/* and one more tab for a brace */
-	if (bracef)
-		insert_tab(FALSE, 1);
+		if( nicol > 0)
+			insert_tab( FALSE, nicol) ;
 
+		if( i > 0)
+			linsert( i, ' ') ;
+	}
 #if SCROLLCODE
 	curwp->w_flag |= WFINS;
 #endif
