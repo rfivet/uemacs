@@ -392,24 +392,29 @@ static int linsert_byte(int n, int c)
 }
 
 int linsert( int n, unicode_t c) {
-	char utf8[6];
-	int bytes, i ;
-
-	assert( n > 0) ;
+	assert( n >= 0) ;
 	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
 		return rdonly();	/* we are in read only mode     */
 
-	bytes = unicode_to_utf8(c, utf8) ;
-	if (bytes == 1)
-		return linsert_byte(n, (unsigned char) utf8[0]);
-	for (i = 0; i < n; i++) {
-		int j;
-		for (j = 0; j < bytes; j++) {
-			unsigned char c = utf8[j];
-			if (!linsert_byte(1, c))
-				return FALSE;
+	if( n > 0) {
+		char utf8[ 6] ;
+		int bytes, i ;
+
+		bytes = unicode_to_utf8(c, utf8) ;
+		if (bytes == 1)
+			return linsert_byte(n, (unsigned char) utf8[0]);
+
+		for (i = 0; i < n; i++) {
+			int j;
+
+			for (j = 0; j < bytes; j++) {
+				unsigned char c = utf8[j];
+				if (!linsert_byte(1, c))
+					return FALSE;
+			}
 		}
 	}
+
 	return TRUE;
 }
 

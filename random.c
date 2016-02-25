@@ -661,8 +661,9 @@ int insbrace(int n, int c)
 			while (getccol(FALSE) > target)
 				backdel(FALSE, 1);
 		else {		/* on doit en inserer */
-			while (target - getccol(FALSE) >= 8)
-				linsert(1, '\t');
+			while (target - getccol(FALSE) >= tabwidth)
+				insert_tab( FALSE, 1) ;
+
 			linsert(target - getccol(FALSE), ' ');
 		}
 	}
@@ -681,7 +682,6 @@ int insbrace(int n, int c)
  */
 int insbrace(int n, int c)
 {
-	int ch;	/* last character before input */
 	int i;
 	int target;	/* column brace should go after */
 
@@ -691,6 +691,8 @@ int insbrace(int n, int c)
 
 	/* scan to see if all space before this is white space */
 	for (i = curwp->w_doto - 1; i >= 0; --i) {
+		int ch;	/* last character before input */
+
 		ch = lgetc(curwp->w_dotp, i);
 		if (ch != ' ' && ch != '\t')
 			return linsert(n, c);
@@ -698,8 +700,8 @@ int insbrace(int n, int c)
 
 	/* delete back first */
 	target = getccol(FALSE);	/* calc where we will delete to */
-	target -= 1;
-	target -= target % (tabsize == 0 ? 8 : tabsize);
+	i = target % tabwidth ;
+	target -= ( i != 0) ? i : tabwidth ;
 	while (getccol(FALSE) > target)
 		backdel(FALSE, 1);
 
@@ -774,7 +776,7 @@ int indent( int f, int n) {
 	nicol %= tabwidth ;		/* # of space to insert */
 	while( n--)
 		if( lnewline() == FALSE
-		|| ( i != 0 && linsert( i, '\t') == FALSE)
+		|| ( i != 0 && insert_tab( FALSE, i) == FALSE)
 		|| ( nicol  != 0 && linsert( nicol, ' ') == FALSE))
 			return FALSE ;
 
