@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "basic.h"
 #include "buffer.h"
@@ -637,15 +638,16 @@ int insbrace(int n, int c)
 	oldlp = curwp->w_dotp;
 	oldoff = curwp->w_doto;
 
-	count = 1;
+	count = 1 ;
 	do {
 		if( boundry( curwp->w_dotp, curwp->w_doto, REVERSE)) {
 		/* at beginning of buffer, no match to be found */
 			curwp->w_dotp = oldlp ;
 			curwp->w_doto = oldoff ;
 			return linsert( n, c) ;
-		} else
-			backchar( FALSE, 1) ;
+		}
+		
+		backchar( FALSE, 1) ;
 
 		/* if not eol */
 		if( curwp->w_doto != llength( curwp->w_dotp)) {
@@ -1079,46 +1081,36 @@ int getfence(int f, int n)
 		return FALSE;
 	}
 
-	/* set up for scan */
-	count = 1;
-	if (sdir == REVERSE)
-		backchar(FALSE, 1);
-	else
-		forwchar(FALSE, 1);
+	/* scan until we find a match, or reach the end of file */
+	count = 1 ;
+	do {
+		if( boundry( curwp->w_dotp, curwp->w_doto, sdir)) {
+		/* at buffer limit, no match to be found */
+			/* restore the current position */
+			curwp->w_dotp = oldlp ;
+			curwp->w_doto = oldoff ;
+			TTbeep() ;
+			return FALSE ;
+		}
 
-	/* scan until we find it, or reach the end of file */
-	while (count > 0) {
-		if (curwp->w_doto == llength(curwp->w_dotp))
-			c = '\n';
+		if( sdir == FORWARD)
+			forwchar( FALSE, 1) ;
 		else
-			c = lgetc(curwp->w_dotp, curwp->w_doto);
-		if (c == ch)
-			++count;
-		if (c == ofence)
-			--count;
-		if (sdir == FORWARD)
-			forwchar(FALSE, 1);
-		else
-			backchar(FALSE, 1);
-		if (boundry(curwp->w_dotp, curwp->w_doto, sdir))
-			break;
-	}
+			backchar( FALSE, 1) ;
 
-	/* if count is zero, we have a match, move the sucker */
-	if (count == 0) {
-		if (sdir == FORWARD)
-			backchar(FALSE, 1);
-		else
-			forwchar(FALSE, 1);
-		curwp->w_flag |= WFMOVE;
-		return TRUE;
-	}
+		/* if no eol */
+		if( curwp->w_doto != llength(curwp->w_dotp)) {
+			c = lgetc( curwp->w_dotp, curwp->w_doto) ;
+			if( c == ch)
+				++count ;
+			else if( c == ofence)
+				--count ;
+		}
+	} while( count > 0) ;
 
-	/* restore the current position */
-	curwp->w_dotp = oldlp;
-	curwp->w_doto = oldoff;
-	TTbeep();
-	return FALSE;
+	/* we have a match, move the sucker */
+	curwp->w_flag |= WFMOVE ;
+	return TRUE ;
 }
 #endif
 
@@ -1138,6 +1130,10 @@ int fmatch(int ch)
 	char c;	/* current character in scan */
 	int i;
 
+	/* $tpause <= 0 disable fmatch */
+	if( term.t_pause <= 0)
+		return TRUE ;
+
 	/* first get the display update out there */
 	update(FALSE);
 
@@ -1155,32 +1151,36 @@ int fmatch(int ch)
 
 	/* find the top line and set up for scan */
 	toplp = curwp->w_linep->l_bp;
-	count = 1;
-	backchar(FALSE, 2);
+	backchar( FALSE, 1) ;	/* . was after the }, move back */
 
 	/* scan back until we find it, or reach past the top of the window */
-	while (count > 0 && curwp->w_dotp != toplp) {
-		if (curwp->w_doto == llength(curwp->w_dotp))
-			c = '\n';
-		else
-			c = lgetc(curwp->w_dotp, curwp->w_doto);
-		if (c == ch)
-			++count;
-		if (c == opench)
-			--count;
-		backchar(FALSE, 1);
-		if (curwp->w_dotp == curwp->w_bufp->b_linep->l_fp &&
-		    curwp->w_doto == 0)
-			break;
-	}
+	count = 1 ;
+	do {
+		/* At beginning of window or buffer, no match to be found */
+		if( curwp->w_dotp == toplp
+		||	boundry( curwp->w_dotp, curwp->w_doto, REVERSE))
+			break ;
+
+		backchar( FALSE, 1) ;
+
+		/* if not eol */
+		if( curwp->w_doto != llength(curwp->w_dotp)) {
+			c = lgetc( curwp->w_dotp, curwp->w_doto) ;
+			if( c == ch)
+				++count ;
+			else if( c == opench)
+				--count ;
+		}
+	} while( count > 0) ;
 
 	/* if count is zero, we have a match, display the sucker */
-	/* there is a real machine dependant timing problem here we have
-	   yet to solve......... */
-	if (count == 0) {
-		forwchar(FALSE, 1);
-		for (i = 0; i < term.t_pause; i++)
-			update(FALSE);
+	if( count == 0) {
+		/* there is a real machine dependant timing problem here we have
+		   yet to solve......... */
+		for( i = 0 ; i < term.t_pause ; i++) {
+			update( FALSE) ;
+			usleep( 10000L) ;
+		}
 	}
 
 	/* restore the current position */
