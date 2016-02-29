@@ -638,29 +638,24 @@ int insbrace(int n, int c)
 	oldoff = curwp->w_doto;
 
 	count = 1;
-	backchar(FALSE, 1);
+	do {
+		if( boundry( curwp->w_dotp, curwp->w_doto, REVERSE)) {
+		/* at beginning of buffer, no match to be found */
+			curwp->w_dotp = oldlp ;
+			curwp->w_doto = oldoff ;
+			return linsert( n, c) ;
+		} else
+			backchar( FALSE, 1) ;
 
-	while (count > 0) {
-		if (curwp->w_doto == llength(curwp->w_dotp))
-			ch = '\n';
-		else
-			ch = lgetc(curwp->w_dotp, curwp->w_doto);
-
-		if (ch == c)
-			++count;
-		if (ch == oc)
-			--count;
-
-		backchar(FALSE, 1);
-		if (boundry(curwp->w_dotp, curwp->w_doto, REVERSE))
-			break;
-	}
-
-	if (count != 0) {	/* no match */
-		curwp->w_dotp = oldlp;
-		curwp->w_doto = oldoff;
-		return linsert(n, c);
-	}
+		/* if not eol */
+		if( curwp->w_doto != llength( curwp->w_dotp)) {
+			ch = lgetc( curwp->w_dotp, curwp->w_doto) ;
+			if( ch == c)
+				++count ;
+			else if( ch == oc)
+				--count ;
+		}
+	} while( count > 0) ;
 
 	curwp->w_doto = 0;	/* debut de ligne */
 	/* aller au debut de la ligne apres la tabulation */
