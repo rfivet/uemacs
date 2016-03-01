@@ -1,8 +1,6 @@
 /* random.c -- implements random.h */
 #include "random.h"
 
-#define	NBRACE	1  /* new style brace matching command             */
-
 /*	random.c
  *
  *      This file contains the command processing functions for a number of
@@ -14,7 +12,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 #include "basic.h"
 #include "buffer.h"
@@ -503,8 +500,6 @@ int openline(int f, int n)
  */
 int insert_newline(int f, int n)
 {
-	int s;
-
 	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
 		return rdonly();	/* we are in read only mode     */
 	if (n < 0)
@@ -527,6 +522,8 @@ int insert_newline(int f, int n)
 
 	/* insert some lines */
 	while (n--) {
+		int s ;
+
 		if ((s = lnewline()) != TRUE)
 			return s;
 #if SCROLLCODE
@@ -553,7 +550,7 @@ static int cinsert(void)
 	/* save the indent of the previous line */
 	nicol = 0 ;
 	for( i = 0 ; i < tptr ; i += 1) {
-		char	ch ;
+		int ch ;
 		
 		ch = cptr[ i] ;
 		if( ch == ' ')
@@ -563,7 +560,7 @@ static int cinsert(void)
 		else
 			break ;
 	}
-	
+
 	if( i == tptr) {	/* all line is blank */
 		curwp->w_doto = 0 ;		/* gotobol */
 		lnewline() ;
@@ -594,135 +591,6 @@ static int cinsert(void)
 	return TRUE;
 }
 
-#if	NBRACE
-/*
- * insert a brace into the text here...we are in CMODE
- *
- * int n;	repeat count
- * int c;	brace to insert (always } for now)
- */
-int insbrace(int n, int c)
-{
-	int ch;	/* last character before input */
-	int oc;	/* caractere oppose a c */
-	int i, count;
-	int target;	/* column brace should go after */
-	struct line *oldlp;
-	int oldoff;
-
-	/* if we aren't at the beginning of the line... */
-	if (curwp->w_doto != 0)
-
-		/* scan to see if all space before this is white space */
-		for (i = curwp->w_doto - 1; i >= 0; --i) {
-			ch = lgetc(curwp->w_dotp, i);
-			if (ch != ' ' && ch != '\t')
-				return linsert(n, c);
-		}
-
-	/* chercher le caractere oppose correspondant */
-	switch (c) {
-	case '}':
-		oc = '{';
-		break;
-	case ']':
-		oc = '[';
-		break;
-	case ')':
-		oc = '(';
-		break;
-	default:
-		return FALSE;
-	}
-
-	oldlp = curwp->w_dotp;
-	oldoff = curwp->w_doto;
-
-	count = 1 ;
-	do {
-		if( boundry( curwp->w_dotp, curwp->w_doto, REVERSE)) {
-		/* at beginning of buffer, no match to be found */
-			curwp->w_dotp = oldlp ;
-			curwp->w_doto = oldoff ;
-			return linsert( n, c) ;
-		}
-		
-		backchar( FALSE, 1) ;
-
-		/* if not eol */
-		if( curwp->w_doto != llength( curwp->w_dotp)) {
-			ch = lgetc( curwp->w_dotp, curwp->w_doto) ;
-			if( ch == c)
-				++count ;
-			else if( ch == oc)
-				--count ;
-		}
-	} while( count > 0) ;
-
-	curwp->w_doto = 0;	/* debut de ligne */
-	/* aller au debut de la ligne apres la tabulation */
-	while ((ch = lgetc(curwp->w_dotp, curwp->w_doto)) == ' '
-	       || ch == '\t')
-		forwchar(FALSE, 1);
-
-	/* delete back first */
-	target = getccol(FALSE);	/* c'est l'indent que l'on doit avoir */
-	curwp->w_dotp = oldlp;
-	curwp->w_doto = oldoff;
-
-	while (target != getccol(FALSE)) {
-		if (target < getccol(FALSE))	/* on doit detruire des caracteres */
-			while (getccol(FALSE) > target)
-				backdel(FALSE, 1);
-		else {		/* on doit en inserer */
-			while (target - getccol(FALSE) >= tabwidth)
-				insert_tab( FALSE, 1) ;
-
-			linsert(target - getccol(FALSE), ' ');
-		}
-	}
-
-	/* and insert the required brace(s) */
-	return linsert(n, c);
-}
-
-#else
-
-/*
- * insert a brace into the text here...we are in CMODE
- *
- * int n;		repeat count
- * int c;		brace to insert (always { for now)
- */
-int insbrace(int n, int c)
-{
-	int i;
-	int target;	/* column brace should go after */
-
-	/* if we are at the beginning of the line, no go */
-	if (curwp->w_doto == 0)
-		return linsert(n, c);
-
-	/* scan to see if all space before this is white space */
-	for (i = curwp->w_doto - 1; i >= 0; --i) {
-		int ch;	/* last character before input */
-
-		ch = lgetc(curwp->w_dotp, i);
-		if (ch != ' ' && ch != '\t')
-			return linsert(n, c);
-	}
-
-	/* delete back first */
-	target = getccol(FALSE);	/* calc where we will delete to */
-	i = target % tabwidth ;
-	target -= ( i != 0) ? i : tabwidth ;
-	while (getccol(FALSE) > target)
-		backdel(FALSE, 1);
-
-	/* and insert the required brace(s) */
-	return linsert(n, c);
-}
-#endif
 
 /*
  * Delete blank lines around dot. What this command does depends if dot is
@@ -1114,80 +982,6 @@ int getfence(int f, int n)
 }
 #endif
 
-/*
- * Close fences are matched against their partners, and if
- * on screen the cursor briefly lights there
- *
- * char ch;			fence type to match against
- */
-int fmatch(int ch)
-{
-	struct line *oldlp;	/* original line pointer */
-	int oldoff;	/* and offset */
-	struct line *toplp;	/* top line in current window */
-	int count;	/* current fence level count */
-	char opench;	/* open fence */
-	char c;	/* current character in scan */
-	int i;
-
-	/* $tpause <= 0 disable fmatch */
-	if( term.t_pause <= 0)
-		return TRUE ;
-
-	/* first get the display update out there */
-	update(FALSE);
-
-	/* save the original cursor position */
-	oldlp = curwp->w_dotp;
-	oldoff = curwp->w_doto;
-
-	/* setup proper open fence for passed close fence */
-	if (ch == ')')
-		opench = '(';
-	else if (ch == '}')
-		opench = '{';
-	else
-		opench = '[';
-
-	/* find the top line and set up for scan */
-	toplp = curwp->w_linep->l_bp;
-	backchar( FALSE, 1) ;	/* . was after the }, move back */
-
-	/* scan back until we find it, or reach past the top of the window */
-	count = 1 ;
-	do {
-		/* At beginning of window or buffer, no match to be found */
-		if( curwp->w_dotp == toplp
-		||	boundry( curwp->w_dotp, curwp->w_doto, REVERSE))
-			break ;
-
-		backchar( FALSE, 1) ;
-
-		/* if not eol */
-		if( curwp->w_doto != llength(curwp->w_dotp)) {
-			c = lgetc( curwp->w_dotp, curwp->w_doto) ;
-			if( c == ch)
-				++count ;
-			else if( c == opench)
-				--count ;
-		}
-	} while( count > 0) ;
-
-	/* if count is zero, we have a match, display the sucker */
-	if( count == 0) {
-		/* there is a real machine dependant timing problem here we have
-		   yet to solve......... */
-		for( i = 0 ; i < term.t_pause ; i++) {
-			update( FALSE) ;
-			usleep( 10000L) ;
-		}
-	}
-
-	/* restore the current position */
-	curwp->w_dotp = oldlp;
-	curwp->w_doto = oldoff;
-	return TRUE;
-}
 
 static int iovstring( int f, int n, const char *prompt, int (*fun)( char *)) {
 	int status ;	/* status return code */

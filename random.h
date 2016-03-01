@@ -34,7 +34,6 @@ int trim( int f, int n) ;
 #endif
 int openline( int f, int n) ;
 int insert_newline( int f, int n) ;
-int insbrace( int n, int c) ;
 int deblank( int f, int n) ;
 int indent( int f, int n) ;
 int forwdel( int f, int n) ;
@@ -45,7 +44,6 @@ int delmode( int f, int n) ;
 int setgmode( int f, int n) ;
 int delgmode( int f, int n) ;
 int getfence( int f, int n) ;
-int fmatch( int ch) ;
 int istring( int f, int n) ;
 int ovstring( int f, int n) ;
 

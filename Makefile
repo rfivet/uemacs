@@ -153,8 +153,8 @@ exec.o: exec.c exec.h retcode.h buffer.h crypt.h line.h utf8.h bind.h \
  display.h estruct.h eval.h file.h flook.h input.h random.h window.h \
  defines.h
 execute.o: execute.c execute.h estruct.h bind.h random.h retcode.h \
- display.h file.h buffer.h crypt.h line.h utf8.h mlout.h window.h \
- defines.h
+ display.h file.h buffer.h crypt.h line.h utf8.h mlout.h search.h \
+ terminal.h defines.h window.h
 file.o: file.c file.h buffer.h crypt.h line.h retcode.h utf8.h defines.h \
  display.h estruct.h execute.h fileio.h input.h bind.h lock.h mlout.h \
  window.h
