@@ -1,7 +1,5 @@
 /* main.c -- */
 
-#define	CLRMSG	0  /* space clears the message line with no insert */
-
 /*
  *	main.c
  *
@@ -84,7 +82,6 @@
 #include "eval.h"
 #include "execute.h"
 #include "file.h"
-#include "input.h"
 #include "lock.h"
 #include "mlout.h"
 #include "random.h"
@@ -142,28 +139,21 @@ static void usage( void) {
 
 int main(int argc, char **argv)
 {
-	int c = -1;	/* command character */
-	int f;		/* default flag */
-	int n;		/* numeric repeat count */
-	int mflag;	/* negative flag on repeat */
 	struct buffer *bp;	/* temp buffer pointer */
 	int firstfile;	/* first file flag */
 	int carg;	/* current arg to scan */
 	int startflag;	/* startup executed flag */
 	struct buffer *firstbp = NULL;	/* ptr to first buffer in cmd line */
-	int basec;		/* c stripped of meta character */
 	int viewflag;		/* are we starting in view mode? */
 	int gotoflag;		/* do we need to goto a line at start? */
 	int gline = 0;		/* if so, what line? */
 	int searchflag;		/* Do we need to search at start? */
-	int saveflag;		/* temp store for lastflag */
 	int errflag;		/* C error processing? */
 	bname_t bname ;	/* buffer name of file to read */
 #if	CRYPT
 	int cryptflag;		/* encrypting on the way in? */
 	ekey_t	ekey ;	/* startup encryption key */
 #endif
-	int newc;
 
 #if	PKCODE & VMS
 	(void) umask(-1); /* Use old protection (this is at wrong place). */
@@ -367,132 +357,9 @@ int main(int argc, char **argv)
 		if( forwhunt( FALSE, 0))
 			mloutfmt( "Found on line %d", getcline()) ;
 
-	/* Setup to process commands. */
-	lastflag = 0;  /* Fake last flags. */
-
-      loop:
-	/* Execute the "command" macro...normally null. */
-	saveflag = lastflag;  /* Preserve lastflag through this. */
-	execute(META | SPEC | 'C', FALSE, 1);
-	lastflag = saveflag;
-
-#if TYPEAH && PKCODE
-	if (typahead()) {
-		newc = getcmd();
-		update(FALSE);
-		do {
-			fn_t execfunc;
-
-			if (c == newc && (execfunc = getbind(c)) != NULL
-			    && execfunc != insert_newline
-			    && execfunc != insert_tab)
-				newc = getcmd();
-			else
-				break;
-		} while (typahead());
-		c = newc;
-	} else {
-		update(FALSE);
-		c = getcmd();
-	}
-#else
-	/* Fix up the screen    */
-	update(FALSE);
-
-	/* get the next command from the keyboard */
-	c = getcmd();
-#endif
-	/* if there is something on the command line, clear it */
-	if (mpresf != FALSE) {
-		mloutstr( "") ;
-		update(FALSE);
-#if	CLRMSG
-		if (c == ' ')	/* ITS EMACS does this  */
-			goto loop;
-#endif
-	}
-	f = FALSE;
-	n = 1;
-
-	/* do META-# processing if needed */
-
-	basec = c & ~META;	/* strip meta char off if there */
-	if ((c & META) && ((basec >= '0' && basec <= '9') || basec == '-')) {
-		f = TRUE;	/* there is a # arg */
-		n = 0;		/* start with a zero default */
-		mflag = 1;	/* current minus flag */
-		c = basec;	/* strip the META */
-		while ((c >= '0' && c <= '9') || (c == '-')) {
-			if (c == '-') {
-				/* already hit a minus or digit? */
-				if ((mflag == -1) || (n != 0))
-					break;
-				mflag = -1;
-			} else {
-				n = n * 10 + (c - '0');
-			}
-			if ((n == 0) && (mflag == -1))	/* lonely - */
-				mloutstr( "Arg:") ;
-			else
-				mloutfmt( "Arg: %d", n * mflag) ;
-
-			c = getcmd();	/* get the next key */
-		}
-		n = n * mflag;	/* figure in the sign */
-	}
-
-	/* do ^U repeat argument processing */
-
-	if (c == reptc) {	/* ^U, start argument   */
-		f = TRUE;
-		n = 4;		/* with argument of 4 */
-		mflag = 0;	/* that can be discarded. */
-		mloutstr( "Arg: 4") ;
-		while (((c = getcmd()) >= '0' && c <= '9') || c == reptc
-		       || c == '-') {
-			if (c == reptc)
-				if ((n > 0) == ((n * 4) > 0))
-					n = n * 4;
-				else
-					n = 1;
-			/*
-			 * If dash, and start of argument string, set arg.
-			 * to -1.  Otherwise, insert it.
-			 */
-			else if (c == '-') {
-				if (mflag)
-					break;
-				n = 0;
-				mflag = -1;
-			}
-			/*
-			 * If first digit entered, replace previous argument
-			 * with digit and set sign.  Otherwise, append to arg.
-			 */
-			else {
-				if (!mflag) {
-					n = 0;
-					mflag = 1;
-				}
-				n = 10 * n + c - '0';
-			}
-			mloutfmt( "Arg: %d", (mflag >= 0) ? n : (n ? -n : -1)) ;
-		}
-		/*
-		 * Make arguments preceded by a minus sign negative and change
-		 * the special argument "^U -" to an effective "^U -1".
-		 */
-		if (mflag == -1) {
-			if (n == 0)
-				n++;
-			n = -n;
-		}
-	}
-
-	/* and execute the command */
-	execute(c, f, n);
-	goto loop;
+	kbd_loop() ;
 }
+
 
 /*
  * Initialize all of the buffers and windows. The buffer name is passed down
