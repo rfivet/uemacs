@@ -205,102 +205,99 @@ static void fmatch( int ch) {
  * and arranges to move it to the "lastflag", so that the next command can
  * look at it. Return the status of command.
  */
-int execute(int c, int f, int n)
-{
-	int status;
-	fn_t execfunc;
+int execute( int c, int f, int n) {
+	int status ;
+	fn_t execfunc ;
 
 /* if the keystroke is a bound function...do it */
-	execfunc = getbind(c);
-	if (execfunc != NULL) {
-		thisflag = 0;
-		status = (*execfunc) (f, n);
-		lastflag = thisflag;
-		return status;
+	execfunc = getbind( c) ;
+	if( execfunc != NULL) {
+		thisflag = 0 ;
+		status = execfunc( f, n) ;
+		lastflag = thisflag ;
+		return status ;
 	}
 
-/* keystroke not bound => self insert, check if buffer is read only */
-	if (curbp->b_mode & MDVIEW)
+/* non insertable character can only be bound to function */
+	if( c < 0x20
+	||	(c >= 0x7F && c < 0xA0)
+	||  c > 0x10FFFF) {	/* last valid unicode */
+		lastflag = 0 ;						/* Fake last flags. */
+		mloutfmt( "%B(Key not bound)") ;	/* Complain */
+		return FALSE ;
+	}
+
+/* insertable character => self insert, check if buffer is read only */
+	if( curbp->b_mode & MDVIEW) {
+		lastflag = 0 ;
 		return rdonly() ;
-
-	/*
-	 * If a space was typed, fill column is defined, the argument is non-
-	 * negative, wrap mode is enabled, and we are now past fill column,
-	 * and we are not read-only, perform word wrap.
-	 */
-	if (c == ' ' && (curwp->w_bufp->b_mode & MDWRAP) && fillcol > 0 &&
-	    n >= 0 && getccol(FALSE) > fillcol &&
-	    (curwp->w_bufp->b_mode & MDVIEW) == FALSE)
-		execute(META | SPEC | 'W', FALSE, 1);
-
-#if	PKCODE
-	if ((c >= 0x20 && c <= 0x7E)	/* Self inserting.      */
-#if	IBMPC
-	    || (c >= 0x80 && c <= 0xFE)) {
-#else
-#if	VMS || BSD || USG	/* 8BIT P.K. */
-	    || (c >= 0xA0 && c <= 0x10FFFF)) {
-#else
-	    ) {
-#endif
-#endif
-#else
-	if ((c >= 0x20 && c <= 0xFF)) {	/* Self inserting.      */
-#endif
-		if (n <= 0) {	/* Fenceposts.          */
-			lastflag = 0;
-			return n < 0 ? FALSE : TRUE;
-		}
-		thisflag = 0;	/* For the future.      */
-
-		/* if we are in overwrite mode, not at eol,
-		   and next char is not a tab or we are at a tab stop,
-		   delete a char forword                        */
-		if (curwp->w_bufp->b_mode & MDOVER &&
-		    curwp->w_doto < curwp->w_dotp->l_used &&
-		    (lgetc(curwp->w_dotp, curwp->w_doto) != '\t' ||
-		     ((curwp->w_doto) % tabwidth) == (tabwidth - 1)))
-			ldelchar(1, FALSE);
-
-		/* do the appropriate insertion */
-		switch( c) {
-		case '}':
-		case ']':
-		case ')':
-		case '#':
-			if( (curbp->b_mode & MDCMOD) != 0) {
-				if( c == '#')
-					status = inspound( n) ;
-				else {
-					status = insbrace( n, c) ;
-#if	CFENCE
-					if( status == TRUE)
-						fmatch( c) ;	/* check for CMODE fence matching */
-#endif
-				}
-
-				break ;
-			}
-		default:
-			status = linsert( n, c) ;
-		}
-
-		/* check auto-save mode */
-		if (curbp->b_mode & MDASAVE)
-			if (--gacount == 0) {
-				/* and save the file if needed */
-				upscreen(FALSE, 0);
-				filesave(FALSE, 0);
-				gacount = gasave;
-			}
-
-		lastflag = thisflag;
-		return status;
 	}
 
-	lastflag = 0 ;		/* Fake last flags. */
-	mloutfmt( "%B(Key not bound)") ;	/* Complain */
-	return FALSE ;
+/* check valid count */
+	if( n <= 0) {
+		lastflag = 0 ;
+		return n < 0 ? FALSE : TRUE ;
+	}
+
+/* wrap on space after fill column in wrap mode */
+	if( c == ' '
+	&&	(curwp->w_bufp->b_mode & MDWRAP)
+	&&	fillcol > 0
+	&&	getccol( FALSE) > fillcol) {
+		status = execute( META | SPEC | 'W', FALSE, 1) ; /* defaults to wrapword */
+		if( status != TRUE) {
+			lastflag = 0 ;
+			return status ;
+		}
+	}
+
+	thisflag = 0 ;	/* For the future.      */
+
+/* following handling of overwrite is only valid when n == 1 */
+	/* if we are in overwrite mode, not at eol,
+	   and next char is not a tab or we are at a tab stop,
+	   delete a char forward								*/
+	if( curbp->b_mode & MDOVER
+	&&	curwp->w_doto < curwp->w_dotp->l_used
+	&&	(lgetc( curwp->w_dotp, curwp->w_doto) != '\t' ||
+		((curwp->w_doto) % tabwidth) == (tabwidth - 1)))
+		ldelchar( 1, FALSE) ;
+
+/* do the appropriate insertion */
+	switch( c) {
+	case '}':
+	case ']':
+	case ')':
+	case '#':
+		if( (curbp->b_mode & MDCMOD) != 0) {
+			if( c == '#')
+				status = inspound( n) ;
+			else {
+				status = insbrace( n, c) ;
+#if	CFENCE
+				if( status == TRUE)
+					fmatch( c) ;	/* check for CMODE fence matching */
+#endif
+			}
+
+			break ;
+		}
+	default:
+		status = linsert( n, c) ;
+	}
+
+/* perform auto-save */
+	if( status == TRUE				/* successful insertion */
+	&&	(curbp->b_mode & MDASAVE)	/* auto save is on */
+	&&	(--gacount == 0)) {			/* insertion count reached */
+		/* and save the file if needed */
+		upscreen( FALSE, 0) ;
+		filesave( FALSE, 0) ;
+		gacount = gasave ;
+	}
+
+	lastflag = thisflag ;
+	return status ;
 }
 
 
