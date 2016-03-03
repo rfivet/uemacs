@@ -315,7 +315,6 @@ void kbd_loop( void) {
 	int basec ;		/* c stripped of meta character */
 	int f ;			/* default flag */
 	int n ;			/* numeric repeat count */
-	int mflag ;		/* negative flag on repeat */
 
 	/* Execute the "command" macro...normally null. */
 	saveflag = lastflag ;	/* Preserve lastflag through this. */
@@ -365,80 +364,49 @@ void kbd_loop( void) {
 	n = 1 ;
 
 	/* do META-# processing if needed */
-
-	if( (c & META)
-	&&	(((basec = c & ~META) >= '0' && basec <= '9') || basec == '-')) {
-		f = TRUE ;	/* there is a # arg */
-		n = 0 ;		/* start with a zero default */
-		mflag = 1 ;	/* current minus flag */
-		c = basec ;	/* strip the META */
-		do {
-			if( c == '-') {
-				/* already hit a minus or digit? */
-				if( (mflag == -1) || (n != 0))
-					break ;
-
-				mflag = -1 ;
-			} else
-				n = n * 10 + (c - '0') ;
-
-			if( (n == 0) && (mflag == -1))	/* lonely - */
-				mloutstr( "Arg:") ;
-			else
-				mloutfmt( "Arg: %d", n * mflag) ;
-
-			c = getcmd() ;	/* get the next key */
-		} while( (c >= '0' && c <= '9') || (c == '-')) ;
-
-		n = n * mflag ;	/* figure in the sign */
-	}
-
 	/* do ^U repeat argument processing */
+	while( c == reptc
+	||( (c & META)
+		&&	(((basec = c & ~META) >= '0' && basec <= '9') || basec == '-'))) {
+		int mflag = 0 ;		/* minus flag, default to positive */
 
-	if( c == reptc) {	/* ^U, start argument   */
 		f = TRUE ;
-		n = 4 ;		/* with argument of 4 */
-		mflag = 0 ;	/* that can be discarded. */
-		mloutstr( "Arg: 4") ;
-		while( ((c = getcmd()) >= '0' && c <= '9') || c == reptc
-		       || c == '-') {
-			if( c == reptc)
-				if( (n > 0) == ((n * 4) > 0))
-					n = n * 4 ;
-				else
-					n = 1 ;
-			/*
-			 * If dash, and start of argument string, set arg.
-			 * to -1.  Otherwise, insert it.
-			 */
-			else if( c == '-') {
-				if( mflag)
-					break ;
-					
-				n = 0 ;
-				mflag = -1 ;
+		if( c == reptc) {
+			n = 4 ;
+			basec = 2 ;			/* lead by universal arg cmd */
+		} else if( c & META) {
+			if( basec == '-') {
+				mflag = TRUE ;	/* negative */
+				n = 1 ;
+				basec = 1 ;		/* lead by M-- */
+			} else {
+				n = basec - '0' ;
+				basec = 0 ;		/* lead by M-# */
 			}
-			/*
-			 * If first digit entered, replace previous argument
-			 * with digit and set sign.  Otherwise, append to arg.
-			 */
-			else {
-				if( !mflag) {
-					n = 0 ;
-					mflag = 1 ;
-				}
-
-				n = 10 * n + c - '0' ;
-			}
-
-			mloutfmt( "Arg: %d", (mflag >= 0) ? n : (n ? -n : -1)) ;
 		}
-		/*
-		 * Make arguments preceded by a minus sign negative and change
-		 * the special argument "^U -" to an effective "^U -1".
-		 */
-		if( mflag == -1)
-			n = n ? -n : -1 ;
+
+		mloutfmt( "Arg: %s%d", mflag ? "-" : "", n) ;
+		while( ((c = getcmd()) >= '0' && c <= '9') || c == '-') {
+			if( c == '-') {
+				if( basec == 2) {	/* directly follows universal arg cmd */
+					n = 1 ;
+					basec = 1 ;
+					mflag = TRUE ;
+				} else
+					break ;
+			} else {
+				if( basec) { /* follows universal arg cmd or leading dash */
+					n = c - '0' ;
+					basec = 0 ;
+				} else if( n <= 0xCCCCCCB)	/* avoid overflow */
+					n = n * 10 + c - '0' ;
+			}
+
+			mloutfmt( "Arg: %s%d", mflag ? "-" : "", n) ;
+		}
+
+		if( mflag)
+			n = -n ;
 	}
 
 	/* and execute the command */
