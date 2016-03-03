@@ -358,6 +358,7 @@ int main(int argc, char **argv)
 			mloutfmt( "Found on line %d", getcline()) ;
 
 	kbd_loop() ;
+	return EXIT_SUCCESS ;	/* never reached */
 }
 
 
