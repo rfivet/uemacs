@@ -73,6 +73,8 @@ static int taboff = 0 ;	/* tab offset for display       */
 int mpresf = FALSE ;	/* TRUE if message in last line */
 int scrollcount = 1 ;	/* number of lines to scroll */
 int discmd = TRUE ;	/* display command flag         */
+int disinp = TRUE ;	/* display input characters (echo)	*/
+
 
 static int reframe(struct window *wp);
 static void updone(struct window *wp);
@@ -1300,6 +1302,18 @@ static void mlputc( char c) {
 }
 
 /*
+ * output a string of output characters
+ *
+ * char *s;     string to output
+ */
+void ostring( char *s) {
+	if( discmd)
+		while( *s)
+			mlputc( *s++ & 0xFF) ;
+}
+
+
+/*
  * Write a message into the message line. Keep track of the physical cursor
  * position. A small class of printf like format items is handled. Assumes the
  * stack grows down; this assumption is made by the "++" in the argument scan
@@ -1364,6 +1378,8 @@ void vmlwrite( const char *fmt, va_list ap) {
 				break ;
 
 			default:
+				mlputc( '%') ;
+			case '%':
 				mlputc( c) ;
 			}
 		}
@@ -1539,3 +1555,27 @@ static int newscreensize(int h, int w)
 }
 
 #endif
+
+/*
+ * output a character when echo is enabled
+ *
+ * char c ;     character to output
+ */
+void echoc( char c) {
+	if( disinp)
+		TTputc( c) ;
+}
+
+/*
+ * output a string of characters when display input is enabled
+ *
+ * char *s;     string to output
+ */
+void echos( char *s) {
+	if( disinp)
+		while( *s)
+			TTputc( *s++) ;
+}
+
+
+/* end of display.c */

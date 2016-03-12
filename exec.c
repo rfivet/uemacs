@@ -965,7 +965,7 @@ int execfile( int f, int n) {
     char *fname ;	/* name of file to execute */
     char *fspec ;	/* full file spec */
 
-    status = newmlarg( &fname, "File to execute: ", 0) ;
+    status = newmlarg( &fname, "Execute file: ", 0) ;
     if( status != TRUE)
         return status ;
 

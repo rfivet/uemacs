@@ -45,8 +45,6 @@ kbdstate kbdmode = STOP ;   /* current keyboard macro mode  */
 int lastkey = 0 ;       /* last keystoke                */
 int kbdrep = 0 ;        /* number of repetitions        */
 
-int disinp = TRUE ;	/* display input characters     */
-
 int metac = CONTROL | '[' ;		/* current meta character 	 */
 int ctlxc = CONTROL | 'X' ;		/* current control X prefix char */
 int reptc = CONTROL | 'U' ;		/* current universal repeat char */
@@ -56,7 +54,6 @@ const int nlc = CONTROL | 'J' ;		/* end of input char */
 
 static const int quotec = 0x11 ;	/* quote char during getstring()	 */
 
-static void outstring( char *s) ;
 
 /*
  * Ask a yes or no question in the message line. Return either TRUE, FALSE, or
@@ -164,8 +161,6 @@ int ectoc(int c)
 fn_t getname(void)
 {
     int cpos;   /* current column on screen output */
-    int c;
-    char *sp;   /* pointer to string for output */
     struct name_bind *ffp;  /* first ptr to entry in name binding table */
     struct name_bind *cffp; /* current ptr to entry in name binding table */
     struct name_bind *lffp; /* last ptr to entry in name binding table */
@@ -183,6 +178,8 @@ fn_t getname(void)
 
     /* build a name string from the keyboard */
     while (TRUE) {
+	    int c ;
+
         c = tgetc();
 
         /* if we are at the end, just match it */
@@ -199,9 +196,7 @@ fn_t getname(void)
 
         } else if (c == 0x7F || c == 0x08) {    /* rubout/erase */
             if (cpos != 0) {
-                TTputc('\b');
-                TTputc(' ');
-                TTputc('\b');
+				echos( "\b \b") ;
                 --ttcol;
                 --cpos;
                 TTflush();
@@ -209,9 +204,7 @@ fn_t getname(void)
 
         } else if (c == 0x15) { /* C-U, kill */
             while (cpos != 0) {
-                TTputc('\b');
-                TTputc(' ');
-                TTputc('\b');
+				echos( "\b \b") ;
                 --cpos;
                 --ttcol;
             }
@@ -232,9 +225,7 @@ fn_t getname(void)
                          (buf, (ffp + 1)->n_name,
                           strlen(buf)) != 0)) {
                         /* no...we match, print it */
-                        sp = ffp->n_name + cpos;
-                        while (*sp)
-                            TTputc(*sp++);
+						echos( ffp->n_name + cpos) ;
                         TTflush();
                         return ffp->n_func;
                     } else {
@@ -278,8 +269,7 @@ fn_t getname(void)
                             }
 
                             /* add the character */
-                            TTputc(buf
-                                   [cpos++]);
+                            echoc( buf[ cpos++]) ;
                         }
 /* << << << << << << << << << << << << << << << << << */
                     }
@@ -295,7 +285,7 @@ fn_t getname(void)
         } else {
             if (cpos < NSTRING - 1 && c > ' ') {
                 buf[cpos++] = c;
-                TTputc(c);
+                echoc( c) ;
             }
 
             ++ttcol;
@@ -529,12 +519,9 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
     static char tmp[] = "/tmp/meXXXXXX";
     FILE *tmpf = NULL;
 #endif
-    ffile = (strcmp(prompt, "Find file: ") == 0
-         || strcmp(prompt, "View file: ") == 0
-         || strcmp(prompt, "Insert file: ") == 0
-         || strcmp(prompt, "Write file: ") == 0
-         || strcmp(prompt, "Read file: ") == 0
-         || strcmp(prompt, "File to execute: ") == 0);
+/*	Look for "Find file: ", "View file: ", "Insert file: ", "Write file: ",
+**	"Read file: ", "Execute file: " */
+	ffile = NULL != strstr( prompt, " file: ") ;
 #endif
 
     cpos = 0;
@@ -596,15 +583,15 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
         } else if ((c == 0x7F || c == 0x08) && quotef == FALSE) {
             /* rubout/erase */
             if (cpos != 0) {
-                outstring("\b \b");
+                echos("\b \b");
                 --ttcol;
 
                 if (buf[--cpos] < 0x20) {
-                    outstring("\b \b");
+                    echos("\b \b");
                     --ttcol;
                 }
                 if (buf[cpos] == '\n') {
-                    outstring("\b\b  \b\b");
+                    echos("\b\b  \b\b");
                     ttcol -= 2;
                 }
 
@@ -614,15 +601,15 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
         } else if (c == 0x15 && quotef == FALSE) {
             /* C-U, kill */
             while (cpos != 0) {
-                outstring("\b \b");
+                echos("\b \b");
                 --ttcol;
 
                 if (buf[--cpos] < 0x20) {
-                    outstring("\b \b");
+                    echos("\b \b");
                     --ttcol;
                 }
                 if (buf[cpos] == '\n') {
-                    outstring("\b\b  \b\b");
+                    echos("\b\b  \b\b");
                     ttcol -= 2;
                 }
             }
@@ -642,15 +629,15 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
             didtry = 1;
             ocpos = cpos;
             while (cpos != 0) {
-                outstring("\b \b");
+                echos("\b \b");
                 --ttcol;
 
                 if (buf[--cpos] < 0x20) {
-                    outstring("\b \b");
+                    echos("\b \b");
                     --ttcol;
                 }
                 if (buf[cpos] == '\n') {
-                    outstring("\b\b  \b\b");
+                    echos("\b\b  \b\b");
                     ttcol -= 2;
                 }
                 if (buf[cpos] == '*' || buf[cpos] == '?')
@@ -737,16 +724,15 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
             for (n = 0; n < cpos; n++) {
                 c = buf[n];
                 if ((c < ' ') && (c != '\n')) {
-                    outstring("^");
+                    echos("^");
                     ++ttcol;
                     c ^= 0x40;
                 }
 
-                if (c != '\n') {
-                    if (disinp)
-                        TTputc(c);
-                } else {    /* put out <NL> for <ret> */
-                    outstring("<NL>");
+                if( c != '\n')
+					echoc( c) ;
+                else {    /* put out <NL> for <ret> */
+                    echos("<NL>");
                     ttcol += 3;
                 }
                 ++ttcol;
@@ -765,16 +751,15 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
                 buf[cpos++] = c;
 
                 if ((c < ' ') && (c != '\n')) {
-                    outstring("^");
+                    echos("^");
                     ++ttcol;
                     c ^= 0x40;
                 }
 
-                if (c != '\n') {
-                    if (disinp)
-                        TTputc(c);
-                } else {    /* put out <NL> for <ret> */
-                    outstring("<NL>");
+                if( c != '\n')
+					echoc( c) ;
+                else {    /* put out <NL> for <ret> */
+                    echos("<NL>");
                     ttcol += 3;
                 }
                 ++ttcol;
@@ -782,27 +767,4 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
             }
         }
     }
-}
-
-/*
- * output a string of characters when display input is enabled
- *
- * char *s;     string to output
- */
-static void outstring( char *s) {
-    if( disinp)
-        while( *s)
-            TTputc( *s++) ;
-}
-
-/*
- * output a string of output characters
- *
- * char *s;     string to output
- */
-void ostring( char *s)
-{
-    if (discmd)
-        while (*s)
-            TTputc( *s++ & 0xFF) ;
 }

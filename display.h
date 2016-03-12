@@ -8,6 +8,7 @@
 extern int mpresf ;		/* Stuff in message line */
 extern int scrollcount ;	/* number of lines to scroll */
 extern int discmd ;		/* display command flag         */
+extern int disinp ;		/* display input characters (echo)	*/
 extern int gfcolor ;		/* global forgrnd color (white) */
 extern int gbcolor ;		/* global backgrnd color (black) */
 
@@ -26,6 +27,9 @@ void movecursor( int row, int col) ;
 void mlerase( void) ;
 void vmlwrite( const char *fmt, va_list ap) ;
 void mlwrite( const char *fmt, ...) ;
+void ostring( char *s) ;
+void echoc( char c) ;
+void echos( char *s) ;
 void getscreensize( int *widthp, int *heightp) ;
 
 #if UNIX
