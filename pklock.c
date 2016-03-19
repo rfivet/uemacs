@@ -20,7 +20,8 @@
 #endif
 #include <errno.h>
 
-#define MAXLOCK 512
+/* Maximum file length name 255 */
+#define MAXLOCK 256
 #define MAXNAME 128
 
 #if defined(SVR4) && ! defined(__linux__)
@@ -44,11 +45,14 @@ int gethostname(char *name, int namelen)
 char *dolock( const char *fname)
 {
 	int fd, n;
-	static char lname[MAXLOCK], locker[MAXNAME + 1];
+	char lname[ MAXLOCK] ;
+	static char locker[ MAXNAME + 1] ;
 	int mask;
 	struct stat sbuf;
 
-	strcat(strcpy(lname, fname), ".lock~");
+	strncpy( lname, fname, sizeof lname - 1 - 6) ;
+	lname[ sizeof lname - 1 - 6] = 0 ;
+	strcat( lname, ".lock~") ;
 
 	/* check that we are not being cheated, qname must point to     */
 	/* a regular file - even this code leaves a small window of     */
@@ -111,11 +115,12 @@ char *dolock( const char *fname)
  *
  *********************/
 
-char *undolock( const char *fname)
-{
-	static char lname[MAXLOCK];
+char *undolock( const char *fname) {
+	char lname[ MAXLOCK] ;
 
-	strcat(strcpy(lname, fname), ".lock~");
+	strncpy( lname, fname, sizeof lname - 1 - 6) ;
+	lname[ sizeof lname - 1 - 6] = 0 ;
+	strcat( lname, ".lock~") ;
 	if (unlink(lname) != 0) {
 		if (errno == EACCES || errno == ENOENT)
 			return NULL;
