@@ -537,21 +537,24 @@ int filewrite( int f, int n) {
 
     status = newmlarg( &fname, "Write file: ", sizeof( fname_t)) ;
     if( status == TRUE) {
-	    status = writeout( fname) ;
-	    if( status == TRUE) {
-		    struct window *wp ;
+		if( strlen( fname) > sizeof( fname_t) - 1)
+			status = FALSE ;
+		else {
+		    status = writeout( fname) ;
+		    if( status == TRUE) {
+			    struct window *wp ;
 
-	        strncpy( curbp->b_fname, fname, sizeof( fname_t) - 1) ;
-	        curbp->b_fname[ sizeof( fname_t) - 1] = '\0' ;
-	        curbp->b_flag &= ~BFCHG ;
-	        wp = wheadp ;	/* Update mode lines.   */
-	        while( wp != NULL) {
-	            if( wp->w_bufp == curbp)
-	                wp->w_flag |= WFMODE ;
+	    	    strcpy( curbp->b_fname, fname) ;
+	        	curbp->b_flag &= ~BFCHG ;
+		        wp = wheadp ;	/* Update mode lines.   */
+		        while( wp != NULL) {
+	    	        if( wp->w_bufp == curbp)
+	        	        wp->w_flag |= WFMODE ;
 
-	            wp = wp->w_wndp ;
-	        }
-	    }
+	        	    wp = wp->w_wndp ;
+				}
+			}
+		}
     
 		free( fname) ;
 	}

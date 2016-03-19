@@ -4,8 +4,8 @@
 #include "crypt.h"
 #include "line.h"
 
-typedef char fname_t[ 80] ;	/* file name type */
-typedef char bname_t[ 16] ;	/* buffer name type */
+typedef char fname_t[ 256] ;	/* file name type */
+typedef char bname_t[ 16] ;		/* buffer name type */
 #define NBUFN sizeof( bname_t)
 
 #if CRYPT
