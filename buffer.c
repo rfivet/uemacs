@@ -29,7 +29,7 @@ struct buffer *bheadp ;		/* Head of list of buffers      */
 struct buffer *blistp ;		/* Buffer for C-X C-B           */
 
 const char *modename[] = {	/* name of modes                */
-	"Wrap", "Cmode", "Spell", "Exact", "View", "Over",
+	"Wrap", "Cmode", "Exact", "View", "Over",
 	"Magic",
 #if CRYPT
 	"Crypt",
@@ -41,7 +41,7 @@ const char *modename[] = {	/* name of modes                */
 
 int gmode = 0 ;			/* global editor mode           */
 
-static const char modecode[] = "WCSEVOMYAUD" ; /* letters to represent modes */
+static const char modecode[] = "WCEVOMYAUD" ; /* letters to represent modes */
 
 
 static int makelist( int iflag) ;
@@ -333,7 +333,7 @@ static int makelist( int iflag)
 	int i;
 	long nbytes;		/* # of bytes in current buffer */
 	long nlines ;		/* # of lines in current buffer */
-	char b[ 8 + 1] ;
+	char b[ 9 + 1] ;
 	char line[MAXLINE];
 
 	blistp->b_flag &= ~BFCHG;	/* Don't complain!      */
@@ -358,7 +358,7 @@ static int makelist( int iflag)
 			*cp1++ = modecode[i];
 		else
 			*cp1++ = '.';
-	strcpy(cp1, "         Global Modes");
+	strcpy(cp1, "          Global Modes");
 	if (addline(line) == FALSE)
 		return FALSE;
 

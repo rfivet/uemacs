@@ -50,21 +50,20 @@ extern struct buffer *blistp ;	/* Buffer for C-X C-B           */
 #define	BFTRUNC	0x04		/* buffer was truncated when read */
 
 /*	mode flags	*/
-#define	NUMMODES	11	/* # of defined modes           */
+#define	NUMMODES	10	/* # of defined modes           */
 
 #define	MDWRAP	0x0001		/* word wrap                    */
 #define	MDCMOD	0x0002		/* C indentation and fence match */
-#define	MDSPELL	0x0004		/* spell error parcing          */
-#define	MDEXACT	0x0008		/* Exact matching for searches  */
-#define	MDVIEW	0x0010		/* read-only buffer             */
-#define MDOVER	0x0020		/* overwrite mode               */
-#define MDMAGIC	0x0040		/* regular expresions in search */
+#define	MDEXACT	0x0004		/* Exact matching for searches  */
+#define	MDVIEW	0x0008		/* read-only buffer             */
+#define MDOVER	0x0010		/* overwrite mode               */
+#define MDMAGIC	0x0020		/* regular expresions in search */
 #if CRYPT
-#define	MDCRYPT	0x0080		/* encrytion mode active        */
+#define	MDCRYPT	0x0040		/* encrytion mode active        */
 #endif
-#define	MDASAVE	0x0100		/* auto-save mode               */
-#define MDUTF8	0x0200		/* utf8 mode                    */
-#define MDDOS	0x0400		/* CRLF eol mode                */
+#define	MDASAVE	0x0080		/* auto-save mode               */
+#define MDUTF8	0x0100		/* utf8 mode                    */
+#define MDDOS	0x0200		/* CRLF eol mode                */
 
 
 extern const char *modename[] ;	/* text names of modes          */
