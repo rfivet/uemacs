@@ -1,8 +1,6 @@
 #ifndef _FILEIO_H_
 #define _FILEIO_H_
 
-#include "crypt.h"
-
 typedef enum {
 	FIOSUC,	/* File I/O, success.             */
 	FIOFNF,	/* File I/O, file not found.      */
@@ -23,12 +21,6 @@ typedef enum {
 #define FCODE_UTF_8 0x81
 #define FCODE_EXTND 0x82
 #define FCODE_MIXED 0x83
-
-#if CRYPT
-#include "retcode.h"
-
-extern boolean	is_crypted ;	/* currently encrypting?   */
-#endif
 
 extern char		*fline ;		/* dynamic return line     */
 extern int 		ftype ;

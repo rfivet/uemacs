@@ -31,17 +31,12 @@ struct buffer *blistp ;		/* Buffer for C-X C-B           */
 const char *modename[] = {	/* name of modes                */
 	"Wrap", "Cmode", "Exact", "View", "Over",
 	"Magic",
-#if CRYPT
-	"Crypt",
-#else
-	"",
-#endif
 	"Asave", "Utf-8", "Dos"
 } ;
 
 int gmode = 0 ;			/* global editor mode           */
 
-static const char modecode[] = "WCEVOMYAUD" ; /* letters to represent modes */
+static const char modecode[] = "WCEVOMAUD" ; /* letters to represent modes */
 
 
 static int makelist( int iflag) ;
@@ -333,7 +328,7 @@ static int makelist( int iflag)
 	int i;
 	long nbytes;		/* # of bytes in current buffer */
 	long nlines ;		/* # of lines in current buffer */
-	char b[ 9 + 1] ;
+	char b[ 10 + 1] ;
 	char line[MAXLINE];
 
 	blistp->b_flag &= ~BFCHG;	/* Don't complain!      */
@@ -358,7 +353,7 @@ static int makelist( int iflag)
 			*cp1++ = modecode[i];
 		else
 			*cp1++ = '.';
-	strcpy(cp1, "          Global Modes");
+	strcpy(cp1, "           Global Modes");
 	if (addline(line) == FALSE)
 		return FALSE;
 
@@ -414,7 +409,7 @@ static int makelist( int iflag)
 		if( bp->b_mode & MDDOS)
 			nbytes += nlines ;
 
-		l_to_a( b, sizeof b, nbytes) ;	/* 8 digits string buffer size. */
+		l_to_a( b, sizeof b, nbytes) ;	/* 10 digits string buffer size. */
 		cp2 = &b[0];
 		while ((c = *cp2++) != 0)
 			*cp1++ = c;
@@ -560,9 +555,6 @@ struct buffer *bfind( const char *bname, int cflag, int bflag)
 		bp->b_fname[ 0] = '\0' ;
 		strncpy( bp->b_bname, bname, sizeof( bname_t) - 1) ;
 		bp->b_bname[ sizeof( bname_t) - 1] = '\0' ;
-#if	CRYPT
-		bp->b_key[0] = 0;
-#endif
 		lp->l_fp = lp;
 		lp->l_bp = lp;
 	}

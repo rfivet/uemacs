@@ -23,10 +23,6 @@
 #include "retcode.h"
 #include "utf8.h"
 
-#if CRYPT
-boolean	is_crypted ;		/* currently encrypting?   */
-#endif
-
 char	*fline = NULL ;		/* dynamic return line     */
 static int	flen = 0 ;		/* current allocated length of fline */
 int		ftype ;
@@ -103,20 +99,6 @@ fio_code ffclose(void)
  * Check only at the newline.
  */
 fio_code ffputline( char *buf, int nbuf, int dosflag) {
-#if CRYPT
-	if( is_crypted) {
-		int i ;
-
-		for( i = 0 ; i < nbuf ; i++) {
-			char c ;
-			
-			c = buf[ i] ;
-			myencrypt( &c, 1) ;
-			fputc( c, ffp) ;
-		}
-	} else
-#endif
-
 	fwrite( buf, 1, nbuf, ffp) ;
 	
 	if( dosflag)
@@ -217,11 +199,7 @@ fio_code ffgetline(void)
     } else /* c == '\n' */
 	ftype |= FTYPE_UNIX ;
 
-    /* terminate and decrypt the string */
+    /* terminate the string */
     fline[i] = 0;
-#if CRYPT
-    if( is_crypted)
-        myencrypt( fline, fpayload);
-#endif
     return FIOSUC;
 }

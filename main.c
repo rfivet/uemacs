@@ -125,9 +125,6 @@ static void usage( void) {
            "      -a|A          process error file\n"
            "      -e|E          edit file\n"
            "      -g|G<n>       go to line <n>\n"
-#if CRYPT
-           "      -k|K<key>     use code key\n"
-#endif
            "      -r|R          restrictive use\n"
            "      -s|S<string>  search string\n"
            "      -v|V          view file\n"
@@ -150,10 +147,6 @@ int main(int argc, char **argv)
 	int searchflag;		/* Do we need to search at start? */
 	int errflag;		/* C error processing? */
 	bname_t bname ;	/* buffer name of file to read */
-#if	CRYPT
-	int cryptflag;		/* encrypting on the way in? */
-	ekey_t	ekey ;	/* startup encryption key */
-#endif
 
 #if	PKCODE & VMS
 	(void) umask(-1); /* Use old protection (this is at wrong place). */
@@ -192,9 +185,6 @@ int main(int argc, char **argv)
 	firstfile = TRUE;	/* no file to edit yet */
 	startflag = FALSE;	/* startup file not executed yet */
 	errflag = FALSE;	/* not doing C error parsing */
-#if	CRYPT
-	cryptflag = FALSE;	/* no encryption by default */
-#endif
 
 	/* Insure screen is initialized before startup and goto/search */
 	update( FALSE) ;
@@ -224,14 +214,6 @@ int main(int argc, char **argv)
 				gotoflag = TRUE;
 				gline = atoi(&argv[carg][2]);
 				break;
-#if	CRYPT
-			case 'k':	/* -k<key> for code key */
-			case 'K':
-				cryptflag = TRUE;
-				strncpy( ekey, &argv[ carg][ 2], sizeof ekey - 1) ;
-				ekey[ sizeof ekey - 1] = 0 ;
-				break;
-#endif
 			case 'r':	/* -r restrictive use */
 			case 'R':
 				restflag = TRUE;
@@ -297,13 +279,6 @@ int main(int argc, char **argv)
 			/* set the modes appropriatly */
 			if (viewflag)
 				bp->b_mode |= MDVIEW;
-#if	CRYPT
-			if (cryptflag) {
-				bp->b_mode |= MDCRYPT;
-				strncpy( bp->b_key, ekey, sizeof ekey) ;
-				cryptbufferkey( bp) ;
-			}
-#endif
 		}
 	}
 

@@ -17,7 +17,6 @@
 #include <unistd.h>
 
 #include "buffer.h"
-#include "crypt.h"
 #include "defines.h"
 #include "display.h"
 #include "estruct.h"
@@ -174,77 +173,6 @@ int viewfile( int f, int n) {	/* visit a file in VIEW mode */
     return status ;
 }
 
-#if CRYPT
-void cryptbufferkey( struct buffer *bp) {
-        myencrypt( (char *) NULL, 0) ;
-        myencrypt( bp->b_key, strlen( bp->b_key)) ;
-}
-
-/*
- * reset encryption key of current buffer
- *
- * int f;		default flag
- * int n;		numeric argument
- */
-int set_encryption_key( int f, int n) {
-	int status ;	/* return status */
-	int odisinp ;	/* original value of disinp */
-	char *key ;		/* new encryption string */
-
-	/* turn command input echo off */
-	odisinp = disinp ;
-	disinp = FALSE ;
-
-	/* get the string to use as an encrytion string */
-	status = newmlarg( &key, "Encryption String: ", sizeof( ekey_t)) ;
-	disinp = odisinp ;
-	if( status != TRUE)
-		return status ;
-
-	/* save it off and encrypt it*/
-	strncpy( curbp->b_key, key, sizeof( ekey_t) - 1) ;
-	curbp->b_key[ sizeof( ekey_t) - 1] = '\0' ;
-	free( key) ;
-	cryptbufferkey( curbp) ;
-	if( !(curbp->b_mode & MDCRYPT)) {
-		curbp->b_mode |= MDCRYPT ;
-		upmode() ;
-	}
-	
-	mloutstr( "") ;	/* clear the message line */
-	return TRUE ;
-}
-
-static int resetkey(void)
-{               /* reset the encryption key if needed */
-    int s;      /* return status */
-
-    /* turn off the encryption flag */
-    is_crypted = FALSE;
-
-    /* if we are in crypt mode */
-    if (curbp->b_mode & MDCRYPT) {
-        if (curbp->b_key[0] == 0) {
-            s = set_encryption_key(FALSE, 0);
-            if (s != TRUE)
-                return s;
-        }
-
-        /* let others know... */
-        is_crypted = TRUE;
-
-        /* and set up the key to be used! */
-        /* de-encrypt it */
-		cryptbufferkey( curbp) ;
-
-        /* re-encrypt it...seeding it to start */
-		cryptbufferkey( curbp) ;
-    }
-
-    return TRUE;
-}
-#endif
-
 /*
  * getfile()
  *
@@ -348,11 +276,6 @@ int readin(const char *fname, boolean lockfl)
 #else
         return ABORT;
 #endif
-#endif
-#if CRYPT
-    s = resetkey();
-    if (s != TRUE)
-        return s;
 #endif
     bp = curbp;     /* Cheap.               */
     if ((s = bclear(bp)) != TRUE)   /* Might be old.        */
@@ -618,12 +541,6 @@ int writeout( const char *fn)
     struct line *lp;
     int nline;
 
-#if CRYPT
-    s = resetkey();
-    if (s != TRUE)
-        return s;
-#endif
-
     if ((s = ffwopen(fn)) != FIOSUC) {  /* Open writes message. */
         mloutstr( "Cannot open file for writing") ;
         return FALSE;
@@ -723,11 +640,6 @@ static int ifile( const char *fname) {
     }
     mloutstr( "(Inserting file)") ;
 
-#if CRYPT
-    s = resetkey();
-    if (s != TRUE)
-        return s;
-#endif
     /* back up a line and save the mark here */
     curwp->w_dotp = lback(curwp->w_dotp);
     curwp->w_doto = 0;

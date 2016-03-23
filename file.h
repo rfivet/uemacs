@@ -2,13 +2,7 @@
 #define _FILE_H_
 
 #include "buffer.h"
-#include "crypt.h"
 #include "retcode.h"
-
-#if CRYPT
-void cryptbufferkey( struct buffer *bp) ;
-int  set_encryption_key( int f, int n) ;
-#endif
 
 extern boolean restflag ;		/* restricted use?              */
 boolean resterr( void) ;		/* restricted error message		*/

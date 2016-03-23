@@ -1,16 +1,11 @@
 #ifndef _BUFFER_H_
 #define _BUFFER_H_
 
-#include "crypt.h"
 #include "line.h"
 
 typedef char fname_t[ 256] ;	/* file name type */
 typedef char bname_t[ 16] ;		/* buffer name type */
 #define NBUFN sizeof( bname_t)
-
-#if CRYPT
-typedef char ekey_t[ 128] ; /* encryption key type */
-#endif
 
 /*
  * Text is kept in buffers. A buffer header, described below, exists for every
@@ -36,9 +31,6 @@ struct buffer {
 	char b_flag;		/* Flags                        */
 	fname_t b_fname ;	/* File name                    */
 	bname_t b_bname ;	/* Buffer name                  */
-#if CRYPT
-	ekey_t	b_key ;		/* current encrypted key        */
-#endif
 };
 
 extern struct buffer *curbp ;	/* Current buffer               */
@@ -50,7 +42,7 @@ extern struct buffer *blistp ;	/* Buffer for C-X C-B           */
 #define	BFTRUNC	0x04		/* buffer was truncated when read */
 
 /*	mode flags	*/
-#define	NUMMODES	10	/* # of defined modes           */
+#define	NUMMODES	9		/* # of defined modes           */
 
 #define	MDWRAP	0x0001		/* word wrap                    */
 #define	MDCMOD	0x0002		/* C indentation and fence match */
@@ -58,12 +50,9 @@ extern struct buffer *blistp ;	/* Buffer for C-X C-B           */
 #define	MDVIEW	0x0008		/* read-only buffer             */
 #define MDOVER	0x0010		/* overwrite mode               */
 #define MDMAGIC	0x0020		/* regular expresions in search */
-#if CRYPT
-#define	MDCRYPT	0x0040		/* encrytion mode active        */
-#endif
-#define	MDASAVE	0x0080		/* auto-save mode               */
-#define MDUTF8	0x0100		/* utf8 mode                    */
-#define MDDOS	0x0200		/* CRLF eol mode                */
+#define	MDASAVE	0x0040		/* auto-save mode               */
+#define MDUTF8	0x0080		/* utf8 mode                    */
+#define MDDOS	0x0100		/* CRLF eol mode                */
 
 
 extern const char *modename[] ;	/* text names of modes          */

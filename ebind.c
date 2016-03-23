@@ -270,10 +270,6 @@ struct key_tab keytab[NBINDS] = {
     ,
     {META | 'D', delfword}
     ,
-#if CRYPT
-    {META | 'E', set_encryption_key}
-    ,
-#endif
     {META | 'F', forwword}
     ,
     {META | 'G', gotoline}
