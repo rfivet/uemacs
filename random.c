@@ -81,9 +81,6 @@ int showcpos(int f, int n)
 	int savepos;		/* temp save for current offset */
 	int ecol;		/* column pos/end of current line */
 
-	/* starting at the beginning of the buffer */
-	lp = lforw(curbp->b_linep);
-
 	/* start counting chars and lines */
 	numchars = 0;
 	numlines = 0;
@@ -91,7 +88,7 @@ int showcpos(int f, int n)
 	predlines = 0;
 	curchar = 0;
 	bytes = 1 ;
-	while (lp != curbp->b_linep) {
+	for( lp = lforw( curbp->b_linep) ; lp != curbp->b_linep ; lp = lforw( lp)) {
 		/* if we are on the current line, record it */
 		if (lp == curwp->w_dotp) {
 			int len ;
@@ -107,7 +104,6 @@ int showcpos(int f, int n)
 		/* on to the next line */
 		++numlines;
 		numchars += llength( lp) + ((curbp->b_mode & MDDOS) ? 2 : 1) ;
-		lp = lforw(lp);
 	}
 
 	/* if at end of file, record it */

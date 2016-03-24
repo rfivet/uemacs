@@ -36,9 +36,6 @@ const char *modename[] = {	/* name of modes                */
 
 int gmode = 0 ;			/* global editor mode           */
 
-static const char modecode[] = "WCEVOMAUD" ; /* letters to represent modes */
-
-
 static int makelist( int iflag) ;
 static int addline( char *text) ;
 static void l_to_a( char *buf, int width, long num) ;
@@ -322,90 +319,77 @@ int listbuffers(int f, int n)
 */
 #define FNAMSTART (3 + 1 + NUMMODES + 10 + 1 + (sizeof( bname_t) - 1) + 1)
 
+static void do_layout( char *line, int mode) {
+	int i ;
+
+	/* build line to report global mode settings */
+	strcpy( line, "    WCEVOMAUD           Global Modes") ;
+
+	/* output the mode codes */
+	for( i = 0 ; i < NUMMODES ; i++)
+		if( 0 == (mode & (1 << i)))
+			line[ 4 + i] = '.' ;
+}
+
 static int makelist( int iflag)
 {
-	char *cp1;
-	char *cp2;
-	int c;
 	struct buffer *bp;
-	struct line *lp;
 	int s;
-	int i;
-	long nbytes;		/* # of bytes in current buffer */
-	long nlines ;		/* # of lines in current buffer */
 	char line[ FNAMSTART + sizeof( fname_t)] ;
 
-	blistp->b_flag &= ~BFCHG;	/* Don't complain!      */
+	blistp->b_flag &= ~BFCHG;	/* Don't complain! Mute bclear() */
 	if ((s = bclear(blistp)) != TRUE)	/* Blow old text away   */
 		return s;
 
-	blistp->b_fname[ 0] = 0 ;
+	blistp->b_fname[ 0] = 0 ;	/* in case of user override */
 
 	if(		addline("ACT MODES          Size Buffer          File") == FALSE
 	    ||	addline("‾‾‾ ‾‾‾‾‾          ‾‾‾‾ ‾‾‾‾‾‾          ‾‾‾‾") == FALSE)
 		return FALSE;
 
-	/* build line to report global mode settings */
-	strcpy( line, "    ") ;
-	cp1 = &line[ 4] ;
+/* report global mode settings */
+	do_layout( line, gmode) ;
+	if( addline( line) == FALSE)
+		return FALSE ;
 
-	/* output the mode codes */
-	for (i = 0; i < NUMMODES; i++)
-		if (gmode & (1 << i))
-			*cp1++ = modecode[i];
-		else
-			*cp1++ = '.';
-
-	strcpy(cp1, "           Global Modes");
-	if (addline(line) == FALSE)
-		return FALSE;
-
-	/* output the list of buffers */
+/* output the list of buffers */
 	for( bp = bheadp ; bp != NULL ; bp = bp->b_bufp) {	/* For all buffers */
-		/* skip invisible buffers if iflag is false */
+		char *cp1, *cp2 ;
+		int c ;
+		struct line *lp ;
+		long nbytes ;		/* # of bytes in current buffer */
+		long nlines ;		/* # of lines in current buffer */
+
+	/* skip invisible buffers if iflag is false */
 		if (((bp->b_flag & BFINVS) != 0) && (iflag != TRUE))
 			continue;
 
-		cp1 = &line[0];	/* Start at left edge   */
+		do_layout( line, bp->b_mode) ;
+		cp1 = line ;	/* Start at left edge   */
 
-		/* output status of ACTIVE flag ('@' when the file has been read in) */
+	/* output status of ACTIVE flag ('@' when the file has been read in) */
 		*cp1++ = (bp->b_active == TRUE) ? '@' : ' ' ;
 
-		/* report if the file is truncated */
+	/* report if the file is truncated */
 		*cp1++ = ((bp->b_flag & BFTRUNC) != 0) ? '#' : ' ' ;
 
-		/* output status of changed flag ('*' when the buffer is changed) */
-		*cp1++ = ((bp->b_flag & BFCHG) != 0) ? '*' : ' ' ;
-
-		*cp1++ = ' ';	/* space */
-
-		/* output the mode codes */
-		for (i = 0; i < NUMMODES; i++) {
-			if (bp->b_mode & (1 << i))
-				*cp1++ = modecode[i];
-			else
-				*cp1++ = '.';
-		}
-
-	/* No gap as buffer size is left-padded with space */
+	/* output status of changed flag ('*' when the buffer is changed) */
+		*cp1 = ((bp->b_flag & BFCHG) != 0) ? '*' : ' ' ;
 
 	/* Buffer size */
 		nbytes = 0L;	/* Count bytes in buf.  */
 		nlines = 0 ;
-		lp = lforw(bp->b_linep);
-		while (lp != bp->b_linep) {
+		for( lp = lforw( bp->b_linep) ; lp != bp->b_linep ; lp = lforw( lp)) {
 			nbytes += (long) llength(lp) + 1L;
 			nlines += 1 ;
-			lp = lforw(lp);
 		}
 
 		if( bp->b_mode & MDDOS)
 			nbytes += nlines ;
 
-		l_to_a( cp1, 10 + 1, nbytes) ;	/* "%10d" formatted numbers */
-		cp1 += 10 ;
-
-		*cp1++ = ' ';	/* Gap.                 */
+		l_to_a( &line[ 13], 10 + 1, nbytes) ;	/* "%10d" formatted numbers */
+		cp1 = &line[ 23] ;
+		*cp1++ = ' ' ;
 		cp2 = &bp->b_bname[0];	/* Buffer name          */
 		while ((c = *cp2++) != 0)
 			*cp1++ = c;
@@ -499,15 +483,12 @@ int anycb(void)
 struct buffer *bfind( const char *bname, int cflag, int bflag)
 {
 	struct buffer *bp;
-	struct buffer *sb;	/* buffer to insert after */
 	struct line *lp;
 
-	bp = bheadp;
-	while (bp != NULL) {
-		if (strcmp(bname, bp->b_bname) == 0)
-			return bp;
-		bp = bp->b_bufp;
-	}
+	for( bp = bheadp ; bp != NULL ; bp = bp->b_bufp)
+		if( strcmp( bname, bp->b_bname) == 0)
+			return bp ;
+
 	if (cflag != FALSE) {
 		if ((bp = (struct buffer *)malloc(sizeof(struct buffer))) == NULL)
 			return NULL;
@@ -521,16 +502,15 @@ struct buffer *bfind( const char *bname, int cflag, int bflag)
 			bp->b_bufp = bheadp;
 			bheadp = bp;
 		} else {
-			sb = bheadp;
-			while (sb->b_bufp != NULL) {
-				if (strcmp(sb->b_bufp->b_bname, bname) > 0)
-					break;
-				sb = sb->b_bufp;
-			}
+			struct buffer *sb;	/* buffer to insert after */
+
+			for( sb = bheadp ; sb->b_bufp != NULL ; sb = sb->b_bufp)
+				if( strcmp( sb->b_bufp->b_bname, bname) > 0)
+					break ;
 
 			/* and insert it */
-			bp->b_bufp = sb->b_bufp;
-			sb->b_bufp = bp;
+			bp->b_bufp = sb->b_bufp ;
+			sb->b_bufp = bp ;
 		}
 
 		/* and set up the other buffer fields */

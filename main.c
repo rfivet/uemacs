@@ -347,10 +347,9 @@ static void edinit(char *bname)
 	struct buffer *bp;
 	struct window *wp;
 
-	bp = bfind(bname, TRUE, 0);	/* First buffer         */
-	blistp = bfind("*List*", TRUE, BFINVS);	/* Buffer list buffer   */
-	wp = (struct window *)malloc(sizeof(struct window));	/* First window         */
-	if (bp == NULL || wp == NULL || blistp == NULL) {
+	if( NULL == (bp = bfind( bname, TRUE, 0))	/* First buffer         */
+	||	NULL == (blistp = bfind( "*List*", TRUE, BFINVS))	/* Buffer list buffer   */
+	||	NULL == (wp = (struct window *) malloc( sizeof( struct window)))) {	/* First window         */
 		fputs( "First initialisation failed!\n", stderr) ;
 		exit( EXIT_FAILURE) ;
 	}
