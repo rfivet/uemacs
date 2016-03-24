@@ -1118,18 +1118,8 @@ static void modeline(struct window *wp)
 		lchar = '-';
 
 	bp = wp->w_bufp;
-#if	PKCODE == 0
-	if ((bp->b_flag & BFTRUNC) != 0)
-		vtputc('#');
-	else
-#endif
-		vtputc(lchar);
-
-	if ((bp->b_flag & BFCHG) != 0)	/* "*" if changed. */
-		vtputc('*');
-	else
-		vtputc(lchar);
-
+	vtputc( ((bp->b_flag & BFTRUNC) != 0) ? '#' : lchar) ; /* truncated? */
+	vtputc( ((bp->b_flag & BFCHG) != 0)   ? '*' : lchar) ; /* changed? */
 	vtputc( ' ') ;
 
 	if( n == term.t_nrow - 1)

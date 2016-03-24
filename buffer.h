@@ -5,7 +5,6 @@
 
 typedef char fname_t[ 256] ;	/* file name type */
 typedef char bname_t[ 16] ;		/* buffer name type */
-#define NBUFN sizeof( bname_t)
 
 /*
  * Text is kept in buffers. A buffer header, described below, exists for every

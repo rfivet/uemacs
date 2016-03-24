@@ -316,7 +316,12 @@ int listbuffers(int f, int n)
  *
  * int iflag;		list hidden buffer flag
  */
-#define MAXLINE	MAXCOL
+/* Layout: "ACT MODES          Size Buffer          File"
+            AAA MMMMMMMMMSSSSSSSSSS BBBBBBBBBBBBBBB FFF...
+   FNAMSTART ---------------------------------------^
+*/
+#define FNAMSTART (3 + 1 + NUMMODES + 10 + 1 + (sizeof( bname_t) - 1) + 1)
+
 static int makelist( int iflag)
 {
 	char *cp1;
@@ -328,24 +333,21 @@ static int makelist( int iflag)
 	int i;
 	long nbytes;		/* # of bytes in current buffer */
 	long nlines ;		/* # of lines in current buffer */
-	char b[ 10 + 1] ;
-	char line[MAXLINE];
+	char line[ FNAMSTART + sizeof( fname_t)] ;
 
 	blistp->b_flag &= ~BFCHG;	/* Don't complain!      */
 	if ((s = bclear(blistp)) != TRUE)	/* Blow old text away   */
 		return s;
-	strcpy(blistp->b_fname, "");
+
+	blistp->b_fname[ 0] = 0 ;
+
 	if(		addline("ACT MODES          Size Buffer          File") == FALSE
 	    ||	addline("‾‾‾ ‾‾‾‾‾          ‾‾‾‾ ‾‾‾‾‾‾          ‾‾‾‾") == FALSE)
 		return FALSE;
-	bp = bheadp;		/* For all buffers      */
 
 	/* build line to report global mode settings */
-	cp1 = &line[0];
-	*cp1++ = ' ';
-	*cp1++ = ' ';
-	*cp1++ = ' ';
-	*cp1++ = ' ';
+	strcpy( line, "    ") ;
+	cp1 = &line[ 4] ;
 
 	/* output the mode codes */
 	for (i = 0; i < NUMMODES; i++)
@@ -353,36 +355,27 @@ static int makelist( int iflag)
 			*cp1++ = modecode[i];
 		else
 			*cp1++ = '.';
+
 	strcpy(cp1, "           Global Modes");
 	if (addline(line) == FALSE)
 		return FALSE;
 
 	/* output the list of buffers */
-	while (bp != NULL) {
-		/* skip invisable buffers if iflag is false */
-		if (((bp->b_flag & BFINVS) != 0) && (iflag != TRUE)) {
-			bp = bp->b_bufp;
+	for( bp = bheadp ; bp != NULL ; bp = bp->b_bufp) {	/* For all buffers */
+		/* skip invisible buffers if iflag is false */
+		if (((bp->b_flag & BFINVS) != 0) && (iflag != TRUE))
 			continue;
-		}
+
 		cp1 = &line[0];	/* Start at left edge   */
 
-		/* output status of ACTIVE flag (has the file been read in? */
-		if (bp->b_active == TRUE)	/* "@" if activated       */
-			*cp1++ = '@';
-		else
-			*cp1++ = ' ';
-
-		/* output status of changed flag */
-		if ((bp->b_flag & BFCHG) != 0)	/* "*" if changed       */
-			*cp1++ = '*';
-		else
-			*cp1++ = ' ';
+		/* output status of ACTIVE flag ('@' when the file has been read in) */
+		*cp1++ = (bp->b_active == TRUE) ? '@' : ' ' ;
 
 		/* report if the file is truncated */
-		if ((bp->b_flag & BFTRUNC) != 0)
-			*cp1++ = '#';
-		else
-			*cp1++ = ' ';
+		*cp1++ = ((bp->b_flag & BFTRUNC) != 0) ? '#' : ' ' ;
+
+		/* output status of changed flag ('*' when the buffer is changed) */
+		*cp1++ = ((bp->b_flag & BFCHG) != 0) ? '*' : ' ' ;
 
 		*cp1++ = ' ';	/* space */
 
@@ -394,8 +387,8 @@ static int makelist( int iflag)
 				*cp1++ = '.';
 		}
 
-	/* No gap as buffer size if left padded with space */
-	
+	/* No gap as buffer size is left-padded with space */
+
 	/* Buffer size */
 		nbytes = 0L;	/* Count bytes in buf.  */
 		nlines = 0 ;
@@ -409,30 +402,28 @@ static int makelist( int iflag)
 		if( bp->b_mode & MDDOS)
 			nbytes += nlines ;
 
-		l_to_a( b, sizeof b, nbytes) ;	/* 10 digits string buffer size. */
-		cp2 = &b[0];
-		while ((c = *cp2++) != 0)
-			*cp1++ = c;
+		l_to_a( cp1, 10 + 1, nbytes) ;	/* "%10d" formatted numbers */
+		cp1 += 10 ;
 
 		*cp1++ = ' ';	/* Gap.                 */
 		cp2 = &bp->b_bname[0];	/* Buffer name          */
 		while ((c = *cp2++) != 0)
 			*cp1++ = c;
-		cp2 = &bp->b_fname[0];	/* File name            */
-		if (*cp2 != 0) {
-			while( cp1 < &line[ 3 + 1 + NUMMODES + 8 + 1 + (NBUFN-1) + 1])
-				*cp1++ = ' ';
-			while ((c = *cp2++) != 0) {
-				if (cp1 < &line[MAXLINE - 1])
-					*cp1++ = c;
-			}
-		}
-		*cp1 = 0;	/* Add to the buffer.   */
-		if (addline(line) == FALSE)
-			return FALSE;
-		bp = bp->b_bufp;
+
+		if( bp->b_fname[ 0] != 0) {
+			while( cp1 < &line[ FNAMSTART])
+				*cp1++ = ' ' ;
+
+			strncpy( cp1, bp->b_fname, &line[ sizeof line - 1] - cp1) ;
+			line[ sizeof line - 1] = 0 ;
+		} else
+			*cp1 = 0 ;					/* Terminate string */
+
+		if( addline( line) == FALSE)	/* Add to the buffer.   */
+			return FALSE ;
 	}
-	return TRUE;		/* All done             */
+
+	return TRUE ;		/* All done             */
 }
 
 static void l_to_a(char *buf, int width, long num)
