@@ -28,8 +28,6 @@
 
 int tabwidth = 8 ;			/* column span of a tab */
 
-#define	BLOCK_SIZE 16 /* Line block chunk size. */
-
 static int ldelnewline( void) ;
 
 /* The editor holds deleted text chunks in the struct kill buffer. The
@@ -175,21 +173,21 @@ int forwchar(int f, int n)
  * a pointer to the new block, or NULL if there isn't any memory left. Print a
  * message in the message line if no space.
  */
-struct line *lalloc(int used)
-{
-	struct line *lp;
-	int size;
+line_p lalloc( int used) {
+#define	BLOCK_SIZE 16	/* Line block chunk size. */
+	line_p lp ;
+	int size ;
 
-	size = (used + BLOCK_SIZE - 1) & ~(BLOCK_SIZE - 1);
-	if (size == 0)	/* Assume that is an empty. */
-		size = BLOCK_SIZE;  /* Line is for type-in. */
-	if ((lp = (struct line *)malloc(sizeof(struct line) + size)) == NULL) {
+	size = used + BLOCK_SIZE - used % BLOCK_SIZE ;
+	lp = (line_p) malloc( offsetof( struct line, l_text) + size) ;
+	if( lp == NULL) {
 		mloutstr( "(OUT OF MEMORY)") ;
-		return NULL;
+		return NULL ;
 	}
-	lp->l_size = size;
-	lp->l_used = used;
-	return lp;
+
+	lp->l_size = size ;
+	lp->l_used = used ;
+	return lp ;
 }
 
 /*
