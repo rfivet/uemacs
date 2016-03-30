@@ -118,57 +118,57 @@ fio_code ffputline( char *buf, int nbuf, int dosflag) {
  * at the end of the file that don't have a newline present. Check for I/O
  * errors too. Return status.
  */
-fio_code ffgetline(void)
-{
-    int c;      /* current character read */
-    int i;      /* current index into fline */
-    int lcode = FCODE_ASCII ;	/* line encoding, defaults to ASCII */
+fio_code ffgetline( void) {
+	int c ;		/* current character read */
+	int i ;		/* current index into fline */
+	int lcode = FCODE_ASCII ;	/* line encoding, defaults to ASCII */
 
-    /* if we are at the end...return it */
-    if (eofflag)
-        return FIOEOF;
+/* if we are at the end...return it */
+	if( eofflag)
+		return FIOEOF ;
 
-    /* dump fline if it ended up too big */
-    if (flen > NSTRING) {
-        free(fline);
-        fline = NULL;
-    }
+/* dump fline if it ended up too big */
+	if( flen > NSTRING) {
+		free( fline) ;
+		fline = NULL ;
+	}
 
-    /* if we don't have an fline, allocate one */
-    if (fline == NULL)
-        if ((fline = malloc(flen = NSTRING)) == NULL)
-            return FIOMEM;
+/* if we don't have an fline, allocate one */
+	if( fline == NULL)
+		if( (fline = malloc( flen = NSTRING)) == NULL)
+			return FIOMEM ;
 
-    /* read the line in */
-    i = 0;
-    while ((c = fgetc(ffp)) != EOF && c != '\r' && c != '\n') {
-		fline[i++] = c;
+/* read the line in */
+	i = 0 ;
+	while( (c = fgetc( ffp)) != EOF && c != '\r' && c != '\n') {
+	/* if line is full, get more room */
+		if( i >= flen) {
+			char *tmpline ;	/* temp storage for expanding line */
+
+			tmpline = malloc( flen + NSTRING) ;
+			if( tmpline == NULL)
+				return FIOMEM ;
+
+			memcpy( tmpline, fline, flen) ;
+			flen += NSTRING ;
+			free( fline) ;
+			fline = tmpline ;
+		}
+
+		fline[ i++] = c ;
 		lcode |= c ;
-        /* if it's longer, get more room */
-        if (i >= flen) {
-		    char *tmpline;  /* temp storage for expanding line */
-			    
-	        fpayload = i ;
-            tmpline = malloc(flen + NSTRING) ;
-            if( tmpline == NULL)
-    	        return FIOMEM ;
-
-            memcpy( tmpline, fline, flen) ;
-            flen += NSTRING;
-            free(fline);
-            fline = tmpline;
-        }
-    }
+	}
 
 	fpayload = i ;
 	lcode &= FCODE_MASK ;
 	if( lcode && (fcode != FCODE_MIXED)) {	/* line contains extended chars */
 	/* Check if consistent UTF-8 encoding */
-		int bytes ;
 		int pos = 0 ;
-		unicode_t uc ;
 
 		while( (pos < i) && (lcode != FCODE_MIXED)) {
+			unicode_t uc ;
+			int bytes ;
+
 			bytes = utf8_to_unicode( fline, pos, i, &uc) ;
 			pos += bytes ;
 			if( bytes > 1)		/* Multi byte UTF-8 sequence */
@@ -180,26 +180,24 @@ fio_code ffgetline(void)
 		fcode |= lcode ;
 	}
 
-    /* test for any errors that may have occured */
-    if (c == EOF) {
-        if( ferror( ffp))
-            return FIOERR ;
+/* test for any errors that may have occured */
+	if( c == EOF) {
+		if( ferror( ffp))
+			return FIOERR ;
 
-        if (i != 0)
-            eofflag = TRUE;
-        else
-            return FIOEOF;
-    } else if( c == '\r') {
-        c = fgetc( ffp) ;
-        if( c != '\n') {
-            ftype |= FTYPE_MAC ;
-            ungetc( c, ffp) ;
-        } else
-	    ftype |= FTYPE_DOS ;
-    } else /* c == '\n' */
-	ftype |= FTYPE_UNIX ;
+		if( i != 0)
+			eofflag = TRUE ;
+		else
+			return FIOEOF ;
+	} else if( c == '\r') {
+		c = fgetc( ffp) ;
+		if( c != '\n') {
+			ftype |= FTYPE_MAC ;
+			ungetc( c, ffp) ;
+		} else
+			ftype |= FTYPE_DOS ;
+	} else /* c == '\n' */
+		ftype |= FTYPE_UNIX ;
 
-    /* terminate the string */
-    fline[i] = 0;
-    return FIOSUC;
+    return FIOSUC ;
 }

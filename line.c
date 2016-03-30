@@ -179,15 +179,16 @@ line_p lalloc( int used) {
 	line_p lp ;
 	int size ;
 
-	size = used + BLOCK_SIZE - used % BLOCK_SIZE ;
+/*	size = used + BLOCK_SIZE - used % BLOCK_SIZE ; */
+	size = (used + BLOCK_SIZE) & ~(BLOCK_SIZE - 1) ; /* as BLOCK_SIZE is power of 2 */
 	lp = (line_p) malloc( offsetof( struct line, l_text) + size) ;
-	if( lp == NULL) {
+	if( lp == NULL)
 		mloutstr( "(OUT OF MEMORY)") ;
-		return NULL ;
+	else {
+		lp->l_size = size ;
+		lp->l_used = used ;
 	}
 
-	lp->l_size = size ;
-	lp->l_used = used ;
 	return lp ;
 }
 
@@ -197,8 +198,7 @@ line_p lalloc( int used) {
  * might be in. Release the memory. The buffers are updated too; the magic
  * conditions described in the above comments don't hold here.
  */
-void lfree(struct line *lp)
-{
+void lfree( line_p lp) {
 	struct buffer *bp;
 	struct window *wp;
 
@@ -619,18 +619,14 @@ int ldelete(long n, int kflag)
  * getctext:	grab and return a string with the text of
  *		the current line
  */
-char *getctext(void)
-{
-	struct line *lp;	/* line to copy */
+char *getctext( void) {
+	line_p	lp ;	/* line to copy */
 	int size;	/* length of line to return */
-	char *sp;	/* string pointer into line */
-	char *dp;	/* string pointer into returned line */
 	static int	rsize = 0 ;
 	static char *rline ;	/* line to return */
 
 	/* find the contents of the current line and its length */
 	lp = curwp->w_dotp;
-	sp = lp->l_text;
 	size = lp->l_used;
 	if( size >= rsize) {
 		if( rsize)
@@ -645,11 +641,9 @@ char *getctext(void)
 	}
 
 	/* copy it across */
-	dp = rline;
-	while (size--)
-		*dp++ = *sp++;
-	*dp = 0;
-	return rline;
+	memcpy( rline, lp->l_text, size) ;
+	rline[ size] = 0 ;
+	return rline ;
 }
 
 /*

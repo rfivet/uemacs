@@ -28,11 +28,6 @@
 #include "mlout.h"
 #include "window.h"
 
-#if PKCODE
-/* Max number of lines from one file. */
-#define MAXNLINE 10000000
-#endif
-
 typedef enum {
 	EOL_NONE,
 	EOL_UNIX,
@@ -254,15 +249,10 @@ int getfile( const char *fname, boolean lockfl)
  */
 int readin(const char *fname, boolean lockfl)
 {
-    struct line *lp1;
-    struct line *lp2;
     struct window *wp;
     struct buffer *bp;
-    int s;
-    eoltype found_eol ;
-    int nbytes;
-    int nline;
-	char *errmsg ;
+	int status ;
+	fio_code s ;
 
 #if (FILOCK && BSD) || SVR4
     if (lockfl && lockchk(fname) == ABORT)
@@ -278,8 +268,9 @@ int readin(const char *fname, boolean lockfl)
 #endif
 #endif
     bp = curbp;     /* Cheap.               */
-    if ((s = bclear(bp)) != TRUE)   /* Might be old.        */
-        return s;
+    if( (status = bclear( bp)) != TRUE)   /* Might be old.        */
+        return status ;
+
     bp->b_flag &= ~(BFINVS | BFCHG);
     strncpy( bp->b_fname, fname, sizeof( fname_t) - 1) ;
     bp->b_fname[ sizeof( fname_t) - 1] = '\0' ;
@@ -287,82 +278,77 @@ int readin(const char *fname, boolean lockfl)
     /* let a user macro get hold of things...if he wants */
     execute(META | SPEC | 'R', FALSE, 1);
 
-    if ((s = ffropen(fname)) == FIOERR) /* Hard file open.      */
-        goto out;
-
-    if (s == FIOFNF) {  /* File not found.      */
-        mloutstr( "(New file)") ;
-        goto out;
-    }
+	s = ffropen( bp->b_fname) ; /* Always use the name associated to buffer */
+	if( s == FIOFNF)	/* File not found.      */
+		mloutstr( "(New file)") ;
+	else if( s == FIOSUC) {
+		char *errmsg ;
+	    eoltype found_eol ;
+	    int nline = 0 ;
 
     /* read the file in */
-    mloutstr( "(Reading file)") ;
-    nline = 0;
-    while ((s = ffgetline()) == FIOSUC) {
-        nbytes = fpayload ;
-#if PKCODE
-        if (nline > MAXNLINE) {
-            s = FIOMEM;
-            break;
-        }
-#endif
-        if ((lp1 = lalloc(nbytes)) == NULL) {
-            s = FIOMEM; /* Keep message on the  */
-            break;  /* display.             */
-        }
-        lp2 = lback(curbp->b_linep);
-        lp2->l_fp = lp1;
-        lp1->l_fp = curbp->b_linep;
-        lp1->l_bp = lp2;
-        curbp->b_linep->l_bp = lp1;
-		memcpy( lp1->l_text, fline, nbytes) ;
-        ++nline;
-    }
-    
-	if( s == FIOERR)
-		mloutstr( "File read error") ;
+	    mloutstr( "(Reading file)") ;
+	    while ((s = ffgetline()) == FIOSUC) {
+		    line_p	lp ;
 
-	switch( ftype) {
-    case FTYPE_DOS:
-    	found_eol = EOL_DOS ;
-    	curbp->b_mode |= MDDOS ;
-    	break ;
-    case FTYPE_UNIX:
-    	found_eol = EOL_UNIX ;
-    	break ;
-    case FTYPE_MAC:
-    	found_eol = EOL_MAC ;
-    	break ;
-    case FTYPE_NONE:
-    	found_eol = EOL_NONE ;
-    	break ;
-    default:
-    	found_eol = EOL_MIXED ;
-		curbp->b_mode |= MDVIEW ;	/* force view mode as we have lost
-									** EOL information */
+			if( nline >= 10000000 /* MAXNLINE Maximum # of lines from one file */
+			||	(lp = lalloc( fpayload)) == NULL) {
+        	    s = FIOMEM ;	/* Keep message on the  */
+        	    break ;			/* display.             */
+        	}
+
+			memcpy( lp->l_text, fline, fpayload) ;
+        	lp->l_fp = curbp->b_linep ;	/* insert before end of buffer */
+			lp->l_bp = lp->l_fp->l_bp ;
+			lp->l_fp->l_bp = lp ;
+			lp->l_bp->l_fp = lp ;
+			nline += 1 ;
+		}
+
+		if( s == FIOERR)
+			mloutstr( "File read error") ;
+
+		switch( ftype) {
+	    case FTYPE_DOS:
+	    	found_eol = EOL_DOS ;
+	    	curbp->b_mode |= MDDOS ;
+	    	break ;
+	    case FTYPE_UNIX:
+	    	found_eol = EOL_UNIX ;
+	    	break ;
+	    case FTYPE_MAC:
+	    	found_eol = EOL_MAC ;
+	    	break ;
+	    case FTYPE_NONE:
+	    	found_eol = EOL_NONE ;
+	    	break ;
+	    default:
+	    	found_eol = EOL_MIXED ;
+			curbp->b_mode |= MDVIEW ;	/* force view mode as we have lost
+										** EOL information */
+		}
+
+		if( fcode == FCODE_UTF_8)
+			curbp->b_mode |= MDUTF8 ;
+
+	    if( s == FIOERR) {
+			errmsg = "I/O ERROR, " ;
+	        curbp->b_flag |= BFTRUNC ;
+	    } else if( s == FIOMEM) {
+	        errmsg = "OUT OF MEMORY, " ;
+	        curbp->b_flag |= BFTRUNC ;
+	    } else
+	    	errmsg = "" ;
+
+		mloutfmt( "(%sRead %d line%s, code/eol: %s/%s)",
+			errmsg,
+			nline,
+			&"s"[ nline == 1],
+			codename[ fcode & (FCODE_MASK - 1)],
+			eolname[ found_eol]) ;
+	    ffclose() ;	/* Ignore errors.       */
 	}
 
-	if( fcode == FCODE_UTF_8)
-		curbp->b_mode |= MDUTF8 ;
-
-    if( s == FIOERR) {
-		errmsg = "I/O ERROR, " ;
-        curbp->b_flag |= BFTRUNC ;
-    } else if( s == FIOMEM) {
-        errmsg = "OUT OF MEMORY, " ;
-        curbp->b_flag |= BFTRUNC ;
-    } else
-    	errmsg = "" ;
-
-	mloutfmt( "(%sRead %d line%s, code/eol: %s/%s)",
-		errmsg,
-		nline,
-		(nline != 1) ? "s" : "",
-		codename[ fcode & (FCODE_MASK -1)],
-		eolname[ found_eol]) ;
-    ffclose();      /* Ignore errors.       */
-
-      out:
     for (wp = wheadp; wp != NULL; wp = wp->w_wndp) {
         if (wp->w_bufp == curbp) {
             wp->w_linep = lforw(curbp->b_linep);
@@ -373,9 +359,8 @@ int readin(const char *fname, boolean lockfl)
             wp->w_flag |= WFMODE | WFHARD;
         }
     }
-    if (s == FIOERR || s == FIOFNF) /* False if error.      */
-        return FALSE;
-    return TRUE;
+
+	return (s == FIOERR || s == FIOFNF) ? FALSE : TRUE ;
 }
 
 /*
@@ -487,7 +472,7 @@ int filewrite( int f, int n) {
 
 /*
  * Save the contents of the current
- * buffer in its associatd file. No nothing
+ * buffer in its associated file. Do nothing
  * if nothing has changed (this may be a bug, not a
  * feature). Error if there is no remembered file
  * name for the buffer. Bound to "C-X C-S". May
@@ -535,43 +520,38 @@ int filesave(int f, int n)
  * a macro for this. Most of the grief is error
  * checking of some sort.
  */
-int writeout( const char *fn)
-{
-    int s;
-    struct line *lp;
-    int nline;
+int writeout( const char *fn) {
+	fio_code	s ;
 
-    if ((s = ffwopen(fn)) != FIOSUC) {  /* Open writes message. */
-        mloutstr( "Cannot open file for writing") ;
-        return FALSE;
-    }
-    mloutstr( "(Writing...)") ;	/* tell us were writing */
-    lp = lforw(curbp->b_linep); /* First line.          */
-    nline = 0;      /* Number of lines.     */
-    while (lp != curbp->b_linep) {
-        s = ffputline( &lp->l_text[0], llength(lp), curbp->b_mode & MDDOS) ;
-        if( s != FIOSUC) {
-	        mloutstr( "Write I/O error") ;
-            break;
-        }
-        
-        ++nline;
-        lp = lforw(lp);
-    }
-    if (s == FIOSUC) {  /* No write error.      */
-        s = ffclose();
-        if (s == FIOSUC) {  /* No close error.      */
-            if (nline == 1)
-                mloutstr( "(Wrote 1 line)") ;
-            else
-                mloutfmt( "(Wrote %d lines)", nline) ;
-        } else
+	s = ffwopen( fn) ;  /* Open writes message. */
+	if( s != FIOSUC)
+		mloutstr( "Cannot open file for writing") ;
+	else {
+		line_p lp ;
+		fio_code s2 ;
+		int nline = 0 ;
+
+		mloutstr( "(Writing...)") ;	/* tell us we are writing */
+		for( lp = lforw( curbp->b_linep) ; lp != curbp->b_linep ; lp = lforw( lp)) {
+			s = ffputline( lp->l_text, llength( lp), curbp->b_mode & MDDOS) ;
+			if( s != FIOSUC)
+				break ;
+       
+			nline += 1 ;
+		}
+
+		s2 = ffclose() ;
+		if( s != FIOSUC)
+			mloutstr( "Write I/O error") ;
+		else if( s2 != FIOSUC)
 			mloutstr( "Error closing file") ;
-    } else          /* Ignore close error   */
-        ffclose();  /* if a write error.    */
-    if (s != FIOSUC)    /* Some sort of error.  */
-        return FALSE;
-    return TRUE;
+		else {	/* Successfull write and close. */
+			mloutfmt( "(Wrote %d line%s)", nline, &"s"[ nline == 1]) ;
+			return TRUE ;
+		}
+	}
+
+    return FALSE ;
 }
 
 /*
@@ -620,81 +600,75 @@ int filename( int f, int n) {
  * status of the read.
  */
 static int ifile( const char *fname) {
-    struct line *lp0;
-    struct line *lp1;
-    struct line *lp2;
-    struct buffer *bp;
-    int s;
-    int nbytes;
-    int nline;
-    char *errmsg ;
+	fio_code	s ;
 
-    bp = curbp;     /* Cheap.               */
-    bp->b_flag |= BFCHG;    /* we have changed      */
-    bp->b_flag &= ~BFINVS;  /* and are not temporary */
-    if ((s = ffropen(fname)) == FIOERR) /* Hard file open.      */
-        goto out;
-    if (s == FIOFNF) {  /* File not found.      */
+	curbp->b_flag |= BFCHG ;	/* we have changed      */
+	curbp->b_flag &= ~BFINVS ;	/* and are not temporary */
+	s = ffropen( fname) ;
+    if( s == FIOFNF) {  /* File not found.      */
         mloutstr( "(No such file)") ;
-        return FALSE;
+        return FALSE ;
     }
-    mloutstr( "(Inserting file)") ;
+
+	if( s == FIOSUC) {	/* Hard file open.      */
+		int	nline = 0 ;	/* number of line read */
+		char *errmsg ;
+
+		mloutstr( "(Inserting file)") ;
 
     /* back up a line and save the mark here */
-    curwp->w_dotp = lback(curwp->w_dotp);
-    curwp->w_doto = 0;
-    curwp->w_markp = curwp->w_dotp;
-    curwp->w_marko = 0;
+		curwp->w_dotp = lback(curwp->w_dotp);
+		curwp->w_doto = 0;
+		curwp->w_markp = curwp->w_dotp;
+		curwp->w_marko = 0;
 
-    nline = 0;
-    while ((s = ffgetline()) == FIOSUC) {
-        nbytes = fpayload ;
-        if ((lp1 = lalloc(nbytes)) == NULL) {
-            s = FIOMEM; /* Keep message on the  */
-            break;  /* display.             */
-        }
-        lp0 = curwp->w_dotp;    /* line previous to insert */
-        lp2 = lp0->l_fp;    /* line after insert */
+		while( (s = ffgetline()) == FIOSUC) {
+			line_p lpp, lp, lpn ;
 
-        /* re-link new line between lp0 and lp2 */
-        lp2->l_bp = lp1;
-        lp0->l_fp = lp1;
-        lp1->l_bp = lp0;
-        lp1->l_fp = lp2;
+			if( (lp = lalloc( fpayload)) == NULL) {
+				s = FIOMEM ;	/* Keep message on the  */
+				break ;			/* display.             */
+			}
 
-        /* and advance and write out the current line */
-        curwp->w_dotp = lp1;
-		memcpy( lp1->l_text, fline, nbytes) ;
-        ++nline;
-    }
-    ffclose();      /* Ignore errors.       */
-    curwp->w_markp = lforw(curwp->w_markp);
-	if( s == FIOERR) {
-        errmsg = "I/O ERROR, " ;
-        curbp->b_flag |= BFTRUNC ;
-	} else if( s == FIOMEM) {
-		errmsg = "OUT OF MEMORY, " ;
-        curbp->b_flag |= BFTRUNC;
-	} else
-		errmsg = "" ;
-		
-	mloutfmt( "(%sInserted %d line%s)",
-		errmsg,
-		nline,
-		(nline > 1) ? "s" : "") ;
+			memcpy( lp->l_text, fline, fpayload) ;
+			lp->l_bp = lpp = curwp->w_dotp ;	/* insert after dot line */
+			lp->l_fp = lpn = lpp->l_fp ;		/* line after insert */
 
-out:
-    /* advance to the next line and mark the window for changes */
+		/* re-link new line between lpp and lpn */
+			lpn->l_bp = lp ;
+			lpp->l_fp = lp ;
+
+		/* and advance and write out the current line */
+			curwp->w_dotp = lp ;
+			nline += 1 ;
+    	}
+
+    	ffclose() ;	/* Ignore errors.       */
+    	curwp->w_markp = lforw(curwp->w_markp);
+		if( s == FIOERR) {
+        	errmsg = "I/O ERROR, " ;
+        	curbp->b_flag |= BFTRUNC ;
+		} else if( s == FIOMEM) {
+			errmsg = "OUT OF MEMORY, " ;
+        	curbp->b_flag |= BFTRUNC;
+		} else
+			errmsg = "" ;
+
+		mloutfmt( "(%sInserted %d line%s)",
+			errmsg,
+			nline,
+			&"s"[ nline == 1]) ;
+	}
+
+/* advance to the next line and mark the window for changes */
     curwp->w_dotp = lforw(curwp->w_dotp);
     curwp->w_flag |= WFHARD | WFMODE;
 
-    /* copy window parameters back to the buffer structure */
+/* copy window parameters back to the buffer structure */
     curbp->b_dotp = curwp->w_dotp;
     curbp->b_doto = curwp->w_doto;
     curbp->b_markp = curwp->w_markp;
     curbp->b_marko = curwp->w_marko;
 
-    if (s == FIOERR)    /* False if error.      */
-        return FALSE;
-    return TRUE;
+	return (s == FIOERR) ? FALSE : TRUE ;
 }
