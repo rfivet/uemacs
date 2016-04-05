@@ -6,8 +6,7 @@ typedef enum {
 	FIOFNF,	/* File I/O, file not found.      */
 	FIOEOF,	/* File I/O, end of file.         */
 	FIOERR,	/* File I/O, error.               */
-	FIOMEM,	/* File I/O, out of memory        */
-	FIOFUN	/* File I/O, eod of file/bad line */
+	FIOMEM	/* File I/O, out of memory        */
 } fio_code ;
 
 #define FTYPE_NONE  0

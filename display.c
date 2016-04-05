@@ -1333,12 +1333,14 @@ void vmlwrite( const char *fmt, va_list ap) {
 		movecursor( term.t_nrow, 0) ;
 
 	mpresf = *fmt ? TRUE : FALSE ;	/* flag if line has content or not */
-	while ((c = *fmt++) != 0) {
-		if (c != '%')
+	while( ( c = *fmt++) != 0)
+		if( c != '%')
 			mlputc( c) ;
-		else {
-			c = *fmt++;
-			switch (c) {
+		else if( ( c = *fmt++) == 0) {
+			mlputc( '%') ;
+			break ;
+		} else
+			switch( c) {
 			case 'd':
 				mlputi(va_arg(ap, int), 10);
 				break;
@@ -1369,11 +1371,10 @@ void vmlwrite( const char *fmt, va_list ap) {
 
 			default:
 				mlputc( '%') ;
+				/* fallthrough */
 			case '%':
 				mlputc( c) ;
 			}
-		}
-	}
 
 	/* if we can, erase to the end of screen */
 	if( eolexist == TRUE && ttcol < term.t_ncol)
