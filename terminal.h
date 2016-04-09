@@ -4,6 +4,7 @@
 
 #include "defines.h"	/* COLOR, SCROLLCODE */
 #include "retcode.h"
+#include "utf8.h"
 
 /*
  * The editor communicates with the display using a high level interface. A
@@ -27,7 +28,7 @@ struct terminal {
 	void (*t_kopen)(void);	/* Open keyboard                */
 	void (*t_kclose)(void);	/* close keyboard               */
 	int (*t_getchar)(void);	/* Get character from keyboard. */
-	int (*t_putchar)(int);	/* Put character to display.    */
+	int (*t_putchar)( unicode_t) ;	/* Put character to display.    */
 	void (*t_flush) (void);	/* Flush output buffers.        */
 	void (*t_move)(int, int);/* Move the cursor, origin 0.   */
 	void (*t_eeol)(void);	/* Erase to end of line.        */

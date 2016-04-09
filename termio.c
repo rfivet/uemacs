@@ -281,7 +281,7 @@ void ttclose(void)
  * On CPM terminal I/O unbuffered, so we just write the byte out. Ditto on
  * MS-DOS (use the very very raw console output routine).
  */
-int ttputc( int c) {
+int ttputc( unicode_t c) {
 #if     VMS
     if (nobuf >= NOBUF)
         ttflush();

@@ -4,6 +4,7 @@
 #include <stdarg.h>
 
 #include "estruct.h"
+#include "utf8.h"
 
 extern int mpresf ;		/* Stuff in message line */
 extern int scrollcount ;	/* number of lines to scroll */
@@ -28,7 +29,7 @@ void mlerase( void) ;
 void vmlwrite( const char *fmt, va_list ap) ;
 void mlwrite( const char *fmt, ...) ;
 void ostring( char *s) ;
-void echoc( char c) ;
+void echoc( unicode_t c) ;
 void echos( char *s) ;
 void getscreensize( int *widthp, int *heightp) ;
 

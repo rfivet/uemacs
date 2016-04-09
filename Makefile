@@ -139,7 +139,7 @@ bindable.o: bindable.c bindable.h defines.h buffer.h line.h retcode.h \
  terminal.h
 buffer.o: buffer.c buffer.h line.h retcode.h utf8.h defines.h estruct.h \
  file.h input.h bind.h mlout.h window.h
-display.o: display.c display.h estruct.h buffer.h line.h retcode.h utf8.h \
+display.o: display.c display.h estruct.h utf8.h buffer.h line.h retcode.h \
  input.h bind.h termio.h terminal.h defines.h version.h wrapper.h \
  window.h
 ebind.o: ebind.c ebind.h basic.h bind.h estruct.h bindable.h buffer.h \
@@ -151,15 +151,15 @@ eval.o: eval.c eval.h basic.h bind.h buffer.h line.h retcode.h utf8.h \
 exec.o: exec.c exec.h retcode.h buffer.h line.h utf8.h bind.h display.h \
  estruct.h eval.h file.h flook.h input.h random.h window.h defines.h
 execute.o: execute.c execute.h estruct.h bind.h random.h retcode.h \
- display.h file.h buffer.h line.h utf8.h input.h mlout.h search.h \
+ display.h utf8.h file.h buffer.h line.h input.h mlout.h search.h \
  terminal.h defines.h window.h
 file.o: file.c file.h buffer.h line.h retcode.h utf8.h defines.h \
  display.h estruct.h execute.h fileio.h input.h bind.h lock.h mlout.h \
  window.h
 fileio.o: fileio.c fileio.h defines.h retcode.h utf8.h
 flook.o: flook.c flook.h retcode.h defines.h fileio.h
-input.o: input.c input.h bind.h estruct.h bindable.h display.h exec.h \
- retcode.h names.h terminal.h defines.h utf8.h wrapper.h
+input.o: input.c input.h bind.h estruct.h bindable.h display.h utf8.h \
+ exec.h retcode.h names.h terminal.h defines.h wrapper.h
 isearch.o: isearch.c isearch.h basic.h buffer.h line.h retcode.h utf8.h \
  display.h estruct.h exec.h input.h bind.h search.h terminal.h defines.h \
  window.h
@@ -186,9 +186,9 @@ search.o: search.c search.h line.h retcode.h utf8.h basic.h buffer.h \
 spawn.o: spawn.c spawn.h defines.h buffer.h line.h retcode.h utf8.h \
  display.h estruct.h exec.h file.h flook.h input.h bind.h terminal.h \
  window.h
-tcap.o: tcap.c terminal.h defines.h retcode.h display.h estruct.h \
+tcap.o: tcap.c terminal.h defines.h retcode.h utf8.h display.h estruct.h \
  termio.h
-termio.o: termio.c termio.h estruct.h retcode.h utf8.h
+termio.o: termio.c termio.h utf8.h estruct.h retcode.h
 utf8.o: utf8.c utf8.h
 window.o: window.c window.h defines.h buffer.h line.h retcode.h utf8.h \
  basic.h display.h estruct.h execute.h terminal.h wrapper.h

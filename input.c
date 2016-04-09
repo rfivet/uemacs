@@ -724,7 +724,7 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
             for (n = 0; n < cpos; n++) {
                 c = buf[n];
                 if ((c < ' ') && (c != '\n')) {
-                    echos("^");
+                    echoc( '^') ;
                     ++ttcol;
                     c ^= 0x40;
                 }
@@ -751,7 +751,7 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
                 buf[cpos++] = c;
 
                 if ((c < ' ') && (c != '\n')) {
-                    echos("^");
+                    echoc( '^') ;
                     ++ttcol;
                     c ^= 0x40;
                 }

@@ -1284,7 +1284,7 @@ void mlerase( void) {
 	TTflush() ;
 }
 
-static void mlputc( char c) {
+static void mlputc( unicode_t c) {
 	if( ttcol < term.t_ncol) {
 		TTputc( c) ;
 		++ttcol ;
@@ -1297,9 +1297,11 @@ static void mlputc( char c) {
  * char *s;     string to output
  */
 void ostring( char *s) {
+	unsigned char c ;
+
 	if( discmd)
-		while( *s)
-			mlputc( *s++ & 0xFF) ;
+		while( (c = *s++) != 0)
+			mlputc( c) ;
 }
 
 
@@ -1552,7 +1554,7 @@ static int newscreensize(int h, int w)
  *
  * char c ;     character to output
  */
-void echoc( char c) {
+void echoc( unicode_t c) {
 	if( disinp)
 		TTputc( c) ;
 }

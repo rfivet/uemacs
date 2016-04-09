@@ -370,6 +370,6 @@ static void tcapbeep(void)
 
 static void putpad(char *str)
 {
-	tputs(str, 1, ttputc);
+	tputs( str, 1, (int (*)( int)) ttputc) ;
 }
 #endif /* TERMCAP */
