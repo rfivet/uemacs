@@ -37,7 +37,7 @@
 struct key_tab keytab[NBINDS] = {
     {CONTROL | 'A', gotobol}
     ,
-    {CONTROL | 'B', backchar}
+    {CONTROL | 'B', (fn_t) backchar}
     ,
     {CONTROL | 'C', insspace}
     ,
@@ -45,7 +45,7 @@ struct key_tab keytab[NBINDS] = {
     ,
     {CONTROL | 'E', gotoeol}
     ,
-    {CONTROL | 'F', forwchar}
+    {CONTROL | 'F', (fn_t) forwchar}
     ,
     {CONTROL | 'G', ctrlg}
     ,
@@ -329,9 +329,9 @@ struct key_tab keytab[NBINDS] = {
     ,
     {SPEC | 73, backpage}
     ,
-    {SPEC | 75, backchar}
+    {SPEC | 75, (fn_t) backchar}
     ,
-    {SPEC | 77, forwchar}
+    {SPEC | 77, (fn_t) forwchar}
     ,
     {SPEC | 79, gotoeol}
     ,
@@ -406,13 +406,13 @@ struct key_tab keytab[NBINDS] = {
     ,
     {SPEC | 'B', forwline}
     ,
-    {SPEC | 'C', forwchar}
+    {SPEC | 'C', (fn_t) forwchar}
     ,
-    {SPEC | 'D', backchar}
+    {SPEC | 'D', (fn_t) backchar}
     ,
     {SPEC | 'c', metafn}
     ,
-    {SPEC | 'd', backchar}
+    {SPEC | 'd', (fn_t) backchar}
     ,
     {SPEC | 'e', forwline}
     ,

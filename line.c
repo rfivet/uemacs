@@ -91,16 +91,38 @@ char *getkill( void) {
  * location. Error if you try and move out of the buffer. Set the flag if the
  * line pointer for dot changes.
  */
-int backchar( int f, int n) {
+static unsigned utf8_revdelta( unsigned char *p, unsigned pos) {
+	unsigned delta = 0 ;
+
+	if( (*p & 0xC0) == 0x80) {
+		unsigned char c ;
+
+		c = *--p ;
+		if( (c & 0xE0) == 0xC0)	/* valid 2 bytes unicode seq */
+			delta = 1 ;
+		else if( ((c & 0xC0) == 0x80) && (pos > 1)) {
+			c = *--p ;
+			if( (c & 0xF0) == 0xE0)	/* valid 3 bytes unicode seq */
+				delta = 2 ;
+			else if( ((c & 0xC0) == 0x80) && (pos > 2))
+				if( (p[ -1] & 0xF8) == 0xF0)	/* valid 4 bytes unicode seq */
+					delta = 3 ;
+		}
+	}
+
+	return delta ;
+}
+
+boolean backchar( int f, int n) {
 	if( n < 0)
 		return forwchar( f, -n) ;
 
 	while( n--) {
-		if( curwp->w_doto == 0) {
-			struct line *lp ;
+		if( curwp->w_doto == 0) {	/* at beginning of line */
+			line_p lp ;
 
 			lp = lback( curwp->w_dotp) ;
-			if( lp == curbp->b_linep)
+			if( lp == curbp->b_linep)	/* at beginning of buffer */
 				return FALSE ;
 
 			curwp->w_dotp = lp ;
@@ -110,29 +132,8 @@ int backchar( int f, int n) {
 			unsigned pos ;
 			
 			pos = curwp->w_doto -= 1 ;
-			if( pos > 0) {
-				unsigned char *p ;
-
-				p = (unsigned char *) &( (curwp->w_dotp)->l_text[ pos]) ;
-				if( (*p & 0xC0) == 0x80) {
-					unsigned char c ;
-					int delta = 0 ;
-
-					c = *--p ;
-					if( (c & 0xE0) == 0xC0)	/* valid 2 bytes unicode seq */
-						delta = 1 ;
-					else if( ((c & 0xC0) == 0x80) && (pos > 1)) {
-						c = *--p ;
-						if( (c & 0xF0) == 0xE0)	/* valid 3 bytes unicode seq */
-							delta = 2 ;
-						else if( ((c & 0xC0) == 0x80) && (pos > 2))
-							if( (p[ -1] & 0xF8) == 0xF0)	/* valid 4 bytes unicode seq */
-								delta = 3 ;
-					}
-
-					curwp->w_doto -= delta ;
-				}
-			}
+			if( pos > 0)
+				curwp->w_doto -= utf8_revdelta( (unsigned char *) &( (curwp->w_dotp)->l_text[ pos]), pos) ;
 		}
 	}
 
@@ -145,18 +146,19 @@ int backchar( int f, int n) {
  * location, and move ".". Error if you try and move off the end of the
  * buffer. Set the flag if the line pointer for dot changes.
  */
-int forwchar(int f, int n)
-{
-	if (n < 0)
-		return backchar(f, -n);
-	while (n--) {
-		int len = llength(curwp->w_dotp);
-		if (curwp->w_doto == len) {
-			if (curwp->w_dotp == curbp->b_linep)
-				return FALSE;
-			curwp->w_dotp = lforw(curwp->w_dotp);
-			curwp->w_doto = 0;
-			curwp->w_flag |= WFMOVE;
+boolean forwchar( int f, int n) {
+	if( n < 0)
+		return backchar( f, -n) ;
+
+	while( n--) {
+		int len = llength( curwp->w_dotp) ;
+		if( curwp->w_doto == len) {	/* at end of line */
+			if( curwp->w_dotp == curbp->b_linep)	/* at end of buffer */
+				return FALSE ;
+
+			curwp->w_dotp = lforw( curwp->w_dotp) ;
+			curwp->w_doto = 0 ;
+			curwp->w_flag |= WFMOVE ;
 		} else {
 			unicode_t unc ;
 			unsigned bytes ;
@@ -165,7 +167,8 @@ int forwchar(int f, int n)
 			curwp->w_doto += bytes ;
 		}
 	}
-	return TRUE;
+
+	return TRUE ;
 }
 
 /*

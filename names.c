@@ -34,7 +34,7 @@ struct name_bind names[] = {
 #if	APROP
 	{"apropos", apro},
 #endif
-	{"backward-character", backchar},
+	{"backward-character", (fn_t) backchar},
 	{"begin-macro", ctlxlp},
 	{"beginning-of-file", gotobob},
 	{"beginning-of-line", gotobol},
@@ -132,7 +132,7 @@ struct name_bind names[] = {
 #endif
 	{"filter-buffer", filter_buffer},
 	{"find-file", filefind},
-	{"forward-character", forwchar},
+	{"forward-character", (fn_t) forwchar},
 	{"goto-line", gotoline},
 #if	CFENCE
 	{"goto-matching-fence", getfence},

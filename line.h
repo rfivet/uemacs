@@ -30,8 +30,8 @@ extern int tabwidth ;	/* Map to $tab, default to 8, can be set to [1, .. */
 
 char *getkill( void) ;
 
-int backchar( int f, int n) ;
-int forwchar( int f, int n) ;
+boolean backchar( int f, int n) ;
+boolean forwchar( int f, int n) ;
 
 void lfree( line_p lp) ;
 void lchange( int flag) ;

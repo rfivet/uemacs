@@ -705,7 +705,7 @@ int backdel( int f, int n) {
 		thisflag |= CFKILL;
 	}
 
-	return (backchar( f, n) == TRUE) && ldelchar( n, f != FALSE) ;
+	return backchar( f, n) && ldelchar( n, f != FALSE) ;
 }
 
 /*
