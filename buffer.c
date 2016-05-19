@@ -269,12 +269,13 @@ ask:
 int listbuffers(int f, int n)
 {
 	struct window *wp;
-	struct buffer *bp;
 	int s;
 
 	if ((s = makelist(f)) != TRUE)
 		return s;
 	if (blistp->b_nwnd == 0) {	/* Not on screen yet.   */
+		struct buffer *bp ;
+
 		if ((wp = wpopup()) == NULL)
 			return FALSE;
 		bp = wp->w_bufp;
