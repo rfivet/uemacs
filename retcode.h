@@ -2,24 +2,19 @@
 #define __RETCODE_H__
 
 #ifdef	FALSE
+#error "FALSE shouldn't be defined"
 #undef	FALSE
 #endif
 #ifdef	TRUE
+#error "TRUE shouldn't be defined"
 #undef	TRUE
 #endif
 
-#if 0
-#define FALSE   0		/* False, no, bad, etc.         */
-#define TRUE    1		/* True, yes, good, etc.        */
-#define ABORT   2		/* Death, ^G, abort, etc.       */
-#define	FAILED	3		/* not-quite fatal false return */
-#endif
-
 typedef enum {
-	FALSE,
-	TRUE
+	FALSE,			/* 0, false, no, bad, etc.		*/
+	TRUE			/* 1, true, yes, good, etc.		*/
 } boolean ;
 
-#define ABORT 2
+#define ABORT 2		/* 2, death, ^G, abort, etc.	*/
 
 #endif

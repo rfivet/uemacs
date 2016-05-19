@@ -191,7 +191,6 @@ int getccol(int bflg)
  */
 int setccol(int pos)
 {
-	int c;		/* character being scanned */
 	int i;		/* index into current line */
 	int col;	/* current cursor column   */
 	int llen;	/* length of line in bytes */
@@ -201,6 +200,8 @@ int setccol(int pos)
 
 	/* scan the line until we are at or past the target column */
 	for (i = 0; i < llen; ++i) {
+		int c;		/* character being scanned */
+
 		/* upon reaching the target, drop out */
 		if (col >= pos)
 			break;
@@ -260,7 +261,6 @@ int twiddle(int f, int n)
  */
 int quote(int f, int n)
 {
-	int s;
 	int c;
 
 	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
@@ -271,6 +271,8 @@ int quote(int f, int n)
 	if (n == 0)
 		return TRUE;
 	if (c == '\n') {
+		int s ;
+
 		do {
 			s = lnewline();
 		} while (s == TRUE && --n);
@@ -355,9 +357,6 @@ int entab(int f, int n)
 #define	nextab(a)	(a + tabwidth - a % tabwidth)
 
 	int inc;	/* increment to next line [sgn(n)] */
-	int fspace;	/* pointer to first space if in a run */
-	int ccol;	/* current cursor column */
-	char cchar;	/* current character */
 
 	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
 		return rdonly();	/* we are in read only mode     */
@@ -368,6 +367,9 @@ int entab(int f, int n)
 	/* loop thru entabbing n lines */
 	inc = ((n > 0) ? 1 : -1);
 	while (n) {
+		int fspace ;	/* pointer to first space if in a run */
+		int ccol ;		/* current cursor column */
+
 		curwp->w_doto = 0;	/* start at the beginning */
 
 		/* entab the entire current line */
@@ -382,17 +384,14 @@ int entab(int f, int n)
 					/* there is a bug here dealing with mixed space/tabed
 					   lines.......it will get fixed                */
 					backchar(TRUE, ccol - fspace);
-					ldelete((long) (ccol - fspace),
-						FALSE);
+					ldelete( (long) (ccol - fspace), FALSE) ;
 					linsert(1, '\t');
 					fspace = -1;
 				}
 			}
 
 			/* get the current character */
-			cchar = lgetc(curwp->w_dotp, curwp->w_doto);
-
-			switch (cchar) {
+			switch( lgetc( curwp->w_dotp, curwp->w_doto)) {
 			case '\t':	/* a tab...count em up */
 				ccol = nextab(ccol);
 				break;
@@ -406,8 +405,8 @@ int entab(int f, int n)
 			default:	/* any other char...just count */
 				ccol++;
 				fspace = -1;
-				break;
 			}
+
 			forwchar(FALSE, 1);
 		}
 
@@ -428,9 +427,6 @@ int entab(int f, int n)
  */
 int trim(int f, int n)
 {
-	struct line *lp;	/* current line pointer */
-	int offset;	/* original line offset position */
-	int length;	/* current length */
 	int inc;	/* increment to next line [sgn(n)] */
 
 	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
@@ -442,17 +438,20 @@ int trim(int f, int n)
 	/* loop thru trimming n lines */
 	inc = ((n > 0) ? 1 : -1);
 	while (n) {
+		line_p	lp ;	/* current line pointer */
+		int offset ;	/* original line offset position */
+		int length ;	/* current length */
+
 		lp = curwp->w_dotp;	/* find current line text */
 		offset = curwp->w_doto;	/* save original offset */
-		length = lp->l_used;	/* find current length */
 
 		/* trim the current line */
-		while (length > offset) {
-			if (lgetc(lp, length - 1) != ' ' &&
-			    lgetc(lp, length - 1) != '\t')
-				break;
-			length--;
+		for( length = lp->l_used ; length > offset ; length--) {
+			char c = lgetc( lp, length - 1) ;
+			if( c != ' ' && c != '\t')
+				break ;
 		}
+		
 		lp->l_used = length;
 
 		/* advance/or back to the next line */
@@ -667,18 +666,22 @@ int indent( int f, int n) {
  * If any argument is present, it kills rather than deletes, to prevent loss
  * of text if typed with a big argument. Normally bound to "C-D".
  */
-int forwdel(int f, int n)
-{
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
-	if (n < 0)
-		return backdel(f, -n);
+int forwdel( int f, int n) {
+	if( curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+		return rdonly() ;	/* we are in read only mode     */
+
+	if( n == 0)
+		return TRUE ;
+	else if( n < 0)
+		return backdel( f, -n) ;
+
 	if (f != FALSE) {	/* Really a kill.       */
 		if ((lastflag & CFKILL) == 0)
 			kdelete();
 		thisflag |= CFKILL;
 	}
-	return ldelchar((long) n, f);
+
+	return ldelchar( n, f != FALSE) ;
 }
 
 /*
@@ -687,22 +690,22 @@ int forwdel(int f, int n)
  * forward, this actually does a kill if presented with an argument. Bound to
  * both "RUBOUT" and "C-H".
  */
-int backdel(int f, int n)
-{
-	int s;
+int backdel( int f, int n) {
+	if( curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+		return rdonly() ;	/* we are in read only mode     */
 
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
-	if (n < 0)
-		return forwdel(f, -n);
+	if( n == 0)
+		return TRUE ;
+	else if( n < 0)
+		return forwdel( f, -n) ;
+
 	if (f != FALSE) {	/* Really a kill.       */
 		if ((lastflag & CFKILL) == 0)
 			kdelete();
 		thisflag |= CFKILL;
 	}
-	if ((s = backchar(f, n)) == TRUE)
-		s = ldelchar(n, f);
-	return s;
+
+	return (backchar( f, n) == TRUE) && ldelchar( n, f != FALSE) ;
 }
 
 /*

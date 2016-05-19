@@ -532,8 +532,8 @@ int lgetchar(unicode_t *c)
  *
  * If you want to delete characters, use ldelchar().
  */
-int ldelchar(long n, int kflag)
-{
+boolean ldelchar( long n, boolean kflag) {
+/* testing for read only mode is done by ldelete() */
 	while (n-- > 0) {
 		unicode_t c;
 		if (!ldelete(lgetchar(&c), kflag))
@@ -551,8 +551,7 @@ int ldelchar(long n, int kflag)
  * long n;		# of chars to delete
  * int kflag;		 put killed text in kill buffer flag
  */
-int ldelete(long n, int kflag)
-{
+boolean ldelete( long n, boolean kflag) {
 	char *cp1;
 	char *cp2;
 	struct line *dotp;
@@ -562,7 +561,8 @@ int ldelete(long n, int kflag)
 
 	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
 		return rdonly();	/* we are in read only mode     */
-	while (n != 0) {
+
+	while( n > 0) {
 		dotp = curwp->w_dotp;
 		doto = curwp->w_doto;
 		if (dotp == curbp->b_linep)	/* Hit end of buffer.       */
