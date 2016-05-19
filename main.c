@@ -297,12 +297,8 @@ int main(int argc, char **argv)
 
 	/* if invoked with no other startup files,
 	   run the system startup file here */
-	if( startflag == FALSE) {
-		if( startup( "") != TRUE)
-			mloutstr( "Default startup failed!") ;
-
-		startflag = TRUE ;
-	}
+	if( (startflag == FALSE) && (startup( "") != TRUE))
+		mloutstr( "Default startup failed!") ;
 
 	discmd = TRUE;		/* P.K. */
 
