@@ -219,7 +219,7 @@ int setccol(int pos)
 	/* set us at the new position */
 	curwp->w_doto = i;
 
-	/* and tell weather we made it */
+	/* and tell whether we made it */
 	return col >= pos;
 }
 
@@ -247,10 +247,14 @@ boolean twiddle( int f, int n) {
 		eof_f = TRUE ;
 	}
 
-	lgetchar( &c) ;
+	len = lgetchar( &c) ;	/* len => unicode or extended ASCII */
 	ldelchar( 1, FALSE) ;
 	backchar( FALSE, 1) ;
-	linsert( 1, c) ;
+	if( len == 1)
+		linsert_byte( 1, c) ;
+	else
+		linsert( 1, c) ;
+
 	if( eof_f == TRUE)
 		forwchar( FALSE, 1) ;
 
@@ -346,7 +350,9 @@ int detab(int f, int n)
 		}
 
 		/* advance/or back to the next line */
-		forwline(TRUE, inc);
+		if( forwline( TRUE, inc) == FALSE)
+			break ;
+
 		n -= inc;
 	}
 	curwp->w_doto = 0;	/* to the begining of the line */
@@ -419,7 +425,9 @@ int entab(int f, int n)
 		}
 
 		/* advance/or back to the next line */
-		forwline(TRUE, inc);
+		if( forwline( TRUE, inc) == FALSE)
+			break ;
+
 		n -= inc;
 	}
 	curwp->w_doto = 0;	/* to the begining of the line */
@@ -463,7 +471,9 @@ int trim(int f, int n)
 		lp->l_used = length;
 
 		/* advance/or back to the next line */
-		forwline(TRUE, inc);
+		if( forwline( TRUE, inc) == FALSE)
+			break ;
+
 		n -= inc;
 	}
 	lchange(WFEDIT);

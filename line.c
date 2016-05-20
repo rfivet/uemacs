@@ -277,8 +277,6 @@ int insspace(int f, int n)
 	return TRUE;
 }
 
-static int linsert_byte( int n, int c) ;
-
 /*
  * linstr -- Insert a string at the current point
  */
@@ -291,7 +289,7 @@ int linstr( char *instr) {
 
 		while( (tmpc = *instr++ & 0xFF)) {
 			status =
-			    (tmpc == '\n' ? lnewline() : linsert_byte( 1, tmpc)) ;
+			    (tmpc == '\n' ? lnewline() : (int) linsert_byte( 1, tmpc)) ;
 
 			/* Insertion error? */
 			if( status != TRUE) {
@@ -314,8 +312,7 @@ int linstr( char *instr) {
  * well, and FALSE on errors.
  */
 
-static int linsert_byte(int n, int c)
-{
+boolean linsert_byte( int n, int c) {
 	char *cp1;
 	char *cp2;
 	struct line *lp1;

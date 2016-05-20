@@ -38,6 +38,7 @@ void lchange( int flag) ;
 int insspace( int f, int n) ;
 int linstr( char *instr) ;
 int linsert( int n, unicode_t c) ;
+boolean linsert_byte( int n, int c) ;
 int lover( char *ostr) ;
 int lnewline( void) ;
 boolean ldelete(  long n, boolean kflag) ;
