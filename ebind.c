@@ -73,7 +73,7 @@ struct key_tab keytab[NBINDS] = {
     ,
     {CONTROL | 'S', forwsearch}
     ,
-    {CONTROL | 'T', twiddle}
+    {CONTROL | 'T', (fn_t) twiddle}
     ,
     {CONTROL | 'U', unarg}
     ,

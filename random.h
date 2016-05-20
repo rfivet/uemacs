@@ -24,7 +24,7 @@ int showcpos( int f, int n) ;
 int getcline( void) ;
 int getccol( int bflg) ;
 int setccol( int pos) ;
-int twiddle( int f, int n) ;
+boolean twiddle( int f, int n) ;
 int quote( int f, int n) ;
 int insert_tab( int f, int n) ;
 #if AEDIT

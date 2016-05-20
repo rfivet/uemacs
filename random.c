@@ -230,27 +230,32 @@ int setccol(int pos)
  * work. This fixes up a very common typo with a single stroke. Normally bound
  * to "C-T". This always works within a line, so "WFEDIT" is good enough.
  */
-int twiddle(int f, int n)
-{
-	struct line *dotp;
-	int doto;
-	int cl;
-	int cr;
+boolean twiddle( int f, int n) {
+	unicode_t	c ;
+	int	len ;
+	boolean eof_f = FALSE ;
 
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
-	dotp = curwp->w_dotp;
-	doto = curwp->w_doto;
-	if (doto == llength(dotp) && --doto < 0)
-		return FALSE;
-	cr = lgetc(dotp, doto);
-	if (--doto < 0)
-		return FALSE;
-	cl = lgetc(dotp, doto);
-	lputc(dotp, doto + 0, cr);
-	lputc(dotp, doto + 1, cl);
-	lchange(WFEDIT);
-	return TRUE;
+	if( curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+		return rdonly() ;		/* we are in read only mode     */
+
+	len = llength( curwp->w_dotp) ;
+	if( len < 2 || curwp->w_doto == 0)	/* at least 2 chars & not bol */
+		return FALSE ;
+
+	if( curwp->w_doto == len) {	/* at end of line */
+		backchar( FALSE, 1) ;
+		eof_f = TRUE ;
+	}
+
+	lgetchar( &c) ;
+	ldelchar( 1, FALSE) ;
+	backchar( FALSE, 1) ;
+	linsert( 1, c) ;
+	if( eof_f == TRUE)
+		forwchar( FALSE, 1) ;
+
+	lchange( WFEDIT) ;
+	return TRUE ;
 }
 
 /*
