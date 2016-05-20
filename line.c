@@ -114,6 +114,7 @@ static unsigned utf8_revdelta( unsigned char *p, unsigned pos) {
 }
 
 boolean backchar( int f, int n) {
+	assert( f == TRUE || (f == FALSE && n == 1)) ;
 	if( n < 0)
 		return forwchar( f, -n) ;
 
@@ -147,6 +148,7 @@ boolean backchar( int f, int n) {
  * buffer. Set the flag if the line pointer for dot changes.
  */
 boolean forwchar( int f, int n) {
+	assert( f == TRUE || (f == FALSE && n == 1)) ;
 	if( n < 0)
 		return backchar( f, -n) ;
 

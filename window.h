@@ -13,13 +13,13 @@
  * the full blown redisplay is just too expensive to run for every input
  * character.
  */
-struct window {
+typedef struct window {
 	struct window *w_wndp;	/* Next window                  */
 	struct buffer *w_bufp;	/* Buffer displayed in window   */
-	struct line *w_linep;	/* Top line in the window       */
-	struct line *w_dotp;	/* Line containing "."          */
-	struct line *w_markp;	/* Line containing "mark"       */
-	int w_doto;		/* Byte offset for "."          */
+	line_p	w_linep ;		/* Top line in the window       */
+	line_p	w_dotp ;		/* Line containing "."          */
+	line_p	w_markp ;		/* Line containing "mark"       */
+	int w_doto ;			/* Byte offset for "."          */
 	int w_marko;		/* Byte offset for "mark"       */
 	int w_toprow ;		/* Origin 0 top row of window   */
 	int w_ntrows ;		/* # of rows of text in window  */
@@ -29,10 +29,13 @@ struct window {
 	char w_fcolor;		/* current forground color      */
 	char w_bcolor;		/* current background color     */
 #endif
-};
+} *window_p ;
 
-extern struct window *curwp ;	/* Current window               */
-extern struct window *wheadp ;	/* Head of list of windows      */
+extern window_p curwp ;		/* Current window               */
+extern window_p wheadp ;	/* Head of list of windows      */
+
+/* curwbyte return the byte after the dot in current window */
+#define curwbyte() lgetc( curwp->w_dotp, curwp->w_doto)
 
 #define WFFORCE 0x01		/* Window needs forced reframe  */
 #define WFMOVE  0x02		/* Movement from line to line   */
@@ -66,6 +69,6 @@ int newsize( int f, int n) ;
 int newwidth( int f, int n) ;
 int getwpos( void) ;
 void cknewwindow( void) ;
-struct window *wpopup( void) ;  /* Pop up window creation. */
+window_p wpopup( void) ;  /* Pop up window creation. */
 
 #endif

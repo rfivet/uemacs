@@ -329,12 +329,15 @@ int detab(int f, int n)
 		/* detab the entire current line */
 		while (curwp->w_doto < llength(curwp->w_dotp)) {
 			/* if we have a tab */
-			if (lgetc(curwp->w_dotp, curwp->w_doto) == '\t') {
-				ldelchar(1, FALSE);
-				insspace( TRUE, tabwidth - curwp->w_doto % tabwidth);
-			}
+			if( curwbyte() == '\t') {
+				int size ;
 
-			forwchar(FALSE, 1);
+				ldelchar( 1, FALSE) ;
+				size = tabwidth - curwp->w_doto % tabwidth ;
+				insspace( TRUE, size) ;
+				forwchar( TRUE, size) ;
+			} else
+				forwchar( FALSE, 1) ;
 		}
 
 		/* advance/or back to the next line */
@@ -391,7 +394,7 @@ int entab(int f, int n)
 			}
 
 			/* get the current character */
-			switch( lgetc( curwp->w_dotp, curwp->w_doto)) {
+			switch( curwbyte()) {
 			case '\t':	/* a tab...count em up */
 				ccol = nextab(ccol);
 				break;
@@ -967,7 +970,7 @@ int getfence(int f, int n)
 
 		/* if no eol */
 		if( curwp->w_doto != llength(curwp->w_dotp)) {
-			c = lgetc( curwp->w_dotp, curwp->w_doto) ;
+			c = curwbyte() ;
 			if( c == ch)
 				++count ;
 			else if( c == ofence)
