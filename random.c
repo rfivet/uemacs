@@ -358,7 +358,7 @@ int detab(int f, int n)
 	curwp->w_doto = 0;	/* to the begining of the line */
 	thisflag &= ~CFCPCN;	/* flag that this resets the goal column */
 	lchange(WFEDIT);	/* yes, we have made at least an edit */
-	return TRUE;
+	return (n == 0) ? TRUE : FALSE ;
 }
 
 /*
@@ -433,7 +433,7 @@ int entab(int f, int n)
 	curwp->w_doto = 0;	/* to the begining of the line */
 	thisflag &= ~CFCPCN;	/* flag that this resets the goal column */
 	lchange(WFEDIT);	/* yes, we have made at least an edit */
-	return TRUE;
+	return (n == 0) ? TRUE : FALSE ;
 }
 
 /*
@@ -478,7 +478,7 @@ int trim(int f, int n)
 	}
 	lchange(WFEDIT);
 	thisflag &= ~CFCPCN;	/* flag that this resets the goal column */
-	return TRUE;
+	return (n == 0) ? TRUE : FALSE ;
 }
 #endif
 

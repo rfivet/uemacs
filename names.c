@@ -36,8 +36,8 @@ struct name_bind names[] = {
 #endif
 	{"backward-character", (fn_t) backchar},
 	{"begin-macro", ctlxlp},
-	{"beginning-of-file", gotobob},
-	{"beginning-of-line", gotobol},
+	{"beginning-of-file", (fn_t) gotobob},
+	{"beginning-of-line", (fn_t) gotobol},
 	{"bind-to-key", bindtokey},
 	{"buffer-position", showcpos},
 	{"case-region-lower", lowerregion},
@@ -71,12 +71,12 @@ struct name_bind names[] = {
 	{"detab-line", detab},
 #endif
 	{"end-macro", ctlxrp},
-	{"end-of-file", gotoeob},
-	{"end-of-line", gotoeol},
+	{"end-of-file", (fn_t) gotoeob},
+	{"end-of-line", (fn_t) gotoeol},
 #if	AEDIT
 	{"entab-line", entab},
 #endif
-	{"exchange-point-and-mark", swapmark},
+	{"exchange-point-and-mark", (fn_t) swapmark},
 	{"execute-buffer", execbuf},
 	{"execute-command-line", execcmd},
 	{"execute-file", execfile},
@@ -165,8 +165,8 @@ struct name_bind names[] = {
 	{"newline", insert_newline},
 	{"newline-and-indent", indent},
 	{"next-buffer", nextbuffer},
-	{"next-line", forwline},
-	{"next-page", forwpage},
+	{"next-line", (fn_t) forwline},
+	{"next-page", (fn_t) forwpage},
 #if	WORDPRO
 	{"next-paragraph", gotoeop},
 #endif
@@ -176,8 +176,8 @@ struct name_bind names[] = {
 	{"open-line", openline},
 	{"overwrite-string", ovstring},
 	{"pipe-command", pipecmd},
-	{"previous-line", backline},
-	{"previous-page", backpage},
+	{"previous-line", (fn_t) backline},
+	{"previous-page", (fn_t) backpage},
 #if	WORDPRO
 	{"previous-paragraph", gotobop},
 #endif
@@ -206,7 +206,7 @@ struct name_bind names[] = {
 	{"select-buffer", usebuffer},
 	{"set", setvar},
 	{"set-fill-column", setfillcol},
-	{"set-mark", setmark},
+	{"set-mark", (fn_t) setmark},
 	{"shell-command", spawn},
 	{"shrink-window", shrinkwind},
 	{"split-current-window", splitwind},

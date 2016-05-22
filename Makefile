@@ -129,8 +129,8 @@ depend: ${SRC}
 
 # DO NOT DELETE THIS LINE -- make depend uses it
 
-basic.o: basic.c basic.h buffer.h line.h retcode.h utf8.h estruct.h \
- input.h bind.h mlout.h random.h terminal.h defines.h window.h
+basic.o: basic.c basic.h retcode.h input.h bind.h mlout.h random.h \
+ terminal.h defines.h utf8.h window.h buffer.h line.h
 bind.o: bind.c bind.h estruct.h bindable.h buffer.h line.h retcode.h \
  utf8.h display.h ebind.h exec.h file.h flook.h input.h names.h window.h \
  defines.h
@@ -142,10 +142,10 @@ buffer.o: buffer.c buffer.h line.h retcode.h utf8.h defines.h estruct.h \
 display.o: display.c display.h estruct.h utf8.h buffer.h line.h retcode.h \
  input.h bind.h termio.h terminal.h defines.h version.h wrapper.h \
  window.h
-ebind.o: ebind.c ebind.h basic.h bind.h estruct.h bindable.h buffer.h \
- line.h retcode.h utf8.h eval.h exec.h file.h isearch.h random.h region.h \
+ebind.o: ebind.c ebind.h basic.h retcode.h bind.h estruct.h bindable.h \
+ buffer.h line.h utf8.h eval.h exec.h file.h isearch.h random.h region.h \
  search.h spawn.h window.h defines.h word.h
-eval.o: eval.c eval.h basic.h bind.h buffer.h line.h retcode.h utf8.h \
+eval.o: eval.c eval.h basic.h retcode.h bind.h buffer.h line.h utf8.h \
  display.h estruct.h exec.h execute.h flook.h input.h random.h search.h \
  terminal.h defines.h termio.h version.h window.h
 exec.o: exec.c exec.h retcode.h buffer.h line.h utf8.h bind.h display.h \
@@ -160,19 +160,19 @@ fileio.o: fileio.c fileio.h defines.h retcode.h utf8.h
 flook.o: flook.c flook.h retcode.h defines.h fileio.h
 input.o: input.c input.h bind.h estruct.h bindable.h display.h utf8.h \
  exec.h retcode.h names.h terminal.h defines.h wrapper.h
-isearch.o: isearch.c isearch.h basic.h buffer.h line.h retcode.h utf8.h \
+isearch.o: isearch.c isearch.h basic.h retcode.h buffer.h line.h utf8.h \
  display.h estruct.h exec.h input.h bind.h search.h terminal.h defines.h \
  window.h
 line.o: line.c line.h retcode.h utf8.h buffer.h estruct.h mlout.h \
  window.h defines.h
 lock.o: lock.c estruct.h lock.h
-main.o: main.c estruct.h basic.h bind.h bindable.h buffer.h line.h \
- retcode.h utf8.h display.h eval.h execute.h file.h lock.h mlout.h \
- random.h search.h terminal.h defines.h termio.h version.h window.h
+main.o: main.c estruct.h basic.h retcode.h bind.h bindable.h buffer.h \
+ line.h utf8.h display.h eval.h execute.h file.h lock.h mlout.h random.h \
+ search.h terminal.h defines.h termio.h version.h window.h
 mingw32.o: mingw32.c
 mlout.o: mlout.c mlout.h
-names.o: names.c names.h basic.h bind.h bindable.h buffer.h line.h \
- retcode.h utf8.h display.h estruct.h eval.h exec.h file.h isearch.h \
+names.o: names.c names.h basic.h retcode.h bind.h bindable.h buffer.h \
+ line.h utf8.h display.h estruct.h eval.h exec.h file.h isearch.h \
  region.h random.h search.h spawn.h window.h defines.h word.h
 pklock.o: pklock.c estruct.h pklock.h
 posix.o: posix.c
@@ -192,7 +192,7 @@ termio.o: termio.c termio.h utf8.h estruct.h retcode.h
 utf8.o: utf8.c utf8.h
 window.o: window.c window.h defines.h buffer.h line.h retcode.h utf8.h \
  basic.h display.h estruct.h execute.h terminal.h wrapper.h
-word.o: word.c word.h basic.h buffer.h line.h retcode.h utf8.h estruct.h \
+word.o: word.c word.h basic.h retcode.h buffer.h line.h utf8.h estruct.h \
  mlout.h random.h region.h window.h defines.h
 wrapper.o: wrapper.c wrapper.h
 wscreen.o: wscreen.c wscreen.h

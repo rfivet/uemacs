@@ -35,7 +35,7 @@
  * control-X commands.
  */
 struct key_tab keytab[NBINDS] = {
-    {CONTROL | 'A', gotobol}
+    {CONTROL | 'A', (fn_t) gotobol}
     ,
     {CONTROL | 'B', (fn_t) backchar}
     ,
@@ -43,7 +43,7 @@ struct key_tab keytab[NBINDS] = {
     ,
     {CONTROL | 'D', forwdel}
     ,
-    {CONTROL | 'E', gotoeol}
+    {CONTROL | 'E', (fn_t) gotoeol}
     ,
     {CONTROL | 'F', (fn_t) forwchar}
     ,
@@ -61,11 +61,11 @@ struct key_tab keytab[NBINDS] = {
     ,
     {CONTROL | 'M', insert_newline}
     ,
-    {CONTROL | 'N', forwline}
+    {CONTROL | 'N', (fn_t) forwline}
     ,
     {CONTROL | 'O', openline}
     ,
-    {CONTROL | 'P', backline}
+    {CONTROL | 'P', (fn_t) backline}
     ,
     {CONTROL | 'Q', quote}
     ,
@@ -77,7 +77,7 @@ struct key_tab keytab[NBINDS] = {
     ,
     {CONTROL | 'U', unarg}
     ,
-    {CONTROL | 'V', forwpage}
+    {CONTROL | 'V', (fn_t) forwpage}
     ,
     {CONTROL | 'W', killregion}
     ,
@@ -85,7 +85,7 @@ struct key_tab keytab[NBINDS] = {
     ,
     {CONTROL | 'Y', yank}
     ,
-    {CONTROL | 'Z', backpage}
+    {CONTROL | 'Z', (fn_t) backpage}
     ,
     {CONTROL | ']', metafn}
     ,
@@ -138,7 +138,7 @@ struct key_tab keytab[NBINDS] = {
     ,
     {CTLX | CONTROL | 'W', filewrite}
     ,
-    {CTLX | CONTROL | 'X', swapmark}
+    {CTLX | CONTROL | 'X', (fn_t) swapmark}
     ,
     {CTLX | CONTROL | 'Z', shrinkwind}
     ,
@@ -246,17 +246,17 @@ struct key_tab keytab[NBINDS] = {
 #endif
     {META | CONTROL | 'Z', scrnextup}
     ,
-    {META | ' ', setmark}
+    {META | ' ', (fn_t) setmark}
     ,
     {META | '?', help}
     ,
     {META | '!', reposition}
     ,
-    {META | '.', setmark}
+    {META | '.', (fn_t) setmark}
     ,
-    {META | '>', gotoeob}
+    {META | '>', (fn_t) gotoeob}
     ,
-    {META | '<', gotobob}
+    {META | '<', (fn_t) gotobob}
     ,
     {META | '~', unmark}
     ,
@@ -307,7 +307,7 @@ struct key_tab keytab[NBINDS] = {
 #endif
     {META | 'U', upperword}
     ,
-    {META | 'V', backpage}
+    {META | 'V', (fn_t) backpage}
     ,
     {META | 'W', copyregion}
     ,
@@ -323,21 +323,21 @@ struct key_tab keytab[NBINDS] = {
     ,
     {SPEC | CONTROL | 'S', backhunt}
     ,
-    {SPEC | 71, gotobol}
+    {SPEC | 71, (fn_t) gotobol}
     ,
-    {SPEC | 72, backline}
+    {SPEC | 72, (fn_t) backline}
     ,
-    {SPEC | 73, backpage}
+    {SPEC | 73, (fn_t) backpage}
     ,
     {SPEC | 75, (fn_t) backchar}
     ,
     {SPEC | 77, (fn_t) forwchar}
     ,
-    {SPEC | 79, gotoeol}
+    {SPEC | 79, (fn_t) gotoeol}
     ,
-    {SPEC | 80, forwline}
+    {SPEC | 80, (fn_t) forwline}
     ,
-    {SPEC | 81, forwpage}
+    {SPEC | 81, (fn_t) forwpage}
     ,
     {SPEC | 82, insspace}
     ,
@@ -374,9 +374,9 @@ struct key_tab keytab[NBINDS] = {
     {SPEC | 93, cbuf10}
     ,
 #if PKCODE
-    {SPEC | 117, gotoeob}
+    {SPEC | 117, (fn_t) gotoeob}
     ,
-    {SPEC | 119, gotobob}
+    {SPEC | 119, (fn_t) gotobob}
     ,
     {SPEC | 141, gotobop}
     ,
@@ -390,21 +390,21 @@ struct key_tab keytab[NBINDS] = {
 #endif
 
 #if VT220
-    {SPEC | '1', gotobob /* fisearch */}
+    {SPEC | '1', (fn_t) gotobob /* fisearch */}
     ,           /* VT220 keys   */
     {SPEC | '2', yank}
     ,
     {SPEC | '3', forwdel /* killregion */}
     ,
-    {SPEC | '4', gotoeob /* setmark */}
+    {SPEC | '4', (fn_t) gotoeob /* setmark */}
     ,
-    {SPEC | '5', backpage}
+    {SPEC | '5', (fn_t) backpage}
     ,
-    {SPEC | '6', forwpage}
+    {SPEC | '6', (fn_t) forwpage}
     ,
-    {SPEC | 'A', backline}
+    {SPEC | 'A', (fn_t) backline}
     ,
-    {SPEC | 'B', forwline}
+    {SPEC | 'B', (fn_t) forwline}
     ,
     {SPEC | 'C', (fn_t) forwchar}
     ,
@@ -414,9 +414,9 @@ struct key_tab keytab[NBINDS] = {
     ,
     {SPEC | 'd', (fn_t) backchar}
     ,
-    {SPEC | 'e', forwline}
+    {SPEC | 'e', (fn_t) forwline}
     ,
-    {SPEC | 'f', gotobob}
+    {SPEC | 'f', (fn_t) gotobob}
     ,
     {SPEC | 'h', help}
     ,
