@@ -283,8 +283,10 @@ int readin(const char *fname, boolean lockfl)
 		return status ;
 
 	bp->b_flag &= ~(BFINVS | BFCHG);
-	strncpy( bp->b_fname, fname, sizeof( fname_t) - 1) ;
-	bp->b_fname[ sizeof( fname_t) - 1] = '\0' ;
+	if( fname != bp->b_fname) { /* Copy if source differs from destination */
+		strncpy( bp->b_fname, fname, sizeof( fname_t) - 1) ;
+		bp->b_fname[ sizeof( fname_t) - 1] = '\0' ;
+	}
 
 	/* let a user macro get hold of things...if he wants */
 	execute(META | SPEC | 'R', FALSE, 1);
