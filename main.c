@@ -116,12 +116,11 @@ static void version( void) {
 
 
 static void usage( void) {
-    fputs( "Usage: " PROGRAM_NAME " [OPTION].. [FILE]..\n\n"
+    fputs( "Usage: " PROGRAM_NAME " [OPTION|FILE]..\n\n"
            "      +             start at the end of file\n"
            "      +<n>          start at line <n>\n"
            "      --help        display this help and exit\n"
            "      --version     output version information and exit\n"
-           "      @cmdfile      execute startup file\n"
            "      -a|A          process error file\n"
            "      -e|E          edit file\n"
            "      -g|G<n>       go to line <n>\n"
@@ -130,6 +129,7 @@ static void usage( void) {
            "      -v|V          view file\n"
            "      -x|Xcmdfile\n"
            "      -x|X cmdfile  execute command file\n"
+           "      @cmdfile      execute startup file\n"
            , stdout) ;
 }
 
