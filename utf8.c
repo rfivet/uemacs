@@ -66,15 +66,6 @@ unsigned utf8_to_unicode(char *line, unsigned index, unsigned len, unicode_t *re
     return bytes;
 }
 
-static void reverse_string(char *begin, char *end)
-{
-    do {
-        char a = *begin, b = *end;
-        *end = a; *begin = b;
-        begin++; end--;
-    } while (begin < end);
-}
-
 /*
  * unicode_to_utf8()
  *
@@ -108,8 +99,13 @@ unsigned unicode_to_utf8( unicode_t c, char *utf8) {
             c >>= 6 ;
         } while( c >= prefix) ;
 
-        *p = (char) (c - 2 * prefix) ;
-        reverse_string( utf8, p) ;
+		*p-- = *utf8 ;
+		*utf8++ = (char) (c - 2 * prefix) ;
+		if( utf8 < p) {	/* swap middle two bytes if 4 bytes utf-8 code */
+			char c = *p ;
+			*p = *utf8 ;
+			*utf8 = c ;
+		}
     }
 
     return bytes ;

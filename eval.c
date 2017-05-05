@@ -686,10 +686,13 @@ static char *gtenv( char *vname) {
 		return i_to_a(gacount);
 	case EVLASTKEY:
 		return i_to_a(lastkey);
-	case EVCURCHAR:
-		return (curwp->w_dotp->l_used ==
-			curwp->w_doto ? i_to_a('\n') :
-			i_to_a(lgetc(curwp->w_dotp, curwp->w_doto)));
+	case EVCURCHAR: {
+			unicode_t c ;
+
+			lgetchar( &c) ;
+			return i_to_a( c) ;
+		}
+	
 	case EVDISCMD:
 		return ltos(discmd);
 	case EVVERSION:

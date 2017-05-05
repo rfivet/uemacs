@@ -86,20 +86,12 @@ int showcpos(int f, int n)
 	numlines = 0;
 	predchars = 0;
 	predlines = 0;
-	curchar = 0;
-	bytes = 1 ;
+	bytes = lgetchar( &curchar) ;
 	for( lp = lforw( curbp->b_linep) ; lp != curbp->b_linep ; lp = lforw( lp)) {
 		/* if we are on the current line, record it */
 		if (lp == curwp->w_dotp) {
-			int len ;
-			
 			predlines = numlines;
 			predchars = numchars + curwp->w_doto;
-			len = llength( lp) ;				
-			if( (curwp->w_doto) == len)
-				curchar = (curbp->b_mode & MDDOS) ? '\r' : '\n' ;
-			else
-				bytes = utf8_to_unicode( lp->l_text, curwp->w_doto, len, &curchar) ;
 		}
 		/* on to the next line */
 		++numlines;

@@ -398,22 +398,20 @@ int linsert( int n, unicode_t c) {
 		return rdonly();	/* we are in read only mode     */
 
 	if( n > 0) {
-		char utf8[ 6] ;
-		int bytes, i ;
+		char utf8[ 4] ;
+		int bytes ;
 
 		bytes = unicode_to_utf8(c, utf8) ;
 		if (bytes == 1)
 			return linsert_byte(n, (unsigned char) utf8[0]);
 
-		for (i = 0; i < n; i++) {
-			int j;
+		do {
+			int j ;
 
-			for (j = 0; j < bytes; j++) {
-				unsigned char c = utf8[j];
-				if (!linsert_byte(1, c))
-					return FALSE;
-			}
-		}
+			for( j = 0 ; j < bytes ; j += 1)
+				if( !linsert_byte( 1, (unsigned char) utf8[ j]))
+					return FALSE ;
+		} while( --n > 0) ;
 	}
 
 	return TRUE;
@@ -520,11 +518,13 @@ int lnewline(void)
 	return TRUE;
 }
 
-int lgetchar(unicode_t *c)
-{
-	int len = llength(curwp->w_dotp);
-	char *buf = curwp->w_dotp->l_text;
-	return utf8_to_unicode(buf, curwp->w_doto, len, c);
+int lgetchar( unicode_t *c) {
+	if( curwp->w_dotp->l_used == curwp->w_doto) {
+		*c = (curbp->b_mode & MDDOS) ? '\r' : '\n' ;
+		return 1 ;
+	} else
+		return utf8_to_unicode( curwp->w_dotp->l_text, curwp->w_doto,
+												llength( curwp->w_dotp), c) ;
 }
 
 /*

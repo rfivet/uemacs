@@ -276,30 +276,15 @@ void ttclose(void)
 }
 
 /*
- * Write a character to the display. On VMS, terminal output is buffered, and
- * we just put the characters in the big array, after checking for overflow.
- * On CPM terminal I/O unbuffered, so we just write the byte out. Ditto on
- * MS-DOS (use the very very raw console output routine).
+ * Write a character to the display.
  */
 int ttputc( unicode_t c) {
-#if     VMS
-    if (nobuf >= NOBUF)
-        ttflush();
-    obuf[nobuf++] = c;
-#endif
+	char utf8[ 4] ;
+	int bytes ;
 
-#if MSDOS & ~IBMPC
-    bdos(6, c, 0);
-#endif
-
-#if     V7 | USG | BSD
-    char utf8[6];
-    int bytes;
-
-    bytes = unicode_to_utf8(c, utf8);
-    fwrite(utf8, 1, bytes, stdout);
-#endif
-    return 0 ;
+	bytes = unicode_to_utf8( c, utf8) ;
+	fwrite( utf8, 1, bytes, stdout) ;
+	return 0 ;
 }
 
 /*
