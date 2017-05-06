@@ -456,14 +456,14 @@ static unsigned int getckey( int mflag) {
  * char *fname;    name of startup file (null if default)
  */
 int startup( const char *fname) {
-    if( !fname || *fname == 0)		/* use default if empty parameter */
-    	fname = rcfname ;
+	if( !fname || *fname == 0)		/* use default if empty parameter */
+		fname = rcfname ;
 
 	fname = flook( fname, TRUE) ;	/* look up the startup file */
-    if( fname == NULL)    			/* if it isn't around, don't sweat it */
-        return TRUE ;
+	if( fname == NULL)				/* if it isn't around, don't sweat it */
+		return TRUE ;
 
-    return dofile( fname) ;			/* otherwise, execute the sucker */
+	return dofile( fname) ;			/* otherwise, execute the sucker */
 }
 
 /*

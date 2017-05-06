@@ -131,10 +131,10 @@ int execcmd( int f, int n) {
 
     execlevel = 0 ;
     while( status == TRUE && n-- > 0)
-    	status = docmd( cmdstr) ;
+        status = docmd( cmdstr) ;
 
-	free( cmdstr) ;
-	return status ;
+    free( cmdstr) ;
+    return status ;
 }
 
 /*
@@ -302,10 +302,10 @@ static char *newtoken( char *src, char **tokref) {
     if (*src)
         ++src;
 
-	if( tok != NULL)
-		tok[ idx] = 0 ;
+    if( tok != NULL)
+        tok[ idx] = 0 ;
 
-	*tokref = tok ;
+    *tokref = tok ;
     return src;
 }
 
@@ -513,7 +513,7 @@ int execproc( int f, int n) {
     while( status == TRUE && n-- > 0)
         status = dobuf( bp) ;
 
-	return status ;
+    return status ;
 }
 #endif
 
@@ -981,7 +981,7 @@ int execfile( int f, int n) {
     while( status == TRUE && n-- > 0)
         status = dofile( fspec) ;
 
-	return status ;
+    return status ;
 }
 
 /*
