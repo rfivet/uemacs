@@ -588,6 +588,8 @@ void updpos(void)
 				curcol += 2 ;	/* displayed as ^c */
 		else if( c >= 0x80 && c <= 0xA0)
 				curcol += 3 ;	/* displayed as \xx */
+		else if( c >= 0x3000 && c <= 0x3FFF)
+			curcol += 2 ;	/* double width unicode character */
 		else
 			curcol += 1 ;
 	}

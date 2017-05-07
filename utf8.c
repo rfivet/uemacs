@@ -20,10 +20,15 @@
 unsigned utf8_to_unicode(char *line, unsigned index, unsigned len, unicode_t *res)
 {
     unicode_t   value ;
-    unsigned	c = line[ index] & 0xFFU ;
+    unsigned	c ;
     unsigned	bytes, mask, i;
 
-    *res = c;
+	assert( index < len) ;
+#ifdef NDEBUG
+	if( index >= len)
+		return 0 ;
+#endif	
+    *res = c = line[ index] & 0xFFU ;
 
     /*
      * 0xxxxxxx is valid one byte utf8
