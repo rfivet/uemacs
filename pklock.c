@@ -33,6 +33,7 @@ int gethostname(char *name, int namelen)
 }
 #endif
 
+char *cuserid( char *retbuf) ;	/* should have been declared in stdio.h */
 
 
 /**********************
@@ -84,7 +85,15 @@ char *dolock( const char *fname)
 	}
 	if ((n = read(fd, locker, MAXNAME)) < 1) {
 		lseek(fd, 0, SEEK_SET);
-		strcpy( locker, getlogin()) ;
+/*
+**	Since Ubuntu 17.04, cuserid prototype seems missing. Replacing it by
+**  getlogin does the trick on 64 bits but fails on 32 bits.
+**  So let's work around with cuserid for a while.
+**		logname = getlogin() ;
+**		strcpy( locker, logname ? logname : cuserid( NULL)) ;
+*/
+		strcpy( locker, cuserid( NULL)) ;
+
 		strcat(locker + strlen(locker), "@");
 		gethostname(locker + strlen(locker), 64);
 		{
