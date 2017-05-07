@@ -1,6 +1,6 @@
 # README #
 
-Ciguë is µEMACS (ue) on Cygwin/Linux, based on uEmacs/PK (em) from kernel.org.
+µEMACS (ue) on Cygwin/Linux, based on uEmacs/PK (em) from kernel.org.
 
 ### Changes compare to uEmacs/PK ###
 * Line termination detection with new buffer mode (either Unix or DOS).
