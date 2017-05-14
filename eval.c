@@ -1320,19 +1320,19 @@ char *mklower(char *str)
 
 /*
  * returns a random integer
- *	ernd( 0) [ 0 .. 2147483647]
- *  ernd( i) [ 1 .. abs( i)]
- *		ernd( 1) [ 1]
- *		ernd( -2147483648) [ 1 .. 2147483647] actually 2147482413
+ *	ernd( 0)			[ 0 .. 2147483647]
+ *	ernd( -2147483648)	[ 0 .. 2147483647]
+ *	ernd( 1) 			[ 1]
+ *  ernd( i)			[ 1 .. abs( i)]
  */
 static int ernd( int i) {
-	seed = seed * 1721 + 10007 ;
-	seed &= ~(1 << 31) ; /* avoid abs() which introduces 176719 periodicity */
-	if( i == 0)
-		return seed ;
+	int s ;
 
+	seed = seed * 1721 + 10007 ;
+	s = ((seed >> 16) & 0x0000FFFF) | (seed << 16) ;
+	s &= ~(1 << 31) ; /* avoid abs() */
 	i = i < 0 ? -i : i ;	/* abs( i) */
-	return seed % i + 1 ;
+	return (i <= 0) ? s : s % i + 1 ;
 }
 
 /*
