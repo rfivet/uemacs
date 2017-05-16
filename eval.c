@@ -412,8 +412,22 @@ static char *gtfun( char *fname) {
 		retstr = result ;
 	}
 		break ;
-	case UFLEFT | DYNAMIC:
-		sz = atoi( arg2) ;
+	case UFLEFT | DYNAMIC: {
+		int	sz1, i ;
+
+		sz1 = strlen( arg1) ;
+		sz = 0 ;
+		for( i = atoi( arg2) ; i > 0 ; i -= 1) {
+			unicode_t c ;
+			int bytc ;
+
+			bytc = utf8_to_unicode( arg1, sz, sz1, &c) ;
+			if( bytc == 0)
+				break ;
+			else
+				sz += bytc ;
+		}
+
 		if( sz >= ressize) {
 			free( result) ;
 			result = malloc( sz + 1) ;
@@ -423,6 +437,7 @@ static char *gtfun( char *fname) {
 		strncpy( result, arg1, sz) ;
 		result[ sz] = 0 ;
 		retstr = result ;
+	}
 		break ;
 	case UFRIGHT | DYNAMIC:
 		sz = atoi( arg2) ;
@@ -434,17 +449,40 @@ static char *gtfun( char *fname) {
 		
 		retstr = strcpy( result, &arg1[ strlen( arg1) - sz]) ;
 		break ;
-	case UFMID | TRINAMIC:
-		sz = atoi( arg3) ;
+	case UFMID | TRINAMIC: {
+		int sz1, start, i, bytc ;
+		unicode_t c ;
+
+		sz1 = strlen( arg1) ;
+		start = 0 ;
+		for( i = atoi( arg2) - 1 ; i > 0 ; i -= 1) {
+			bytc = utf8_to_unicode( arg1, start, sz1, &c) ;
+			if( bytc == 0)
+				break ;
+			else
+				start += bytc ;
+		}
+
+		sz = start ;
+		for( i = atoi( arg3) ; i > 0 ; i -= 1) {
+			bytc = utf8_to_unicode( arg1, sz, sz1, &c) ;
+			if( bytc == 0)
+				break ;
+			else
+				sz += bytc ;
+		}
+
+		sz -= start ;
 		if( sz >= ressize) {
 			free( result) ;
 			result = malloc( sz + 1) ;
 			ressize = sz + 1 ;
 		}
 
-		strncpy( result, &arg1[ atoi( arg2) - 1], sz) ;
+		strncpy( result, &arg1[ start], sz) ;
 		result[ sz] = 0 ;
 		retstr = result ;
+	}
 		break ;
 	case UFNOT | MONAMIC:
 		retstr = ltos( stol( arg1) == FALSE) ;
