@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 /* Standard error macro for reporting API errors */ 
-#define PERR(bSuccess, api){if(!(bSuccess)) printf("%s:Error %d from %s \
+#define PERR(bSuccess, api){if(!(bSuccess)) printf("%s:Error %ld from %s \
     on line %d\n", __FILE__, GetLastError(), api, __LINE__);}
 
 static void cls( HANDLE hConsole )

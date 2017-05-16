@@ -79,7 +79,7 @@ void ttopen( void) {
 void ttclose( void) {
 }
 
-int ttputc( int c) {
+int ttputc( unicode_t c) {
 	char utf8[ 6] ;
 	int bytes ;
 

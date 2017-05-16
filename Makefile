@@ -117,7 +117,7 @@ depend: ${SRC}
 	@sed -n -e '1,/^# DO NOT DELETE THIS LINE/p' Makefile.bak > Makefile
 	@echo >> Makefile
 	@for i in ${SRC}; do\
-	    cc ${DEFINES} -MM $$i ; done >> Makefile
+	    $(CC) ${DEFINES} -MM $$i ; done >> Makefile
 	@echo '' >>Makefile
 	@echo '# DEPENDENCIES MUST END AT END OF FILE' >>Makefile
 	@echo '# IF YOU PUT STUFF HERE IT WILL GO AWAY' >>Makefile
