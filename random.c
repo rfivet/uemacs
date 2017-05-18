@@ -181,29 +181,28 @@ int getccol(int bflg)
  *
  * int pos;		position to set cursor
  */
-int setccol(int pos)
-{
+boolean setccol( int pos) {
 	int i;		/* index into current line */
 	int col;	/* current cursor column   */
 	int llen;	/* length of line in bytes */
+	char *text ;
 
 	col = 0;
 	llen = llength(curwp->w_dotp);
+	text = curwp->w_dotp->l_text ;
 
 	/* scan the line until we are at or past the target column */
-	for (i = 0; i < llen; ++i) {
-		int c;		/* character being scanned */
+	for( i = 0 ; i < llen && col < pos ; ) {
+		unicode_t c ;	/* character being scanned */
 
-		/* upon reaching the target, drop out */
-		if (col >= pos)
-			break;
-
-		/* advance one character */
-		c = lgetc(curwp->w_dotp, i);
+	/* advance one character */
+		i += utf8_to_unicode( text, i, llen, &c) ;
 		if (c == '\t')
 			col += tabwidth - col % tabwidth ;
-		else if (c < 0x20 || c == 0x7F)
+		else if (c < 0x20 || c == 0x7F)		/* displayed as ^C */
 			col += 2 ;
+		else if (c >= 0x80 && c <= 0xa0)	/* displayed as \xx */
+			col += 3 ;
 		else
 			col += 1 ;
 	}

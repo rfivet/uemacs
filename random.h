@@ -23,7 +23,7 @@ int setfillcol( int f, int n) ;
 int showcpos( int f, int n) ;
 int getcline( void) ;
 int getccol( int bflg) ;
-int setccol( int pos) ;
+boolean setccol( int pos) ;
 boolean twiddle( int f, int n) ;
 int quote( int f, int n) ;
 int insert_tab( int f, int n) ;
