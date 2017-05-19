@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "basic.h"
 #include "bind.h"
@@ -305,6 +306,8 @@ void varinit(void)
 		result = malloc( NSTRING) ;
 		ressize = NSTRING ;
 	}
+
+	seed = time( NULL) ;
 }
 
 /*

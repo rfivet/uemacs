@@ -1,4 +1,7 @@
+# record seed
 # 5 set $seed
+set %S $seed
+
 # setup direction offsets
 set %D1 0
 set %D2 1
@@ -82,6 +85,12 @@ set %cnt &tim &sub &div %w 2 1 &sub &div %l 2 1
 	set $curline %y
 	set $curcol %x
 !endwhile
+
+# id maze
+beginning-of-file
+kill-to-end-of-line
+insert-string &cat " Maze " &cat %w &cat "x" &cat &sub %l 2 &cat " #" %S
+&sub $curwidth $curcol insert-string " "
 
 # draw the entrance
 set $curline 3
