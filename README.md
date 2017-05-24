@@ -11,7 +11,7 @@
 * Some defaults changed due to 'finger habits': ue instead of em, ^S in commands mapping...
 
 ### How to build ###
-* dependencies: ncurses.
+* dependencies: gmake, ncurses.
 * make depend ; make
 * MINGW32 target is experimental and lacks screen/kbd support.
 
