@@ -712,6 +712,7 @@ static int dobuf(struct buffer *bp)
 			c = mdbugout( "<<<%s:%d:%s>>>", bp->b_bname, execlevel, eline) ;
         	if( c == abortc) {
                 freewhile( whlist) ;
+				free( einit) ;
                 return FALSE ;
         	} else if( c == metac) {
         		macbug = FALSE ;
@@ -733,6 +734,7 @@ static int dobuf(struct buffer *bp)
             if (dirnum == NUMDIRS) {
                 mlwrite("%%Unknown Directive");
                 freewhile(whlist);
+				free( einit) ;
                 return FALSE;
             }
 
@@ -752,9 +754,9 @@ static int dobuf(struct buffer *bp)
             /* allocate the space for the line */
             linlen = strlen(eline);
             if ((mp = lalloc(linlen)) == NULL) {
-                mlwrite
-                    ("Out of memory while storing macro");
-                return FALSE;
+				free( einit) ;
+                mlwrite( "Out of memory while storing macro") ;
+                return FALSE ;
             }
 
             /* copy the text into the new line */

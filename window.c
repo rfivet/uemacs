@@ -9,6 +9,7 @@
  *
  */
 
+#include <assert.h>
 #include <stdio.h>
 
 #include "basic.h"
@@ -623,6 +624,7 @@ int newsize(int f, int n)
 	} else {
 
 		/* rebuild the window structure */
+		assert( wheadp->w_toprow == 0) ;	/* proves coverity wrong */
 		nextwp = wheadp;
 		wp = NULL;
 		lastwp = NULL;
