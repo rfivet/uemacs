@@ -144,30 +144,25 @@ static void tcapopen(void)
 		}
 
 		/* Get screen size from system, or else from termcap.  */
-		getscreensize(&int_col, &int_row);
-		term.t_nrow = int_row - 1;
-		term.t_ncol = int_col;
-
-		if ((term.t_nrow <= 0)
-		    && (term.t_nrow = (short) tgetnum("li") - 1) == -1) {
+		getscreensize( &int_col, &int_row) ;
+		if( (int_row <= 0)
+		    && ((int_row = tgetnum("li")) == -1)) {
 			fputs( "termcap entry incomplete (lines)\n", stderr) ;
 			exit( EXIT_FAILURE) ;
 		}
 
-		if ((term.t_ncol <= 0)
-		    && (term.t_ncol = (short) tgetnum("co")) == -1) {
+		if( (int_col <= 0)
+		    && ((int_col = tgetnum("co")) == -1)) {
 			fputs( "Termcap entry incomplete (columns)\n", stderr) ;
 			exit( EXIT_FAILURE) ;
 		}
 #ifdef SIGWINCH
 /* At initialization we use maximum size even if current OS window is smaller */
-		term.t_mrow = MAXROW ;
-		term.t_mcol = MAXCOL ;
-		if( term.t_nrow >= term.t_mrow)
-			term.t_nrow = term.t_mrow - 1 ;
-
-		if( term.t_ncol > term.t_mcol)
-			term.t_ncol = term.t_mcol ;
+		term.t_mrow = int_row < MAXROW ? int_row : MAXROW ;
+		term.t_nrow = term.t_mrow - 1 ;
+		term.t_mcol = int_col < MAXCOL ? int_col : MAXCOL ;
+		term.t_ncol = term.t_mcol ;
+		
 #else
 		term.t_mrow = term.t_nrow > MAXROW ? MAXROW : term.t_nrow;
 		term.t_mcol = term.t_ncol > MAXCOL ? MAXCOL : term.t_ncol;

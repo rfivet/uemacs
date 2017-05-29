@@ -109,13 +109,13 @@ void vtinit(void)
 	TTopen();		/* open the screen */
 	TTkopen();		/* open the keyboard */
 	TTrev(FALSE);
-	vscreen = xmalloc(term.t_mrow * sizeof(struct video *));
+	vscreen = xmalloc( MAXROW * sizeof( struct video *)) ;
 
 #if	MEMMAP == 0 || SCROLLCODE
-	pscreen = xmalloc(term.t_mrow * sizeof(struct video *));
+	pscreen = xmalloc( MAXROW * sizeof( struct video *)) ;
 #endif
-	for (i = 0; i < term.t_mrow; ++i) {
-		vp = xmalloc(sizeof(struct video) + term.t_mcol*4);
+	for( i = 0 ; i < MAXROW ; ++i) {
+		vp = xmalloc( sizeof( struct video) + MAXCOL * 4) ;
 		vp->v_flag = 0;
 #if	COLOR
 		vp->v_rfcolor = 7;
@@ -123,7 +123,7 @@ void vtinit(void)
 #endif
 		vscreen[i] = vp;
 #if	MEMMAP == 0 || SCROLLCODE
-		vp = xmalloc(sizeof(struct video) + term.t_mcol*4);
+		vp = xmalloc( sizeof( struct video) + MAXCOL * 4 ) ;
 		vp->v_flag = 0;
 		pscreen[i] = vp;
 #endif
@@ -136,7 +136,7 @@ void vtinit(void)
 void vtfree(void)
 {
 	int i;
-	for (i = 0; i < term.t_mrow; ++i) {
+	for( i = 0 ; i < MAXROW; ++i ) {
 		free(vscreen[i]);
 #if	MEMMAP == 0 || SCROLLCODE
 		free(pscreen[i]);
