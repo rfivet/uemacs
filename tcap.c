@@ -156,17 +156,12 @@ static void tcapopen(void)
 			fputs( "Termcap entry incomplete (columns)\n", stderr) ;
 			exit( EXIT_FAILURE) ;
 		}
-#ifdef SIGWINCH
-/* At initialization we use maximum size even if current OS window is smaller */
+
 		term.t_mrow = int_row < MAXROW ? int_row : MAXROW ;
 		term.t_nrow = term.t_mrow - 1 ;
 		term.t_mcol = int_col < MAXCOL ? int_col : MAXCOL ;
 		term.t_ncol = term.t_mcol ;
 		
-#else
-		term.t_mrow = term.t_nrow > MAXROW ? MAXROW : term.t_nrow;
-		term.t_mcol = term.t_ncol > MAXCOL ? MAXCOL : term.t_ncol;
-#endif
 		p = tcapbuf;
 		t = tgetstr("pc", &p);
 		if (t)

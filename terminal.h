@@ -6,6 +6,13 @@
 #include "retcode.h"
 #include "utf8.h"
 
+
+/* Actual 471x175 on a 1920x1080 screen in landscape,
+   if smaller font or portrait orientation limit to 500x200 */
+#define MAXCOL	500
+#define MAXROW	200
+
+
 /*
  * The editor communicates with the display using a high level interface. A
  * "TERM" structure holds useful variables, and indirect pointers to routines

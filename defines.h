@@ -20,11 +20,6 @@
 #define CTLX    0x04000000	/* ^X flag, or'ed in            */
 #define	SPEC	0x08000000	/* special key (function keys)  */
 
-/* Actual 380x134 on a 1920x1080 screen in landscape,
-   if smaller font or portrait orientation limit to 400x150 */
-#define MAXCOL	400
-#define MAXROW	150
-
 #endif
 
 /* end of defines.h */
