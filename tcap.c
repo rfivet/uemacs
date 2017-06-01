@@ -88,7 +88,9 @@ static char *CS, *DL, *AL, *SF, *SR;
 #endif
 
 struct terminal term = {
-	0, /* These four values are set dynamically at open time. */
+	210,	/* actual 204 on 1920x1080 landscape terminal window */
+	500,	/* actual 475 */
+	0,		/* These four values are set dynamically at open time. */
 	0,
 	0,
 	0,
@@ -157,11 +159,11 @@ static void tcapopen(void)
 			exit( EXIT_FAILURE) ;
 		}
 
-		term.t_mrow = int_row < MAXROW ? int_row : MAXROW ;
+		term.t_mrow = int_row < term.t_maxrow ? int_row : term.t_maxrow ;
 		term.t_nrow = term.t_mrow - 1 ;
-		term.t_mcol = int_col < MAXCOL ? int_col : MAXCOL ;
+		term.t_mcol = int_col < term.t_maxcol ? int_col : term.t_maxcol ;
 		term.t_ncol = term.t_mcol ;
-		
+
 		p = tcapbuf;
 		t = tgetstr("pc", &p);
 		if (t)

@@ -7,12 +7,6 @@
 #include "utf8.h"
 
 
-/* Actual 471x175 on a 1920x1080 screen in landscape,
-   if smaller font or portrait orientation limit to 500x200 */
-#define MAXCOL	500
-#define MAXROW	200
-
-
 /*
  * The editor communicates with the display using a high level interface. A
  * "TERM" structure holds useful variables, and indirect pointers to routines
@@ -23,10 +17,12 @@
  * one terminal type.
  */
 struct terminal {
-	short t_mrow;		/* max number of rows allowable */
-	short t_nrow;		/* current number of rows used  */
-	short t_mcol;		/* max Number of columns.       */
-	short t_ncol;		/* current Number of columns.   */
+	const short t_maxrow ;	/* max number of rows allowable			*/
+	const short t_maxcol ;	/* max number of columns allowable		*/
+	short t_mrow ;			/* max number of rows displayable		*/
+	short t_nrow ;			/* current number of rows displayed		*/
+	short t_mcol ;			/* max number of rows displayable		*/
+	short t_ncol ;			/* current number of columns displayed	*/
 	short t_margin;		/* min margin for extended lines */
 	short t_scrsiz;		/* size of scroll region "      */
 	int t_pause;		/* # times thru update to pause */

@@ -39,7 +39,7 @@ struct video {
 	int v_rfcolor;		/* requested forground color */
 	int v_rbcolor;		/* requested background color */
 #endif
-	unicode_t v_text[1];	/* Screen data. */
+	unicode_t v_text[] ;	/* Screen data. */
 };
 
 #define VFCHG   0x0001		/* Changed flag                 */
@@ -109,13 +109,13 @@ void vtinit(void)
 	TTopen();		/* open the screen */
 	TTkopen();		/* open the keyboard */
 	TTrev(FALSE);
-	vscreen = xmalloc( MAXROW * sizeof( struct video *)) ;
+	vscreen = xmalloc( term.t_maxrow * sizeof( struct video *)) ;
 
 #if	MEMMAP == 0 || SCROLLCODE
-	pscreen = xmalloc( MAXROW * sizeof( struct video *)) ;
+	pscreen = xmalloc( term.t_maxrow * sizeof( struct video *)) ;
 #endif
-	for( i = 0 ; i < MAXROW ; ++i) {
-		vp = xmalloc( sizeof( struct video) + MAXCOL * 4) ;
+	for( i = 0 ; i < term.t_maxrow ; ++i) {
+		vp = xmalloc( sizeof( struct video) + term.t_maxcol * sizeof( unicode_t)) ;
 		vp->v_flag = 0;
 #if	COLOR
 		vp->v_rfcolor = 7;
@@ -123,7 +123,7 @@ void vtinit(void)
 #endif
 		vscreen[i] = vp;
 #if	MEMMAP == 0 || SCROLLCODE
-		vp = xmalloc( sizeof( struct video) + MAXCOL * 4 ) ;
+		vp = xmalloc( sizeof( struct video) + term.t_maxcol * sizeof( unicode_t)) ;
 		vp->v_flag = 0;
 		pscreen[i] = vp;
 #endif
@@ -136,7 +136,7 @@ void vtinit(void)
 void vtfree(void)
 {
 	int i;
-	for( i = 0 ; i < MAXROW; ++i ) {
+	for( i = 0 ; i < term.t_maxrow; ++i ) {
 		free(vscreen[i]);
 #if	MEMMAP == 0 || SCROLLCODE
 		free(pscreen[i]);
@@ -1521,8 +1521,8 @@ void sizesignal(int signr)
 	getscreensize(&w, &h);
 
 	if( h > 0 && w > 0) {
-		term.t_mrow = h = h < MAXROW ? h : MAXROW ;
-		term.t_mcol = w = w < MAXCOL ? w : MAXCOL ;
+		term.t_mrow = h = h < term.t_maxrow ? h : term.t_maxrow ;
+		term.t_mcol = w = w < term.t_maxcol ? w : term.t_maxcol ;
 		if( h - 1 != term.t_nrow || w != term.t_ncol)
 			newscreensize( h, w) ;
 	}
