@@ -267,18 +267,17 @@ int readin(const char *fname, boolean lockfl)
 
 	bp = curbp; 	/* Cheap.				*/
 #if (FILOCK && BSD) || SVR4
-	if( lockfl && lockchk( fname) == ABORT)
+	if( lockfl && lockchk( fname) == ABORT) {
 #if PKCODE
-	{
 		s = FIOFNF;
 		strcpy(bp->b_fname, "");
 		mloutstr( "(File in use)") ;
-		goto out;
-	}
 #else
 		return ABORT;
 #endif
+	} else
 #endif
+  {
 	if( (status = bclear( bp)) != TRUE)   /* Might be old.		  */
 		return status ;
 
@@ -361,8 +360,8 @@ int readin(const char *fname, boolean lockfl)
 			eolname[ found_eol]) ;
 		ffclose() ; /* Ignore errors.		*/
 	}
+  }
 
-out:
 	for (wp = wheadp; wp != NULL; wp = wp->w_wndp) {
 		if (wp->w_bufp == curbp) {
 			wp->w_linep = lforw(curbp->b_linep);
