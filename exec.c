@@ -392,10 +392,12 @@ static int macarg( char *tok, int toksz) {
  * int f;       default flag
  * int n;       macro number to use
  */
+static char macbufname[] = "*Macro xx*" ;
+#define MACDIGITPOS 7
+
 int storemac(int f, int n)
 {
     struct buffer *bp;  /* pointer to macro buffer */
-    bname_t bname ; /* name of buffer to use */
 
     /* must have a numeric argument to this function */
     if (f == FALSE) {
@@ -410,12 +412,12 @@ int storemac(int f, int n)
     }
 
     /* construct the macro buffer name */
-    strcpy(bname, "*Macro xx*");
-    bname[7] = '0' + (n / 10);
-    bname[8] = '0' + (n % 10);
+    macbufname[ MACDIGITPOS]     = '0' + (n / 10) ;
+    macbufname[ MACDIGITPOS + 1] = '0' + (n % 10) ;
 
     /* set up the new macro buffer */
-    if ((bp = bfind(bname, TRUE, BFINVS)) == NULL) {
+    bp = bfind( macbufname, TRUE, BFINVS) ;
+    if( bp == NULL) {
         mlwrite("Can not create macro");
         return FALSE;
     }
@@ -427,6 +429,28 @@ int storemac(int f, int n)
     mstore = TRUE;
     bstore = bp;
     return TRUE;
+}
+
+/*
+**  exec -- execute a buffer
+**	common to execute buffer, procedure and macro
+*/
+static int exec( int n, char *bufname, char *errstr) {
+    struct buffer *bp ;		/* ptr to buffer to execute */
+
+    /* find the pointer to that buffer */
+    bp = bfind( bufname, FALSE, 0) ;
+    if( bp == NULL) {
+        mlwrite( "No such %s", errstr) ;
+        return FALSE ;
+    }
+
+    /* and now execute it as asked */
+    int status = TRUE ;
+    while( status == TRUE && n-- > 0)
+        status = dobuf( bp) ;
+
+    return status ;
 }
 
 #if PROC
@@ -482,7 +506,6 @@ int storeproc( int f, int n) {
  * int f, n;        default flag and numeric arg
  */
 int execproc( int f, int n) {
-    struct buffer *bp ;		/* ptr to buffer to execute */
     int status ;			/* status return */
     bname_t bufn ;		/* name of buffer to execute */
     char *name ;
@@ -498,18 +521,7 @@ int execproc( int f, int n) {
     strcat( bufn, "*") ;
     free( name) ;
 
-    /* find the pointer to that buffer */
-    bp = bfind( bufn, FALSE, 0) ;
-    if( bp == NULL) {
-        mlwrite( "No such procedure") ;
-        return FALSE ;
-    }
-
-    /* and now execute it as asked */
-    while( status == TRUE && n-- > 0)
-        status = dobuf( bp) ;
-
-    return status ;
+	return exec( n, bufn, "procedure") ;
 }
 #endif
 
@@ -520,7 +532,6 @@ int execproc( int f, int n) {
  * int f, n;        default flag and numeric arg
  */
 int execbuf( int f, int n) {
-    struct buffer *bp ;	/* ptr to buffer to execute */
     int status ;		/* status return */
     char *bufn ;		/* name of buffer to execute */
 
@@ -529,18 +540,8 @@ int execbuf( int f, int n) {
     if( status != TRUE)
         return status ;
 
-    /* find the pointer to that buffer */
-    bp = bfind( bufn, FALSE, 0) ;
-	free( bufn) ;
-    if( bp == NULL) {
-        mlwrite( "No such buffer") ;
-        return FALSE ;
-    }
-
-    /* and now execute it as asked */
-    while( status == TRUE && n-- > 0)
-        status = dobuf( bp) ;
-
+    status = exec( n, bufn, "buffer") ;
+    free( bufn) ;
     return status ;
 }
 
@@ -1027,225 +1028,59 @@ int dofile( const char *fname) {
  * int f, n;        default flag and numeric arg
  * int bufnum;      number of buffer to execute
  */
-static int cbuf(int f, int n, int bufnum)
-{
-    struct buffer *bp;  /* ptr to buffer to execute */
-    int status; /* status return */
-    static char bufname[] = "*Macro xx*";
-
+static int cbuf( int f, int n, int bufnum) {
     /* make the buffer name */
-    bufname[7] = '0' + (bufnum / 10);
-    bufname[8] = '0' + (bufnum % 10);
+    macbufname[ MACDIGITPOS]     = '0' + (bufnum / 10) ;
+    macbufname[ MACDIGITPOS + 1] = '0' + (bufnum % 10) ;
 
-    /* find the pointer to that buffer */
-    if ((bp = bfind(bufname, FALSE, 0)) == NULL) {
-        mlwrite("Macro not defined");
-        return FALSE;
-    }
-
-    /* and now execute it as asked */
-    while (n-- > 0)
-        if ((status = dobuf(bp)) != TRUE)
-            return status;
-    return TRUE;
+	return exec( n, macbufname, "macro") ;
 }
 
-int cbuf1(int f, int n)
-{
-    return cbuf(f, n, 1);
+/* execute buffer of numbered macro [1..40] */
+#define cbufnn( nn) \
+int cbuf##nn( int f, int n) { \
+    return cbuf( f, n, nn) ; \
 }
 
-int cbuf2(int f, int n)
-{
-    return cbuf(f, n, 2);
-}
+cbufnn( 1)
+cbufnn( 2)
+cbufnn( 3)
+cbufnn( 4)
+cbufnn( 5)
+cbufnn( 6)
+cbufnn( 7)
+cbufnn( 8)
+cbufnn( 9)
+cbufnn( 10)
+cbufnn( 11)
+cbufnn( 12)
+cbufnn( 13)
+cbufnn( 14)
+cbufnn( 15)
+cbufnn( 16)
+cbufnn( 17)
+cbufnn( 18)
+cbufnn( 19)
+cbufnn( 20)
+cbufnn( 21)
+cbufnn( 22)
+cbufnn( 23)
+cbufnn( 24)
+cbufnn( 25)
+cbufnn( 26)
+cbufnn( 27)
+cbufnn( 28)
+cbufnn( 29)
+cbufnn( 30)
+cbufnn( 31)
+cbufnn( 32)
+cbufnn( 33)
+cbufnn( 34)
+cbufnn( 35)
+cbufnn( 36)
+cbufnn( 37)
+cbufnn( 38)
+cbufnn( 39)
+cbufnn( 40)
 
-int cbuf3(int f, int n)
-{
-    return cbuf(f, n, 3);
-}
-
-int cbuf4(int f, int n)
-{
-    return cbuf(f, n, 4);
-}
-
-int cbuf5(int f, int n)
-{
-    return cbuf(f, n, 5);
-}
-
-int cbuf6(int f, int n)
-{
-    return cbuf(f, n, 6);
-}
-
-int cbuf7(int f, int n)
-{
-    return cbuf(f, n, 7);
-}
-
-int cbuf8(int f, int n)
-{
-    return cbuf(f, n, 8);
-}
-
-int cbuf9(int f, int n)
-{
-    return cbuf(f, n, 9);
-}
-
-int cbuf10(int f, int n)
-{
-    return cbuf(f, n, 10);
-}
-
-int cbuf11(int f, int n)
-{
-    return cbuf(f, n, 11);
-}
-
-int cbuf12(int f, int n)
-{
-    return cbuf(f, n, 12);
-}
-
-int cbuf13(int f, int n)
-{
-    return cbuf(f, n, 13);
-}
-
-int cbuf14(int f, int n)
-{
-    return cbuf(f, n, 14);
-}
-
-int cbuf15(int f, int n)
-{
-    return cbuf(f, n, 15);
-}
-
-int cbuf16(int f, int n)
-{
-    return cbuf(f, n, 16);
-}
-
-int cbuf17(int f, int n)
-{
-    return cbuf(f, n, 17);
-}
-
-int cbuf18(int f, int n)
-{
-    return cbuf(f, n, 18);
-}
-
-int cbuf19(int f, int n)
-{
-    return cbuf(f, n, 19);
-}
-
-int cbuf20(int f, int n)
-{
-    return cbuf(f, n, 20);
-}
-
-int cbuf21(int f, int n)
-{
-    return cbuf(f, n, 21);
-}
-
-int cbuf22(int f, int n)
-{
-    return cbuf(f, n, 22);
-}
-
-int cbuf23(int f, int n)
-{
-    return cbuf(f, n, 23);
-}
-
-int cbuf24(int f, int n)
-{
-    return cbuf(f, n, 24);
-}
-
-int cbuf25(int f, int n)
-{
-    return cbuf(f, n, 25);
-}
-
-int cbuf26(int f, int n)
-{
-    return cbuf(f, n, 26);
-}
-
-int cbuf27(int f, int n)
-{
-    return cbuf(f, n, 27);
-}
-
-int cbuf28(int f, int n)
-{
-    return cbuf(f, n, 28);
-}
-
-int cbuf29(int f, int n)
-{
-    return cbuf(f, n, 29);
-}
-
-int cbuf30(int f, int n)
-{
-    return cbuf(f, n, 30);
-}
-
-int cbuf31(int f, int n)
-{
-    return cbuf(f, n, 31);
-}
-
-int cbuf32(int f, int n)
-{
-    return cbuf(f, n, 32);
-}
-
-int cbuf33(int f, int n)
-{
-    return cbuf(f, n, 33);
-}
-
-int cbuf34(int f, int n)
-{
-    return cbuf(f, n, 34);
-}
-
-int cbuf35(int f, int n)
-{
-    return cbuf(f, n, 35);
-}
-
-int cbuf36(int f, int n)
-{
-    return cbuf(f, n, 36);
-}
-
-int cbuf37(int f, int n)
-{
-    return cbuf(f, n, 37);
-}
-
-int cbuf38(int f, int n)
-{
-    return cbuf(f, n, 38);
-}
-
-int cbuf39(int f, int n)
-{
-    return cbuf(f, n, 39);
-}
-
-int cbuf40(int f, int n)
-{
-    return cbuf(f, n, 40);
-}
+/* end of exec.c */
