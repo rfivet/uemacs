@@ -25,6 +25,7 @@
 #include "input.h"
 #include "line.h"
 #include "names.h"
+#include "util.h"
 #include "window.h"
 
 
@@ -348,8 +349,7 @@ static int buildlist( char *mstring) {
 			continue ;
 #endif
         /* add in the command name */
-        strncpy( outseq, nptr->n_name, sizeof outseq - 1) ;
-        outseq[ sizeof outseq - 1] = '\0' ;
+        mystrscpy( outseq, nptr->n_name, sizeof outseq) ;
         cpos = strlen(outseq);
 
         /* search down any keys bound to this */

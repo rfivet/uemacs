@@ -26,6 +26,7 @@
 #include "line.h"
 #include "lock.h"
 #include "mlout.h"
+#include "util.h"
 #include "window.h"
 
 typedef enum {
@@ -223,8 +224,7 @@ int getfile( const char *fname, boolean lockfl) {
 			makename( bname, fname) ;
 			break ;
 		} else { /* TRUE */
-			strncpy( bname, new_bname, sizeof bname - 1) ;
-			bname[ sizeof bname - 1] = '\0' ;
+			mystrscpy( bname, new_bname, sizeof bname) ;
 			free( new_bname) ;
 		}
 	}
@@ -282,10 +282,8 @@ int readin(const char *fname, boolean lockfl)
 		return status ;
 
 	bp->b_flag &= ~(BFINVS | BFCHG);
-	if( fname != bp->b_fname) { /* Copy if source differs from destination */
-		strncpy( bp->b_fname, fname, sizeof( fname_t) - 1) ;
-		bp->b_fname[ sizeof( fname_t) - 1] = '\0' ;
-	}
+	if( fname != bp->b_fname)	/* Copy if source differs from destination */
+		mystrscpy( bp->b_fname, fname, sizeof( fname_t)) ;
 
 	/* let a user macro get hold of things...if he wants */
 	execute(META | SPEC | 'R', FALSE, 1);
@@ -567,8 +565,7 @@ int filename( int f, int n) {
 	else if( status == FALSE)
 		curbp->b_fname[ 0] = '\0' ;
 	else { /* TRUE */
-		strncpy( curbp->b_fname, fname, sizeof( fname_t) - 1) ;
-		curbp->b_fname[ sizeof( fname_t) - 1] = '\0' ;
+		mystrscpy( curbp->b_fname, fname, sizeof( fname_t)) ;
 		free( fname) ;
 	}
 

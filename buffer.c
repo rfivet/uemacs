@@ -21,6 +21,7 @@
 #include "file.h"
 #include "input.h"
 #include "mlout.h"
+#include "util.h"
 #include "window.h"
 
 
@@ -247,8 +248,7 @@ ask:
 	}
 
 /* copy buffer name to structure */
-	strncpy( curbp->b_bname, bufn, sizeof( bname_t) - 1) ;
-	curbp->b_bname[ sizeof( bname_t) - 1] = '\0' ;
+	mystrscpy( curbp->b_bname, bufn, sizeof( bname_t)) ;
 	free( bufn) ;
 	
 	curwp->w_flag |= WFMODE ;	/* make mode line replot */
@@ -525,8 +525,7 @@ struct buffer *bfind( const char *bname, int cflag, int bflag)
 		bp->b_nwnd = 0;
 		bp->b_linep = lp;
 		bp->b_fname[ 0] = '\0' ;
-		strncpy( bp->b_bname, bname, sizeof( bname_t) - 1) ;
-		bp->b_bname[ sizeof( bname_t) - 1] = '\0' ;
+		mystrscpy( bp->b_bname, bname, sizeof( bname_t)) ;
 		lp->l_fp = lp;
 		lp->l_bp = lp;
 	}

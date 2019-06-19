@@ -29,6 +29,7 @@
 #include "search.h"
 #include "terminal.h"
 #include "termio.h"
+#include "util.h"
 #include "version.h"
 #include "window.h"
 
@@ -437,8 +438,7 @@ static char *gtfun( char *fname) {
 			ressize = sz + 1 ;
 		}
 
-		strncpy( result, arg1, sz) ;
-		result[ sz] = 0 ;
+		mystrscpy( result, arg1, sz + 1) ;
 		retstr = result ;
 	}
 		break ;
@@ -482,8 +482,7 @@ static char *gtfun( char *fname) {
 			ressize = sz + 1 ;
 		}
 
-		strncpy( result, &arg1[ start], sz) ;
-		result[ sz] = 0 ;
+		mystrscpy( result, &arg1[ start], sz + 1) ;
 		retstr = result ;
 	}
 		break ;
@@ -838,9 +837,8 @@ int setvar(int f, int n)
 		if( value == NULL)
 			return FALSE ;
 
-		/* a bit overcautious here in using strncpy */
-		strncpy( value, i_to_a( n), NSTRING - 1) ;
-		value[ NSTRING - 1] = '\0' ;
+		/* a bit overcautious here */
+		mystrscpy( value, i_to_a( n), NSTRING) ;
 	} else {
 		status = newmlarg( &value, "Value: ", 0) ;
 		if (status != TRUE)
@@ -928,8 +926,7 @@ fvar:
 		for (vnum = 0; vnum < MAXVARS; vnum++)
 			if (uv[vnum].u_name[0] == 0) {
 				vtype = TKVAR;
-				strncpy( uv[ vnum].u_name, &var[ 1], NVSIZE) ;
-				uv[ vnum].u_name[ NVSIZE] = '\0' ;
+				mystrscpy( uv[ vnum].u_name, &var[ 1], NVSIZE + 1) ;
 				break;
 			}
 		break;
@@ -1254,8 +1251,8 @@ char *getval(char *token)
 		blen = bp->b_dotp->l_used - bp->b_doto;
 		if( blen >= sizeof buf)
 			blen = sizeof buf - 1 ;
-		strncpy(buf, bp->b_dotp->l_text + bp->b_doto, blen);
-		buf[blen] = 0;
+
+		mystrscpy( buf, bp->b_dotp->l_text + bp->b_doto, blen + 1) ;
 
 		/* and step the buffer's line ptr ahead a line */
 		bp->b_dotp = bp->b_dotp->l_fp;

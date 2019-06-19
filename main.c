@@ -88,6 +88,7 @@
 #include "search.h"
 #include "terminal.h"
 #include "termio.h"
+#include "util.h"
 #include "version.h"
 #include "window.h"
 
@@ -221,8 +222,7 @@ int main(int argc, char **argv)
 			case 's':	/* -s for initial search string */
 			case 'S':
 				searchflag = TRUE;
-				strncpy( pat, &argv[ carg][ 2], sizeof pat - 1) ;
-				pat[ sizeof pat -1] = 0 ;
+				mystrscpy( pat, &argv[ carg][ 2], sizeof pat) ;
 				break;
 			case 'v':	/* -v for View File */
 			case 'V':
@@ -268,8 +268,7 @@ int main(int argc, char **argv)
 				exit( EXIT_FAILURE) ;
 			}
 
-			strncpy( bp->b_fname, argv[ carg], sizeof bp->b_fname - 1) ; /* max filename length limited to NFILEN - 1 (79) */
-			bp->b_fname[ sizeof bp->b_fname - 1] = 0 ;
+			mystrscpy( bp->b_fname, argv[ carg], sizeof bp->b_fname) ; /* max filename length limited to NFILEN - 1 */
 			bp->b_active = FALSE;
 			if (firstfile) {
 				firstbp = bp;

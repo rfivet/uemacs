@@ -20,6 +20,8 @@
 #endif
 #include <errno.h>
 
+#include "util.h"
+
 /* Maximum file length name 255 */
 #define MAXLOCK 256
 #define MAXNAME 128
@@ -51,8 +53,7 @@ char *dolock( const char *fname)
 	int mask;
 	struct stat sbuf;
 
-	strncpy( lname, fname, sizeof lname - 1 - 6) ;
-	lname[ sizeof lname - 1 - 6] = 0 ;
+	mystrscpy( lname, fname, sizeof lname - 6) ;
 	strcat( lname, ".lock~") ;
 
 	/* check that we are not being cheated, qname must point to     */
@@ -126,8 +127,7 @@ char *dolock( const char *fname)
 char *undolock( const char *fname) {
 	char lname[ MAXLOCK] ;
 
-	strncpy( lname, fname, sizeof lname - 1 - 6) ;
-	lname[ sizeof lname - 1 - 6] = 0 ;
+	mystrscpy( lname, fname, sizeof lname - 6) ;
 	strcat( lname, ".lock~") ;
 	if (unlink(lname) != 0) {
 		if (errno == EACCES || errno == ENOENT)

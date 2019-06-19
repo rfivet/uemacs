@@ -72,6 +72,7 @@
 #include "line.h"
 #include "mlout.h"
 #include "terminal.h"
+#include "util.h"
 #include "window.h"
 
 /* The variable matchlen holds the length of the matched
@@ -683,8 +684,7 @@ int eq(unsigned char bc, unsigned char pc)
 }
 
 void setprompt( char *tpat, unsigned tpat_size, char *prompt, char *apat) {
-	strncpy( tpat, prompt, 14) ;	/* copy prompt to output string */
-	tpat[ 14] = '\0' ;				/* longest prompt is "Reverse Search" */
+	mystrscpy( tpat, prompt, 15) ;	/* copy prompt to output string */
 	strcat( tpat, " (") ;			/* build new prompt string */
 	expandp( apat, &tpat[ strlen( tpat)], tpat_size) ;	/* add old pattern */
 	strcat( tpat, ")<Meta>: ") ;
@@ -716,8 +716,7 @@ static int readpattern(char *prompt, char *apat, int srch)
 	 */
 	status = newmlargt( &dynpat, tpat, NPAT) ;
 	if( status == TRUE) {
-		strncpy( apat, dynpat, NPAT - 1) ;
-		apat[ NPAT - 1] = 0 ;
+		mystrscpy( apat, dynpat, NPAT) ;
 		free( dynpat) ;
 		if (srch) {	/* If we are doing the search string. */
 			/* Reverse string copy, and remember

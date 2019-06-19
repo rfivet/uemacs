@@ -24,6 +24,7 @@
 #include "input.h"
 #include "line.h"
 #include "random.h"
+#include "util.h"
 #include "window.h"
 
 
@@ -182,8 +183,7 @@ static int docmd( char *cline) {
     if( !is_it_cmd( tkn)) {
         f = TRUE;
 /* macarg already includes a getval, skip for now
-		strncpy( tkn, getval( tkn), sizeof tkn - 1) ;
-       	tkn[ sizeof tkn - 1] = '\0' ;
+		mystrscpy( tkn, getval( tkn), sizeof tkn) ;
 */
         n = atoi(tkn);
 
@@ -316,8 +316,7 @@ static char *token( char *srcstr, char *tok, int maxtoksize) {
 	if( newtok == NULL)
 		tok[ 0] = 0 ;
 	else {
-		strncpy( tok, newtok, maxtoksize - 1) ;
-		tok[ maxtoksize - 1] = 0 ;
+		mystrscpy( tok, newtok, maxtoksize) ;
 		free( newtok) ;
 	}
 
@@ -344,8 +343,7 @@ boolean gettokval( char *tok, int size) {
 		return FALSE ;
 
     /* evaluate it */
-    strncpy( tok, getval( tmpbuf), size - 1) ;
-    tok[ size - 1] = '\0' ;
+    mystrscpy( tok, getval( tmpbuf), size) ;
     free( tmpbuf) ;
     return TRUE ;
 }
@@ -457,8 +455,7 @@ int storeproc( int f, int n) {
 
     /* construct the macro buffer name */
     bname[ 0] = '*';
-    strncpy( &bname[ 1], name, sizeof bname - 3) ;
-    bname[ sizeof bname - 2] = '\0' ;
+    mystrscpy( &bname[ 1], name, sizeof bname - 2) ;
     strcat( bname, "*") ;
 	free( name) ;
 
@@ -497,8 +494,7 @@ int execproc( int f, int n) {
 
     /* construct the buffer name */
     bufn[ 0] = '*' ;
-    strncpy( &bufn[ 1], name, sizeof bufn - 3) ;
-    bufn[ sizeof bufn - 2] = '\0' ;
+    mystrscpy( &bufn[ 1], name, sizeof bufn - 2) ;
     strcat( bufn, "*") ;
     free( name) ;
 
@@ -689,8 +685,8 @@ static int dobuf(struct buffer *bp)
             freewhile(whlist);
             return FALSE;
         }
-        strncpy(eline, lp->l_text, linlen);
-        eline[linlen] = 0;  /* make sure it ends */
+
+        mystrscpy( eline, lp->l_text, linlen + 1) ;
 
         /* trim leading whitespace */
         while (*eline == ' ' || *eline == '\t')
