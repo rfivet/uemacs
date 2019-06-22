@@ -1,8 +1,8 @@
 ## blindmaz.cmd -- solve maze by walking a left-handed blind mouse
 
 #7 set $seed
-execute-file maze.cmd
-#execute-file floodmaz.cmd
+#execute-file maze.cmd
+execute-file floodmaz.cmd
 set %x 2
 set %y $curline
 end-of-line
@@ -19,7 +19,7 @@ set %DY3 -1
 
 set %dotc &asc "."
 
-12 store-macro
+store-procedure probe
 	set %OX &ind &cat "%DX" %nD
 	set %OY &ind &cat "%DY" %nD
 	set %nx &add %x %OX
@@ -50,13 +50,13 @@ set %dotc &asc "."
 set %D 0		# looking EAST
 !while &les %x %stopcol
 	set %nD &mod &add %D 3 4				# Can go left?
-	execute-macro-12
+	run probe
 	!if &seq %res FALSE
 		set %nD %D							# Can go straight?
-		execute-macro-12
+		run probe
 		!if &seq %res FALSE
 			set %nD &mod &add %D 1 4		# Can go right?
-			execute-macro-12
+			run probe
 			!if &seq %res FALSE
 				set %D &mod &add %D 2 4		# Go back!
 			!endif

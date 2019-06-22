@@ -3,7 +3,7 @@ execute-file maze.cmd
 
 set %thisbuf $cbufname
 
-10 store-macro				# push x y
+store-procedure pushxy				# push x y
 	set %x $curcol
 	set %y $curline
 	select-buffer stack
@@ -15,7 +15,7 @@ set %thisbuf $cbufname
 	select-buffer %thisbuf
 !endm
 
-11 store-macro				# pop x y
+store-procedure popxy				# pop x y
 	select-buffer stack
 	beginning-of-file
 	set %x $line
@@ -29,7 +29,7 @@ set %thisbuf $cbufname
 
 set $curline 1
 set $curcol 0
-execute-macro-10	#push stop position
+run pushxy	#push stop position
 set %x 1
 set $curline 4
 set $curcol %x
@@ -41,23 +41,23 @@ set %NC &asc "█"
 	set %ll $curline
 	set $curcol &add %cc 1
 	!if &equ $curchar %OC
-		execute-macro-10
+		run pushxy
 	!endif
 	set $curcol &add %cc -1
 	!if &equ $curchar %OC
-		execute-macro-10
+		run pushxy
 	!endif
 	set $curline &add %ll 1
 	set $curcol %cc
 	!if &equ $curchar %OC
-		execute-macro-10
+		run pushxy
 	!endif
 	set $curline &add %ll -1
 	set $curcol %cc
 	!if &equ $curchar %OC
-		execute-macro-10
+		run pushxy
 	!endif
-	execute-macro-11	
+	run popxy	
 !endwhile
 set $curline 3
 set $curcol 1

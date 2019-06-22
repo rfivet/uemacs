@@ -1,4 +1,4 @@
-;	EMACS.RC / .emascrc
+;	EMACS.RC / .emacsrc
 ;
 ;	Startup file for MicroEMACS 3.9 and uEmacs/PK 4.0
 ;	This file is executed every time the editor is entered.
@@ -6,6 +6,10 @@
 ;	Modified by Petri Kutvonen, last edited September 1991.
 
 set $discmd "FALSE"
+
+!if &seq $progname "µEMACS"
+	!force execute-file &cat $HOME "/.uerc"
+!else
 
 ;	First, try to resolve if we are on a PC ... yes, this is a kludge
 
@@ -290,5 +294,7 @@ bind-to-key	newline	^J
 	add-global-mode "utf-8"
 !endif
 add-global-mode "utf-8"
+
+!endif
 
 set $discmd "TRUE"
