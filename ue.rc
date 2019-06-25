@@ -2,7 +2,7 @@
 #
 #	Startup file for µEMACS 4.2
 #	This file is executed every time the editor is entered.
-#	If you want to keep compatibility with em (uEmacs/PK) or me (Micro-EMACS)
+#	If you want to keep compatibility with em (uEmacs/PK) or me (MicroEMACS)
 #		cp emacs.rc ~/.emacsrc
 #		cp ue.rc ~/.uerc
 #	otherwise
@@ -18,16 +18,21 @@ set $tab 4
 	!if &not &seq $cbufname "emacs.hlp"
 		write-message "(Loading Help)"
 		!force help
-		!force 8 resize-window
-		bind-to-key execute-macro-39 FN5
-		bind-to-key execute-macro-38 FN6
-		beginning-of-line
-		2 forward-character
-		1 redraw-display
-		save-window
-		set %hlpupdn "<Prev Scrn> / <Next Scrn>"
-		set %hlphelp "<Help>"
-		run helponhelp
+		!if &not &seq $cbufname "emacs.hlp"
+			write-message "(Failed to load Help)"
+		!else
+			!force 8 resize-window
+			bind-to-key execute-macro-39 FN5
+			bind-to-key execute-macro-38 FN6
+			bind-to-key execute-macro-37 FNH
+			bind-to-key execute-macro-36 FNF
+			beginning-of-line
+			2 forward-character
+			1 redraw-display
+			set %hlpupdn "[PgUp] / [PgDn]"
+			set %hlphelp "[F1]"
+			run helponhelp
+		!endif
 	!else
 		set %hlpcode &lef $line 2 
 		!if &seq %hlpcode ".."
@@ -39,9 +44,11 @@ set $tab 4
 			1 redraw-display
 			run helponhelp
 		!else
+			!force search-reverse "=>"
 			bind-to-key previous-page FN5
 			bind-to-key next-page FN6
-			!force restore-window
+			bind-to-key beginning-of-file FNH
+			bind-to-key end-of-file FNF
 			!force delete-window
 			clear-message-line
 		!endif
@@ -50,7 +57,9 @@ set $tab 4
 !endm
 
 bind-to-key execute-macro-40 M-?
-bind-to-key execute-macro-40 FNh
+bind-to-key execute-macro-40 FNP
+bind-to-key beginning-of-file FNH
+bind-to-key end-of-file FNF
 
 ;	Help on Help
 
@@ -90,9 +99,23 @@ store-procedure helponhelp
 	!endif
 !endm
 
+37 store-macro
+	beginning-of-file
+	!if &seq $cbufname "emacs.hlp"
+		execute-macro-39
+	!endif
+!endm
+
+36 store-macro
+	end-of-file
+	!if &seq $cbufname "emacs.hlp"
+		execute-macro-39
+	!endif
+!endm
+
 ;	Set up auto CMODE
 
-37	store-macro
+35	store-macro
 	!if &seq &mid $cfname 1 7 "/tmp/Re"
 		add-mode "wrap"
 		!return
@@ -127,7 +150,7 @@ store-procedure helponhelp
 
 !endm
 	
-bind-to-key execute-macro-37	M-FNR
+bind-to-key execute-macro-35	M-FNR
 
 ;	Make cut-paste easier in window systems
 
