@@ -1,3 +1,5 @@
+/* estruct.h -- */
+
 #ifndef _ESTRUCT_H_
 #define _ESTRUCT_H_
 
@@ -21,7 +23,7 @@
 
 /* Machine/OS definitions. */
 
-#if defined(AUTOCONF) || defined(MSDOS) || defined(BSD) || defined(SYSV) || defined(VMS)
+#if defined(AUTOCONF) || defined(MSDOS) || defined(BSD) || defined(SYSV)
 
 /* Make an intelligent guess about the target system. */
 
@@ -31,7 +33,7 @@
 #define	MSDOS 0
 #endif
 
-#if defined(BSD) || defined(sun) || defined(ultrix) || (defined(vax) && defined(unix)) || defined(ultrix) || defined(__osf__)
+#if defined(BSD) || defined(sun) || defined(ultrix) || defined(__osf__)
 #ifndef BSD
 #define BSD 1 /* Berkeley UNIX */
 #endif
@@ -51,12 +53,6 @@
 #define	USG 0
 #endif
 
-#if defined(VMS) || (defined(vax) && ! defined(unix))
-#define VMS 1 /* VAX/VMS */
-#else
-#define VMS 0
-#endif
-
 #define	V7 0 /* No more. */
 
 #else
@@ -65,7 +61,6 @@
 #define V7      0		/* V7 UNIX or Coherent or BSD4.2 */
 #define	BSD	0		/* UNIX BSD 4.2 and ULTRIX      */
 #define	USG	0		/* UNIX system V                */
-#define VMS     0		/* VAX/VMS                      */
 
 #endif				/*autoconf */
 
@@ -101,29 +96,26 @@
 /*	Terminal Output definitions		*/
 
 #define ANSI    0		/* ANSI escape sequences        */
-#define	VMSVT	0		/* various VMS terminal entries */
 #define VT52    0		/* VT52 terminal (Zenith).      */
 #define TERMCAP 0		/* Use TERMCAP                  */
 #define	IBMPC	1		/* IBM-PC CGA/MONO/EGA driver   */
 
 #elif defined( MINGW32)
 
-#define	VT220	(UNIX | VMS)
+#define	VT220	UNIX
 #define	VT100	0
 
 #define	ANSI	0
-#define	VMSVT	0
 #define	VT52	0
 #define	TERMCAP	0
 #define	IBMPC	0
 
 #else
 
-#define	VT220	(UNIX | VMS)
+#define	VT220	UNIX
 #define	VT100	0
 
 #define	ANSI	0
-#define	VMSVT	VMS
 #define	VT52	0
 #define	TERMCAP	UNIX
 #define	IBMPC	MSDOS
@@ -163,8 +155,8 @@
 
 #else
 
-#define	XONXOFF	(UNIX | VMS)
-#define	NATIONL	(UNIX | VMS)
+#define	XONXOFF	UNIX
+#define	NATIONL	UNIX
 
 #endif /* Autoconf. */
 
@@ -189,10 +181,6 @@
 #define	peek(a,b,c,d)	movedata(a,b,FP_SEG(c),FP_OFF(c),d)
 #define	poke(a,b,c,d)	movedata(FP_SEG(c),FP_OFF(c),a,b,d)
 #define	movmem(a, b, c)		memcpy(b, a, c)
-#endif
-
-#if	VMS
-#define	unlink(a)	delete(a)
 #endif
 
 /* Define some ability flags. */
@@ -289,3 +277,5 @@ void cexit( int status) ;
 #endif
 
 #endif
+
+/* end of estruct.h */

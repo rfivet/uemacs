@@ -31,16 +31,7 @@ const char *pathname[] = {
 #endif
 	"/usr/local/", "/usr/lib/", ""
 #endif
-
-#if	VMS
-{
-	"emacs.rc", "emacs.hlp", "",
-#if	PKCODE
-	"sys$login:", "emacs_dir:",
-#endif
-	"sys$sysdevice:[vmstools]"
-#endif
-};
+} ;
 
 #define PATHNAME_SIZE (sizeof pathname / sizeof pathname[ 0])
 

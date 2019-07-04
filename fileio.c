@@ -51,19 +51,9 @@ fio_code ffropen( const char *fn)
  * Open a file for writing. Return TRUE if all is well, and FALSE on error
  * (cannot create).
  */
-fio_code ffwopen( const char *fn)
-{
-#if     VMS
-    int fd;
-
-    if ((fd = creat(fn, 0666, "rfm=var", "rat=cr")) < 0
-        || (ffp = fdopen(fd, "w")) == NULL)
-#else
-    if ((ffp = fopen(fn, "w")) == NULL)
-#endif
-        return FIOERR;
-
-    return FIOSUC;
+fio_code ffwopen( const char *fn) {
+    ffp = fopen( fn, "w") ;
+	return (ffp == NULL) ? FIOERR : FIOSUC ;
 }
 
 /*

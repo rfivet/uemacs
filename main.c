@@ -149,10 +149,6 @@ int main(int argc, char **argv)
 	int errflag;		/* C error processing? */
 	bname_t bname ;	/* buffer name of file to read */
 
-#if	PKCODE & VMS
-	(void) umask(-1); /* Use old protection (this is at wrong place). */
-#endif
-
 #if	PKCODE & BSD
 	sleep(1); /* Time for window manager. */
 #endif

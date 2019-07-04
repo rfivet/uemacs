@@ -56,8 +56,7 @@ static char tobuf[TBUFSIZ];		/* terminal output buffer */
 
 /*
  * This function is called once to set up the terminal device streams.
- * On VMS, it translates TT until it finds the terminal, then assigns
- * a channel to it and sets it raw. On CPM it is a no-op.
+ * On CPM it is a no-op.
  */
 void ttopen(void)
 {
@@ -105,7 +104,7 @@ void ttopen(void)
 
 /*
  * This function gets called just before we go back home to the command
- * interpreter. On VMS it puts the terminal back in a reasonable state.
+ * interpreter.
  * Another no-operation on CPM.
  */
 void ttclose(void)
@@ -114,8 +113,7 @@ void ttclose(void)
 }
 
 /*
- * Write a character to the display. On VMS, terminal output is buffered, and
- * we just put the characters in the big array, after checking for overflow.
+ * Write a character to the display.
  * On CPM terminal I/O unbuffered, so we just write the byte out. Ditto on
  * MS-DOS (use the very very raw console output routine).
  */
@@ -158,8 +156,8 @@ void ttflush(void)
 
 /*
  * Read a character from the terminal, performing no editing and doing no echo
- * at all. More complex in VMS that almost anyplace else, which figures. Very
- * simple on CPM, because the system can do exactly what you want.
+ * at all.
+ * Very simple on CPM, because the system can do exactly what you want.
  */
 int ttgetc(void)
 {
