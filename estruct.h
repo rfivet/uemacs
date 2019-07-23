@@ -17,21 +17,12 @@
 #ifdef	MSDOS
 #undef	MSDOS
 #endif
-#ifdef	EGA
-#undef	EGA
-#endif
 
 /* Machine/OS definitions. */
 
-#if defined(AUTOCONF) || defined(MSDOS) || defined(BSD) || defined(SYSV)
+#if defined(AUTOCONF) || defined(BSD) || defined(SYSV)
 
 /* Make an intelligent guess about the target system. */
-
-#if defined(__TURBOC__)
-#define MSDOS 1 /* MS/PC DOS 3.1-4.0 with Turbo C 2.0 */
-#else
-#define	MSDOS 0
-#endif
 
 #if defined(BSD) || defined(sun) || defined(ultrix) || defined(__osf__)
 #ifndef BSD
@@ -53,31 +44,19 @@
 #define	USG 0
 #endif
 
-#define	V7 0 /* No more. */
-
 #else
+# define BSD	0		/* UNIX BSD 4.2 and ULTRIX      */
+# define USG	1		/* UNIX system V                */
+#endif	/*autoconf */
 
-#define MSDOS   1		/* MS-DOS                       */
-#define V7      0		/* V7 UNIX or Coherent or BSD4.2 */
-#define	BSD	0		/* UNIX BSD 4.2 and ULTRIX      */
-#define	USG	0		/* UNIX system V                */
+#define MSDOS	0		/* MS-DOS                       */
 
-#endif				/*autoconf */
-
+/*	Compiler definitions	*/
 #ifndef	AUTOCONF
-
-/*	Compiler definitions			*/
-#define	UNIX	0		/* a random UNIX compiler */
-#define	MSC	0		/* MicroSoft C compiler, versions 3 up */
-#define	TURBO	1		/* Turbo C/MSDOS */
-
+# define UNIX	1		/* a random UNIX compiler */
 #else
-
-#define	UNIX	(V7 | BSD | USG)
-#define	MSC	0
-#define	TURBO	MSDOS
-
-#endif				/*autoconf */
+# define UNIX	(BSD | USG)
+#endif	/*autoconf */
 
 /*	Debugging options	*/
 
@@ -164,25 +143,6 @@
 #define	IBMCHR	MSDOS  /* use IBM PC character set P.K.                */
 #define SCROLLCODE 1   /* scrolling code P.K.                          */
 
-/* System dependant library redefinitions, structures and includes. */
-
-#if TURBO
-#include <dos.h>
-#include <mem.h>
-#undef peek
-#undef poke
-#define       peek(a,b,c,d)   movedata(a,b,FP_SEG(c),FP_OFF(c),d)
-#define       poke(a,b,c,d)   movedata(FP_SEG(c),FP_OFF(c),a,b,d)
-#endif
-
-#if MSDOS & MSC
-#include	<dos.h>
-#include	<memory.h>
-#define	peek(a,b,c,d)	movedata(a,b,FP_SEG(c),FP_OFF(c),d)
-#define	poke(a,b,c,d)	movedata(FP_SEG(c),FP_OFF(c),a,b,d)
-#define	movmem(a, b, c)		memcpy(b, a, c)
-#endif
-
 /* Define some ability flags. */
 
 #if	IBMPC
@@ -191,10 +151,10 @@
 #define	MEMMAP	0
 #endif
 
-#if	MSDOS | V7 | USG | BSD
-#define	ENVFUNC	1
+#if	USG | BSD
+# define ENVFUNC	1
 #else
-#define	ENVFUNC	0
+# define ENVFUNC	0
 #endif
 
 /* DIFCASE represents the integer difference between upper

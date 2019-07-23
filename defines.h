@@ -5,7 +5,7 @@
 
 
 /* Must define one of
-	V7 | USG | BSD | MSDOS
+	USG | BSD
 */
 #define USG 1
 

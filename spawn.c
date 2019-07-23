@@ -5,7 +5,7 @@
  *
  *	Various operating system access commands.
  *
- *	<odified by Petri Kutvonen
+ *	Modified by Petri Kutvonen
  */
 
 #include <stdio.h>
@@ -26,14 +26,10 @@
 #include "window.h"
 
 
-#if     V7 | USG | BSD
+#if	USG | BSD
 #include        <signal.h>
 #ifdef SIGWINCH
 #endif
-#endif
-
-#if	MSDOS & (MSC | TURBO)
-#include	<process.h>
 #endif
 
 
@@ -44,7 +40,7 @@
  */
 int spawncli(int f, int n)
 {
-#if     V7 | USG | BSD
+#if	USG | BSD
 	char *cp;
 #endif
 
@@ -52,16 +48,7 @@ int spawncli(int f, int n)
 	if (restflag)
 		return resterr();
 
-#if     MSDOS & (MSC | TURBO)
-	movecursor(term.t_nrow, 0);	/* Seek to last line.   */
-	TTflush();
-	TTkclose();
-	shellprog("");
-	TTkopen();
-	sgarbf = TRUE;
-	return TRUE;
-#endif
-#if     V7 | USG | BSD
+#if	USG | BSD
 	movecursor(term.t_nrow, 0);	/* Seek to last line.   */
 	TTflush();
 	TTclose();		/* stty to old settings */
@@ -128,7 +115,7 @@ int spawn( int f, int n) {
 	if( restflag)
 		return resterr();
 
-#if     V7 | USG | BSD
+#if	USG | BSD
 	s = newmlarg( &line, "!", 0) ;
 	if( s != TRUE)
 		return s ;
@@ -167,7 +154,7 @@ int execprg( int f, int n) {
 	if( restflag)
 		return resterr() ;
 
-#if     V7 | USG | BSD
+#if	USG | BSD
 	s = newmlarg( &line, "$", 0) ;
 	if( s != TRUE)
 		return s ;
@@ -244,7 +231,7 @@ int pipecmd( int f, int n) {
 			return FALSE ;
 		}
 	}
-#if     V7 | USG | BSD
+#if	USG | BSD
 	TTflush();
 	TTclose();		/* stty to old modes    */
 	TTkclose();
@@ -332,7 +319,7 @@ int filter_buffer( int f, int n) {
 		return FALSE ;
 	}
 
-#if     V7 | USG | BSD
+#if	USG | BSD
 	TTputc('\n');		/* Already have '\r'    */
 	TTflush();
 	TTclose();		/* stty to old modes    */
@@ -366,127 +353,4 @@ int filter_buffer( int f, int n) {
 	return TRUE;
 }
 
-
-#if	MSDOS & (TURBO | MSC)
-
-/*
- * SHELLPROG: Execute a command in a subshell
- *
- * char *cmd;		Incoming command line to execute
- */
-int shellprog(char *cmd)
-{
-	char *shell;		/* Name of system command processor */
-	char *p;		/* Temporary pointer */
-	char swchar;		/* switch character to use */
-	union REGS regs;	/* parameters for dos call */
-	char comline[NSTRING];	/* constructed command line */
-
-	/*  detect current switch character and set us up to use it */
-	regs.h.ah = 0x37;	/*  get setting data  */
-	regs.h.al = 0x00;	/*  get switch character  */
-	intdos(&regs, &regs);
-	swchar = (char) regs.h.dl;
-
-	/*  get name of system shell  */
-	if ((shell = getenv("COMSPEC")) == NULL) {
-		return FALSE;	/*  No shell located  */
-	}
-
-	/* trim leading whitespace off the command */
-	while (*cmd == ' ' || *cmd == '\t')	/*  find out if null command */
-		cmd++;
-
-	/**  If the command line is not empty, bring up the shell  **/
-	/**  and execute the command.  Otherwise, bring up the     **/
-	/**  shell in interactive mode.   **/
-
-	if (*cmd) {
-		strcpy(comline, shell);
-		strcat(comline, " ");
-		comline[strlen(comline) + 1] = 0;
-		comline[strlen(comline)] = swchar;
-		strcat(comline, "c ");
-		strcat(comline, cmd);
-		return execprog(comline);
-	} else
-		return execprog(shell);
-}
-
-/*
- * EXECPROG:
- *	A function to execute a named program
- *	with arguments
- *
- * char *cmd;		Incoming command line to execute
- */
-int execprog(char *cmd)
-{
-	char *sp;		/* temporary string pointer */
-	char f1[38];		/* FCB1 area (not initialized */
-	char f2[38];		/* FCB2 area (not initialized */
-	char prog[NSTRING];	/* program filespec */
-	char tail[NSTRING];	/* command tail with length byte */
-	union REGS regs;	/* parameters for dos call  */
-	struct SREGS segreg;	/* segment registers for dis call */
-	struct pblock {		/* EXEC parameter block */
-		short envptr;	/* 2 byte pointer to environment string */
-		char *cline;	/* 4 byte pointer to command line */
-		char *fcb1;	/* 4 byte pointer to FCB at PSP+5Ch */
-		char *fcb2;	/* 4 byte pointer to FCB at PSP+6Ch */
-	} pblock;
-
-	/* parse the command name from the command line */
-	sp = prog;
-	while (*cmd && (*cmd != ' ') && (*cmd != '\t'))
-		*sp++ = *cmd++;
-	*sp = 0;
-
-	/* and parse out the command tail */
-	while (*cmd && ((*cmd == ' ') || (*cmd == '\t')))
-		++cmd;
-	*tail = (char) (strlen(cmd));	/* record the byte length */
-	strcpy(&tail[1], cmd);
-	strcat(&tail[1], "\r");
-
-	/* look up the program on the path trying various extentions */
-	if ((sp = flook(prog, TRUE)) == NULL)
-		if ((sp = flook(strcat(prog, ".exe"), TRUE)) == NULL) {
-			strcpy(&prog[strlen(prog) - 4], ".com");
-			if ((sp = flook(prog, TRUE)) == NULL)
-				return FALSE;
-		}
-	strcpy(prog, sp);
-
-	/* get a pointer to this PSPs environment segment number */
-	segread(&segreg);
-
-	/* set up the EXEC parameter block */
-	pblock.envptr = 0;	/* make the child inherit the parents env */
-	pblock.fcb1 = f1;	/* point to a blank FCB */
-	pblock.fcb2 = f2;	/* point to a blank FCB */
-	pblock.cline = tail;	/* parameter line pointer */
-
-	/* and make the call */
-	regs.h.ah = 0x4b;	/* EXEC Load or Execute a Program */
-	regs.h.al = 0x00;	/* load end execute function subcode */
-	segreg.ds = ((unsigned long) (prog) >> 16);	/* program name ptr */
-	regs.x.dx = (unsigned int) (prog);
-	segreg.es = ((unsigned long) (&pblock) >> 16);	/* set up param block ptr */
-	regs.x.bx = (unsigned int) (&pblock);
-#if	TURBO | MSC
-	intdosx(&regs, &regs, &segreg);
-	if (regs.x.cflag == 0) {
-		regs.h.ah = 0x4d;	/* get child process return code */
-		intdos(&regs, &regs);	/* go do it */
-		rval = regs.x.ax;	/* save child's return code */
-	} else
-#if	MSC
-		rval = -1;
-#else
-		rval = -_doserrno;	/* failed child call */
-#endif
-#endif
-	return (rval < 0) ? FALSE : TRUE;
-}
-#endif
+/* end of spawn.c */

@@ -92,15 +92,6 @@
 #include "version.h"
 #include "window.h"
 
-/* For MSDOS, increase the default stack space. */
-#if MSDOS & TURBO
-#if PKCODE
-extern unsigned _stklen = 20000;
-#else
-extern unsigned _stklen = 32766;
-#endif
-#endif
-
 #if UNIX
 static void emergencyexit(int signr)
 {

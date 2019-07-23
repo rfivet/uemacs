@@ -24,13 +24,7 @@
 #include "utf8.h"
 #include "wrapper.h"
 
-#if PKCODE
-#if     MSDOS && TURBO
-#include    <dir.h>
-#endif
-#endif
-
-#if PKCODE && (UNIX || (MSDOS && TURBO))
+#if PKCODE && UNIX
 #define COMPLC  1
 #else
 #define COMPLC  0

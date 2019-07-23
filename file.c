@@ -395,7 +395,7 @@ void makename( bname_t bname, const char *fname)
 		   && cp1[-1] != '/')
 		--cp1;
 #endif
-#if 	V7 | USG | BSD
+#if	USG | BSD
 	while (cp1 != &fname[0] && cp1[-1] != '/')
 		--cp1;
 #endif

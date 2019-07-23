@@ -13,17 +13,7 @@
 
 /*	possible names and paths of help files under different OSs	*/
 const char *pathname[] = {
-#if	MSDOS
-	"emacs.rc",
-	"emacs.hlp",
-	"\\sys\\public\\",
-	"\\usr\\bin\\",
-	"\\bin\\",
-	"\\",
-	""
-#endif
-
-#if	V7 | BSD | USG
+#if	BSD | USG
 	".emacsrc",
 	"emacs.hlp",
 #if	PKCODE
@@ -107,7 +97,7 @@ char *flook( const char *fname, boolean hflag)
 	}
 
 #if	ENVFUNC
-#if	V7 | USG | BSD
+#if	USG | BSD
 #define	PATHCHR	':'
 #else
 #define	PATHCHR	';'

@@ -27,11 +27,6 @@ int ttrow = HUGE ;      /* Row location of HW cursor */
 int ttcol = HUGE ;      /* Column location of HW cursor */
 
 
-#if     MSDOS & (MSC | TURBO)
-union REGS rg;          /* cpu register for use of DOS calls */
-int nxtchar = -1;       /* character held from type ahead    */
-#endif
-
 #if USG         /* System V */
 #include    <signal.h>
 #include    <termio.h>
@@ -47,7 +42,7 @@ static struct termio ntermio ;	/* characteristics to use inside		*/
 #endif
 #endif
 
-#if V7 | BSD
+#if BSD
 #include        <sgtty.h>   /* for stty/gtty functions */
 #include    <signal.h>
 struct sgttyb ostate;       /* saved tty state */
@@ -89,14 +84,6 @@ char tobuf[TBUFSIZ];        /* terminal output buffer */
  */
 void ttopen(void)
 {
-#if     MSDOS & (TURBO | (PKCODE & MSC))
-    /* kill the CONTROL-break interupt */
-    rg.h.ah = 0x33;     /* control-break check dos call */
-    rg.h.al = 1;        /* set the current state */
-    rg.h.dl = 0;        /* set it OFF */
-    intdos(&rg, &rg);   /* go for it! */
-#endif
-
 #if USG
     ioctl(0, TCGETA, &otermio); /* save old settings */
     ntermio.c_iflag = 0;    /* setup new settings */
@@ -118,7 +105,7 @@ void ttopen(void)
     kbdpoll = FALSE;
 #endif
 
-#if     V7 | BSD
+#if BSD
     gtty(0, &ostate);   /* save old state */
     gtty(0, &nstate);   /* get base of new state */
 #if XONXOFF
@@ -165,14 +152,6 @@ void ttopen(void)
  */
 void ttclose(void)
 {
-#if     MSDOS & (TURBO | (PKCODE & MSC))
-    /* restore the CONTROL-break interupt */
-    rg.h.ah = 0x33;     /* control-break check dos call */
-    rg.h.al = 1;        /* set the current state */
-    rg.h.dl = 1;        /* set it ON */
-    intdos(&rg, &rg);   /* go for it! */
-#endif
-
 #if USG
 #if PKCODE
     ioctl(0, TCSETAW, &otermio);    /* restore terminal settings */
@@ -182,7 +161,7 @@ void ttclose(void)
     fcntl(0, F_SETFL, kbdflgs);
 #endif
 
-#if     V7 | BSD
+#if BSD
     stty(0, &ostate);
     ioctl(0, TIOCSETC, &otchars);   /* Place old character into K */
 #if BSD & PKCODE
@@ -208,10 +187,7 @@ int ttputc( unicode_t c) {
  * up. A no-operation on systems where byte at a time terminal I/O is done.
  */
 void ttflush( void) {
-#if     MSDOS
-#endif
-
-#if     V7 | USG | BSD
+#if	USG | BSD
 /*
  * Add some terminal output success checking, sometimes an orphaned
  * process may be left looping on SunOS 4.1.
@@ -240,24 +216,7 @@ void ttflush( void) {
  * Very simple on CPM, because the system can do exactly what you want.
  */
 int ttgetc( void) {
-#if MSDOS & (MSC | TURBO)
-    int c;          /* character read */
-
-    /* if a char already is ready, return it */
-    if (nxtchar >= 0) {
-        c = nxtchar;
-        nxtchar = -1;
-        return c;
-    }
-
-    /* call the dos to get a char */
-    rg.h.ah = 7;        /* dos Direct Console Input call */
-    intdos(&rg, &rg);
-    c = rg.h.al;        /* grab the char */
-    return c & 255;
-#endif
-
-#if     V7 | BSD
+#if BSD
     return 255 & fgetc(stdin);  /* 8BIT P.K. */
 #endif
 
@@ -281,13 +240,6 @@ int ttgetc( void) {
 
 int typahead( void)
 {
-#if MSDOS & (MSC | TURBO)
-    if (kbhit() != 0)
-        return TRUE;
-    else
-        return FALSE;
-#endif
-
 #if BSD
     int x;          /* holds # of pending chars */
 
@@ -306,7 +258,7 @@ int typahead( void)
     return kbdqp;
 #endif
 
-#if !UNIX & !MSDOS
+#if !UNIX
     return FALSE;
 #endif
 }
