@@ -19,6 +19,7 @@
 #include "bindable.h"
 #include "display.h"
 #include "exec.h"
+#include "isa.h"
 #include "names.h"
 #include "terminal.h"
 #include "utf8.h"
@@ -427,9 +428,9 @@ handle_CSI:
             goto proc_metac;
         }
 #endif
-        if (islower(c)) /* Force to upper */
-            c ^= DIFCASE;
-        if (c >= 0x00 && c <= 0x1F) /* control key */
+        if( islower( c)) /* Force to upper */
+            c = flipcase( c) ;
+        else if( c >= 0x00 && c <= 0x1F) /* control key */
             c = CONTROL | (c + '@');
         return META | c;
     }
@@ -442,9 +443,9 @@ handle_CSI:
             goto proc_metac;
         }
 #endif
-        if (islower(c)) /* Force to upper */
-            c ^= DIFCASE;
-        if (c >= 0x00 && c <= 0x1F) /* control key */
+        if( islower( c)) /* Force to upper */
+            c = flipcase( c) ;
+        else if( c >= 0x00 && c <= 0x1F) /* control key */
             c = CONTROL | (c + '@');
         return META | c;
     }

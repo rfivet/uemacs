@@ -161,7 +161,7 @@ file.o: file.c file.h buffer.h line.h retcode.h utf8.h defines.h \
 fileio.o: fileio.c fileio.h defines.h retcode.h utf8.h
 flook.o: flook.c flook.h retcode.h defines.h fileio.h
 input.o: input.c input.h bind.h estruct.h bindable.h display.h utf8.h \
- exec.h retcode.h names.h terminal.h defines.h wrapper.h
+ exec.h retcode.h isa.h names.h terminal.h defines.h wrapper.h
 isearch.o: isearch.c isearch.h basic.h retcode.h buffer.h line.h utf8.h \
  display.h estruct.h exec.h input.h bind.h search.h terminal.h defines.h \
  util.h window.h
@@ -184,8 +184,8 @@ random.o: random.c random.h retcode.h basic.h buffer.h line.h utf8.h \
 region.o: region.c region.h line.h retcode.h utf8.h buffer.h estruct.h \
  mlout.h random.h window.h defines.h
 search.o: search.c search.h line.h retcode.h utf8.h basic.h buffer.h \
- display.h estruct.h input.h bind.h mlout.h terminal.h defines.h util.h \
- window.h
+ display.h estruct.h input.h bind.h isa.h mlout.h terminal.h defines.h \
+ util.h window.h
 spawn.o: spawn.c spawn.h defines.h buffer.h line.h retcode.h utf8.h \
  display.h estruct.h exec.h file.h flook.h input.h bind.h terminal.h \
  window.h
@@ -197,7 +197,7 @@ util.o: util.c util.h
 window.o: window.c window.h defines.h buffer.h line.h retcode.h utf8.h \
  basic.h display.h estruct.h execute.h terminal.h wrapper.h
 word.o: word.c word.h basic.h retcode.h buffer.h line.h utf8.h estruct.h \
- mlout.h random.h region.h window.h defines.h
+ isa.h mlout.h random.h region.h window.h defines.h
 wrapper.o: wrapper.c wrapper.h
 wscreen.o: wscreen.c wscreen.h
 

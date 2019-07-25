@@ -69,6 +69,7 @@
 #include "display.h"
 #include "estruct.h"
 #include "input.h"
+#include "isa.h"
 #include "line.h"
 #include "mlout.h"
 #include "terminal.h"
@@ -124,7 +125,6 @@ spat_t rpat ;	/* replacement pattern          */
 #define	MC_ESC		'\\'	/* Escape - suppress meta-meaning. */
 
 #define	BIT(n)		(1 << (n))	/* An integer with one bit set. */
-#define	CHCASE(c)	((c) ^ DIFCASE)	/* Toggle the case of a letter. */
 
 /* HICHAR - 1 is the largest character we will deal with.
  * HIBYTE represents the number of bytes in the bitmap.
@@ -673,11 +673,11 @@ int scanner(const char *patrn, int direct, int beg_or_end)
 int eq(unsigned char bc, unsigned char pc)
 {
 	if ((curwp->w_bufp->b_mode & MDEXACT) == 0) {
-		if (islower(bc))
-			bc ^= DIFCASE;
+		if( islower( bc))
+			bc = flipcase( bc) ;
 
-		if (islower(pc))
-			pc ^= DIFCASE;
+		if( islower( pc))
+			pc = flipcase( pc) ;
 	}
 
 	return bc == pc;
@@ -1455,7 +1455,7 @@ static int mceq(int bc, struct magic *mt)
 		if (!(result = biteq(bc, mt->u.cclmap))) {
 			if ((curwp->w_bufp->b_mode & MDEXACT) == 0 &&
 			    (isletter(bc))) {
-				result = biteq(CHCASE(bc), mt->u.cclmap);
+				result = biteq( flipcase( bc), mt->u.cclmap) ;
 			}
 		}
 		break;
@@ -1465,7 +1465,7 @@ static int mceq(int bc, struct magic *mt)
 
 		if ((curwp->w_bufp->b_mode & MDEXACT) == 0 &&
 		    (isletter(bc))) {
-			result &= !biteq(CHCASE(bc), mt->u.cclmap);
+			result &= !biteq( flipcase( bc), mt->u.cclmap) ;
 		}
 		break;
 

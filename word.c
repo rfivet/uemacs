@@ -15,6 +15,7 @@
 #include "basic.h"
 #include "buffer.h"
 #include "estruct.h"
+#include "isa.h"
 #include "line.h"
 #include "mlout.h"
 #include "random.h"
@@ -145,12 +146,8 @@ int upperword(int f, int n)
 		}
 		while (inword() != FALSE) {
 			c = lgetc(curwp->w_dotp, curwp->w_doto);
-#if	PKCODE
-			if (islower(c)) {
-#else
-			if (c >= 'a' && c <= 'z') {
-#endif
-				c -= 'a' - 'A';
+			if( islower( c)) {
+				c = flipcase( c) ;
 				lputc(curwp->w_dotp, curwp->w_doto, c);
 				lchange(WFHARD);
 			}
@@ -181,12 +178,8 @@ int lowerword(int f, int n)
 		}
 		while (inword() != FALSE) {
 			c = lgetc(curwp->w_dotp, curwp->w_doto);
-#if	PKCODE
-			if (isupper(c)) {
-#else
-			if (c >= 'A' && c <= 'Z') {
-#endif
-				c += 'a' - 'A';
+			if( isupper( c)) {
+				c = flipcase( c) ;
 				lputc(curwp->w_dotp, curwp->w_doto, c);
 				lchange(WFHARD);
 			}
@@ -218,12 +211,8 @@ int capword(int f, int n)
 		}
 		if (inword() != FALSE) {
 			c = lgetc(curwp->w_dotp, curwp->w_doto);
-#if	PKCODE
-			if (islower(c)) {
-#else
-			if (c >= 'a' && c <= 'z') {
-#endif
-				c -= 'a' - 'A';
+			if( islower( c)) {
+				c = flipcase( c) ;
 				lputc(curwp->w_dotp, curwp->w_doto, c);
 				lchange(WFHARD);
 			}
@@ -231,12 +220,8 @@ int capword(int f, int n)
 				return FALSE;
 			while (inword() != FALSE) {
 				c = lgetc(curwp->w_dotp, curwp->w_doto);
-#if	PKCODE
-				if (isupper(c)) {
-#else
-				if (c >= 'A' && c <= 'Z') {
-#endif
-					c += 'a' - 'A';
+				if( isupper( c)) {
+					c = flipcase( c) ;
 					lputc(curwp->w_dotp, curwp->w_doto,
 					      c);
 					lchange(WFHARD);
@@ -385,24 +370,14 @@ int delbword(int f, int n)
  * Return TRUE if the character at dot is a character that is considered to be
  * part of a word. The word character list is hard coded. Should be setable.
  */
-static int inword(void)
-{
+static int inword( void) {
 	int c;
 
-	if (curwp->w_doto == llength(curwp->w_dotp))
-		return FALSE;
-	c = lgetc(curwp->w_dotp, curwp->w_doto);
-#if	PKCODE
-	if (isletter(c))
-#else
-	if (c >= 'a' && c <= 'z')
-		return TRUE;
-	if (c >= 'A' && c <= 'Z')
-#endif
-		return TRUE;
-	if (c >= '0' && c <= '9')
-		return TRUE;
-	return FALSE;
+	if( curwp->w_doto == llength( curwp->w_dotp))
+		return FALSE ;
+
+	c = lgetc( curwp->w_dotp, curwp->w_doto) ;
+	return isletter( c) || ( c >= '0' && c <= '9') ;
 }
 
 #if	WORDPRO
@@ -699,14 +674,7 @@ int wordcount(int f, int n)
 		}
 
 		/* and tabulate it */
-		wordflag = (
-#if	PKCODE
-				   (isletter(ch)) ||
-#else
-				   (ch >= 'a' && ch <= 'z') ||
-				   (ch >= 'A' && ch <= 'Z') ||
-#endif
-				   (ch >= '0' && ch <= '9'));
+		wordflag = isletter( ch) || (ch >= '0' && ch <= '9') ;
 		if (wordflag == TRUE && lastword == FALSE)
 			++nwords;
 		lastword = wordflag;

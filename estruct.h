@@ -124,23 +124,13 @@
 
 #define	CLEAN	0  /* de-alloc memory on exit                      */
 
-#define ASCII	1  /* always using ASCII char sequences for now    */
-#define EBCDIC	0  /* later IBM mainfraim versions will use EBCDIC */
-
 #ifndef	AUTOCONF
-
-#define	XONXOFF	0  /* don't disable XON-XOFF flow control P.K.     */
-#define	NATIONL	0  /* interprete [,],\,{,},| as characters P.K.    */
-
+# define XONXOFF	0  /* don't disable XON-XOFF flow control P.K.     */
 #else
-
-#define	XONXOFF	UNIX
-#define	NATIONL	UNIX
-
+# define XONXOFF	UNIX
 #endif /* Autoconf. */
 
 #define	PKCODE	1      /* include my extensions P.K., define always    */
-#define	IBMCHR	MSDOS  /* use IBM PC character set P.K.                */
 #define SCROLLCODE 1   /* scrolling code P.K.                          */
 
 /* Define some ability flags. */
@@ -155,65 +145,6 @@
 # define ENVFUNC	1
 #else
 # define ENVFUNC	0
-#endif
-
-/* DIFCASE represents the integer difference between upper
-   and lower case letters.  It is an xor-able value, which is
-   fortunate, since the relative positions of upper to lower
-   case letters is the opposite of ascii in ebcdic.
-*/
-
-#ifdef	islower
-#undef	islower
-#endif
-
-#if	PKCODE
-#ifdef	isupper
-#undef	isupper
-#endif
-#endif
-
-#if	ASCII
-
-#define	DIFCASE		0x20
-
-#if	NATIONL
-#define LASTUL ']'
-#define LASTLL '}'
-#else
-#define LASTUL 'Z'
-#define LASTLL 'z'
-#endif
-
-#if	IBMCHR
-
-#define isletter(c)	(('a' <= c && LASTLL >= c) || ('A' <= c && LASTUL >= c) || (128<=c && c<=167))
-#define islower(c)	(('a' <= c && LASTLL >= c))
-#define isupper(c)	(('A' <= c && LASTUL >= c))
-
-#else
-
-#define isletter(c)	__isxletter((0xFF & (c)))
-#define islower(c)	isxlower((0xFF & (c)))
-#define isupper(c)	isxupper((0xFF & (c)))
-
-#define __isxletter(c)	(('a' <= c && LASTLL >= c) || ('A' <= c && LASTUL >= c) || (192<=c /* && c<=255 */))
-#define isxlower(c)	(('a' <= c && LASTLL >= c) || (224 <= c && 252 >= c))
-#define isxupper(c)	(('A' <= c && LASTUL >= c) || (192 <= c && 220 >= c))
-
-#endif
-
-#endif
-
-#if	EBCDIC
-
-#define	DIFCASE		0x40
-#define isletter(c)	(('a' <= c && 'i' >= c) || ('j' <= c && 'r' >= c) || ('s' <= c && 'z' >= c) || ('A' <= c && 'I' >= c) || ('J' <= c && 'R' >= c) || ('S' <= c && 'Z' >= c))
-#define islower(c)	(('a' <= c && 'i' >= c) || ('j' <= c && 'r' >= c) || ('s' <= c && 'z' >= c))
-#if	PKCODE
-#define isupper(c)	(('A' <= c && 'I' >= c) || ('J' <= c && 'R' >= c) || ('S' <= c && 'Z' >= c))
-#endif
-
 #endif
 
 /*	Dynamic RAM tracking and reporting redefinitions	*/
