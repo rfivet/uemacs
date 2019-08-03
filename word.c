@@ -80,158 +80,122 @@ int wrapword(int f, int n)
 	return TRUE;
 }
 
-/*
- * Move the cursor backward by "n" words. All of the details of motion are
+/* Move the cursor backward by "n" words. All of the details of motion are
  * performed by the "backchar" and "forwchar" routines. Error if you try to
  * move beyond the buffers.
  */
-int backword(int f, int n)
-{
-	if (n < 0)
-		return forwword(f, -n);
-	if (backchar(FALSE, 1) == FALSE)
-		return FALSE;
-	while (n--) {
-		while (inword() == FALSE) {
-			if (backchar(FALSE, 1) == FALSE)
-				return FALSE;
-		}
-		while (inword() != FALSE) {
-			if (backchar(FALSE, 1) == FALSE)
-				return FALSE;
-		}
+int backword( int f, int n) {
+	if( n < 0)
+		return forwword( f, -n) ;
+
+	if( backchar( FALSE, 1) == FALSE)
+		return FALSE ;
+
+	while( n--) {
+		while( !inword())
+			if( backchar( FALSE, 1) == FALSE)
+				return FALSE ;
+
+		do {
+			if( backchar( FALSE, 1) == FALSE)
+				return FALSE ;
+		} while( inword()) ;
 	}
-	return forwchar(FALSE, 1);
+
+	return forwchar( FALSE, 1) ;
 }
 
-/*
- * Move the cursor forward by the specified number of words. All of the motion
+/* Move the cursor forward by the specified number of words. All of the motion
  * is done by "forwchar". Error if you try and move beyond the buffer's end.
  */
-int forwword(int f, int n)
-{
-	if (n < 0)
-		return backword(f, -n);
-	while (n--) {
-		while (inword() == TRUE) {
-			if (forwchar(FALSE, 1) == FALSE)
-				return FALSE;
-		}
+int forwword( int f, int n) {
+	if( n < 0)
+		return backword( f, -n) ;
 
-		while (inword() == FALSE) {
-			if (forwchar(FALSE, 1) == FALSE)
-				return FALSE;
-		}
+	while( n--) {
+		while( inword())
+			if( forwchar( FALSE, 1) == FALSE)
+				return FALSE ;
+
+		do {
+			if( forwchar( FALSE, 1) == FALSE)
+				return FALSE ;
+		} while( !inword()) ;
 	}
-	return TRUE;
+
+	return TRUE ;
 }
 
-/*
- * Move the cursor forward by the specified number of words. As you move,
+/* Word capitalize, to upper and to lower
+*/
+static boolean uniflip( boolean toupper_f) {	/* flip unicode case and forward */
+	unicode_t	c ;
+	int	len ;
+
+	len = lgetchar( &c) ;	/* len => unicode or extended ASCII */
+	if( (c <= 255) && ( toupper_f ? islower( c) : isupper( c))) {
+		c = flipcase( c) ;
+		ldelchar( 1, FALSE) ;
+		if( len == 1)
+			linsert_byte( 1, c) ;
+		else
+			linsert( 1, c) ;
+
+		lchange( WFHARD) ;
+	} else
+		if( forwchar( FALSE, 1) == FALSE)
+			return FALSE ;
+
+	return TRUE ;
+}
+
+static boolean capcapword( int n, boolean first_f, boolean rest_f) {
+	if( curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+		return rdonly() ;		/* we are in read only mode     */
+
+	if( n < 0)
+		return FALSE ;
+
+	while( n--) {
+		while( !inword())
+			if( forwchar( FALSE, 1) == FALSE)
+				return FALSE ;
+
+		if( !uniflip( first_f))
+			return FALSE ;
+
+		while( inword())
+			if( !uniflip( rest_f))
+				return FALSE ;
+	}
+
+	return TRUE ;
+}
+
+/* Move the cursor forward by the specified number of words. As you move,
  * convert any characters to upper case. Error if you try and move beyond the
  * end of the buffer. Bound to "M-U".
  */
-int upperword(int f, int n)
-{
-	int c;
-
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
-	if (n < 0)
-		return FALSE;
-	while (n--) {
-		while (inword() == FALSE) {
-			if (forwchar(FALSE, 1) == FALSE)
-				return FALSE;
-		}
-		while (inword() != FALSE) {
-			c = lgetc(curwp->w_dotp, curwp->w_doto);
-			if( islower( c)) {
-				c = flipcase( c) ;
-				lputc(curwp->w_dotp, curwp->w_doto, c);
-				lchange(WFHARD);
-			}
-			if (forwchar(FALSE, 1) == FALSE)
-				return FALSE;
-		}
-	}
-	return TRUE;
+int upperword( int f, int n) {
+	return capcapword( n, TRUE, TRUE) ;
 }
 
-/*
- * Move the cursor forward by the specified number of words. As you move
+
+/* Move the cursor forward by the specified number of words. As you move
  * convert characters to lower case. Error if you try and move over the end of
  * the buffer. Bound to "M-L".
  */
-int lowerword(int f, int n)
-{
-	int c;
-
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
-	if (n < 0)
-		return FALSE;
-	while (n--) {
-		while (inword() == FALSE) {
-			if (forwchar(FALSE, 1) == FALSE)
-				return FALSE;
-		}
-		while (inword() != FALSE) {
-			c = lgetc(curwp->w_dotp, curwp->w_doto);
-			if( isupper( c)) {
-				c = flipcase( c) ;
-				lputc(curwp->w_dotp, curwp->w_doto, c);
-				lchange(WFHARD);
-			}
-			if (forwchar(FALSE, 1) == FALSE)
-				return FALSE;
-		}
-	}
-	return TRUE;
+int lowerword( int f, int n) {
+	return capcapword( n, FALSE, FALSE) ;
 }
 
-/*
- * Move the cursor forward by the specified number of words. As you move
+/* Move the cursor forward by the specified number of words. As you move
  * convert the first character of the word to upper case, and subsequent
  * characters to lower case. Error if you try and move past the end of the
  * buffer. Bound to "M-C".
  */
-int capword(int f, int n)
-{
-	int c;
-
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
-	if (n < 0)
-		return FALSE;
-	while (n--) {
-		while (inword() == FALSE) {
-			if (forwchar(FALSE, 1) == FALSE)
-				return FALSE;
-		}
-		if (inword() != FALSE) {
-			c = lgetc(curwp->w_dotp, curwp->w_doto);
-			if( islower( c)) {
-				c = flipcase( c) ;
-				lputc(curwp->w_dotp, curwp->w_doto, c);
-				lchange(WFHARD);
-			}
-			if (forwchar(FALSE, 1) == FALSE)
-				return FALSE;
-			while (inword() != FALSE) {
-				c = lgetc(curwp->w_dotp, curwp->w_doto);
-				if( isupper( c)) {
-					c = flipcase( c) ;
-					lputc(curwp->w_dotp, curwp->w_doto,
-					      c);
-					lchange(WFHARD);
-				}
-				if (forwchar(FALSE, 1) == FALSE)
-					return FALSE;
-			}
-		}
-	}
-	return TRUE;
+int capword( int f, int n) {
+	return capcapword( n, TRUE, FALSE) ;
 }
 
 /*
