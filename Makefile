@@ -92,7 +92,7 @@ splint:
 
 errs:
 	@rm -f makeout
-	make $(PROGRAM) >makeout
+	make $(PROGRAM) >makeout 2>&1
 
 tags:	${SRC}
 	@rm -f tags
