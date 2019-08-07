@@ -31,6 +31,7 @@ void mlwrite( const char *fmt, ...) ;
 void ostring( char *s) ;
 void echoc( unicode_t c) ;
 void echos( char *s) ;
+void rubout( void) ;
 void getscreensize( int *widthp, int *heightp) ;
 
 #if UNIX

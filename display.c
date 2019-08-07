@@ -1557,8 +1557,10 @@ static int newscreensize(int h, int w)
  * char c ;     character to output
  */
 void echoc( unicode_t c) {
-	if( disinp)
+	if( disinp) {
 		TTputc( c) ;
+		ttcol += 1 ;
+	}
 }
 
 /*
@@ -1567,10 +1569,22 @@ void echoc( unicode_t c) {
  * char *s;     string to output
  */
 void echos( char *s) {
+	char c ;
+
 	if( disinp)
-		while( *s)
-			TTputc( *s++) ;
+		while( (c = *s++)) {
+			TTputc( c) ;
+			ttcol += 1 ;
+		}
 }
 
+void rubout( void) {
+	if( disinp) {
+		TTputc( '\b') ;
+		TTputc( ' ') ;
+		TTputc( '\b') ;
+		ttcol -= 1 ;
+	}
+}
 
 /* end of display.c */

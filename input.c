@@ -48,8 +48,6 @@ int abortc = CONTROL | 'G' ;		/* current abort command char	 */
 
 const int nlc = CONTROL | 'J' ;		/* end of input char */
 
-static const int quotec = 0x11 ;	/* quote char during getstring()	 */
-
 
 void ue_system( const char *cmd) {
     int ret ;
@@ -201,17 +199,15 @@ fn_t getname(void)
 
         } else if (c == 0x7F || c == 0x08) {    /* rubout/erase */
             if (cpos != 0) {
-				echos( "\b \b") ;
-                --ttcol;
+				rubout() ;
                 --cpos;
                 TTflush();
             }
 
         } else if (c == 0x15) { /* C-U, kill */
             while (cpos != 0) {
-				echos( "\b \b") ;
+				rubout() ;
                 --cpos;
-                --ttcol;
             }
 
             TTflush();
@@ -291,10 +287,8 @@ fn_t getname(void)
             if (cpos < NSTRING - 1 && c > ' ') {
                 buf[cpos++] = c;
                 echoc( c) ;
+				TTflush();
             }
-
-            ++ttcol;
-            TTflush();
         }
     }
 }
@@ -508,14 +502,42 @@ handle_CSI:
 /*  A more generalized prompt/reply function allowing the caller
     to specify the proper terminator. If the terminator is not
     a return ('\n') it will echo as "<NL>"
-                            */
+*/
+
+static void echov( int c) {
+/* verbose echo of a character */
+	if( c == '\n')		/* put out <NL> for <ret> */
+		echos( "<NL>") ;
+	else {
+		if( c < ' ') {
+			echoc( '^') ;
+			c ^= 0x40 ;
+		}
+
+		echoc( c) ;
+	}
+}
+
+static void rubc( char c) {
+	rubout() ;
+	if( c < ' ') {
+		rubout() ;
+		if( c == '\n') {
+			rubout() ;
+			rubout() ;
+		}
+	}
+}
+
 int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
 {
     int cpos;   /* current character position in string */
     int c;
-    boolean quotef ;    /* are we quoting the next char? */
+    boolean quote_f ;    /* are we quoting the next char? */
+	int retval ;		/* TRUE, FALSE, ABORT */
 #if COMPLC
-    int ffile, ocpos, nskip = 0, didtry = 0;
+	boolean file_f ;
+    int ocpos, nskip = 0, didtry = 0;
 #if     MSDOS
     struct ffblk ffblk;
     char *fcp;
@@ -526,11 +548,11 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
 #endif
 /*	Look for "Find file: ", "View file: ", "Insert file: ", "Write file: ",
 **	"Read file: ", "Execute file: " */
-	ffile = NULL != strstr( prompt, " file: ") ;
+	file_f = NULL != strstr( prompt, " file: ") ;
 #endif
 
     cpos = 0;
-    quotef = FALSE;
+    quote_f = FALSE;
 
     /* prompt the user for the input string */
     mlwrite( "%s", prompt);
@@ -541,89 +563,62 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
             nskip = -1;
         didtry = 0;
 #endif
-        /* get a character from the user */
+	/* get a character from the user */
         c = get1key();
 
-        /* If it is a <ret>, change it to a <NL> */
-#if PKCODE
-        if (c == (CONTROL | 0x4d) && !quotef)
-#else
-        if (c == (CONTROL | 0x4d))
-#endif
-            c = CONTROL | 0x40 | '\n';
+	/* Quoting? Store as it is */
+		if( quote_f == TRUE) {
+			quote_f = FALSE ;
+			if( cpos < nbuf - 1) {
+				c = ectoc( c) ;
+				buf[ cpos++] = c ;
+				echov( c) ;
+				TTflush() ;
+			}
 
-        /* if they hit the line terminate, wrap it up */
-        if (c == eolchar && quotef == FALSE) {
-            buf[cpos++] = 0;
+			continue ;
+		}
 
-            /* clear the message line */
+	/* If it is a <ret>, change it to a <NL> */
+        if( c == (CONTROL | 'M'))
+            c = CONTROL | 0x40 | '\n' ;
+
+        if( c == eolchar) {
+		/* if they hit the line terminator, wrap it up */
+            buf[ cpos] = 0 ;
+
+		/* clear the message line */
             mlwrite("");
-            TTflush();
 
-			if( tmpf != NULL) {
-				fclose( tmpf) ;
-				unlink( tmp) ;
-			}
+		/* if we default the buffer, return FALSE */
+			retval = cpos != 0 ;
+			break ;
+        } else if( c == abortc) {
+		/* Abort the input? */
+            ctrlg( FALSE, 0) ;
+			retval = ABORT ;
+			break ;
+		}
 
-            /* if we default the buffer, return FALSE */
-            if (buf[0] == 0)
-                return FALSE;
+	/* change from command form back to character form */
+        c = ectoc( c) ;
 
-            return TRUE;
-        }
-
-        /* change from command form back to character form */
-        c = ectoc(c);
-
-        if (c == ectoc(abortc) && quotef == FALSE) {
-            /* Abort the input? */
-            ctrlg(FALSE, 0);
-            TTflush();
-			if( tmpf != NULL) {
-				fclose( tmpf) ;
-				unlink( tmp) ;
-			}
-
-            return ABORT;
-        } else if ((c == 0x7F || c == 0x08) && quotef == FALSE) {
-            /* rubout/erase */
+        if( c == 0x7F || c == 0x08) {
+		/* rubout/erase */
             if (cpos != 0) {
-                echos("\b \b");
-                --ttcol;
-
-                if (buf[--cpos] < 0x20) {
-                    echos("\b \b");
-                    --ttcol;
-                }
-                if (buf[cpos] == '\n') {
-                    echos("\b\b  \b\b");
-                    ttcol -= 2;
-                }
-
+				rubc( buf[ --cpos]) ;
                 TTflush();
             }
+        } else if( c == 0x15) {
+        /* C-U, kill */
+            while (cpos != 0)
+				rubc( buf[ --cpos]) ;
 
-        } else if (c == 0x15 && quotef == FALSE) {
-            /* C-U, kill */
-            while (cpos != 0) {
-                echos("\b \b");
-                --ttcol;
-
-                if (buf[--cpos] < 0x20) {
-                    echos("\b \b");
-                    --ttcol;
-                }
-                if (buf[cpos] == '\n') {
-                    echos("\b\b  \b\b");
-                    ttcol -= 2;
-                }
-            }
             TTflush();
 
 #if COMPLC
-        } else if ((c == 0x09 || c == ' ') && quotef == FALSE
-               && ffile) {
-            /* TAB, complete file name */
+        } else if( (c == 0x09 || c == ' ') && file_f) {
+        /* TAB, complete file name */
             char ffbuf[255];
 #if MSDOS
             char sffbuf[128];
@@ -634,17 +629,7 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
             didtry = 1;
             ocpos = cpos;
             while (cpos != 0) {
-                echos("\b \b");
-                --ttcol;
-
-                if (buf[--cpos] < 0x20) {
-                    echos("\b \b");
-                    --ttcol;
-                }
-                if (buf[cpos] == '\n') {
-                    echos("\b\b  \b\b");
-                    ttcol -= 2;
-                }
+				rubc( buf[ --cpos]) ;
                 if (buf[cpos] == '*' || buf[cpos] == '?')
                     iswild = 1;
 #if MSDOS
@@ -726,50 +711,34 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
                 TTbeep();
 #endif
 
-            for (n = 0; n < cpos; n++) {
-                c = buf[n];
-                if ((c < ' ') && (c != '\n')) {
-                    echoc( '^') ;
-                    ++ttcol;
-                    c ^= 0x40;
-                }
-
-                if( c != '\n')
-					echoc( c) ;
-                else {    /* put out <NL> for <ret> */
-                    echos("<NL>");
-                    ttcol += 3;
-                }
-                ++ttcol;
+            for( n = 0 ; n < cpos ; n++) {
+                c = buf[ n] & 0xFF ;	/* NEED better Unicode handling */
+				echov( c) ;
             }
-            TTflush();
+
+            TTflush() ;
 #if UNIX
             rewind(tmpf);
 #endif
 #endif
 
-        } else if ((c == quotec || c == 0x16) && quotef == FALSE) {
-            quotef = TRUE;
-        } else {
-            quotef = FALSE;
-            if (cpos < nbuf - 1) {
-                buf[cpos++] = c;
-
-                if ((c < ' ') && (c != '\n')) {
-                    echoc( '^') ;
-                    ++ttcol;
-                    c ^= 0x40;
-                }
-
-                if( c != '\n')
-					echoc( c) ;
-                else {    /* put out <NL> for <ret> */
-                    echos("<NL>");
-                    ttcol += 3;
-                }
-                ++ttcol;
-                TTflush();
+        } else if( c == 0x11 || c == 0x16)
+		/* ^Q or ^V */
+			quote_f = TRUE ;
+        else
+		/* store as it is */
+            if( cpos < nbuf - 1) {
+                buf[ cpos++] = c ;
+				echov( c) ;
+				TTflush() ;
             }
-        }
     }
+
+	TTflush() ;
+	if( tmpf != NULL) {
+		fclose( tmpf) ;
+		unlink( tmp) ;
+	}
+
+	return retval ;
 }
