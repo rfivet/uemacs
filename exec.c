@@ -82,15 +82,6 @@ static int dobuf( struct buffer *bp) ;
 static void freewhile( struct while_block *wp) ;
 static int macarg( char *tok, int toksz) ;
 
-void ue_system( const char *cmd) {
-    int ret ;
-
-    ret = system( cmd) ;
-    if( ret == -1) {
-    /* some actual handling needed here */
-    }
-}
-
 /*
  * Execute a named command even if it is not bound.
  */

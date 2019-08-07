@@ -21,6 +21,7 @@ extern int abortc;		/* current abort command char   */
 extern const int nlc ;	/* end of input char */
 
 
+void ue_system( const char *cmd) ;
 int mlyesno( const char *prompt) ;
 int newmlarg( char **outbufref, const char *prompt, int size) ;
 int newmlargt( char **outbufref, const char *prompt, int size) ;

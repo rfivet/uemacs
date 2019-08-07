@@ -11,6 +11,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -49,6 +50,15 @@ const int nlc = CONTROL | 'J' ;		/* end of input char */
 
 static const int quotec = 0x11 ;	/* quote char during getstring()	 */
 
+
+void ue_system( const char *cmd) {
+    int ret ;
+
+    ret = system( cmd) ;
+    if( ret == -1) {
+    /* some actual handling needed here */
+    }
+}
 
 /*
  * Ask a yes or no question in the message line. Return either TRUE, FALSE, or
