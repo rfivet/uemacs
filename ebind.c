@@ -172,7 +172,7 @@ struct key_tab keytab[NBINDS] = {
     ,
     {CTLX | 'C', spawncli}
     ,
-#if BSD | __hpux | SVR4
+#if BSD | SVR4
     {CTLX | 'D', bktoshell}
     ,
 #endif

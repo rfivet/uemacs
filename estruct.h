@@ -38,7 +38,7 @@
 #undef BSD
 #endif
 
-#if defined(SYSV) || defined(u3b2) || defined(_AIX) || (defined(i386) && defined(unix)) || defined(__hpux) || defined( __unix__)
+#if defined(SYSV) || defined(u3b2) || defined(_AIX) || (defined(i386) && defined(unix)) || defined( __unix__)
 #define	USG 1 /* System V UNIX */
 #else
 #define	USG 0

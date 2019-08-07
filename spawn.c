@@ -79,7 +79,7 @@ int spawncli(int f, int n)
 #endif
 }
 
-#if	BSD | __hpux | SVR4
+#if	BSD | SVR4
 
 int bktoshell(int f, int n)
 {				/* suspend MicroEMACS and wait to wake up */

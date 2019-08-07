@@ -72,7 +72,7 @@ char tobuf[TBUFSIZ];        /* terminal output buffer */
 #endif
 #endif
 
-#if __hpux | SVR4
+#if SVR4
 extern int rtfrmshell();    /* return from suspended shell */
 #define TBUFSIZ 128
 char tobuf[TBUFSIZ];        /* terminal output buffer */
@@ -130,14 +130,14 @@ void ttopen(void)
 #endif
 #endif
 
-#if __hpux | SVR4
+#if SVR4
     /* provide a smaller terminal output buffer so that
        the type ahead detection works better (more often) */
     setvbuf(stdout, &tobuf[0], _IOFBF, TBUFSIZ);
     signal(SIGTSTP, SIG_DFL);   /* set signals so that we can */
     signal(SIGCONT, rtfrmshell);    /* suspend & restart emacs */
     TTflush();
-#endif              /* __hpux */
+#endif
 
     /* on all screens we are not sure of the initial position
        of the cursor                                        */
