@@ -190,50 +190,38 @@ void vtmove(int row, int col)
  * This routine only puts printing characters into the virtual
  * terminal buffers. Only column overflow is checked.
  */
-static void vtputc(int c)
-{
-	struct video *vp;	/* ptr to line being updated */
 
+static void sane_vtputc( unicode_t c) {
+/* intended to be called by vtputc once sanity check has been done
+** only normal printable char should be passed as parameter */
+	unicode_t *vcp = vscreen[ vtrow]->v_text ;	/* ptr to line being updated */
+	if( vtcol >= term.t_ncol)
+		vcp[ term.t_ncol - 1] = '$' ;
+	else if( vtcol >= 0)
+		vcp[ vtcol] = c ;
+
+	vtcol += 1 ;
+}
+
+static void vtputc( unicode_t c) {
 	/* In case somebody passes us a signed char.. */
-	if (c < 0) {
-		c += 256;
-		if (c < 0)
-			return;
-	}
+	if( c > 0x10FFFF)	/* Let's assume this is due to sign extension */
+		c &= 0xFF ;
 
-	vp = vscreen[vtrow];
-
-	if (vtcol >= term.t_ncol) {
-		++vtcol;
-		vp->v_text[term.t_ncol - 1] = '$';
-		return;
-	}
-
-	if (c == '\t') {
+	if( c == '\t')
 		do {
-			vtputc(' ');
+			sane_vtputc( ' ') ;
 		} while( ((vtcol + taboff) % tabwidth) != 0) ;
-
-		return ;
-	}
-
-	if (c < 0x20 || c == 0x7F) {
-		vtputc('^');
-		vtputc(c ^ 0x40);
-		return;
-	}
-
-	if (c >= 0x80 && c <= 0xA0) {
+	else if( c < 0x20 || c == 0x7F) {
+		sane_vtputc( '^') ;
+		sane_vtputc( c ^ 0x40) ;
+	} else if( c >= 0x80 && c <= 0xA0) {
 		static const char hex[] = "0123456789abcdef";
-		vtputc('\\');
-		vtputc(hex[c >> 4]);
-		vtputc(hex[c & 15]);
-		return;
-	}
-	
-	if (vtcol >= 0)
-		vp->v_text[vtcol] = c;
-	++vtcol;
+		sane_vtputc( '\\') ;
+		sane_vtputc( hex[ c >> 4]) ;
+		sane_vtputc( hex[ c & 15]) ;
+	} else
+		sane_vtputc( c) ;
 }
 
 static int vtputs( const char *s) {
@@ -251,15 +239,11 @@ static int vtputs( const char *s) {
  * Erase from the end of the software cursor to the end of the line on which
  * the software cursor is located.
  */
-static void vteeol(void)
-{
-/*  struct video *vp;	*/
-	unicode_t *vcp = vscreen[vtrow]->v_text;
+static void vteeol( void) {
+	unicode_t *vcp = vscreen[ vtrow]->v_text ;
 
-/*  vp = vscreen[vtrow];	*/
-	while (vtcol < term.t_ncol)
-/*	vp->v_text[vtcol++] = ' ';	*/
-		vcp[vtcol++] = ' ';
+	while( vtcol < term.t_ncol)
+		vcp[ vtcol++] = ' ' ;
 }
 
 /*
@@ -1563,7 +1547,7 @@ void echoc( unicode_t c) {
  * char *s;     string to output
  */
 void echos( char *s) {
-	char c ;
+	unicode_t c ;
 
 	if( disinp)
 		while( (c = *s++)) {
