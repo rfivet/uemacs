@@ -509,7 +509,7 @@ static void echov( int c) {
 	if( c == '\n')		/* put out <NL> for <ret> */
 		echos( "<NL>") ;
 	else {
-		if( c < ' ') {
+		if( c < ' ' || c == 0x7F) {
 			echoc( '^') ;
 			c ^= 0x40 ;
 		}
@@ -520,7 +520,8 @@ static void echov( int c) {
 
 static void rubc( char c) {
 	rubout() ;
-	if( c < ' ') {
+	if( c < ' ' || c == 0x7F) {
+	/* ^x range */
 		rubout() ;
 		if( c == '\n') {
 			rubout() ;

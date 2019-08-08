@@ -217,15 +217,9 @@ static void vtputc(int c)
 		return ;
 	}
 
-	if (c < 0x20) {
+	if (c < 0x20 || c == 0x7F) {
 		vtputc('^');
 		vtputc(c ^ 0x40);
-		return;
-	}
-
-	if (c == 0x7f) {
-		vtputc('^');
-		vtputc('?');
 		return;
 	}
 
