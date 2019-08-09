@@ -65,16 +65,16 @@ void ue_system( const char *cmd) {
  */
 int mlyesno( const char *prompt)
 {
-    char c;         /* input character */
+    int	c ;         /* input character */
 
     for (;;) {
         /* prompt the user */
 		mlwrite( "%s (y/n)? ", prompt) ;
 
         /* get the response */
-        c = tgetc();
+        c = get1key() ;
 
-        if (c == ectoc(abortc)) /* Bail out! */
+        if( c == abortc) /* Bail out! */
             return ABORT;
 
         if (c == 'y' || c == 'Y')
@@ -147,13 +147,14 @@ int newmlargt( char **outbufref, const char *prompt, int size) {
  *  expanded character to character
  *  collapse the CONTROL and SPEC flags back into an ascii code
  */
-int ectoc(int c)
-{
-    if (c & CONTROL)
-        c = c & ~(CONTROL | 0x40);
-    if (c & SPEC)
-        c = c & 255;
-    return c;
+int ectoc( int c) {
+	if( c & CONTROL)
+		c ^= CONTROL | 0x40 ;
+
+	if( c & SPEC)
+		c &= 255 ;
+
+	return c ;
 }
 
 /*
@@ -284,7 +285,7 @@ fn_t getname(void)
             TTflush();
 /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
         } else {
-            if (cpos < NSTRING - 1 && c > ' ') {
+            if( cpos < NSTRING - 1 && (islower( c) || c == '-')) {
                 buf[cpos++] = c;
                 echoc( c) ;
 				TTflush();
@@ -344,29 +345,18 @@ int tgetc(void)
     return c;
 }
 
-/*  GET1KEY:    Get one keystroke. The only prefixs legal here
-            are the SPEC and CONTROL prefixes.
-                                */
-
-int get1key(void)
-{
-    int c;
+/*  GET1KEY: Get one keystroke. The only prefixs legal here are the SPEC
+    and CONTROL prefixes. */
+int get1key( void) {
+    int c ;
 
     /* get a keystroke */
     c = tgetc();
 
-#if MSDOS
-    if (c == 0) {       /* Apply SPEC prefix    */
-        c = tgetc();
-        if (c >= 0x00 && c <= 0x1F) /* control key? */
-            c = CONTROL | (c + '@');
-        return SPEC | c;
-    }
-#endif
+    if( (c >= 0x00 && c <= 0x1F) || c == 0x7F)	/* C0 control -> C-     */
+		c ^= CONTROL | 0x40 ;
 
-    if (c >= 0x00 && c <= 0x1F) /* C0 control -> C-     */
-        c = CONTROL | (c + '@');
-    return c;
+    return c ;
 }
 
 /*  GETCMD: Get a command from the keyboard. Process all applicable

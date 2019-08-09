@@ -35,6 +35,7 @@
  * control-X commands.
  */
 struct key_tab keytab[NBINDS] = {
+    {CONTROL | '?', backdel},
     {CONTROL | 'A', (fn_t) gotobol}
     ,
     {CONTROL | 'B', (fn_t) backchar}
@@ -206,6 +207,7 @@ struct key_tab keytab[NBINDS] = {
     ,
     {CTLX | 'Z', enlargewind}
     ,
+    {META | CONTROL | '?', delbword},
 #if WORDPRO
     {META | CONTROL | 'C', wordcount}
     ,
@@ -315,8 +317,6 @@ struct key_tab keytab[NBINDS] = {
     ,
     {META | 'Z', quickexit}
     ,
-    {META | 0x7F, delbword}
-    ,
 
 #if VT220
     {SPEC | '1', (fn_t) gotobob /* fisearch */}
@@ -352,9 +352,6 @@ struct key_tab keytab[NBINDS] = {
     {SPEC | 'i', cex}
     ,
 #endif
-
-    {0x7F, backdel}
-    ,
 
     /* special internal bindings */
     { SPEC | META | 'W', wrapword },    /* called on word wrap */
