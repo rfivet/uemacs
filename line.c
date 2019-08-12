@@ -24,6 +24,7 @@
 #include "buffer.h"
 #include "estruct.h"
 #include "mlout.h"
+#include "utf8.h"
 #include "window.h"
 
 
@@ -91,28 +92,6 @@ char *getkill( void) {
  * location. Error if you try and move out of the buffer. Set the flag if the
  * line pointer for dot changes.
  */
-static unsigned utf8_revdelta( unsigned char *p, unsigned pos) {
-	unsigned delta = 0 ;
-
-	if( (*p & 0xC0) == 0x80) {
-		unsigned char c ;
-
-		c = *--p ;
-		if( (c & 0xE0) == 0xC0)	/* valid 2 bytes unicode seq */
-			delta = 1 ;
-		else if( ((c & 0xC0) == 0x80) && (pos > 1)) {
-			c = *--p ;
-			if( (c & 0xF0) == 0xE0)	/* valid 3 bytes unicode seq */
-				delta = 2 ;
-			else if( ((c & 0xC0) == 0x80) && (pos > 2))
-				if( (p[ -1] & 0xF8) == 0xF0)	/* valid 4 bytes unicode seq */
-					delta = 3 ;
-		}
-	}
-
-	return delta ;
-}
-
 boolean backchar( int f, int n) {
 	assert( f == TRUE || (f == FALSE && n == 1)) ;
 	if( n < 0)

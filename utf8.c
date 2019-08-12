@@ -114,5 +114,27 @@ unsigned unicode_to_utf8( unicode_t c, char *utf8) {
     return bytes ;
 }
 
+unsigned utf8_revdelta( unsigned char *p, unsigned pos) {
+	unsigned delta = 0 ;
+
+	if( (*p & 0xC0) == 0x80) {
+		unsigned char c ;
+
+		c = *--p ;
+		if( (c & 0xE0) == 0xC0)	/* valid 2 bytes unicode seq */
+			delta = 1 ;
+		else if( ((c & 0xC0) == 0x80) && (pos > 1)) {
+			c = *--p ;
+			if( (c & 0xF0) == 0xE0)	/* valid 3 bytes unicode seq */
+				delta = 2 ;
+			else if( ((c & 0xC0) == 0x80) && (pos > 2))
+				if( (p[ -1] & 0xF8) == 0xF0)	/* valid 4 bytes unicode seq */
+					delta = 3 ;
+		}
+	}
+
+	return delta ;
+}
+
 
 /* end of utf8.c */

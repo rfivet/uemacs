@@ -308,7 +308,7 @@ int tgetc(void)
         if (kbdptr < kbdend)
             return (int) *kbdptr++;
 
-        /* at the end of last repitition? */
+        /* at the end of last repetition? */
         if (--kbdrep < 1) {
             kbdmode = STOP;
 #if VISMAC == 0
@@ -360,8 +360,28 @@ int get1key( void) {
 }
 
 /*  GETCMD: Get a command from the keyboard. Process all applicable
-        prefix keys
-                            */
+    prefix keys */
+
+static int get1unicode( int *k) {
+/* Accept UTF-8 sequence */
+	int c = *k ;
+	if( c > 0xC1 && c <= 0xF4) {
+		char utf[ 4] ;
+    	char cc ;
+
+		utf[ 0] = c ;
+		utf[ 1] = cc = get1key() ;
+		if( (c & 0x20) && ((cc & 0xC0) == 0x80)) { /* at least 3 bytes and a valid encoded char */
+			utf[ 2] = cc = get1key() ;
+			if( (c & 0x10) && ((cc & 0xC0) == 0x80)) /* at least 4 bytes and a valid encoded char */
+				utf[ 3] = get1key() ;
+		}
+
+		return utf8_to_unicode( utf, 0, sizeof utf, (unicode_t *) k) ;
+	} else
+		return 1 ;
+}
+
 int getcmd(void)
 {
     int c;          /* fetched keystroke */
@@ -466,23 +486,7 @@ handle_CSI:
     }
 
 #ifdef CYGWIN
-	/* Accept UTF-8 sequence */
-	if( c <= 0xC1 || c > 0xF4)
-		return c ;
-	else {
-		char utf[ 4] ;
-		char cc ;
-
-		utf[ 0] = c ;
-		utf[ 1] = cc = get1key() ;
-		if( (c & 0x20) && ((cc & 0xC0) == 0x80)) { /* at least 3 bytes and a valid encoded char */
-			utf[ 2] = cc = get1key() ;
-			if( (c & 0x10) && ((cc & 0xC0) == 0x80)) /* at least 4 bytes and a valid encoded char */
-				utf[ 3] = get1key() ;
-		}
-
-		utf8_to_unicode( utf, 0, sizeof utf, (unicode_t *) &c) ;
-	}
+	get1unicode( &c) ;
 #endif
 	
     /* otherwise, just return it */
@@ -510,7 +514,7 @@ static void echov( int c) {
 
 static void rubc( char c) {
 	rubout() ;
-	if( c < ' ' || c == 0x7F) {
+	if( (c >= 0 && c < ' ') || c == 0x7F) {
 	/* ^x range */
 		rubout() ;
 		if( c == '\n') {
@@ -598,15 +602,13 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
 		/* rubout/erase */
             if (cpos != 0) {
 				rubc( buf[ --cpos]) ;
+				cpos -= utf8_revdelta( (unsigned char *) &buf[ cpos], cpos) ;
                 TTflush();
             }
         } else if( c == 0x15) {
         /* C-U, kill */
-            while (cpos != 0)
-				rubc( buf[ --cpos]) ;
-
-            TTflush();
-
+			mlwrite( "%s", prompt) ;
+			cpos = 0 ;
 #if COMPLC
         } else if( (c == 0x09 || c == ' ') && file_f) {
         /* TAB, complete file name */
@@ -619,19 +621,16 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
 
             didtry = 1;
             ocpos = cpos;
-            while (cpos != 0) {
-				rubc( buf[ --cpos]) ;
-                if (buf[cpos] == '*' || buf[cpos] == '?')
-                    iswild = 1;
-#if MSDOS
-                if (lsav < 0 && (buf[cpos] == '\\' ||
-                         buf[cpos] == '/' ||
-                         buf[cpos] == ':'
-                         && cpos == 1))
-                    lsav = cpos;
-#endif
-            }
-            TTflush();
+			mlwrite( "%s", prompt) ;
+			while( cpos != 0) {
+				c = buf[ --cpos] ;
+                if( c == '*' || c == '?') {
+                    iswild = 1 ;
+					cpos = 0 ;
+					break ;
+				}
+			}
+
             if (nskip < 0) {
                 buf[ocpos] = 0;
 #if UNIX
@@ -702,8 +701,8 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
                 TTbeep();
 #endif
 
-            for( n = 0 ; n < cpos ; n++) {
-                c = buf[ n] & 0xFF ;	/* NEED better Unicode handling */
+            for( n = 0 ; n < cpos ; ) {
+				n += utf8_to_unicode( buf, n, nbuf, (unicode_t *) &c) ;
 				echov( c) ;
             }
 
@@ -716,13 +715,17 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
         } else if( c == 0x11 || c == 0x16)
 		/* ^Q or ^V */
 			quote_f = TRUE ;
-        else
+        else {
 		/* store as it is */
-            if( cpos < nbuf - 1) {
-                buf[ cpos++] = c ;
+			int n ;
+
+			n = get1unicode( &c) ;	/* fetch multiple bytes */
+            if( cpos + n < nbuf) {
+				cpos += unicode_to_utf8( c, &buf[ cpos]) ;
 				echov( c) ;
 				TTflush() ;
             }
+		}
     }
 
 	TTflush() ;
