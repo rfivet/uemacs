@@ -27,6 +27,7 @@
 #include "lock.h"
 #include "mlout.h"
 #include "util.h"
+#include "utf8.h"
 #include "window.h"
 
 typedef enum {
@@ -390,19 +391,24 @@ void makename( bname_t bname, const char *fname)
 	while (*cp1 != 0)
 		++cp1;
 
-#if 	MSDOS
-	while (cp1 != &fname[0] && cp1[-1] != ':' && cp1[-1] != '\\'
-		   && cp1[-1] != '/')
-		--cp1;
-#endif
-#if	USG | BSD
+
 	while (cp1 != &fname[0] && cp1[-1] != '/')
 		--cp1;
-#endif
+
 	cp2 = &bname[0];
-	while( cp2 != &bname[ sizeof( bname_t) - 1] && *cp1 != 0 && *cp1 != ';')
-		*cp2++ = *cp1++;
-	*cp2 = 0;
+	while( *cp1 != 0 && *cp1 != ';') {
+		unicode_t c ;
+		int n ;
+
+		n = utf8_to_unicode( cp1, 0, 4, &c) ;
+		if( cp2 + n <= &bname[ sizeof( bname_t) - 2])	/* 1 digit buffer name conflict [0..9] + EOS */
+			while( n--)
+				*cp2++ = *cp1++ ;
+		else
+			break ;
+	}
+
+ 	*cp2 = 0;
 }
 
 /*
@@ -435,7 +441,7 @@ void unqname(char *name)
  * Update the remembered file name and clear the
  * buffer changed flag. This handling of file names
  * is different from the earlier versions, and
- * is more compatable with Gosling EMACS than
+ * is more compatible with Gosling EMACS than
  * with ITS EMACS. Bound to "C-X C-W".
  */
 int filewrite( int f, int n) {
