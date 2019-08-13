@@ -1,8 +1,8 @@
-# Makefile for emacs, updated Tue, Jul 31, 2018 20:37:16
+# Makefile for uEMACS, updated Tue, Aug 13, 2019  7:59:24 AM
 
 SRC=basic.c bind.c bindable.c buffer.c display.c ebind.c eval.c exec.c execute.c file.c fileio.c flook.c input.c isearch.c line.c lock.c main.c mingw32.c mlout.c names.c pklock.c posix.c random.c region.c search.c spawn.c tcap.c termio.c utf8.c util.c window.c word.c wrapper.c wscreen.c
 OBJ=basic.o bind.o bindable.o buffer.o display.o ebind.o eval.o exec.o execute.o file.o fileio.o flook.o input.o isearch.o line.o lock.o main.o mingw32.o mlout.o names.o pklock.o posix.o random.o region.o search.o spawn.o tcap.o termio.o utf8.o util.o window.o word.o wrapper.o wscreen.o
-HDR=basic.h bind.h bindable.h buffer.h defines.h display.h ebind.h estruct.h eval.h exec.h execute.h file.h fileio.h flook.h input.h isearch.h line.h lock.h mlout.h names.h pklock.h random.h region.h retcode.h search.h spawn.h terminal.h termio.h utf8.h util.h version.h window.h word.h wrapper.h wscreen.h
+HDR=basic.h bind.h bindable.h buffer.h defines.h display.h ebind.h estruct.h eval.h exec.h execute.h file.h fileio.h flook.h input.h isa.h isearch.h line.h lock.h mlout.h names.h pklock.h random.h region.h retcode.h search.h spawn.h terminal.h termio.h utf8.h util.h version.h window.h word.h wrapper.h wscreen.h
 
 # DO NOT ADD OR MODIFY ANY LINES ABOVE THIS -- make source creates them
 
@@ -100,7 +100,7 @@ tags:	${SRC}
 
 source:
 	@mv Makefile Makefile.bak
-	@echo "# Makefile for emacs, updated `date`" >Makefile
+	@echo "# Makefile for uEMACS, updated `date`" >Makefile
 	@echo '' >>Makefile
 #Sorted
 	@echo SRC=`ls *.c` >>Makefile
@@ -111,11 +111,12 @@ source:
 #	@echo OBJ=$(patsubst %.c,%.o,$(wildcard *.c)) >>Makefile
 #	@echo HDR=$(wildcard *.h) >>Makefile
 	@echo '' >>Makefile
-	@sed -n -e '/^# DO NOT ADD OR MODIFY/,$$p' <Makefile.bak >>Makefile
+	@sed -n -e '/^# DO NOT ADD OR MODIFY/,$$p' Makefile.bak >> Makefile
 
 depend: ${SRC}
 	@mv Makefile Makefile.bak
 	@sed -n -e '1,/^# DO NOT DELETE THIS LINE/p' Makefile.bak > Makefile
+	@echo "# Updated `date`" >> Makefile
 	@echo >> Makefile
 	@for i in ${SRC}; do\
 	    $(CC) ${DEFINES} -MM $$i ; done >> Makefile
@@ -129,6 +130,7 @@ depend: ${SRC}
 	$(Q) ${CC} ${CFLAGS} ${DEFINES} -c $*.c
 
 # DO NOT DELETE THIS LINE -- make depend uses it
+# Updated Tue, Aug 13, 2019  7:51:49 AM
 
 basic.o: basic.c basic.h retcode.h input.h bind.h mlout.h random.h \
  terminal.h defines.h utf8.h window.h buffer.h line.h

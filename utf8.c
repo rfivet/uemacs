@@ -17,7 +17,7 @@
  * NOTE 2! This does *not* verify things like minimality. So overlong forms
  * are happily accepted and decoded, as are the various "invalid values".
  */
-unsigned utf8_to_unicode( char *line, unsigned index, unsigned len,
+unsigned utf8_to_unicode( const char *line, unsigned index, unsigned len,
 															unicode_t *res) {
     unicode_t   value ;
     unsigned	c ;

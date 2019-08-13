@@ -103,7 +103,7 @@ static void emergencyexit(int signr)
 static void edinit( char *bname) ;
 
 static void version( void) {
-    fputs( PROGRAM_NAME_PFX PROGRAM_NAME_LONG " version " VERSION "\n", stdout) ;
+    fputs( PROGRAM_NAME_UTF8 " version " VERSION "\n", stdout) ;
 }
 
 

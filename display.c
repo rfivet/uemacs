@@ -228,8 +228,11 @@ static int vtputs( const char *s) {
 	int n = 0 ;
 
 	while( *s) {
-		vtputc( *s++) ;
-		n += 1 ;
+		unicode_t c ;
+		
+		s += utf8_to_unicode( s, 0, 4, &c) ;
+		vtputc( c) ;
+		n += 1 ;	/* Assume non wide char unicode */
 	}
 
 	return n ;
@@ -1103,7 +1106,7 @@ static void modeline(struct window *wp)
 	vtputc( ' ') ;
 
 	if( n == term.t_nrow - 1)
-		n = 3 + vtputs( PROGRAM_NAME_LONG " " VERSION ": ") ;
+		n = 3 + vtputs( PROGRAM_NAME_UTF8 " " VERSION ": ") ;
 	else
 		n = 3 ;
 

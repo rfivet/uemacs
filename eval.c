@@ -738,7 +738,7 @@ static char *gtenv( char *vname) {
 	case EVVERSION:
 		return VERSION;
 	case EVPROGNAME:
-		return PROGRAM_NAME_PFX PROGRAM_NAME_LONG ;
+		return PROGRAM_NAME_UTF8 ;
 	case EVSEED:
 		return i_to_a(seed);
 	case EVDISINP:

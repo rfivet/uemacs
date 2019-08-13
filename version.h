@@ -9,9 +9,8 @@
 # define PROGRAM_NAME "em"
 #endif
 
-# define PROGRAM_NAME_PFX "\xC2"
-# define PROGRAM_NAME_LONG "\xB5""EMACS"	/* UTF-8 µEMACS */
+#define PROGRAM_NAME_UTF8 "µEMACS"
 
-# define VERSION "4.2.4"
+#define VERSION "4.2.4"
 
 #endif  /* VERSION_H_ */
