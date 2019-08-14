@@ -21,6 +21,7 @@
 #include "file.h"
 #include "input.h"
 #include "mlout.h"
+#include "utf8.h"
 #include "util.h"
 #include "window.h"
 
@@ -332,6 +333,19 @@ static void do_layout( char *line, int mode) {
 			line[ 4 + i] = '.' ;
 }
 
+static unsigned int utf8_disp_len( const char *s) {
+	unsigned int len = 0 ;
+
+	while( *s) {
+		unicode_t c ;
+
+		s += utf8_to_unicode( s, 0, 4, &c) ;
+		len += 1 ;	/* single width unicode for now */
+	}
+
+	return len ;
+}
+
 static int makelist( int iflag)
 {
 	struct buffer *bp;
@@ -391,17 +405,22 @@ static int makelist( int iflag)
 		l_to_a( &line[ 13], 10 + 1, nbytes) ;	/* "%10d" formatted numbers */
 		cp1 = &line[ 23] ;
 		*cp1++ = ' ' ;
-		cp2 = &bp->b_bname[0];	/* Buffer name          */
+
+	/* Display buffer name */
+		cp2 = &bp->b_bname[ 0] ;
 		while ((c = *cp2++) != 0)
 			*cp1++ = c;
 
-		if( bp->b_fname[ 0] != 0) {
-			while( cp1 < &line[ FNAMSTART])
-				*cp1++ = ' ' ;
+	/* Pad with spaces to max buffer name length */
+		int len = sizeof bp->b_bname ;
+		len -= utf8_disp_len( bp->b_bname) ;
+		while( len--)
+			*cp1++ = ' ' ;
 
-			strncpy( cp1, bp->b_fname, &line[ sizeof line - 1] - cp1) ;
-			line[ sizeof line - 1] = 0 ;
-		} else
+	/* Display filename if any */
+		if( bp->b_fname[ 0] != 0)
+			mystrscpy( cp1, bp->b_fname, &line[ sizeof line] - cp1) ;
+		else
 			*cp1 = 0 ;					/* Terminate string */
 
 		if( addline( line) == FALSE)	/* Add to the buffer.   */
