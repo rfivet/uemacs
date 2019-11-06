@@ -232,7 +232,7 @@ static int vtputs( const char *s) {
 		
 		s += utf8_to_unicode( s, 0, 4, &c) ;
 		vtputc( c) ;
-		n += 1 ;	/* Assume non wide char unicode */
+		n += utf8_width( c) ;
 	}
 
 	return n ;
@@ -569,10 +569,8 @@ void updpos(void)
 				curcol += 2 ;	/* displayed as ^c */
 		else if( c >= 0x80 && c <= 0xA0)
 				curcol += 3 ;	/* displayed as \xx */
-		else if( c >= 0x3000 && c <= 0x3FFF)
-			curcol += 2 ;	/* double width unicode character */
 		else
-			curcol += 1 ;
+			curcol += utf8_width( c) ;
 	}
 
 	/* if extended, flag so and update the virtual line image */
@@ -585,7 +583,7 @@ void updpos(void)
 
 /*
  * upddex:
- *	de-extend any line that derserves it
+ *	de-extend any line that deserves it
  */
 void upddex(void)
 {
@@ -977,10 +975,10 @@ static int updateline(int row, struct video *vp1, struct video *vp2)
 
 		/* scan through the line and dump it to the screen and
 		   the virtual screen array                             */
-		cp3 = &vp1->v_text[term.t_ncol];
-		while (cp1 < cp3) {
+		while( ttcol < term.t_ncol) {
+		/* TODO: handle double width unicode char at last screen col */
 			TTputc(*cp1);
-			++ttcol;
+			ttcol += utf8_width( *cp1) ;
 			*cp2++ = *cp1++;
 		}
 
@@ -1048,7 +1046,7 @@ static int updateline(int row, struct video *vp1, struct video *vp2)
 
 	while (cp1 != cp5) {	/* Ordinary. */
 		TTputc(*cp1);
-		++ttcol;
+		ttcol += utf8_width( *cp1) ;
 		*cp2++ = *cp1++;
 	}
 

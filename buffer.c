@@ -340,7 +340,7 @@ static unsigned int utf8_disp_len( const char *s) {
 		unicode_t c ;
 
 		s += utf8_to_unicode( s, 0, 4, &c) ;
-		len += 1 ;	/* single width unicode for now */
+		len += utf8_width( c) ;
 	}
 
 	return len ;
