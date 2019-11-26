@@ -1542,7 +1542,7 @@ static int cclmake(char **ppatptr, struct magic *mcptr)
 			 */
 		case MC_ESC:
 			pchr = *++patptr;
-			/* falltrhough */
+			/* fallthrough */
 		default:
 			setbit(pchr, bmap);
 			break;

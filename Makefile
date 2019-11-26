@@ -26,7 +26,7 @@ uname_S := $(shell sh -c 'echo $(uname_S) | sed s/_.*$$//')
 PROGRAM=ue
 
 CC=gcc
-WARNINGS=-pedantic -Wall -Wextra -Wstrict-prototypes -Wno-unused-parameter
+WARNINGS=-pedantic -Wall -Wextra -Wstrict-prototypes -Wno-unused-parameter -Wimplicit-fallthrough=2
 CFLAGS=-O2 $(WARNINGS)
 #CC=c89 +O3			# HP
 #CFLAGS= -D_HPUX_SOURCE -DSYSV
@@ -130,7 +130,7 @@ depend: ${SRC}
 	$(Q) ${CC} ${CFLAGS} ${DEFINES} -c $*.c
 
 # DO NOT DELETE THIS LINE -- make depend uses it
-# Updated Tue, Aug 13, 2019  7:51:49 AM
+# Updated Mon Nov 25 12:50:00 CST 2019
 
 basic.o: basic.c basic.h retcode.h input.h bind.h mlout.h random.h \
  terminal.h defines.h utf8.h window.h buffer.h line.h
