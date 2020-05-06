@@ -102,9 +102,7 @@ int showcpos(int f, int n)
 	if (curwp->w_dotp == curbp->b_linep) {
 		predlines = numlines;
 		predchars = numchars;
-#if	PKCODE
-		curchar = 0;
-#endif
+		bytes = 0 ;
 	}
 
 	/* Get real column and end-of-line column. */
@@ -119,9 +117,12 @@ int showcpos(int f, int n)
 		ratio = (100L * predchars) / numchars;
 
 	/* summarize and report the info */
-	mlwrite("Line %d/%d Col %d/%d Char %D/%D (%d%%) char = %s%x",
-		predlines + 1, numlines + 1, col, ecol,
-		predchars, numchars, ratio, (bytes > 1) ? "\\u" : "0x", curchar);
+	char fmtbuf[] = "Line %d/%d Col %d/%d Char %D/%D (%d%%) char = %s%x" ;
+	if( bytes == 0)
+		strcpy( &fmtbuf[ 39], "EOF") ;
+
+	mlwrite( fmtbuf, predlines + 1, numlines + 1, col, ecol, predchars,
+		numchars, ratio, (bytes > 1) ? "\\u" : "0x", curchar) ;
 	return TRUE;
 }
 
