@@ -112,9 +112,8 @@ int showcpos(int f, int n)
 	ecol = getccol(FALSE);
 	curwp->w_doto = savepos;
 
-	ratio = 0;		/* Ratio before dot. */
-	if (numchars != 0)
-		ratio = (100L * predchars) / numchars;
+	/* Ratio before dot. */
+	ratio = (numchars == 0) ? 100 : (100L * predchars) / numchars ;
 
 	/* summarize and report the info */
 	char fmtbuf[] = "Line %d/%d Col %d/%d Char %D/%D (%d%%) char = %s%x" ;
