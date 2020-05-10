@@ -45,6 +45,7 @@ store-procedure probe
 	!else
 		set %res FALSE
 	!endif
+	update-screen
 !endm
 
 set %D 0		# looking EAST

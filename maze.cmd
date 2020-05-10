@@ -80,6 +80,7 @@ set %cnt &tim &sub &div %w 2 1 &sub &div %l 2 1
 			set $curchar 32
 			set %flags 0
 			set %cnt &sub %cnt 1
+			update-screen
 		!endif		
 	!endif
 	set $curline %y
