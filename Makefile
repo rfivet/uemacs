@@ -26,7 +26,7 @@ uname_S := $(shell sh -c 'echo $(uname_S) | sed s/_.*$$//')
 PROGRAM=ue
 
 CC=gcc
-WARNINGS=-pedantic -Wall -Wextra -Wstrict-prototypes -Wno-unused-parameter -Wimplicit-fallthrough=2
+WARNINGS=-pedantic -Wall -Wextra -Wstrict-prototypes -Wno-unused-parameter
 CFLAGS=-O2 $(WARNINGS)
 #CC=c89 +O3			# HP
 #CFLAGS= -D_HPUX_SOURCE -DSYSV
@@ -50,6 +50,10 @@ ifeq ($(uname_S),MINGW32)
 # DEFINES=-DAUTOCONF -DSYSV -DMINGW32 -DPROGRAM=$(PROGRAM)
  DEFINES=-DAUTOCONF -DPOSIX -DSYSV -DPROGRAM=$(PROGRAM) -IC:/MinGW/include/ncursesw
  LIBS=
+endif
+ifeq ($(uname_S),NetBSD)
+ DEFINES=-DAUTOCONF -DPOSIX -DBSD=1 -DPROGRAM=$(PROGRAM)
+ LIBS=-lcurses
 endif
 #DEFINES=-DAUTOCONF
 #LIBS=-ltermcap			# BSD
@@ -130,7 +134,7 @@ depend: ${SRC}
 	$(Q) ${CC} ${CFLAGS} ${DEFINES} -c $*.c
 
 # DO NOT DELETE THIS LINE -- make depend uses it
-# Updated Mon Nov 25 12:50:00 CST 2019
+# Updated Tue Jun 16 13:25:24 CST 2020
 
 basic.o: basic.c basic.h retcode.h input.h bind.h mlout.h random.h \
  terminal.h defines.h utf8.h window.h buffer.h line.h

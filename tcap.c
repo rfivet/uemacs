@@ -74,7 +74,7 @@ static void tcapscroll_delins(int from, int to, int linestoscroll);
 
 #define TCAPSLEN 315
 static char tcapbuf[TCAPSLEN];
-static char *UP, PC, *CM, *CE, *CL, *SO, *SE;
+static char *_UP, _PC, *CM, *CE, *CL, *SO, *SE;
 
 #if PKCODE
 static char *TI, *TE;
@@ -167,14 +167,14 @@ static void tcapopen(void)
 		p = tcapbuf;
 		t = tgetstr("pc", &p);
 		if (t)
-			PC = *t;
+			_PC = *t;
 		else
-			PC = 0;
+			_PC = 0;
 
 		CL = tgetstr("cl", &p);
 		CM = tgetstr("cm", &p);
 		CE = tgetstr("ce", &p);
-		UP = tgetstr("up", &p);
+		_UP = tgetstr("up", &p);
 		SE = tgetstr("se", &p);
 		SO = tgetstr("so", &p);
 		if (SO != NULL)
@@ -189,7 +189,7 @@ static void tcapopen(void)
 		TE = tgetstr("te", &p);
 #endif
 
-		if (CL == NULL || CM == NULL || UP == NULL) {
+		if (CL == NULL || CM == NULL || _UP == NULL) {
 			fputs( "Incomplete termcap entry\n", stderr) ;
 			exit( EXIT_FAILURE) ;
 		}
@@ -338,7 +338,7 @@ static void tcapscroll_delins(int from, int to, int howmanylines)
 /* cs is set up just like cm, so we use tgoto... */
 static void tcapscrollregion(int top, int bot)
 {
-	ttputc(PC);
+	ttputc(_PC);
 	putpad(tgoto(CS, bot, top));
 }
 

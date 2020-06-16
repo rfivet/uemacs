@@ -93,7 +93,11 @@ char *dolock( const char *fname)
 **		logname = getlogin() ;
 **		strcpy( locker, logname ? logname : cuserid( NULL)) ;
 */
+#if BSD
+		strcpy( locker, getlogin()) ;
+#else
 		strcpy( locker, cuserid( NULL)) ;
+#endif
 
 		strcat(locker + strlen(locker), "@");
 		gethostname(locker + strlen(locker), 64);

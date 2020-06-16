@@ -24,7 +24,11 @@
 #include "pklock.h"
 #endif
 
+#if BSD
+#include <errno.h>
+#else
 #include <sys/errno.h>
+#endif
 
 #define	NLOCKS	100			/* max # of file locks active	*/
 static char *lname[ NLOCKS] ;		/* names of all locked files	*/

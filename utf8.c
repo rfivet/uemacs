@@ -11,9 +11,12 @@
  * Display width of UTF-8 character
  */
 unsigned utf8_width( unicode_t c) {
-#ifdef CYGWIN
-	assert( sizeof( wchar_t) == 2) ;	/* wcwidth only handle UTF-16 */
+#if CYGWIN
+	assert( sizeof( wchar_t) == 2) ;	/* wcwidth only handles UTF-16 */
 	return (c < 0x10000) ? (unsigned) wcwidth( (wchar_t) c) : 2 ;
+#elif BSD
+	assert( sizeof( wchar_t) == 4) ;	/* wcwidth should handle UTF-32 */
+	return 1 ;
 #else
 	return (unsigned) wcwidth( (wchar_t) c) ;
 #endif
