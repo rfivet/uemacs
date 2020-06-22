@@ -17,7 +17,7 @@ set %w &sub $curwidth 2
 	set %w &sub %w 1
 !endif
 insert-string " "
-%w insert-string "▓"
+%w insert-string "▒"
 insert-string " "
 set %buf $line
 set %l &sub $pagelen 4
