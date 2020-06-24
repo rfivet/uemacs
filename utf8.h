@@ -3,7 +3,7 @@
 
 typedef unsigned int unicode_t ;
 
-unsigned utf8_width( unicode_t c) ;
+int utf8_width( unicode_t c) ;
 unsigned utf8_to_unicode( const char *line, unsigned index, unsigned len,
                                                             unicode_t *res) ;
 unsigned utf8_revdelta( unsigned char *buf, unsigned pos) ;

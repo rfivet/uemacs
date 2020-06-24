@@ -10,16 +10,12 @@
 /*
  * Display width of UTF-8 character
  */
-unsigned utf8_width( unicode_t c) {
+int utf8_width( unicode_t c) {
 #if CYGWIN
-	assert( sizeof( wchar_t) == 2) ;	/* wcwidth only handles UTF-16 */
-	return (c < 0x10000) ? (unsigned) wcwidth( (wchar_t) c) : 2 ;
-#elif BSD
-//	assert( sizeof( wchar_t) == 4) ;	/* wcwidth should handle UTF-32 */
-	int ret = wcwidth( (wchar_t) c) ;
-	return (ret < 0) ? 1 : (unsigned) ret ;
+	assert( sizeof( wchar_t) == 2) ;	/* wcwidth only supports UTF-16 */
+	return (c < 0x10000) ? wcwidth( (wchar_t) c) : -1 ;
 #else
-	return (unsigned) wcwidth( (wchar_t) c) ;
+	return wcwidth( (wchar_t) c) ;
 #endif
 }
 

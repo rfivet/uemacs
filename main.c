@@ -141,7 +141,7 @@ int main(int argc, char **argv)
 	int errflag;		/* C error processing? */
 	bname_t bname ;	/* buffer name of file to read */
 
-	setlocale( LC_CTYPE, "en_GB.UTF-8") ; /* wide character support (UTF-32) */
+	setlocale( LC_CTYPE, "") ; /* expects $LANG like en_GB.UTF-8 */
 
 #if	PKCODE & BSD
 	sleep(1); /* Time for window manager. */
@@ -226,7 +226,7 @@ int main(int argc, char **argv)
 				} else if( argv[ carg + 1]) {	/* -X filename */
 					if( startup( &argv[ carg + 1][ 0]) == TRUE)
 						startflag = TRUE ;	/* don't execute emacs.rc */
-					
+
 					carg += 1 ;
 				}
 

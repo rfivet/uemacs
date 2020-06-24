@@ -16,7 +16,6 @@ extern int gbcolor ;		/* global backgrnd color (black) */
 void vtinit( void) ;
 void vtfree( void) ;
 void vttidy( void) ;
-void vtmove( int row, int col) ;
 int upscreen( int f, int n) ;
 int update( int force) ;
 void updpos( void) ;

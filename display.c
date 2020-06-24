@@ -176,8 +176,7 @@ void vttidy(void)
  * screen. There is no checking for nonsense values; this might be a good
  * idea during the early stages.
  */
-void vtmove(int row, int col)
-{
+static void vtmove( int row, int col) {
 	vtrow = row;
 	vtcol = col;
 }
@@ -220,6 +219,9 @@ static void vtputc( unicode_t c) {
 		sane_vtputc( '\\') ;
 		sane_vtputc( hex[ c >> 4]) ;
 		sane_vtputc( hex[ c & 15]) ;
+	} else if( utf8_width( c) < 0) {
+		sane_vtputc( '\\') ;		/* show as non printable */
+		sane_vtputc( 'u') ;
 	} else
 		sane_vtputc( c) ;
 }
@@ -232,7 +234,7 @@ static int vtputs( const char *s) {
 		
 		s += utf8_to_unicode( s, 0, 4, &c) ;
 		vtputc( c) ;
-		n += utf8_width( c) ;
+		n += utf8_width( c) ;	/* To Do: only works if all printable */
 	}
 
 	return n ;
@@ -569,8 +571,10 @@ void updpos(void)
 				curcol += 2 ;	/* displayed as ^c */
 		else if( c >= 0x80 && c <= 0xA0)
 				curcol += 3 ;	/* displayed as \xx */
-		else
-			curcol += utf8_width( c) ;
+		else {
+			int width = utf8_width( c) ;
+			curcol += (width < 0) ? 2 : width ;	/* non printable are displayed as \u */
+		}
 	}
 
 	/* if extended, flag so and update the virtual line image */
@@ -977,9 +981,10 @@ static int updateline(int row, struct video *vp1, struct video *vp2)
 		   the virtual screen array                             */
 		while( ttcol < term.t_ncol) {
 		/* TODO: handle double width unicode char at last screen col */
-			TTputc(*cp1);
-			ttcol += utf8_width( *cp1) ;
-			*cp2++ = *cp1++;
+			unicode_t c = *cp1++ ;
+			TTputc( c) ;
+			ttcol += utf8_width( c) ;
+			*cp2++ = c ;
 		}
 
 		TTrev( FALSE) ;		/* turn rev video off */
@@ -1045,9 +1050,10 @@ static int updateline(int row, struct video *vp1, struct video *vp2)
 #endif
 
 	while (cp1 != cp5) {	/* Ordinary. */
-		TTputc(*cp1);
-		ttcol += utf8_width( *cp1) ;
-		*cp2++ = *cp1++;
+		unicode_t c = *cp1++ ;
+		TTputc( c) ;
+		ttcol += utf8_width( c) ;
+		*cp2++ = c ;
 	}
 
 	if (cp5 != cp3) {	/* Erase. */
@@ -1153,7 +1159,7 @@ static void modeline(struct window *wp)
 		char *msg = NULL;
 		char tline[ 6] ;	/* buffer for part of mode line */
 
-		vtcol = n - 7;	/* strlen(" top ") plus a couple */
+		vtcol -= 7 ;	/* strlen(" top ") plus a couple */
 		while (rows--) {
 			lp = lforw(lp);
 			if (lp == wp->w_bufp->b_linep) {
