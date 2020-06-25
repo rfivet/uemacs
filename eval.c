@@ -1384,24 +1384,30 @@ static int sindex( char *source, char *pattern) {
 
 	/* scanning through the source string */
 	sp = source;
+	int idx = 1 ;
+	int pos = 0 ;
+	int len = strlen( source) ;
+
 	while (*sp) {
 		char *csp;		/* ptr to source string during comparison */
 		char *cp;		/* ptr to place to check for equality */
+		char c ;
+		unicode_t uc ;
 		
 		/* scan through the pattern */
 		cp = pattern;
 		csp = sp;
-		while (*cp) {
-			if (!eq(*cp, *csp))
-				break;
-			++cp;
-			++csp;
-		}
+
+		while( (c = *cp++) && eq( c, *csp))
+			csp++ ;
 
 		/* was it a match? */
-		if (*cp == 0)
-			return (int) (sp - source) + 1;
-		++sp;
+		if( c == 0)
+			return idx ;
+
+		idx += 1 ;
+		pos += utf8_to_unicode( source, pos, len, &uc) ;
+		sp = &source[ pos] ;
 	}
 
 	/* no match at all.. */
