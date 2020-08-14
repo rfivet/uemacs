@@ -88,8 +88,8 @@ static char *CS, *DL, *AL, *SF, *SR;
 #endif
 
 struct terminal term = {
-	270,	/* actual 269 on 1920x1080 landscape terminal window */
-	1910,	/* actual 1901 */
+	480,	/* actual 479 on 2560x1440 landscape terminal window */
+	2550,	/* actual 2541 */
 	0,		/* These four values are set dynamically at open time. */
 	0,
 	0,
