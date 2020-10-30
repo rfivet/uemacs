@@ -35,26 +35,31 @@ CFLAGS=-O2 $(WARNINGS)
 ifeq ($(uname_S),Linux)
  DEFINES=-DAUTOCONF -DPROGRAM=$(PROGRAM) -DPOSIX -DUSG
  LIBS=-lcurses
-endif
-ifeq ($(uname_S),FreeBSD)
- DEFINES=-DAUTOCONF -DPOSIX -DSYSV -D_FREEBSD_C_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE -D_XOPEN_SOURCE=600
-endif
-ifeq ($(uname_S),Darwin)
- DEFINES=-DAUTOCONF -DPOSIX -DSYSV -D_DARWIN_C_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE -D_XOPEN_SOURCE=600
-endif
-ifeq ($(uname_S),CYGWIN)
+else ifeq ($(uname_S),CYGWIN)
  DEFINES=-DAUTOCONF -DCYGWIN -DSYSV -DPROGRAM=$(PROGRAM)
  LIBS=-lcurses
-endif
-ifeq ($(uname_S),MINGW32)
-# DEFINES=-DAUTOCONF -DSYSV -DMINGW32 -DPROGRAM=$(PROGRAM)
- DEFINES=-DAUTOCONF -DPOSIX -DSYSV -DPROGRAM=$(PROGRAM) -IC:/MinGW/include/ncursesw
- LIBS=
-endif
-ifeq ($(uname_S),NetBSD)
+else ifeq ($(uname_S),MSYS)
+ DEFINES=-DAUTOCONF -DCYGWIN -DSYSV -DPROGRAM=$(PROGRAM)
+ LIBS=-lcurses
+else ifeq ($(uname_S),NetBSD)
  DEFINES=-DAUTOCONF -DPOSIX -DBSD=1 -DPROGRAM=$(PROGRAM)
  LIBS=-lcurses
+else
+ $(error $(uname_S) needs configuration)
 endif
+
+#ifeq ($(uname_S),FreeBSD)
+# DEFINES=-DAUTOCONF -DPOSIX -DSYSV -D_FREEBSD_C_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE -D_XOPEN_SOURCE=600
+#endif
+#ifeq ($(uname_S),Darwin)
+# DEFINES=-DAUTOCONF -DPOSIX -DSYSV -D_DARWIN_C_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE -D_XOPEN_SOURCE=600
+#endif
+#ifeq ($(uname_S),MINGW32)
+## DEFINES=-DAUTOCONF -DSYSV -DMINGW32 -DPROGRAM=$(PROGRAM)
+# DEFINES=-DAUTOCONF -DPOSIX -DSYSV -DPROGRAM=$(PROGRAM) -IC:/MinGW/include/ncursesw
+# LIBS=
+#endif
+
 #DEFINES=-DAUTOCONF
 #LIBS=-ltermcap			# BSD
 #LIBS=-lcurses			# SYSV
@@ -134,7 +139,7 @@ depend: ${SRC}
 	$(Q) ${CC} ${CFLAGS} ${DEFINES} -c $*.c
 
 # DO NOT DELETE THIS LINE -- make depend uses it
-# Updated Tue Jun 16 13:25:24 CST 2020
+# Updated 30 Oct 2020 14:06:39
 
 basic.o: basic.c basic.h retcode.h input.h bind.h mlout.h random.h \
  terminal.h defines.h utf8.h window.h buffer.h line.h
