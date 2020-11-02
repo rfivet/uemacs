@@ -1,7 +1,7 @@
-# Makefile for uEMACS, updated Tue, Aug 13, 2019  7:59:24 AM
+# Makefile for uEMACS, updated 02 Nov 2020 09:40:01
 
-SRC=basic.c bind.c bindable.c buffer.c display.c ebind.c eval.c exec.c execute.c file.c fileio.c flook.c input.c isearch.c line.c lock.c main.c mingw32.c mlout.c names.c pklock.c posix.c random.c region.c search.c spawn.c tcap.c termio.c utf8.c util.c window.c word.c wrapper.c wscreen.c
-OBJ=basic.o bind.o bindable.o buffer.o display.o ebind.o eval.o exec.o execute.o file.o fileio.o flook.o input.o isearch.o line.o lock.o main.o mingw32.o mlout.o names.o pklock.o posix.o random.o region.o search.o spawn.o tcap.o termio.o utf8.o util.o window.o word.o wrapper.o wscreen.o
+SRC=basic.c bind.c bindable.c buffer.c display.c ebind.c eval.c exec.c execute.c file.c fileio.c flook.c input.c isearch.c line.c lock.c main.c mlout.c names.c pklock.c posix.c random.c region.c search.c spawn.c tcap.c termio.c utf8.c util.c window.c word.c wrapper.c wscreen.c
+OBJ=basic.o bind.o bindable.o buffer.o display.o ebind.o eval.o exec.o execute.o file.o fileio.o flook.o input.o isearch.o line.o lock.o main.o mlout.o names.o pklock.o posix.o random.o region.o search.o spawn.o tcap.o termio.o utf8.o util.o window.o word.o wrapper.o wscreen.o
 HDR=basic.h bind.h bindable.h buffer.h defines.h display.h ebind.h estruct.h eval.h exec.h execute.h file.h fileio.h flook.h input.h isa.h isearch.h line.h lock.h mlout.h names.h pklock.h random.h region.h retcode.h search.h spawn.h terminal.h termio.h utf8.h util.h version.h window.h word.h wrapper.h wscreen.h
 
 # DO NOT ADD OR MODIFY ANY LINES ABOVE THIS -- make source creates them
@@ -20,7 +20,7 @@ export E Q
 
 uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
 # for windows based target, insure we strip the variant part
-# CYGWIN_NT-6.1, CYGWIN_NT-6.1-WOW, CYGWIN_NT-6.1-WOW64, MINGW32_NT-6.1
+# CYGWIN_NT-6.1, CYGWIN_NT-6.1-WOW, CYGWIN_NT-6.1-WOW64, MSYS_NT-10.0-19042
 uname_S := $(shell sh -c 'echo $(uname_S) | sed s/_.*$$//')
 
 PROGRAM=ue
@@ -28,22 +28,16 @@ PROGRAM=ue
 CC=gcc
 WARNINGS=-pedantic -Wall -Wextra -Wstrict-prototypes -Wno-unused-parameter
 CFLAGS=-O2 $(WARNINGS)
-#CC=c89 +O3			# HP
-#CFLAGS= -D_HPUX_SOURCE -DSYSV
-#CFLAGS=-O4 -DSVR4		# Sun
-#CFLAGS=-O -qchars=signed	# RS/6000
+LIBS=-lcurses
+DEFINES=-DAUTOCONF -DPROGRAM=$(PROGRAM)
 ifeq ($(uname_S),Linux)
- DEFINES=-DAUTOCONF -DPROGRAM=$(PROGRAM) -DPOSIX -DUSG
- LIBS=-lcurses
+ DEFINES:= $(DEFINES) -DPOSIX -DUSG
 else ifeq ($(uname_S),CYGWIN)
- DEFINES=-DAUTOCONF -DCYGWIN -DSYSV -DPROGRAM=$(PROGRAM)
- LIBS=-lcurses
+ DEFINES:= $(DEFINES) -DCYGWIN -DSYSV
 else ifeq ($(uname_S),MSYS)
- DEFINES=-DAUTOCONF -DCYGWIN -DSYSV -DPROGRAM=$(PROGRAM)
- LIBS=-lcurses
+ DEFINES:= $(DEFINES) -DCYGWIN -DSYSV
 else ifeq ($(uname_S),NetBSD)
- DEFINES=-DAUTOCONF -DPOSIX -DBSD=1 -DPROGRAM=$(PROGRAM)
- LIBS=-lcurses
+ DEFINES:= $(DEFINES) -DPOSIX -DBSD=1
 else
  $(error $(uname_S) needs configuration)
 endif
@@ -53,11 +47,6 @@ endif
 #endif
 #ifeq ($(uname_S),Darwin)
 # DEFINES=-DAUTOCONF -DPOSIX -DSYSV -D_DARWIN_C_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE -D_XOPEN_SOURCE=600
-#endif
-#ifeq ($(uname_S),MINGW32)
-## DEFINES=-DAUTOCONF -DSYSV -DMINGW32 -DPROGRAM=$(PROGRAM)
-# DEFINES=-DAUTOCONF -DPOSIX -DSYSV -DPROGRAM=$(PROGRAM) -IC:/MinGW/include/ncursesw
-# LIBS=
 #endif
 
 #DEFINES=-DAUTOCONF
@@ -139,7 +128,7 @@ depend: ${SRC}
 	$(Q) ${CC} ${CFLAGS} ${DEFINES} -c $*.c
 
 # DO NOT DELETE THIS LINE -- make depend uses it
-# Updated 30 Oct 2020 14:06:39
+# Updated 02 Nov 2020 11:25:55
 
 basic.o: basic.c basic.h retcode.h input.h bind.h mlout.h random.h \
  terminal.h defines.h utf8.h window.h buffer.h line.h
@@ -182,7 +171,6 @@ lock.o: lock.c estruct.h lock.h
 main.o: main.c estruct.h basic.h retcode.h bind.h bindable.h buffer.h \
  line.h utf8.h display.h eval.h execute.h file.h lock.h mlout.h random.h \
  search.h terminal.h defines.h termio.h util.h version.h window.h
-mingw32.o: mingw32.c
 mlout.o: mlout.c mlout.h
 names.o: names.c names.h basic.h retcode.h bind.h bindable.h buffer.h \
  line.h utf8.h display.h estruct.h eval.h exec.h file.h isearch.h \
