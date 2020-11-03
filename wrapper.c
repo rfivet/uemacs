@@ -7,12 +7,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#ifdef MINGW32
-int mkstemp( char *template) {
-	return -1 ;
-}
-#endif
-
 static void die( const char *err) {
 	fprintf( stderr, "fatal: %s\n", err) ;
 	exit( EXIT_FAILURE) ;

@@ -1,5 +1,5 @@
 /* termio.c -- implements termio.h */
-#if !defined( POSIX) && !defined( MINGW32)
+#if !defined( POSIX)
 
 #include "termio.h"
 

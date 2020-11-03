@@ -1,8 +1,8 @@
-# Makefile for uEMACS, updated 02 Nov 2020 09:40:01
+# Makefile for uEMACS, updated 03 Nov 2020 10:22:37
 
-SRC=basic.c bind.c bindable.c buffer.c display.c ebind.c eval.c exec.c execute.c file.c fileio.c flook.c input.c isearch.c line.c lock.c main.c mlout.c names.c pklock.c posix.c random.c region.c search.c spawn.c tcap.c termio.c utf8.c util.c window.c word.c wrapper.c wscreen.c
-OBJ=basic.o bind.o bindable.o buffer.o display.o ebind.o eval.o exec.o execute.o file.o fileio.o flook.o input.o isearch.o line.o lock.o main.o mlout.o names.o pklock.o posix.o random.o region.o search.o spawn.o tcap.o termio.o utf8.o util.o window.o word.o wrapper.o wscreen.o
-HDR=basic.h bind.h bindable.h buffer.h defines.h display.h ebind.h estruct.h eval.h exec.h execute.h file.h fileio.h flook.h input.h isa.h isearch.h line.h lock.h mlout.h names.h pklock.h random.h region.h retcode.h search.h spawn.h terminal.h termio.h utf8.h util.h version.h window.h word.h wrapper.h wscreen.h
+SRC=basic.c bind.c bindable.c buffer.c display.c ebind.c eval.c exec.c execute.c file.c fileio.c flook.c input.c isearch.c line.c lock.c main.c mlout.c names.c pklock.c posix.c random.c region.c search.c spawn.c tcap.c termio.c utf8.c util.c window.c word.c wrapper.c
+OBJ=basic.o bind.o bindable.o buffer.o display.o ebind.o eval.o exec.o execute.o file.o fileio.o flook.o input.o isearch.o line.o lock.o main.o mlout.o names.o pklock.o posix.o random.o region.o search.o spawn.o tcap.o termio.o utf8.o util.o window.o word.o wrapper.o
+HDR=basic.h bind.h bindable.h buffer.h defines.h display.h ebind.h estruct.h eval.h exec.h execute.h file.h fileio.h flook.h input.h isa.h isearch.h line.h lock.h mlout.h names.h pklock.h random.h region.h retcode.h search.h spawn.h terminal.h termio.h utf8.h util.h version.h window.h word.h wrapper.h
 
 # DO NOT ADD OR MODIFY ANY LINES ABOVE THIS -- make source creates them
 
@@ -128,7 +128,7 @@ depend: ${SRC}
 	$(Q) ${CC} ${CFLAGS} ${DEFINES} -c $*.c
 
 # DO NOT DELETE THIS LINE -- make depend uses it
-# Updated 02 Nov 2020 11:25:55
+# Updated 03 Nov 2020 10:29:47
 
 basic.o: basic.c basic.h retcode.h input.h bind.h mlout.h random.h \
  terminal.h defines.h utf8.h window.h buffer.h line.h
@@ -198,7 +198,6 @@ window.o: window.c window.h defines.h buffer.h line.h retcode.h utf8.h \
 word.o: word.c word.h basic.h retcode.h buffer.h line.h utf8.h estruct.h \
  isa.h mlout.h random.h region.h window.h defines.h
 wrapper.o: wrapper.c wrapper.h
-wscreen.o: wscreen.c wscreen.h
 
 # DEPENDENCIES MUST END AT END OF FILE
 # IF YOU PUT STUFF HERE IT WILL GO AWAY

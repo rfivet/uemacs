@@ -19,10 +19,8 @@
 #define USE_BROKEN_OPTIMIZATION 0
 #define	termdef	1 /* Don't define "term" external. */
 
-#ifndef MINGW32
 #include <curses.h>
 #include <term.h>
-#endif
 
 #include "display.h"
 #include "estruct.h"
