@@ -28,6 +28,7 @@ PROGRAM=ue
 CC=gcc
 WARNINGS=-pedantic -Wall -Wextra -Wstrict-prototypes -Wno-unused-parameter
 CFLAGS=-O2 $(WARNINGS)
+LDFLAGS=-s
 LIBS=-lcurses
 DEFINES=-DAUTOCONF -DPROGRAM=$(PROGRAM)
 ifeq ($(uname_S),Linux)
@@ -60,7 +61,7 @@ LIBDIR=/usr/lib
 
 $(PROGRAM): $(OBJ)
 	$(E) "  LINK    " $@
-	$(Q) $(CC) $(LDFLAGS) $(DEFINES) -o $@ $(OBJ) $(LIBS)
+	$(Q) $(CC) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 
 SPARSE=sparse
 SPARSE_FLAGS=-D__LITTLE_ENDIAN__ -D__x86_64__ -D__linux__ -D__unix__
