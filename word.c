@@ -22,6 +22,7 @@
 #include "region.h"
 #include "window.h"
 
+#define MAXWORDLEN	(2 * NSTRING)
 #define	TAB	0x09		/* a tab character              */
 
 #if	PKCODE
@@ -354,7 +355,7 @@ static int inword( void) {
 int fillpara(int f, int n)
 {
 	unicode_t c;		/* current char during scan    */
-	unicode_t wbuf[NSTRING];/* buffer for current word      */
+	unicode_t wbuf[ MAXWORDLEN] ;	/* buffer for current word      */
 	int wordlen;	/* length of current word       */
 	int clength;	/* position on line during fill */
 	int i;		/* index during word copy       */
@@ -408,11 +409,11 @@ int fillpara(int f, int n)
 		/* if not a separator, just add it in */
 		if (c != ' ' && c != '\t') {
 			dotflag = (c == '.');	/* was it a dot */
-			if (wordlen < NSTRING - 1)
+			if (wordlen < MAXWORDLEN)
 				wbuf[wordlen++] = c;
 		} else if (wordlen) {
 			/* at a word break with a word waiting */
-			/* calculate tentitive new length with word added */
+			/* calculate tentative new length with word added */
 			newlength = clength + 1 + wordlen;
 			if (newlength <= fillcol) {
 				/* add word to current line */
@@ -453,7 +454,7 @@ int fillpara(int f, int n)
 int justpara(int f, int n)
 {
 	unicode_t c;		/* current char durring scan    */
-	unicode_t wbuf[NSTRING];/* buffer for current word      */
+	unicode_t wbuf[ MAXWORDLEN] ;	/* buffer for current word      */
 	int wordlen;	/* length of current word       */
 	int clength;	/* position on line during fill */
 	int i;		/* index during word copy       */
@@ -513,11 +514,11 @@ int justpara(int f, int n)
 
 		/* if not a separator, just add it in */
 		if (c != ' ' && c != '\t') {
-			if (wordlen < NSTRING - 1)
+			if (wordlen < MAXWORDLEN)
 				wbuf[wordlen++] = c;
 		} else if (wordlen) {
 			/* at a word break with a word waiting */
-			/* calculate tentitive new length with word added */
+			/* calculate tentative new length with word added */
 			newlength = clength + 1 + wordlen;
 			if (newlength <= fillcol) {
 				/* add word to current line */
