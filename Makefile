@@ -98,9 +98,9 @@ tags:	${SRC}
 	$(E) "  CC      " $@
 	$(Q) ${CC} ${CFLAGS} ${DEFINES} -c $*.c
 
-depend.mak: $(SRCS)
+depend.mak: $(wildcard *.h)
 	$(E) "  DEPEND"
-	$(Q) $(CC) $(DEFINES) -MM $+ > depend.mak
+	$(Q) $(CC) $(DEFINES) -MM $(SRCS) > depend.mak
 
 include depend.mak
 

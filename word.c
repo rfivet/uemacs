@@ -11,6 +11,8 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>	/* malloc, free */
+#include <string.h> /* memcpy */
 
 #include "basic.h"
 #include "buffer.h"
@@ -22,7 +24,7 @@
 #include "region.h"
 #include "window.h"
 
-#define MAXWORDLEN	(2 * NSTRING)
+#define ALLOCSZ	32
 #define	TAB	0x09		/* a tab character              */
 
 #if	PKCODE
@@ -354,16 +356,15 @@ static int inword( void) {
  */
 int fillpara(int f, int n)
 {
-	unicode_t c;		/* current char during scan    */
-	unicode_t wbuf[ MAXWORDLEN] ;	/* buffer for current word      */
+	unicode_t c;		/* current char during scan	*/
+	unicode_t *wbuf ;	/* buffer for current word  */
+	int wbufsize ;
 	int wordlen;	/* length of current word       */
 	int clength;	/* position on line during fill */
 	int i;		/* index during word copy       */
-	int newlength;	/* tentative new line length    */
 	int eopflag;	/* Are we at the End-Of-Paragraph? */
 	int firstflag;	/* first word? (needs no space) */
 	struct line *eopline;	/* pointer to line just past EOP */
-	int dotflag;	/* was the last char a period?  */
 
 	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
 		return rdonly();	/* we are in read only mode     */
@@ -375,6 +376,11 @@ int fillpara(int f, int n)
 	justflag = FALSE;
 #endif
 
+	wbufsize = ALLOCSZ ;
+	wbuf = malloc( ALLOCSZ * sizeof *wbuf) ;
+	if( NULL == wbuf)
+		return FALSE ;
+
 	/* record the pointer to the line just past the EOP */
 	gotoeop(FALSE, 1);
 	eopline = lforw(curwp->w_dotp);
@@ -383,11 +389,8 @@ int fillpara(int f, int n)
 	gotobop(FALSE, 1);
 
 	/* initialize various info */
-	clength = curwp->w_doto;
-	if (clength && curwp->w_dotp->l_text[0] == TAB)
-		clength = 8;
+	clength = getccol( FALSE) ;
 	wordlen = 0;
-	dotflag = FALSE;
 
 	/* scan through lines, filling words */
 	firstflag = TRUE;
@@ -408,14 +411,23 @@ int fillpara(int f, int n)
 
 		/* if not a separator, just add it in */
 		if (c != ' ' && c != '\t') {
-			dotflag = (c == '.');	/* was it a dot */
-			if (wordlen < MAXWORDLEN)
+			if (wordlen < wbufsize)
 				wbuf[wordlen++] = c;
+			else {
+			/* overflow */
+				unicode_t *newptr ;
+
+				newptr = realloc( wbuf, (wbufsize + ALLOCSZ) * sizeof *wbuf) ;
+				if( newptr != NULL) {
+					wbuf = newptr ;
+					wbufsize += ALLOCSZ ;
+					wbuf[ wordlen++] = c ;
+				} /* else the word is truncated silently */
+			}
 		} else if (wordlen) {
 			/* at a word break with a word waiting */
 			/* calculate tentative new length with word added */
-			newlength = clength + 1 + wordlen;
-			if (newlength <= fillcol) {
+			if( fillcol > clength + 1 + wordlen) {
 				/* add word to current line */
 				if (!firstflag) {
 					linsert(1, ' ');	/* the space */
@@ -430,10 +442,12 @@ int fillpara(int f, int n)
 
 			/* and add the word in in either case */
 			for (i = 0; i < wordlen; i++) {
-				linsert(1, wbuf[i]);
+				c = wbuf[ i] ;
+				linsert(1, c);
 				++clength;
 			}
-			if (dotflag) {
+
+			if( c == '.') {	/* was the last char a period?  */
 				linsert(1, ' ');
 				++clength;
 			}
@@ -442,6 +456,7 @@ int fillpara(int f, int n)
 	}
 	/* and add a last newline for the end of our new paragraph */
 	lnewline();
+	free( wbuf) ;
 	return TRUE;
 }
 
@@ -453,12 +468,12 @@ int fillpara(int f, int n)
  */
 int justpara(int f, int n)
 {
-	unicode_t c;		/* current char durring scan    */
-	unicode_t wbuf[ MAXWORDLEN] ;	/* buffer for current word      */
+	unicode_t c;		/* current char during scan	*/
+	unicode_t *wbuf ;	/* buffer for current word	*/
+	int wbufsize ;
 	int wordlen;	/* length of current word       */
 	int clength;	/* position on line during fill */
 	int i;		/* index during word copy       */
-	int newlength;	/* tentative new line length    */
 	int eopflag;	/* Are we at the End-Of-Paragraph? */
 	int firstflag;	/* first word? (needs no space) */
 	struct line *eopline;	/* pointer to line just past EOP */
@@ -471,12 +486,16 @@ int justpara(int f, int n)
 		return FALSE;
 	}
 	justflag = TRUE;
-	leftmarg = curwp->w_doto;
+	leftmarg = getccol( FALSE) ;
 	if (leftmarg + 10 > fillcol) {
-		leftmarg = 0;
 		mloutstr( "Column too narrow") ;
 		return FALSE;
 	}
+
+	wbufsize = ALLOCSZ ;
+	wbuf = malloc( ALLOCSZ * sizeof *wbuf) ;
+	if( NULL == wbuf)
+		return FALSE ;
 
 	/* record the pointer to the line just past the EOP */
 	gotoeop(FALSE, 1);
@@ -487,11 +506,9 @@ int justpara(int f, int n)
 
 	/* initialize various info */
 	if (leftmarg < llength(curwp->w_dotp))
-		curwp->w_doto = leftmarg;
+		setccol( leftmarg) ;
 
-	clength = curwp->w_doto;
-	if (clength && curwp->w_dotp->l_text[0] == TAB)
-		clength = 8;
+	clength = getccol( FALSE) ;
 
 	wordlen = 0;
 
@@ -514,13 +531,23 @@ int justpara(int f, int n)
 
 		/* if not a separator, just add it in */
 		if (c != ' ' && c != '\t') {
-			if (wordlen < MAXWORDLEN)
+			if (wordlen < wbufsize)
 				wbuf[wordlen++] = c;
+			else {
+			/* overflow */
+				unicode_t *newptr ;
+
+				newptr = realloc( wbuf, ( wbufsize + ALLOCSZ) * sizeof *wbuf) ;
+				if( newptr != NULL) {
+					wbuf = newptr ;
+					wbufsize += ALLOCSZ ;
+					wbuf[ wordlen++] = c ;
+				} /* else the word is truncated silently */
+			}
 		} else if (wordlen) {
 			/* at a word break with a word waiting */
 			/* calculate tentative new length with word added */
-			newlength = clength + 1 + wordlen;
-			if (newlength <= fillcol) {
+			if( fillcol > clength + 1 + wordlen) {
 				/* add word to current line */
 				if (!firstflag) {
 					linsert(1, ' ');	/* the space */
@@ -547,12 +574,10 @@ int justpara(int f, int n)
 	lnewline();
 
 	forwword(FALSE, 1);
-	if (llength(curwp->w_dotp) > leftmarg)
-		curwp->w_doto = leftmarg;
-	else
-		curwp->w_doto = llength(curwp->w_dotp);
+	setccol( leftmarg) ;
 
 	justflag = FALSE;
+	free( wbuf) ;
 	return TRUE;
 }
 #endif
@@ -668,17 +693,14 @@ int wordcount(int f, int n)
  */
 int gotobop(int f, int n)
 {
-	int suc;  /* success of last backchar */
-
 	if (n < 0) /* the other way... */
 		return gotoeop(f, -n);
 
 	while (n-- > 0) {  /* for each one asked for */
 
 		/* first scan back until we are in a word */
-		suc = backchar(FALSE, 1);
-		while (!inword() && suc)
-			suc = backchar(FALSE, 1);
+		while( backchar( FALSE, 1) && !inword()) ;
+
 		curwp->w_doto = 0;	/* and go to the B-O-Line */
 
 		/* and scan back until we hit a <NL><NL> or <NL><TAB>
@@ -698,16 +720,14 @@ int gotobop(int f, int n)
 				break;
 
 		/* and then forward until we are in a word */
-		suc = forwchar(FALSE, 1);
-		while (suc && !inword())
-			suc = forwchar(FALSE, 1);
+		while( !inword() && forwchar( FALSE, 1)) ;
 	}
 	curwp->w_flag |= WFMOVE;	/* force screen update */
 	return TRUE;
 }
 
 /*
- * Go forword to the end of the current paragraph
+ * Go forward to the end of the current paragraph
  * here we look for a <NL><NL> or <NL><TAB> or <NL><SPACE>
  * combination to delimit the beginning of a paragraph
  *
@@ -715,21 +735,17 @@ int gotobop(int f, int n)
  */
 int gotoeop(int f, int n)
 {
-	int suc;  /* success of last backchar */
-
 	if (n < 0)  /* the other way... */
 		return gotobop(f, -n);
 
 	while (n-- > 0) {  /* for each one asked for */
 		/* first scan forward until we are in a word */
-		suc = forwchar(FALSE, 1);
-		while (!inword() && suc)
-			suc = forwchar(FALSE, 1);
-		curwp->w_doto = 0;	/* and go to the B-O-Line */
-		if (suc)	/* of next line if not at EOF */
-			curwp->w_dotp = lforw(curwp->w_dotp);
+		while( !inword() && forwchar( FALSE, 1)) ;
+		curwp->w_doto = 0 ;						/* and go to the B-O-Line */
+		if( curwp->w_dotp != curbp->b_linep)	/* of next line if not at EOF */
+			curwp->w_dotp = lforw( curwp->w_dotp) ;
 
-		/* and scan forword until we hit a <NL><NL> or <NL><TAB>
+		/* and scan forward until we hit a <NL><NL> or <NL><TAB>
 		   or a <NL><SPACE>                                     */
 		while (curwp->w_dotp != curbp->b_linep) {
 			if (llength(curwp->w_dotp) != 0 &&
@@ -747,10 +763,8 @@ int gotoeop(int f, int n)
 		}
 
 		/* and then backward until we are in a word */
-		suc = backchar(FALSE, 1);
-		while (suc && !inword()) {
-			suc = backchar(FALSE, 1);
-		}
+		while( backchar( FALSE, 1) && !inword()) ;
+
 		curwp->w_doto = llength(curwp->w_dotp);	/* and to the EOL */
 	}
 	curwp->w_flag |= WFMOVE;  /* force screen update */
