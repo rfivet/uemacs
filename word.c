@@ -27,9 +27,7 @@
 #define ALLOCSZ	32
 #define	TAB	0x09		/* a tab character              */
 
-#if	PKCODE
 static int justflag = FALSE ;		/* justify, don't fill */
-#endif
 
 static int inword( void) ;
 
@@ -348,23 +346,18 @@ static int inword( void) {
 }
 
 #if	WORDPRO
-/*
- * Fill the current paragraph according to the current
- * fill column
- *
- * f and n - deFault flag and Numeric argument
- */
-int fillpara(int f, int n)
-{
+static int parafillnjustify( int f, int n, int justify_f) {
 	unicode_t c;		/* current char during scan	*/
-	unicode_t *wbuf ;	/* buffer for current word  */
+	unicode_t *wbuf ;	/* buffer for current word	*/
 	int wbufsize ;
 	int wordlen;	/* length of current word       */
 	int clength;	/* position on line during fill */
-	int i;		/* index during word copy       */
+//	int i;		/* index during word copy       */
 	int eopflag;	/* Are we at the End-Of-Paragraph? */
 	int firstflag;	/* first word? (needs no space) */
 	struct line *eopline;	/* pointer to line just past EOP */
+	int	dotflag = 0 ;		/* was the last char a period?  */
+	int leftmarg = 0 ;		/* left marginal */
 
 	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
 		return rdonly();	/* we are in read only mode     */
@@ -372,14 +365,23 @@ int fillpara(int f, int n)
 		mloutstr( "No fill column set") ;
 		return FALSE;
 	}
-#if	PKCODE
-	justflag = FALSE;
-#endif
+
+	if( justify_f) {
+		leftmarg = getccol( FALSE) ;
+		if (leftmarg + 10 > fillcol) {
+			mloutstr( "Column too narrow") ;
+			return FALSE;
+		}
+
+		justflag = justify_f ;
+	}
 
 	wbufsize = ALLOCSZ ;
 	wbuf = malloc( ALLOCSZ * sizeof *wbuf) ;
-	if( NULL == wbuf)
+	if( NULL == wbuf) {
+		justflag = FALSE ;
 		return FALSE ;
+	}
 
 	/* record the pointer to the line just past the EOP */
 	gotoeop(FALSE, 1);
@@ -389,6 +391,9 @@ int fillpara(int f, int n)
 	gotobop(FALSE, 1);
 
 	/* initialize various info */
+	if( justflag && leftmarg < llength(curwp->w_dotp))
+		setccol( leftmarg) ;
+
 	clength = getccol( FALSE) ;
 	wordlen = 0;
 
@@ -425,162 +430,65 @@ int fillpara(int f, int n)
 				} /* else the word is truncated silently */
 			}
 		} else if (wordlen) {
-			/* at a word break with a word waiting */
+		/* at a word break with a word waiting */
+			if( firstflag)
+				firstflag = FALSE ;
+			else {
 			/* calculate tentative new length with word added */
-			if( fillcol > clength + 1 + wordlen) {
+				if( fillcol > clength + dotflag + 1 + wordlen) {
 				/* add word to current line */
-				if (!firstflag) {
-					linsert(1, ' ');	/* the space */
-					++clength;
+					linsert( dotflag + 1, ' ') ;	/* the space */
+					clength += dotflag + 1 ;
+				} else {
+					/* start a new line */
+					lnewline();
+					linsert( leftmarg, ' ') ;
+					clength = leftmarg;
 				}
-				firstflag = FALSE;
-			} else {
-				/* start a new line */
-				lnewline();
-				clength = 0;
 			}
 
 			/* and add the word in in either case */
-			for (i = 0; i < wordlen; i++) {
+			for( int i = 0 ; i < wordlen ; i++) {
 				c = wbuf[ i] ;
-				linsert(1, c);
+				linsert( 1, c) ;
 				++clength;
 			}
 
-			if( c == '.') {	/* was the last char a period?  */
-				linsert(1, ' ');
-				++clength;
-			}
+			dotflag = c == '.' ;	/* was the last char a period?  */
 			wordlen = 0;
 		}
 	}
 	/* and add a last newline for the end of our new paragraph */
 	lnewline();
+
+	if( justflag) {
+		forwword(FALSE, 1);
+		setccol( leftmarg) ;
+		justflag = FALSE;
+	}
+
 	free( wbuf) ;
 	return TRUE;
 }
 
-#if	PKCODE
+/*
+ * Fill the current paragraph according to the current
+ * fill column
+ *
+ * f and n - deFault flag and Numeric argument
+ */
+int fillpara( int f, int n) {
+	return parafillnjustify( f, n, FALSE) ;
+}
+
 /* Fill the current paragraph according to the current
  * fill column and cursor position
  *
  * int f, n;		deFault flag and Numeric argument
  */
-int justpara(int f, int n)
-{
-	unicode_t c;		/* current char during scan	*/
-	unicode_t *wbuf ;	/* buffer for current word	*/
-	int wbufsize ;
-	int wordlen;	/* length of current word       */
-	int clength;	/* position on line during fill */
-	int i;		/* index during word copy       */
-	int eopflag;	/* Are we at the End-Of-Paragraph? */
-	int firstflag;	/* first word? (needs no space) */
-	struct line *eopline;	/* pointer to line just past EOP */
-	int leftmarg;		/* left marginal */
-
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
-	if (fillcol == 0) {	/* no fill column set */
-		mloutstr( "No fill column set") ;
-		return FALSE;
-	}
-	justflag = TRUE;
-	leftmarg = getccol( FALSE) ;
-	if (leftmarg + 10 > fillcol) {
-		mloutstr( "Column too narrow") ;
-		return FALSE;
-	}
-
-	wbufsize = ALLOCSZ ;
-	wbuf = malloc( ALLOCSZ * sizeof *wbuf) ;
-	if( NULL == wbuf)
-		return FALSE ;
-
-	/* record the pointer to the line just past the EOP */
-	gotoeop(FALSE, 1);
-	eopline = lforw(curwp->w_dotp);
-
-	/* and back top the beginning of the paragraph */
-	gotobop(FALSE, 1);
-
-	/* initialize various info */
-	if (leftmarg < llength(curwp->w_dotp))
-		setccol( leftmarg) ;
-
-	clength = getccol( FALSE) ;
-
-	wordlen = 0;
-
-	/* scan through lines, filling words */
-	firstflag = TRUE;
-	eopflag = FALSE;
-	while (!eopflag) {
-		int bytes = 1;
-
-		/* get the next character in the paragraph */
-		if (curwp->w_doto == llength(curwp->w_dotp)) {
-			c = ' ';
-			if (lforw(curwp->w_dotp) == eopline)
-				eopflag = TRUE;
-		} else
-			bytes = lgetchar(&c);
-
-		/* and then delete it */
-		ldelete(bytes, FALSE);
-
-		/* if not a separator, just add it in */
-		if (c != ' ' && c != '\t') {
-			if (wordlen < wbufsize)
-				wbuf[wordlen++] = c;
-			else {
-			/* overflow */
-				unicode_t *newptr ;
-
-				newptr = realloc( wbuf, ( wbufsize + ALLOCSZ) * sizeof *wbuf) ;
-				if( newptr != NULL) {
-					wbuf = newptr ;
-					wbufsize += ALLOCSZ ;
-					wbuf[ wordlen++] = c ;
-				} /* else the word is truncated silently */
-			}
-		} else if (wordlen) {
-			/* at a word break with a word waiting */
-			/* calculate tentative new length with word added */
-			if( fillcol > clength + 1 + wordlen) {
-				/* add word to current line */
-				if (!firstflag) {
-					linsert(1, ' ');	/* the space */
-					++clength;
-				}
-				firstflag = FALSE;
-			} else {
-				/* start a new line */
-				lnewline();
-				for (i = 0; i < leftmarg; i++)
-					linsert(1, ' ');
-				clength = leftmarg;
-			}
-
-			/* and add the word in in either case */
-			for (i = 0; i < wordlen; i++) {
-				linsert(1, wbuf[i]);
-				++clength;
-			}
-			wordlen = 0;
-		}
-	}
-	/* and add a last newline for the end of our new paragraph */
-	lnewline();
-
-	forwword(FALSE, 1);
-	setccol( leftmarg) ;
-
-	justflag = FALSE;
-	free( wbuf) ;
-	return TRUE;
+int justpara( int f, int n) {
+	return parafillnjustify( f, n, TRUE) ;
 }
-#endif
 
 /*
  * delete n paragraphs starting with the current one
@@ -681,9 +589,7 @@ int wordcount(int f, int n)
 		nwords, nchars, nlines + 1, avgch) ;
 	return TRUE;
 }
-#endif
 
-#if WORDPRO
 /*
  * go back to the beginning of the current paragraph
  * here we look for a <NL><NL> or <NL><TAB> or <NL><SPACE>
@@ -707,14 +613,10 @@ int gotobop(int f, int n)
 		   or a <NL><SPACE>                                     */
 		while (lback(curwp->w_dotp) != curbp->b_linep)
 			if (llength(curwp->w_dotp) != 0 &&
-#if	PKCODE
 			    ((justflag == TRUE) ||
-#endif
 			     (lgetc(curwp->w_dotp, curwp->w_doto) != TAB &&
 			      lgetc(curwp->w_dotp, curwp->w_doto) != ' '))
-#if	PKCODE
 			    )
-#endif
 				curwp->w_dotp = lback(curwp->w_dotp);
 			else
 				break;
@@ -749,14 +651,10 @@ int gotoeop(int f, int n)
 		   or a <NL><SPACE>                                     */
 		while (curwp->w_dotp != curbp->b_linep) {
 			if (llength(curwp->w_dotp) != 0 &&
-#if	PKCODE
 			    ((justflag == TRUE) ||
-#endif
 			     (lgetc(curwp->w_dotp, curwp->w_doto) != TAB &&
 			      lgetc(curwp->w_dotp, curwp->w_doto) != ' '))
-#if	PKCODE
 			    )
-#endif
 				curwp->w_dotp = lforw(curwp->w_dotp);
 			else
 				break;
@@ -771,3 +669,5 @@ int gotoeop(int f, int n)
 	return TRUE;
 }
 #endif
+
+/* end of word.c */
