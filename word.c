@@ -352,9 +352,8 @@ static int parafillnjustify( int f, int n, int justify_f) {
 	int wbufsize ;
 	int wordlen;	/* length of current word       */
 	int clength;	/* position on line during fill */
-//	int i;		/* index during word copy       */
 	int eopflag;	/* Are we at the End-Of-Paragraph? */
-	int firstflag;	/* first word? (needs no space) */
+	int firstflag = TRUE ;	/* first word? (needs no space) */
 	struct line *eopline;	/* pointer to line just past EOP */
 	int	dotflag = 0 ;		/* was the last char a period?  */
 	int leftmarg = 0 ;		/* left marginal */
@@ -391,14 +390,20 @@ static int parafillnjustify( int f, int n, int justify_f) {
 	gotobop(FALSE, 1);
 
 	/* initialize various info */
-	if( justflag && leftmarg < llength(curwp->w_dotp))
+	if( justflag && leftmarg < llength(curwp->w_dotp)) {
 		setccol( leftmarg) ;
+		lgetchar( &c) ;
+		if( c == ' ' || c == '\t')
+		/* on a space */
+			if( getccol( TRUE) < getccol( FALSE))
+			/* first non space before current position */
+				firstflag = FALSE ;
+	}
 
 	clength = getccol( FALSE) ;
 	wordlen = 0;
 
 	/* scan through lines, filling words */
-	firstflag = TRUE;
 	eopflag = FALSE;
 	while (!eopflag) {
 		int bytes = 1;
