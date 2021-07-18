@@ -386,7 +386,7 @@ static int parafillnjustify( int f, int n, int justify_f) {
 	gotoeop(FALSE, 1);
 	eopline = lforw(curwp->w_dotp);
 
-	/* and back top the beginning of the paragraph */
+	/* and back to the beginning of the paragraph */
 	gotobop(FALSE, 1);
 
 	/* initialize various info */
@@ -463,8 +463,12 @@ static int parafillnjustify( int f, int n, int justify_f) {
 			wordlen = 0;
 		}
 	}
+
 	/* and add a last newline for the end of our new paragraph */
-	lnewline();
+	if( eopline == curbp->b_linep)	/* at EOF? */
+		forwchar( FALSE, 1) ;
+	else
+		lnewline() ;
 
 	if( justflag) {
 		forwword(FALSE, 1);
