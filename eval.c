@@ -316,12 +316,12 @@ void varinit(void)
  *
  * @fname: name of function to evaluate.
  */
-static char *gtfun( char *fname) {
+static const char *gtfun( char *fname) {
 	unsigned fnum ;				/* index to function to eval */
 	char *arg1 ; 				/* value of first argument */
 	char *arg2 ; 				/* value of second argument */
 	char *arg3 ;				/* last argument */
-	char *retstr ;				/* return value */
+	const char *retstr ;				/* return value */
 	int	low, high ;				/* binary search indexes */
 
 	/* look the function up in the function table */
@@ -1206,7 +1206,7 @@ int is_it_cmd( char *token) {
  *
  * char *token;		token to evaluate
  */
-char *getval(char *token)
+const char *getval(char *token)
 {
 	int status;	/* error return */
 	struct buffer *bp;	/* temp buffer pointer */

@@ -19,7 +19,7 @@ int is_it_cmd( char *token) ;
 
 void varinit( void) ;
 int setvar( int f, int n) ;
-char *getval( char *token) ;
+const char *getval( char *token) ;
 int stol( char *val) ;
 char *mklower( char *str) ;
 

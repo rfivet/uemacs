@@ -348,7 +348,6 @@ boolean gettokval( char *tok, int size) {
 
 char *getnewtokval( void) {
 	char *tmpbuf ;
-	char *tmpval ;
 	char *valbuf ;
 
     /* grab token and advance past */
@@ -357,7 +356,7 @@ char *getnewtokval( void) {
 		return NULL ;
 
     /* evaluate it */
-    tmpval = getval( tmpbuf) ;
+    const char *tmpval = getval( tmpbuf) ;
     valbuf = malloc( strlen( tmpval) + 1 ) ;
     if( valbuf != NULL)
 		strcpy( valbuf, tmpval) ;
