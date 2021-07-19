@@ -8,6 +8,7 @@
  *	Modified by Petri Kutvonen
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -289,8 +290,9 @@ int filter_buffer( int f, int n) {
 	if( restflag)
 		return resterr() ;
 
-	if( curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly() ;		/* we are in read only mode     */
+//	if( curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+//		return rdonly() ;		/* we are in read only mode     */
+	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	/* get the filter name and its args */
 	s = newmlarg( &mlarg, "#", 0) ;

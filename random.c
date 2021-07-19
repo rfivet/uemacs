@@ -9,6 +9,7 @@
  *	Modified by Petri Kutvonen
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -226,8 +227,9 @@ boolean twiddle( int f, int n) {
 	int	len ;
 	boolean eof_f = FALSE ;
 
-	if( curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly() ;		/* we are in read only mode     */
+//	if( curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+//		return rdonly() ;		/* we are in read only mode     */
+	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	len = llength( curwp->w_dotp) ;
 	if( len < 2 || curwp->w_doto == 0)	/* at least 2 chars & not bol */
@@ -261,11 +263,13 @@ boolean twiddle( int f, int n) {
  */
 int quote(int f, int n)
 {
-	int c;
+//	int c;
+//
+//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+//		return rdonly();	/* we are in read only mode     */
+	assert( !(curbp->b_mode & MDVIEW)) ;
 
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
-	c = tgetc();
+	int c = tgetc();
 	if (n < 0)
 		return FALSE;
 	if (n == 0)
@@ -315,8 +319,10 @@ int detab(int f, int n)
 {
 	int inc;	/* increment to next line [sgn(n)] */
 
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
+//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+//		return rdonly();	/* we are in read only mode     */
+
+	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	if (f == FALSE)
 		n = 1;
@@ -363,8 +369,10 @@ int entab(int f, int n)
 
 	int inc;	/* increment to next line [sgn(n)] */
 
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
+//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+//		return rdonly();	/* we are in read only mode     */
+
+	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	if (f == FALSE)
 		n = 1;
@@ -436,8 +444,10 @@ int trim(int f, int n)
 {
 	int inc;	/* increment to next line [sgn(n)] */
 
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
+//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+//		return rdonly();	/* we are in read only mode     */
+
+	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	if (f == FALSE)
 		n = 1;
@@ -483,8 +493,10 @@ int openline(int f, int n)
 	int i;
 	int s;
 
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
+//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+//		return rdonly();	/* we are in read only mode     */
+	assert( !(curbp->b_mode & MDVIEW)) ;
+
 	if (n < 0)
 		return FALSE;
 	if (n == 0)
@@ -504,8 +516,10 @@ int openline(int f, int n)
  */
 int insert_newline(int f, int n)
 {
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
+//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+//		return rdonly();	/* we are in read only mode     */
+	assert( !(curbp->b_mode & MDVIEW)) ;
+
 	if (n < 0)
 		return FALSE;
 
@@ -610,8 +624,10 @@ int deblank(int f, int n)
 	struct line *lp2;
 	long nld;
 
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
+//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+//		return rdonly();	/* we are in read only mode     */
+	assert( !(curbp->b_mode & MDVIEW)) ;
+
 	lp1 = curwp->w_dotp;
 	while (llength(lp1) == 0 && (lp2 = lback(lp1)) != curbp->b_linep)
 		lp1 = lp2;
@@ -638,8 +654,10 @@ int indent( int f, int n) {
 	int nicol ;
 	int i ;
 
-	if( curbp->b_mode & MDVIEW)	/* don't allow this command if	*/
-		return rdonly() ;		/* we are in read only mode		*/
+//	if( curbp->b_mode & MDVIEW)	/* don't allow this command if	*/
+//		return rdonly() ;		/* we are in read only mode		*/
+
+	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	if( n < 0)
 		return FALSE ;
@@ -676,8 +694,10 @@ int indent( int f, int n) {
  * of text if typed with a big argument. Normally bound to "C-D".
  */
 int forwdel( int f, int n) {
-	if( curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly() ;	/* we are in read only mode     */
+//	if( curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+//		return rdonly() ;	/* we are in read only mode     */
+
+	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	if( n == 0)
 		return TRUE ;
@@ -700,8 +720,10 @@ int forwdel( int f, int n) {
  * both "RUBOUT" and "C-H".
  */
 int backdel( int f, int n) {
-	if( curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly() ;	/* we are in read only mode     */
+//	if( curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+//		return rdonly() ;	/* we are in read only mode     */
+
+	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	if( n == 0)
 		return TRUE ;
@@ -730,8 +752,10 @@ int killtext(int f, int n)
 	struct line *nextp;
 	long chunk;
 
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
+//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+//		return rdonly();	/* we are in read only mode     */
+	assert( !(curbp->b_mode & MDVIEW)) ;
+
 	if ((lastflag & CFKILL) == 0)	/* Clear kill buffer if */
 		kdelete();	/* last wasn't a kill.  */
 	thisflag |= CFKILL;

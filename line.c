@@ -251,6 +251,7 @@ void lchange(int flag)
  */
 int insspace(int f, int n)
 {
+	assert( !(curbp->b_mode & MDVIEW)) ;
 	linsert(n, ' ');
 	backchar(f, n);
 	return TRUE;
@@ -373,8 +374,9 @@ boolean linsert_byte( int n, int c) {
 
 int linsert( int n, unicode_t c) {
 	assert( n >= 0) ;
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
+//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+//		return rdonly();	/* we are in read only mode     */
+	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	if( n > 0) {
 		char utf8[ 4] ;
@@ -453,8 +455,10 @@ int lnewline(void)
 	int doto;
 	struct window *wp;
 
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
+//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+//		return rdonly();	/* we are in read only mode     */
+	assert( !(curbp->b_mode & MDVIEW)) ;
+
 #if SCROLLCODE
 	lchange(WFHARD | WFINS);
 #else
@@ -540,8 +544,9 @@ boolean ldelete( long n, boolean kflag) {
 	int chunk;
 	struct window *wp;
 
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
+//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+//		return rdonly();	/* we are in read only mode     */
+	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	while( n > 0) {
 		dotp = curwp->w_dotp;
@@ -792,8 +797,10 @@ int yank(int f, int n)
 	char *sp;	/* pointer into string to insert */
 	struct kill *kp;		/* pointer into kill buffer */
 
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
+//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+//		return rdonly();	/* we are in read only mode     */
+	assert( !(curbp->b_mode & MDVIEW)) ;
+
 	if (n < 0)
 		return FALSE;
 	/* make sure there is something to yank */

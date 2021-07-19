@@ -38,11 +38,11 @@ const name_bind names[] = {
 	{"beginning-of-line", (fnp_t) gotobol, 0} ,
 	{"bind-to-key", bindtokey, 0} ,
 	{"buffer-position", showcpos, 0} ,
-	{"case-region-lower", lowerregion, 0} ,
-	{"case-region-upper", upperregion, 0} ,
-	{"case-word-capitalize", capword, 0} ,
-	{"case-word-lower", lowerword, 0} ,
-	{"case-word-upper", upperword, 0} ,
+	{"case-region-lower", lowerregion, 1} ,
+	{"case-region-upper", upperregion, 1} ,
+	{"case-word-capitalize", capword, 1} ,
+	{"case-word-lower", lowerword, 1} ,
+	{"case-word-upper", upperword, 1} ,
 	{"change-file-name", filename, 0} ,
 	{"change-screen-size", newsize, 0} ,
 	{"change-screen-width", newwidth, 0} ,
@@ -53,26 +53,26 @@ const name_bind names[] = {
 	{"count-words", wordcount, 0} ,
 #endif
 	{"ctlx-prefix", cex, 0} ,
-	{"delete-blank-lines", deblank, 0} ,
+	{"delete-blank-lines", deblank, 1} ,
 	{"delete-buffer", killbuffer, 0} ,
 	{"delete-mode", delmode, 0} ,
 	{"delete-global-mode", delgmode, 0} ,
-	{"delete-next-character", forwdel, 0} ,
-	{"delete-next-word", delfword, 0} ,
+	{"delete-next-character", forwdel, 1} ,
+	{"delete-next-word", delfword, 1} ,
 	{"delete-other-windows", onlywind, 0} ,
-	{"delete-previous-character", backdel, 0} ,
-	{"delete-previous-word", delbword, 0} ,
+	{"delete-previous-character", backdel, 1} ,
+	{"delete-previous-word", delbword, 1} ,
 	{"delete-window", delwind, 0} ,
 	{"describe-bindings", desbind, 0} ,
 	{"describe-key", deskey, 0} ,
 #if	AEDIT
-	{"detab-line", detab, 0} ,
+	{"detab-line", detab, 1} ,
 #endif
 	{"end-macro", ctlxrp, 0} ,
 	{"end-of-file", (fnp_t) gotoeob, 0} ,
 	{"end-of-line", (fnp_t) gotoeol, 0} ,
 #if	AEDIT
-	{"entab-line", entab, 0} ,
+	{"entab-line", entab, 1} ,
 #endif
 	{"exchange-point-and-mark", (fnp_t) swapmark, 0} ,
 	{"execute-buffer", execbuf, 0} ,
@@ -128,7 +128,7 @@ const name_bind names[] = {
 #if	WORDPRO
 	{"fill-paragraph", fillpara, 1} ,
 #endif
-	{"filter-buffer", filter_buffer, 0} ,
+	{"filter-buffer", filter_buffer, 1} ,
 	{"find-file", filefind, 0} ,
 	{"forward-character", (fnp_t) forwchar, 0} ,
 	{"goto-line", gotoline, 0} ,
@@ -144,8 +144,8 @@ const name_bind names[] = {
 #if	ISRCH
 	{"incremental-search", fisearch, 0} ,
 #endif
-	{"insert-file", insfile, 0} ,
-	{"insert-space", insspace, 0} ,
+	{"insert-file", insfile, 1} ,
+	{"insert-space", insspace, 1} ,
 	{"insert-string", istring, 1} ,
 #if	WORDPRO
 #if	PKCODE
@@ -153,15 +153,15 @@ const name_bind names[] = {
 #endif
 	{"kill-paragraph", killpara, 1} ,
 #endif
-	{"kill-region", killregion, 0} ,
-	{"kill-to-end-of-line", killtext, 0} ,
+	{"kill-region", killregion, 1} ,
+	{"kill-to-end-of-line", killtext, 1} ,
 	{"list-buffers", listbuffers, 0} ,
 	{"meta-prefix", metafn, 0} ,
 	{"move-window-down", mvdnwind, 0} ,
 	{"move-window-up", mvupwind, 0} ,
 	{"name-buffer", namebuffer, 0} ,
-	{"newline", insert_newline, 0} ,
-	{"newline-and-indent", indent, 0} ,
+	{"newline", insert_newline, 1} ,
+	{"newline-and-indent", indent, 1} ,
 	{"next-buffer", nextbuffer, 0} ,
 	{"next-line", (fnp_t) forwline, 0} ,
 	{"next-page", (fnp_t) forwpage, 0} ,
@@ -171,7 +171,7 @@ const name_bind names[] = {
 	{"next-window", nextwind, 0} ,
 	{"next-word", forwword, 0} ,
 	{"nop", nullproc, 0} ,
-	{"open-line", openline, 0} ,
+	{"open-line", openline, 1} ,
 	{"overwrite-string", ovstring, 0} ,
 	{"pipe-command", pipecmd, 0} ,
 	{"previous-line", (fnp_t) backline, 0} ,
@@ -181,21 +181,21 @@ const name_bind names[] = {
 #endif
 	{"previous-window", prevwind, 0} ,
 	{"previous-word", backword, 0} ,
-	{"query-replace-string", qreplace, 0} ,
+	{"query-replace-string", qreplace, 1} ,
 	{"quick-exit", quickexit, 0} ,
-	{"quote-character", quote, 0} ,
-	{"read-file", fileread, 0} ,
+	{"quote-character", quote, 1} ,
+	{"read-file", fileread, 1} ,
 	{"redraw-display", reposition, 0} ,
 	{"resize-window", resize, 0} ,
 	{"restore-window", restwnd, 0} ,
-	{"replace-string", sreplace, 0} ,
+	{"replace-string", sreplace, 1} ,
 #if	ISRCH
 	{"reverse-incremental-search", risearch, 0} ,
 #endif
 #if	PROC
 	{"run", execproc, 0} ,
 #endif
-	{"save-file", filesave, 0} ,
+	{"save-file", filesave, 1} ,
 	{"save-window", savewnd, 0} ,
 	{"scroll-next-up", scrnextup, 0} ,
 	{"scroll-next-down", scrnextdw, 0} ,
@@ -215,9 +215,9 @@ const name_bind names[] = {
 #if	BSD | SVR4
 	{"suspend-emacs", bktoshell, 0} ,
 #endif
-	{"transpose-characters", (fnp_t) twiddle, 0} ,
+	{"transpose-characters", (fnp_t) twiddle, 1} ,
 #if	AEDIT
-	{"trim-line", trim, 0} ,
+	{"trim-line", trim, 1} ,
 #endif
 	{"unbind-key", unbindkey, 0} ,
 	{"universal-argument", unarg, 0} ,
@@ -227,7 +227,7 @@ const name_bind names[] = {
 	{"wrap-word", wrapword, 0} ,
 	{"write-file", filewrite, 0} ,
 	{"write-message", writemsg, 0} ,
-	{"yank", yank, 0} ,
+	{"yank", yank, 1} ,
 
 	{"", NULL, 0}
 };

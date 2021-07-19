@@ -60,6 +60,7 @@
  *	Modified by Petri Kutvonen
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -832,12 +833,13 @@ static int replaces(int kind, int f, int n)
 	struct line *lastline;		/* position of last replace and */
 	int lastoff;		/* offset (for 'u' query option) */
 
-/* rfi */
+///* rfi */
 	lastline = NULL ;
 	lastoff = 0 ;
 
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
+//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+//		return rdonly();	/* we are in read only mode     */
+	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	/* Check for negative repetitions.
 	 */

@@ -152,8 +152,10 @@ static boolean uniflip( boolean toupper_f) {	/* flip unicode case and forward */
 }
 
 static boolean capcapword( int n, boolean first_f, boolean rest_f) {
-	if( curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly() ;		/* we are in read only mode     */
+//	if( curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+//		return rdonly() ;		/* we are in read only mode     */
+
+	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	if( n < 0)
 		return FALSE ;
@@ -213,9 +215,11 @@ int delfword(int f, int n)
 	int c;		/* temp char */
 	long size;		/* # of chars to delete */
 
-	/* don't allow this command if we are in read only mode */
-	if (curbp->b_mode & MDVIEW)
-		return rdonly();
+//	/* don't allow this command if we are in read only mode */
+//	if (curbp->b_mode & MDVIEW)
+//		return rdonly();
+
+	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	/* ignore the command if there is a negative argument */
 	if (n < 0)
@@ -299,9 +303,11 @@ int delbword(int f, int n)
 {
 	long size;
 
-	/* don't allow this command if we are in read only mode */
-	if (curbp->b_mode & MDVIEW)
-		return rdonly();
+//	/* don't allow this command if we are in read only mode */
+//	if (curbp->b_mode & MDVIEW)
+//		return rdonly();
+
+	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	/* ignore the command if there is a nonpositive argument */
 	if (n <= 0)

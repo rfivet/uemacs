@@ -11,6 +11,7 @@
  *	modified by Petri Kutvonen
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -101,8 +102,9 @@ int insfile( int f, int n) {
 	if( restflag)		/* don't allow this command if restricted */
 		return resterr() ;
 
-	if( curbp->b_mode & MDVIEW) /* don't allow this command if	*/
-		return rdonly() ;		/* we are in read only mode 	*/
+//	if( curbp->b_mode & MDVIEW) /* don't allow this command if	*/
+//		return rdonly() ;		/* we are in read only mode 	*/
+	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	status = newmlarg( &fname, "Insert file: ", sizeof( fname_t)) ;
 	if( status == TRUE) {
@@ -119,7 +121,7 @@ int insfile( int f, int n) {
 /*
  * Select a file for editing.
  * Look around to see if you can find the
- * fine in another buffer; if you can find it
+ * file in another buffer; if you can find it
  * just switch to the buffer. If you cannot find
  * the file, create a new buffer, read in the
  * text, and switch to the new buffer.
@@ -476,8 +478,10 @@ int filewrite( int f, int n) {
  * get called by "C-Z".
  */
 int filesave( int f, int n) {
-	if (curbp->b_mode & MDVIEW) /* don't allow this command if		*/
-		return rdonly();	/* we are in read only mode 	*/
+//	if (curbp->b_mode & MDVIEW) /* don't allow this command if		*/
+//		return rdonly();	/* we are in read only mode 	*/
+	assert( !(curbp->b_mode & MDVIEW)) ;
+
 	if ((curbp->b_flag & BFCHG) == 0)	/* Return, no changes.	*/
 		return TRUE;
 	if (curbp->b_fname[0] == 0) {	/* Must have a name.	*/

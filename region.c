@@ -10,6 +10,7 @@
  *	Modified by Petri Kutvonen
  */
 
+#include <assert.h>
 #include <stdio.h>
 
 #include "buffer.h"
@@ -30,8 +31,10 @@ int killregion(int f, int n)
 	int s;
 	struct region region;
 
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
+//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+//		return rdonly();	/* we are in read only mode     */
+	assert( !(curbp->b_mode & MDVIEW)) ;
+	
 	if ((s = getregion(&region)) != TRUE)
 		return s;
 	if ((lastflag & CFKILL) == 0)	/* This is a kill type  */
@@ -94,8 +97,10 @@ int lowerregion(int f, int n)
 	int s;
 	struct region region;
 
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
+//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+//		return rdonly();	/* we are in read only mode     */
+	assert( !(curbp->b_mode & MDVIEW)) ;
+	
 	if ((s = getregion(&region)) != TRUE)
 		return s;
 	lchange(WFHARD);
@@ -131,8 +136,10 @@ int upperregion(int f, int n)
 	int s;
 	struct region region;
 
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
+//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
+//		return rdonly();	/* we are in read only mode     */
+	assert( !(curbp->b_mode & MDVIEW)) ;
+	
 	if ((s = getregion(&region)) != TRUE)
 		return s;
 	lchange(WFHARD);
