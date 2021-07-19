@@ -31,14 +31,13 @@
 
 #if APROP
 static int buildlist( char *mstring) ;
-static int strinc( char *source, char *sub) ;
 #endif
 
 static void cmdstr( int c, char *seq) ;
 static unsigned int getckey( int mflag) ;
 static unsigned int stock( char *keyname) ;
 static int unbindchar( unsigned c) ;
-static char *getfname( fn_t) ;
+static const char *getfname( unsigned keycode, char *failmsg) ;
 
 
 int help(int f, int n)
@@ -77,10 +76,9 @@ int help(int f, int n)
     return TRUE;
 }
 
-int deskey(int f, int n)
-{               /* describe the command for a certain key */
+int deskey( int f, int n) {
+/* describe the command for a certain key */
     int c;      /* key to describe */
-    char *ptr;  /* string pointer to scan output strings */
     char outseq[NSTRING];   /* output buffer for command sequence */
 
     /* prompt the user to type us a key to describe */
@@ -96,12 +94,8 @@ int deskey(int f, int n)
     ostring(outseq);
     ostring(" ");
 
-    /* find the right ->function */
-    if ((ptr = getfname(getbind(c))) == NULL)
-        ptr = "Not Bound";
-
     /* output the command sequence */
-    ostring(ptr);
+    ostring( getfname( c, "Not Bound")) ;
     return TRUE;
 }
 
@@ -114,7 +108,7 @@ int deskey(int f, int n)
 int bindtokey(int f, int n)
 {
     unsigned int c;      /* command key to bind */
-    fn_t kfunc;      /* ptr to the requested function to bind to */
+    fnp_t kfunc;      /* ptr to the requested function to bind to */
     struct key_tab *ktp; /* pointer into the command table */
     int found;       /* matched command flag */
     char outseq[80];     /* output buffer for keystroke sequence */
@@ -123,7 +117,7 @@ int bindtokey(int f, int n)
     mlwrite(": bind-to-key ");
 
     /* get the function name to bind it to */
-    kfunc = getname();
+    kfunc = getname()->n_func ;
     if (kfunc == NULL) {
         mlwrite("(No such function)");
         return FALSE;
@@ -266,6 +260,35 @@ static int unbindchar( unsigned c) {
     return TRUE;
 }
 
+#if APROP
+/*
+ * does source include sub?
+ *
+ * char *source;    string to search in
+ * char *sub;       substring to look for
+ */
+static boolean strinc( const char *source, const char *sub) {
+    /* for each character in the source string */
+    for( ; *source ; source++) {
+		const char *nxtsp ;  /* next ptr into source */
+		const char *tp ;	/* ptr into substring */
+
+        nxtsp = source;
+
+        /* is the substring here? */
+        for( tp = sub ; *tp ; tp++)
+            if( *nxtsp++ != *tp)
+                break ;
+
+        /* yes, return a success */
+        if( *tp == 0)
+            return TRUE ;
+    }
+
+    return FALSE ;
+}
+#endif
+
 /* describe bindings
  * bring up a fake buffer and list the key bindings
  * into it with view mode
@@ -299,7 +322,7 @@ static int buildlist( char *mstring) {
 #endif
     struct window *wp;         /* scanning pointer to windows */
     struct key_tab *ktp;  /* pointer into the command table */
-    struct name_bind *nptr;          /* pointer into the name binding table */
+    const name_bind *nptr;/* pointer into the name binding table */
     struct buffer *bp;    /* buffer to put binding list into */
     char outseq[80];      /* output buffer for keystroke sequence */
 
@@ -339,7 +362,7 @@ static int buildlist( char *mstring) {
     wp->w_marko = 0;
 
     /* build the contents of this window, inserting it line by line */
-    for( nptr = &names[ 0] ; nptr->n_func != NULL ; nptr++) {
+    for( nptr = names ; nptr->n_func != NULL ; nptr++) {
 	    int cpos ;	/* current position to use in outseq */
 
 #if APROP
@@ -390,36 +413,6 @@ static int buildlist( char *mstring) {
     mlwrite("");        /* clear the mode line */
     return TRUE;
 }
-
-#if APROP
-
-/*
- * does source include sub?
- *
- * char *source;    string to search in
- * char *sub;       substring to look for
- */
-static int strinc( char *source, char *sub) {
-    /* for each character in the source string */
-    for( ; *source ; source++) {
-		char *nxtsp ;   /* next ptr into source */
-		char *tp ;		/* ptr into substring */
-
-        nxtsp = source;
-
-        /* is the substring here? */
-        for( tp = sub ; *tp ; tp++)
-            if( *nxtsp++ != *tp)
-                break ;
-
-        /* yes, return a success */
-        if( *tp == 0)
-            return TRUE ;
-    }
-
-    return FALSE ;
-}
-#endif
 
 /*
  * get a command key sequence from the keyboard
@@ -512,57 +505,25 @@ static void cmdstr( int c, char *seq) {
  *
  * int c;       key to find what is bound to it
  */
-fn_t getbind( unsigned c) {
-    struct key_tab *ktp;
+fnp_t getbind( unsigned c) {
+    struct key_tab *ktp ;
 
-    ktp = &keytab[0];  /* Look in key table. */
-    while (ktp->k_fp != NULL) {
+    for( ktp = keytab ; ktp->k_fp != NULL ; ktp++)
         if (ktp->k_code == c)
-            return ktp->k_fp;
-        ++ktp;
-    }
+            return ktp->k_fp ;
 
     /* no such binding */
-    return NULL;
+    return NULL ;
 }
 
-/*
- * getfname:
- *  This function takes a ptr to function and gets the name
- *  associated with it.
- */
-static char *getfname(fn_t func)
-{
-    struct name_bind *nptr; /* pointer into the name binding table */
+static const char *getfname( unsigned keycode, char *failmsg) {
+/* takes a key code and gets the name of the function bound to it */
+	fnp_t func = getbind( keycode) ;
+	if( func == NULL)
+		return failmsg ;
 
-    /* skim through the table, looking for a match */
-    nptr = &names[0];
-    while (nptr->n_func != NULL) {
-        if (nptr->n_func == func)
-            return nptr->n_name;
-        ++nptr;
-    }
-    return NULL;
-}
-
-/*
- * match fname to a function in the names table
- * and return any match or NULL if none
- *
- * char *fname;     name to attempt to match
- */
-int (*fncmatch(char *fname)) (int, int)
-{
-    struct name_bind *ffp;  /* pointer to entry in name binding table */
-
-    /* scan through the table, returning any match */
-    ffp = &names[0];
-    while (ffp->n_func != NULL) {
-        if (strcmp(fname, ffp->n_name) == 0)
-            return ffp->n_func;
-        ++ffp;
-    }
-    return NULL;
+	const char *found = getnamebind( func)->n_name ;
+	return *found ? found : failmsg ;
 }
 
 /*
@@ -618,15 +579,8 @@ static unsigned int stock( char *keyname) {
 /*
  * string key name to binding name....
  *
- * char *skey;      name of keey to get binding for
+ * char *skey;      name of key to get binding for
  */
-char *transbind(char *skey)
-{
-    char *bindname;
-
-    bindname = getfname(getbind(stock(skey)));
-    if (bindname == NULL)
-        bindname = "ERROR";
-
-    return bindname;
+const char *transbind( char *skey) {
+    return getfname( stock( skey), "ERROR") ;
 }

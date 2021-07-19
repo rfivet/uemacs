@@ -210,13 +210,17 @@ static void fmatch( int ch) {
  */
 int execute( int c, int f, int n) {
 	int status ;
-	fn_t execfunc ;
 
 /* if the keystroke is a bound function...do it */
-	execfunc = getbind( c) ;
+	fnp_t execfunc = getbind( c) ;
 	if( execfunc != NULL) {
 		thisflag = 0 ;
-		status = execfunc( f, n) ;
+		const name_bind *nbp = getnamebind( execfunc) ;
+		if( nbp->tag && curbp->b_mode & MDVIEW)
+			status = rdonly() ;
+		else
+			status = execfunc( f, n) ;
+
 		lastflag = thisflag ;
 		return status ;
 	}
@@ -330,7 +334,7 @@ void kbd_loop( void) {
 		newc = getcmd() ;
 		update( FALSE) ;
 		do {
-			fn_t execfunc ;
+			fnp_t execfunc ;
 
 			if( c == newc
 			&& (execfunc = getbind( c)) != NULL

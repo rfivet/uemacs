@@ -1283,7 +1283,7 @@ static void mlputc( unicode_t c) {
  *
  * char *s;     string to output
  */
-void ostring( char *s) {
+void ostring( const char *s) {
 	unsigned char c ;
 
 	if( discmd)
@@ -1553,7 +1553,7 @@ void echoc( unicode_t c) {
  *
  * char *s;     string to output
  */
-void echos( char *s) {
+void echos( const char *s) {
 	unicode_t c ;
 
 	if( disinp)

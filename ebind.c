@@ -34,19 +34,19 @@
  * characters of the command. This explains the funny location of the
  * control-X commands.
  */
-struct key_tab keytab[NBINDS] = {
+key_tab keytab[ NBINDS] = {
     {CONTROL | '?', backdel},
-    {CONTROL | 'A', (fn_t) gotobol}
+    {CONTROL | 'A', (fnp_t) gotobol}
     ,
-    {CONTROL | 'B', (fn_t) backchar}
+    {CONTROL | 'B', (fnp_t) backchar}
     ,
     {CONTROL | 'C', insspace}
     ,
     {CONTROL | 'D', forwdel}
     ,
-    {CONTROL | 'E', (fn_t) gotoeol}
+    {CONTROL | 'E', (fnp_t) gotoeol}
     ,
-    {CONTROL | 'F', (fn_t) forwchar}
+    {CONTROL | 'F', (fnp_t) forwchar}
     ,
     {CONTROL | 'G', ctrlg}
     ,
@@ -62,11 +62,11 @@ struct key_tab keytab[NBINDS] = {
     ,
     {CONTROL | 'M', insert_newline}
     ,
-    {CONTROL | 'N', (fn_t) forwline}
+    {CONTROL | 'N', (fnp_t) forwline}
     ,
     {CONTROL | 'O', openline}
     ,
-    {CONTROL | 'P', (fn_t) backline}
+    {CONTROL | 'P', (fnp_t) backline}
     ,
     {CONTROL | 'Q', quote}
     ,
@@ -74,11 +74,11 @@ struct key_tab keytab[NBINDS] = {
     ,
     {CONTROL | 'S', forwsearch}
     ,
-    {CONTROL | 'T', (fn_t) twiddle}
+    {CONTROL | 'T', (fnp_t) twiddle}
     ,
     {CONTROL | 'U', unarg}
     ,
-    {CONTROL | 'V', (fn_t) forwpage}
+    {CONTROL | 'V', (fnp_t) forwpage}
     ,
     {CONTROL | 'W', killregion}
     ,
@@ -86,7 +86,7 @@ struct key_tab keytab[NBINDS] = {
     ,
     {CONTROL | 'Y', yank}
     ,
-    {CONTROL | 'Z', (fn_t) backpage}
+    {CONTROL | 'Z', (fnp_t) backpage}
     ,
     {CONTROL | ']', metafn}
     ,
@@ -139,7 +139,7 @@ struct key_tab keytab[NBINDS] = {
     ,
     {CTLX | CONTROL | 'W', filewrite}
     ,
-    {CTLX | CONTROL | 'X', (fn_t) swapmark}
+    {CTLX | CONTROL | 'X', (fnp_t) swapmark}
     ,
     {CTLX | CONTROL | 'Z', shrinkwind}
     ,
@@ -248,17 +248,17 @@ struct key_tab keytab[NBINDS] = {
 #endif
     {META | CONTROL | 'Z', scrnextup}
     ,
-    {META | ' ', (fn_t) setmark}
+    {META | ' ', (fnp_t) setmark}
     ,
     {META | '?', help}
     ,
     {META | '!', reposition}
     ,
-    {META | '.', (fn_t) setmark}
+    {META | '.', (fnp_t) setmark}
     ,
-    {META | '>', (fn_t) gotoeob}
+    {META | '>', (fnp_t) gotoeob}
     ,
-    {META | '<', (fn_t) gotobob}
+    {META | '<', (fnp_t) gotobob}
     ,
     {META | '~', unmark}
     ,
@@ -309,7 +309,7 @@ struct key_tab keytab[NBINDS] = {
 #endif
     {META | 'U', upperword}
     ,
-    {META | 'V', (fn_t) backpage}
+    {META | 'V', (fnp_t) backpage}
     ,
     {META | 'W', copyregion}
     ,
@@ -319,33 +319,33 @@ struct key_tab keytab[NBINDS] = {
     ,
 
 #if VT220
-    {SPEC | '1', (fn_t) gotobob /* fisearch */}
+    {SPEC | '1', (fnp_t) gotobob /* fisearch */}
     ,           /* VT220 keys   */
     {SPEC | '2', yank}
     ,
     {SPEC | '3', forwdel /* killregion */}
     ,
-    {SPEC | '4', (fn_t) gotoeob /* setmark */}
+    {SPEC | '4', (fnp_t) gotoeob /* setmark */}
     ,
-    {SPEC | '5', (fn_t) backpage}
+    {SPEC | '5', (fnp_t) backpage}
     ,
-    {SPEC | '6', (fn_t) forwpage}
+    {SPEC | '6', (fnp_t) forwpage}
     ,
-    {SPEC | 'A', (fn_t) backline}
+    {SPEC | 'A', (fnp_t) backline}
     ,
-    {SPEC | 'B', (fn_t) forwline}
+    {SPEC | 'B', (fnp_t) forwline}
     ,
-    {SPEC | 'C', (fn_t) forwchar}
+    {SPEC | 'C', (fnp_t) forwchar}
     ,
-    {SPEC | 'D', (fn_t) backchar}
+    {SPEC | 'D', (fnp_t) backchar}
     ,
     {SPEC | 'c', metafn}
     ,
-    {SPEC | 'd', (fn_t) backchar}
+    {SPEC | 'd', (fnp_t) backchar}
     ,
-    {SPEC | 'e', (fn_t) forwline}
+    {SPEC | 'e', (fnp_t) forwline}
     ,
-    {SPEC | 'f', (fn_t) gotobob}
+    {SPEC | 'f', (fnp_t) gotobob}
     ,
     {SPEC | 'h', help}
     ,

@@ -10,6 +10,7 @@
  *	Modified by Petri Kutvonen
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>	/* malloc, free */
 #include <string.h> /* memcpy */
@@ -358,8 +359,8 @@ static int parafillnjustify( int f, int n, int justify_f) {
 	int	dotflag = 0 ;		/* was the last char a period?  */
 	int leftmarg = 0 ;		/* left marginal */
 
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
+	assert( !(curbp->b_mode & MDVIEW)) ;
+
 	if (fillcol == 0) {	/* no fill column set */
 		mloutstr( "No fill column set") ;
 		return FALSE;
@@ -507,8 +508,6 @@ int justpara( int f, int n) {
  */
 int killpara(int f, int n)
 {
-	int status;	/* returned status of functions */
-
 	while (n--) {		/* for each paragraph to delete */
 
 		/* mark out the end and beginning of the para to delete */
@@ -523,13 +522,15 @@ int killpara(int f, int n)
 		curwp->w_doto = 0;	/* force us to the beginning of line */
 
 		/* and delete it */
-		if ((status = killregion(FALSE, 1)) != TRUE)
-			return status;
+		int status = killregion( FALSE, 1) ;
+		if( status != TRUE)
+			return status ;
 
 		/* and clean up the 2 extra lines */
 		ldelete(2L, TRUE);
 	}
-	return TRUE;
+
+	return TRUE ;
 }
 
 

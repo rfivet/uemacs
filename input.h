@@ -1,7 +1,7 @@
 #ifndef _INPUT_H_
 #define _INPUT_H_
 
-#include "bind.h"
+#include "names.h"
 
 
 typedef enum {
@@ -26,7 +26,12 @@ int mlyesno( const char *prompt) ;
 int newmlarg( char **outbufref, const char *prompt, int size) ;
 int newmlargt( char **outbufref, const char *prompt, int size) ;
 int ectoc( int c) ;
-fn_t getname( void) ;
+
+/* Look up in names to function association table */
+const name_bind *fncmatch( char *) ;
+const name_bind *getname( void) ;
+const name_bind *getnamebind( fnp_t func) ;
+
 int tgetc( void) ;
 int get1key( void) ;
 int getcmd( void) ;

@@ -158,16 +158,44 @@ int ectoc( int c) {
 }
 
 /*
+ * match fname to a function in the names table
+ * and return any match or NULL if none
+ *
+ * char *fname;     name to attempt to match
+ */
+const name_bind *fncmatch( char *fname) {
+    const name_bind *ffp ;	/* pointer to entry in name binding table */
+
+    /* scan through the table, returning any match */
+    for( ffp = names ; ffp->n_func != NULL ; ffp++)
+		if( strcmp( fname, ffp->n_name) == 0)
+			break ;
+
+	return ffp ;
+}
+
+
+const name_bind *getnamebind( fnp_t func) {
+	const name_bind *nptr ; /* pointer into the name binding table */
+
+    /* skim through the table, looking for a match */
+    for( nptr = names ; nptr->n_func != NULL ; nptr++)
+        if (nptr->n_func == func)
+            break ;
+
+    return nptr ;
+}
+
+/*
  * get a command name from the command line. Command completion means
  * that pressing a <SPACE> will attempt to complete an unfinished command
  * name if it is unique.
  */
-fn_t getname(void)
-{
+const name_bind *getname( void) {
     int cpos;   /* current column on screen output */
-    struct name_bind *ffp;  /* first ptr to entry in name binding table */
-    struct name_bind *cffp; /* current ptr to entry in name binding table */
-    struct name_bind *lffp; /* last ptr to entry in name binding table */
+    const name_bind *ffp;  /* first ptr to entry in name binding table */
+    const name_bind *cffp; /* current ptr to entry in name binding table */
+    const name_bind *lffp; /* last ptr to entry in name binding table */
     char buf[NSTRING];  /* buffer to hold tentative command name */
 
     /* starting at the beginning of the string buffer */
@@ -177,7 +205,7 @@ fn_t getname(void)
     if (clexec) {
 		if( TRUE != gettokval( buf, sizeof buf))
             return NULL;
-        return fncmatch(&buf[0]);
+        return fncmatch( buf) ;
     }
 
     /* build a name string from the keyboard */
@@ -191,7 +219,7 @@ fn_t getname(void)
             buf[cpos] = 0;
 
             /* and match it off */
-            return fncmatch(&buf[0]);
+            return fncmatch( buf) ;
 
         } else if (c == ectoc(abortc)) {    /* Bell, abort */
             ctrlg(FALSE, 0);
@@ -217,7 +245,7 @@ fn_t getname(void)
 /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
             /* attempt a completion */
             buf[cpos] = 0;  /* terminate it for us */
-            ffp = &names[0];    /* scan for matches */
+            ffp = names ;    /* scan for matches */
             while (ffp->n_func != NULL) {
                 if (strncmp(buf, ffp->n_name, strlen(buf))
                     == 0) {
@@ -229,7 +257,7 @@ fn_t getname(void)
                         /* no...we match, print it */
 						echos( ffp->n_name + cpos) ;
                         TTflush();
-                        return ffp->n_func;
+                        return ffp ;
                     } else {
 /* << << << << << << << << << << << << << << << << << */
                         /* try for a partial match against the list */

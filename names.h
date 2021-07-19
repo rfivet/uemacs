@@ -1,8 +1,15 @@
+#ifndef _NAMES_H_
+#define _NAMES_H_
+
+#include "fnp_t.h"
+
 /* Structure for the name binding table. */
-struct name_bind {
-	char *n_name;		 /* name of function key */
-	int (*n_func)(int, int); /* function name is bound to */
-};
+typedef struct name_bind {
+	const char	*n_name ;			/* name of function key */
+	fnp_t	n_func ;				/* function name is bound to */
+	char	tag ;					/* view mode compatibility tag */
+} name_bind ;
 
-extern struct name_bind names[];/* name to function table */
+extern const name_bind names[] ;	/* name to function table */
 
+#endif

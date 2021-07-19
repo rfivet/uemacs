@@ -85,22 +85,23 @@ static int macarg( char *tok, int toksz) ;
 /*
  * Execute a named command even if it is not bound.
  */
-int namedcmd(int f, int n)
-{
-    fn_t kfunc; /* ptr to the requexted function to bind to */
-
+int namedcmd( int f, int n) {
     /* prompt the user to type a named command */
     mlwrite(": ");
 
     /* and now get the function name to execute */
-    kfunc = getname();
+	const name_bind *nbp = getname() ;
+    fnp_t kfunc = nbp->n_func ;
     if (kfunc == NULL) {
         mlwrite("(No such function)");
         return FALSE;
     }
 
+	if( nbp->tag && (curbp->b_mode & MDVIEW))
+		return rdonly() ;
+
     /* and then execute the command */
-    return kfunc(f, n);
+    return kfunc(f, n) ;
 }
 
 static int docmd( char *cline) ;
@@ -145,7 +146,6 @@ int execcmd( int f, int n) {
 static int docmd( char *cline) {
     int f;      /* default argument flag */
     int n;      /* numeric repeat value */
-    fn_t fnc;       /* function to execute */
     int status;     /* return status of function */
     boolean oldcle ;    /* old contents of clexec flag */
     char *oldestr;      /* original exec string */
@@ -187,19 +187,26 @@ static int docmd( char *cline) {
     }
 
     /* and match the token to see if it exists */
-    if ((fnc = fncmatch(tkn)) == NULL) {
+	const name_bind *nbp = fncmatch( tkn) ;
+    fnp_t fnc = nbp->n_func ;
+    if( fnc == NULL) {
         mlwrite("(No such Function)");
         execstr = oldestr;
         return FALSE;
     }
 
-    /* save the arguments and go execute the command */
-    oldcle = clexec;    /* save old clexec flag */
-    clexec = TRUE;      /* in cline execution */
-    status = (*fnc) (f, n); /* call the function */
+	if( nbp->tag && (curbp->b_mode & MDVIEW))
+		status = rdonly() ;
+	else {
+	    /* save the arguments and go execute the command */
+    	oldcle = clexec;    /* save old clexec flag */
+    	clexec = TRUE;      /* in cline execution */
+	    status = fnc( f, n) ;	/* call the function */
+	    clexec = oldcle;    /* restore clexec flag */
+    	execstr = oldestr;
+	}
+
     cmdstatus = status; /* save the status */
-    clexec = oldcle;    /* restore clexec flag */
-    execstr = oldestr;
     return status;
 }
 
