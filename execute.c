@@ -215,8 +215,8 @@ int execute( int c, int f, int n) {
 	fnp_t execfunc = getbind( c) ;
 	if( execfunc != NULL) {
 		thisflag = 0 ;
-		const name_bind *nbp = getnamebind( execfunc) ;
-		if( nbp->tag && curbp->b_mode & MDVIEW)
+		const char *sp = getfncname( execfunc) ;
+		if( (sp[ -1] & 1) && (curbp->b_mode & MDVIEW))
 			status = rdonly() ;
 		else
 			status = execfunc( f, n) ;

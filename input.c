@@ -168,14 +168,14 @@ const name_bind *fncmatch( char *fname) {
 
     /* scan through the table, returning any match */
     for( ffp = names ; ffp->n_func != NULL ; ffp++)
-		if( strcmp( fname, ffp->n_name) == 0)
+		if( strcmp( fname, bind_name( ffp)) == 0)
 			break ;
 
 	return ffp ;
 }
 
 
-const name_bind *getnamebind( fnp_t func) {
+const char *getfncname( fnp_t func) {
 	const name_bind *nptr ; /* pointer into the name binding table */
 
     /* skim through the table, looking for a match */
@@ -183,7 +183,7 @@ const name_bind *getnamebind( fnp_t func) {
         if (nptr->n_func == func)
             break ;
 
-    return nptr ;
+    return bind_name( nptr) ;
 }
 
 /*
@@ -243,60 +243,41 @@ const name_bind *getname( void) {
 
         } else if (c == ' ' || c == 0x1b || c == 0x09) {
 /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
-            /* attempt a completion */
-            buf[cpos] = 0;  /* terminate it for us */
-            ffp = names ;    /* scan for matches */
-            while (ffp->n_func != NULL) {
-                if (strncmp(buf, ffp->n_name, strlen(buf))
-                    == 0) {
+        /* attempt a completion */
+            buf[ cpos] = 0 ;  /* terminate it for us */
+			int buflen = strlen( buf) ;
+		/* scan for matches */
+            for( ffp = names ; ffp->n_func != NULL ; ffp++) {
+                if( strncmp( buf, bind_name( ffp), buflen) == 0) {
                     /* a possible match! More than one? */
-                    if ((ffp + 1)->n_func == NULL ||
-                        (strncmp
-                         (buf, (ffp + 1)->n_name,
-                          strlen(buf)) != 0)) {
+                    if( (ffp + 1)->n_func == NULL ||
+                        (strncmp( buf, bind_name( ffp + 1), buflen) != 0)) {
                         /* no...we match, print it */
-						echos( ffp->n_name + cpos) ;
-                        TTflush();
+						echos( &bind_name( ffp)[ cpos]) ;
+                        TTflush() ;
                         return ffp ;
                     } else {
 /* << << << << << << << << << << << << << << << << << */
                         /* try for a partial match against the list */
 
-                        /* first scan down until we no longer match the current input */
-                        lffp = (ffp + 1);
-                        while ((lffp +
-                            1)->n_func !=
-                               NULL) {
-                            if (strncmp
-                                (buf,
-                                 (lffp +
-                                  1)->n_name,
-                                 strlen(buf))
-                                != 0)
-                                break;
-                            ++lffp;
-                        }
+                        /* first scan down until we no longer match the
+						 * current input */
+                        for( lffp = ffp + 1 ; (lffp + 1)->n_func != NULL ;
+																		lffp++)
+                            if( strncmp( buf, bind_name( lffp + 1),
+							                                 	buflen) != 0)
+                                break ;
 
-                        /* and now, attempt to partial complete the string, char at a time */
+                        /* and now, attempt to partial complete the string,
+						 * one char at a time */
                         while (TRUE) {
                             /* add the next char in */
-                            buf[cpos] =
-                                ffp->
-                                n_name[cpos];
+                            buf[ cpos] = bind_name( ffp)[ cpos] ;
 
                             /* scan through the candidates */
-                            cffp = ffp + 1;
-                            while (cffp <=
-                                   lffp) {
-                                if (cffp->
-                                    n_name
-                                    [cpos]
-                                    !=
-                                    buf
-                                    [cpos])
-                                    goto onward;
-                                ++cffp;
-                            }
+                            for( cffp = ffp + 1 ; cffp <= lffp ; cffp++)
+                                if( bind_name( cffp)[ cpos] != buf[ cpos])
+                                    goto onward ;
 
                             /* add the character */
                             echoc( buf[ cpos++]) ;
@@ -304,12 +285,11 @@ const name_bind *getname( void) {
 /* << << << << << << << << << << << << << << << << << */
                     }
                 }
-                ++ffp;
             }
 
             /* no match.....beep and onward */
             TTbeep();
-              onward:;
+        onward:
             TTflush();
 /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
         } else {

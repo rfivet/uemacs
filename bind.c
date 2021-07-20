@@ -368,11 +368,11 @@ static int buildlist( char *mstring) {
 #if APROP
         /* if we are executing an apropos command..... */
             /* and current string doesn't include the search string */
-        if( *mstring && strinc( nptr->n_name, mstring) == FALSE)
+        if( *mstring && strinc( bind_name( nptr), mstring) == FALSE)
 			continue ;
 #endif
         /* add in the command name */
-        mystrscpy( outseq, nptr->n_name, sizeof outseq) ;
+        mystrscpy( outseq, bind_name( nptr), sizeof outseq) ;
         cpos = strlen(outseq);
 
         /* search down any keys bound to this */
@@ -522,7 +522,7 @@ static const char *getfname( unsigned keycode, char *failmsg) {
 	if( func == NULL)
 		return failmsg ;
 
-	const char *found = getnamebind( func)->n_name ;
+	const char *found = getfncname( func) ;
 	return *found ? found : failmsg ;
 }
 

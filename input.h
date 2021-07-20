@@ -30,7 +30,7 @@ int ectoc( int c) ;
 /* Look up in names to function association table */
 const name_bind *fncmatch( char *) ;
 const name_bind *getname( void) ;
-const name_bind *getnamebind( fnp_t func) ;
+const char *getfncname( fnp_t func) ;
 
 int tgetc( void) ;
 int get1key( void) ;

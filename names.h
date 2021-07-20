@@ -5,10 +5,12 @@
 
 /* Structure for the name binding table. */
 typedef struct name_bind {
-	const char	*n_name ;			/* name of function key */
-	fnp_t	n_func ;				/* function name is bound to */
-	char	tag ;					/* view mode compatibility tag */
+	const char	*n_name ;	/* name starting with one tag character */
+	fnp_t	n_func ;		/* function the name is bound to */
 } name_bind ;
+
+#define bind_name( p) (&(p)->n_name[ 1])
+#define bind_tag( p)  (p)->n_name[ 0]
 
 extern const name_bind names[] ;	/* name to function table */
 

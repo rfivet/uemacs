@@ -97,7 +97,7 @@ int namedcmd( int f, int n) {
         return FALSE;
     }
 
-	if( nbp->tag && (curbp->b_mode & MDVIEW))
+	if( (bind_tag( nbp) & 1) && (curbp->b_mode & MDVIEW))
 		return rdonly() ;
 
     /* and then execute the command */
@@ -195,7 +195,7 @@ static int docmd( char *cline) {
         return FALSE;
     }
 
-	if( nbp->tag && (curbp->b_mode & MDVIEW))
+	if( (bind_tag( nbp) & 1) && (curbp->b_mode & MDVIEW))
 		status = rdonly() ;
 	else {
 	    /* save the arguments and go execute the command */
