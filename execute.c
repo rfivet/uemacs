@@ -3,6 +3,7 @@
 
 #define	CLRMSG	0  /* space clears the message line with no insert */
 
+#include <assert.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -212,11 +213,16 @@ int execute( int c, int f, int n) {
 	int status ;
 
 /* if the keystroke is a bound function...do it */
-	fnp_t execfunc = getbind( c) ;
+	key_tab *ktp = getkeybind( c) ;
+	fnp_t execfunc = ktp->k_fp ;
 	if( execfunc != NULL) {
 		thisflag = 0 ;
-		const char *sp = getfncname( execfunc) ;
-		if( (sp[ -1] & 1) && (curbp->b_mode & MDVIEW))
+		if( ktp->k_nbp == NULL)
+			ktp->k_nbp = getfncnb( execfunc) ;
+
+		assert( ktp->k_nbp->n_func == execfunc) ;
+		char tag = bind_tag( ktp->k_nbp) ;
+		if( (tag & 1) && (curbp->b_mode & MDVIEW))
 			status = rdonly() ;
 		else
 			status = execfunc( f, n) ;
@@ -337,7 +343,7 @@ void kbd_loop( void) {
 			fnp_t execfunc ;
 
 			if( c == newc
-			&& (execfunc = getbind( c)) != NULL
+			&& (execfunc = getkeybind( c)->k_fp) != NULL
 			&& execfunc != insert_newline
 			&& execfunc != insert_tab)
 				newc = getcmd() ;

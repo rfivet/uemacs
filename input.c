@@ -175,7 +175,7 @@ const name_bind *fncmatch( char *fname) {
 }
 
 
-const char *getfncname( fnp_t func) {
+const name_bind *getfncnb( fnp_t func) {
 	const name_bind *nptr ; /* pointer into the name binding table */
 
     /* skim through the table, looking for a match */
@@ -183,7 +183,7 @@ const char *getfncname( fnp_t func) {
         if (nptr->n_func == func)
             break ;
 
-    return bind_name( nptr) ;
+    return nptr ;
 }
 
 /*
