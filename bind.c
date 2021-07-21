@@ -106,7 +106,7 @@ int deskey( int f, int n) {
  *
  * int f, n;        command arguments [IGNORED]
  */
-int bindtokey(int f, int n) {
+int bindtokey( int f, int n) {
     key_tab *ktp ;		/* pointer into the command table */
     char outseq[ 80] ;  /* output buffer for keystroke sequence */
 
@@ -114,7 +114,11 @@ int bindtokey(int f, int n) {
     mlwrite(": bind-to-key ");
 
 /* get the function name to bind it to */
-    fnp_t kfunc = getname()->n_func ;
+	const name_bind *nbp = getname() ;
+	if( nbp == NULL)	/* abort */
+		return FALSE ;
+
+    fnp_t kfunc = nbp->n_func ;
     if( kfunc == NULL) {
         mlwrite( "(No such function)") ;
         return FALSE ;
