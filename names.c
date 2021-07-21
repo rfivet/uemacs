@@ -8,6 +8,8 @@
  * processing.
  */
 
+#include <string.h>
+
 #include "basic.h"
 #include "bind.h"
 #include "bindable.h"
@@ -22,13 +24,14 @@
 #include "random.h"
 #include "search.h"
 #include "spawn.h"
+#include "util.h"
 #include "window.h"
 #include "word.h"
 
 const name_bind names[] = {
 	{" abort-command", ctrlg} ,
-	{" add-mode", setemode} ,
 	{" add-global-mode", setgmode} ,
+	{" add-mode", setemode} ,
 #if	APROP
 	{" apropos", apro} ,
 #endif
@@ -55,8 +58,8 @@ const name_bind names[] = {
 	{" ctlx-prefix", cex} ,
 	{"!delete-blank-lines", deblank} ,
 	{" delete-buffer", killbuffer} ,
-	{" delete-mode", delmode} ,
 	{" delete-global-mode", delgmode} ,
+	{" delete-mode", delmode} ,
 	{"!delete-next-character", forwdel} ,
 	{"!delete-next-word", delfword} ,
 	{" delete-other-windows", onlywind} ,
@@ -80,14 +83,6 @@ const name_bind names[] = {
 	{" execute-file", execfile} ,
 	{" execute-macro", ctlxe} ,
 	{" execute-macro-1", cbuf1} ,
-	{" execute-macro-2", cbuf2} ,
-	{" execute-macro-3", cbuf3} ,
-	{" execute-macro-4", cbuf4} ,
-	{" execute-macro-5", cbuf5} ,
-	{" execute-macro-6", cbuf6} ,
-	{" execute-macro-7", cbuf7} ,
-	{" execute-macro-8", cbuf8} ,
-	{" execute-macro-9", cbuf9} ,
 	{" execute-macro-10", cbuf10} ,
 	{" execute-macro-11", cbuf11} ,
 	{" execute-macro-12", cbuf12} ,
@@ -98,6 +93,7 @@ const name_bind names[] = {
 	{" execute-macro-17", cbuf17} ,
 	{" execute-macro-18", cbuf18} ,
 	{" execute-macro-19", cbuf19} ,
+	{" execute-macro-2", cbuf2} ,
 	{" execute-macro-20", cbuf20} ,
 	{" execute-macro-21", cbuf21} ,
 	{" execute-macro-22", cbuf22} ,
@@ -108,6 +104,7 @@ const name_bind names[] = {
 	{" execute-macro-27", cbuf27} ,
 	{" execute-macro-28", cbuf28} ,
 	{" execute-macro-29", cbuf29} ,
+	{" execute-macro-3", cbuf3} ,
 	{" execute-macro-30", cbuf30} ,
 	{" execute-macro-31", cbuf31} ,
 	{" execute-macro-32", cbuf32} ,
@@ -118,7 +115,13 @@ const name_bind names[] = {
 	{" execute-macro-37", cbuf37} ,
 	{" execute-macro-38", cbuf38} ,
 	{" execute-macro-39", cbuf39} ,
+	{" execute-macro-4", cbuf4} ,
 	{" execute-macro-40", cbuf40} ,
+	{" execute-macro-5", cbuf5} ,
+	{" execute-macro-6", cbuf6} ,
+	{" execute-macro-7", cbuf7} ,
+	{" execute-macro-8", cbuf8} ,
+	{" execute-macro-9", cbuf9} ,
 	{" execute-named-command", namedcmd} ,
 #if	PROC
 	{" execute-procedure", execproc} ,
@@ -137,9 +140,9 @@ const name_bind names[] = {
 #endif
 	{" grow-window", enlargewind} ,
 	{"!handle-tab", insert_tab} ,
-	{" hunt-forward", forwhunt} ,
-	{" hunt-backward", backhunt} ,
 	{" help", help} ,
+	{" hunt-backward", backhunt} ,
+	{" hunt-forward", forwhunt} ,
 	{" i-shell", spawncli} ,
 #if	ISRCH
 	{" incremental-search", fisearch} ,
@@ -186,9 +189,9 @@ const name_bind names[] = {
 	{"!quote-character", quote} ,
 	{"!read-file", fileread} ,
 	{" redraw-display", reposition} ,
+	{"!replace-string", sreplace} ,
 	{" resize-window", resize} ,
 	{" restore-window", restwnd} ,
-	{"!replace-string", sreplace} ,
 #if	ISRCH
 	{" reverse-incremental-search", risearch} ,
 #endif
@@ -197,8 +200,8 @@ const name_bind names[] = {
 #endif
 	{"!save-file", filesave} ,
 	{" save-window", savewnd} ,
-	{" scroll-next-up", scrnextup} ,
 	{" scroll-next-down", scrnextdw} ,
+	{" scroll-next-up", scrnextup} ,
 	{" search-forward", forwsearch} ,
 	{" search-reverse", backsearch} ,
 	{" select-buffer", usebuffer} ,
@@ -231,5 +234,25 @@ const name_bind names[] = {
 
 	{" ", NULL}
 };
+
+
+const name_bind *fncmatch( char *name) {
+	int found = ARRAY_SIZE( names) - 1 ;	/* index of last entry/ catch all */
+	int low = 0 ;
+	int high = found - 1 ;
+	do {
+		int cur = (high + low) / 2 ;
+		int s = strcmp( name, bind_name( &names[ cur])) ;
+		if( s < 0)
+			high = cur - 1 ;
+		else if( s == 0) {
+			found = cur ;
+			break ;
+		} else
+			low = cur + 1 ;
+	} while( low <= high) ;
+
+	return &names[ found] ;
+}
 
 /* end of names.c */

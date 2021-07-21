@@ -35,8 +35,6 @@
 
 #define	MAXVARS	255
 
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
-
 /*	Macro argument token types					*/
 
 #define	TKNUL	0		/* end-of-string                */

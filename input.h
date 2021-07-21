@@ -29,7 +29,6 @@ int newmlargt( char **outbufref, const char *prompt, int size) ;
 int ectoc( int c) ;
 
 /* Look up in names to function association table */
-const name_bind *fncmatch( char *name) ;	/* by name */
 const name_bind *getname( void) ;			/* interactively */
 const name_bind *getfncnb( fnp_t func) ;	/* by function */
 

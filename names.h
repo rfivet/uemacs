@@ -15,4 +15,6 @@ typedef struct name_bind {
 
 extern const name_bind names[] ;	/* name to function mapping table */
 
+const name_bind *fncmatch( char *name) ;	/* look up by name */
+
 #endif

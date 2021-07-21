@@ -157,24 +157,6 @@ int ectoc( int c) {
 	return c ;
 }
 
-/*
- * match fname to a function in the names table
- * and return any match or NULL if none
- *
- * char *fname;     name to attempt to match
- */
-const name_bind *fncmatch( char *fname) {
-    const name_bind *ffp ;	/* pointer to entry in name binding table */
-
-    /* scan through the table, returning any match */
-    for( ffp = names ; ffp->n_func != NULL ; ffp++)
-		if( strcmp( fname, bind_name( ffp)) == 0)
-			break ;
-
-	return ffp ;
-}
-
-
 const name_bind *getfncnb( fnp_t func) {
 	const name_bind *nptr ; /* pointer into the name binding table */
 

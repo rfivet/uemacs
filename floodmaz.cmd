@@ -61,3 +61,8 @@ set %NC &asc "█"
 !endwhile
 set $curline 3
 set $curcol 1
+select-buffer stack
+unmark-buffer
+select-buffer %thisbuf
+unmark-buffer
+delete-buffer stack
