@@ -165,6 +165,7 @@ int main(int argc, char **argv)
 	}
 
 	/* Initialize the editor. */
+	init_bindings() ;	/* initialize mapping of function to name and key */
 	vtinit();		/* Display */
 	mloutfmt = mlwrite ;
 	edinit("main");		/* Buffers, windows */

@@ -19,7 +19,6 @@
 #include "bindable.h"
 #include "buffer.h"
 #include "display.h"
-#include "ebind.h"
 #include "exec.h"
 #include "file.h"
 #include "flook.h"
@@ -308,7 +307,7 @@ int apro( int f, int n) {
 static int buildlist( char *mstring) {
 #endif
     struct window *wp;         /* scanning pointer to windows */
-    struct key_tab *ktp;  /* pointer into the command table */
+    key_tab *ktp;  /* pointer into the command table */
     const name_bind *nptr;/* pointer into the name binding table */
     struct buffer *bp;    /* buffer to put binding list into */
     char outseq[80];      /* output buffer for keystroke sequence */
@@ -493,7 +492,7 @@ static void cmdstr( int c, char *seq) {
  * int c;       key to find what is bound to it
  */
 key_tab *getkeybind( unsigned c) {
-    struct key_tab *ktp ;
+    key_tab *ktp ;
 
     for( ktp = keytab ; ktp->k_fp != NULL ; ktp++)
         if (ktp->k_code == c)

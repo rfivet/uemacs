@@ -87,7 +87,7 @@ static int macarg( char *tok, int toksz) ;
  */
 int namedcmd( int f, int n) {
     /* prompt the user to type a named command */
-    mlwrite(": execute-named-cmd ");
+    mlwrite("execute-named-cmd: ");
 
     /* and now get the function name to execute */
 	const name_bind *nbp = getname() ;
@@ -121,7 +121,7 @@ int execcmd( int f, int n) {
     char *cmdstr ;	/* string holding command to execute */
 
     /* get the line wanted */
-    status = newmlarg( &cmdstr, ": execute-command-line ", 0) ;
+    status = newmlarg( &cmdstr, "execute-command-line: ", 0) ;
     if( status != TRUE)
         return status ;
 

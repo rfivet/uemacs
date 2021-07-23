@@ -1,15 +1,15 @@
 #ifndef _BIND_H_
 #define _BIND_H_
 
-#include "ebind.h"
+#include "names.h"
 
 #define	APROP	1  /* Add code for Apropos command                 */
 
+/* uEMACS functions */
 #if APROP
 int apro( int f, int n) ;
 #endif
 
-/* uEMACS functions */
 int help( int f, int n) ;
 int deskey( int f, int n) ;
 int bindtokey( int f, int n) ;
