@@ -520,9 +520,9 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
     static char tmp[] = "/tmp/meXXXXXX";
     FILE *tmpf = NULL;
 #endif
-/*	Look for "Find file: ", "View file: ", "Insert file: ", "Write file: ",
+/*	Look for "find-file: ", "View file: ", "Insert file: ", "Write file: ",
 **	"Read file: ", "Execute file: " */
-	file_f = NULL != strstr( prompt, " file: ") ;
+	file_f = NULL != strstr( prompt, "file: ") ;
 #endif
 
     cpos = 0;
