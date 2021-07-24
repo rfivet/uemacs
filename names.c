@@ -1,8 +1,6 @@
 /* names.c -- implements names.h */
 #include "names.h"
 
-#define PARANOID 1
-
 /* Name to function binding table.
  *
  * This table gives the names of all the bindable functions and their C
@@ -10,9 +8,8 @@
  * command line parsing.
  */
 
-#ifdef PARANOID
 #include <assert.h>
-#endif
+#include <stdlib.h>
 #include <string.h>
 
 #include "basic.h"
@@ -216,7 +213,7 @@ const name_bind names[] = {
 	{" set", setvar,							CTLX | 'A'} ,
 	{" set-fill-column", setfillcol,			CTLX | 'F'} ,
 	{" set-mark", (fnp_t) setmark,				META | ' '} , /* M. */
-	{" shell-command", spawn,					CTLX | '?'} ,
+	{" shell-command", spawn,					CTLX | '!'} ,
 	{" shrink-window", shrinkwind,				CTLX | CTL_ | 'Z'} ,
 	{" split-current-window", splitwind,		CTLX | '2'} ,
 	{" store-macro", storemac, 0} ,
@@ -275,77 +272,129 @@ const name_bind names[] = {
 	{ NULL, NULL, 0}
 } ;
 
-static int lastidx = 0 ;
-
-key_tab keytab[ NBINDS] = {
-    {0, NULL}
-} ;
+static int lastnmidx = 0 ;	/* index of last name entry */
 
 
-void init_bindings( void) {
+key_tab *keytab ;
+static int ktsize = 140 ;	/* last check: need at least 133 + 1 */
+
+
+boolean init_bindings( void) {
+/* allocate table */
+	keytab = malloc( ktsize * sizeof *keytab) ;
+	if( keytab == NULL)
+		return FALSE ;
+
+/* insert end of table mark */
+	keytab->k_code = 0 ;
+	keytab->k_nbp = NULL ;
+
 /* Add default key bindings */
-	key_tab *ktp = keytab ;
 	const name_bind *nbp ;
 	for( nbp = names ; nbp->n_func != NULL ; nbp++) {
-#ifdef PARANOID
 	/* Check entries and strict order */
 		assert( (nbp->n_name != NULL) &&
 				((nbp == names) ||
 							(0 > strcmp( bind_name( nbp - 1), bind_name( nbp)))
 				)
 		) ;
-#endif
 
 	/* Add key definition */
 		if( nbp->n_keycode) {
-			ktp->k_code = nbp->n_keycode ;
-			ktp->k_nbp = nbp ;
-			ktp += 1 ;
+			key_tab *ktp = setkeybinding( nbp->n_keycode, nbp) ;
+		/* check it was indeed an insertion at end of table not a
+		 * key code re-definition */
+			assert( (++ktp)->k_code == 0) ;
 		}
 	}
 
 /* memorize position after last valid function entry */
-	lastidx = nbp - names ;
+	lastnmidx = nbp - names ;
 
 /* Process extra key bindings if any */
 	for( nbp++ ; nbp->n_func != NULL ; nbp++) {
-#ifdef PARANOID
 	/* Check entry */
 		assert( nbp->n_keycode && (nbp->n_name == NULL)) ;
-#endif
 
 	/* Look for corresponding function and add extra key binding */
 		const name_bind *fnbp ;
 		for( fnbp = names ; fnbp->n_func != NULL ; fnbp++)
 			if( fnbp->n_func == nbp->n_func) {
-				ktp->k_code = nbp->n_keycode ;
-				ktp->k_nbp = fnbp ;
-				ktp += 1 ;
+				setkeybinding( nbp->n_keycode, fnbp) ;
 				break ;
 			}
 
-#ifdef PARANOID
-	/* Insure there is a name entry for the keycode and no double keycode */
+	/* Insure there is a name entry for the keycode */
 		assert( fnbp->n_func != NULL) ;
-		int kcnt = 0 ;
-		for( key_tab *kktp = keytab ; kktp < ktp ; kktp++)
-			if( kktp->k_code == (ktp - 1)->k_code)
-				kcnt += 1 ;
-
-		assert( kcnt == 1) ;
-#endif
 	}
 
-/* Mark position after last valid key entry */
-	ktp->k_code = 0 ;
+	return TRUE ;
+}
+
+key_tab *setkeybinding( unsigned key, const name_bind *nbp) {
+	key_tab *ktp ;
+
+/* search the table to see if it exists */
+    for( ktp = keytab ; ktp->k_code != 0 ; ktp++)
+        if( ktp->k_code == key) {
+		/* it exists, just change it then */
+			ktp->k_nbp = nbp ;
+			return ktp ;
+        }
+
+/* otherwise we need to add it to the end */
+	/* check if the end marker is at the end of the table */
+    if( ktp == &keytab[ ktsize - 1]) {
+    /* out of binding room */
+		int newsize = ktsize + 10 ;
+		key_tab *newkeytab = realloc( keytab, newsize * sizeof *keytab) ;
+		if( newkeytab == NULL)
+		/* out of space */
+	        return ktp ;
+
+		keytab = newkeytab ;
+		ktp = &keytab[ ktsize - 1] ;
+		ktsize = newsize ;
+	}
+
+    ktp->k_code = key ;		/* add keycode */
+	ktp->k_nbp = nbp ;
+    ++ktp ;      			/* and make sure the next is null */
+    ktp->k_code = 0 ;
 	ktp->k_nbp = NULL ;
+    return ktp - 1 ;
+}
+
+boolean delkeybinding( unsigned key) {
+    key_tab *ktp ;   /* pointer into the key binding table */
+
+/* search the table to see if the key exists */
+    for( ktp = keytab ; ktp->k_code != 0 ; ktp++) {
+        if( ktp->k_code == key) {
+	    /* save the pointer and scan to the end of the table */
+    		key_tab *sav_ktp = ktp ;
+    		while( (++ktp)->k_code != 0) ;
+    		ktp -= 1 ;          /* backup to the last legit entry */
+
+    	/* copy the last entry to the current one */
+    		sav_ktp->k_code = ktp->k_code ;
+		    sav_ktp->k_nbp  = ktp->k_nbp ;
+
+	    /* null out the last one */
+		    ktp->k_code = 0 ;
+		    ktp->k_nbp  = NULL ;
+		    return TRUE ;
+        }
+    }
+
+	return FALSE ;
 }
 
 #define BINARY 1
 
 const name_bind *fncmatch( char *name) {
 #ifdef BINARY
-	int found = lastidx ;
+	int found = lastnmidx ;
 	int low = 0 ;
 	int high = found - 1 ;
 	do {

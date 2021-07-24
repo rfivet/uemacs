@@ -3,6 +3,9 @@
 #ifndef _NAMES_H_
 #define _NAMES_H_
 
+#include "retcode.h"
+
+
 /* Bindable uEMACS function pointer type and definition template */
 #define BINDABLE( fname)	int fname( int f, int n)
 
@@ -26,14 +29,13 @@ typedef struct {
 } key_tab ;
 
 
-extern const name_bind names[] ;	/* name to function mapping table */
-
-/* keycode to function mapping table */
-#define	NBINDS	256					/* max # of bound keys          */
-extern key_tab keytab[ NBINDS] ;	/* key bind to functions table  */
+extern const name_bind	names[] ;	/* name to function mapping table */
+extern key_tab 			*keytab ;	/* key bind to functions table  */
 
 
-void init_bindings( void) ;
+boolean init_bindings( void) ;
+key_tab *setkeybinding( unsigned key, const name_bind *nbp) ;
+boolean delkeybinding( unsigned key) ;
 const name_bind *fncmatch( char *name) ;	/* look up by name */
 
 /* bindable functions mapped to prefix keys and hooks */

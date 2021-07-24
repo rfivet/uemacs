@@ -36,7 +36,6 @@ static int buildlist( char *mstring) ;
 static void cmdstr( int c, char *seq) ;
 static unsigned int getckey( int mflag) ;
 static unsigned int stock( char *keyname) ;
-static boolean unbindchar( unsigned c) ;
 static const char *getfname( unsigned keycode, char *failmsg) ;
 
 
@@ -123,7 +122,7 @@ BINDABLE( bindtokey) {
 /* get the command sequence to bind */
 	boolean prefix_f = (kfunc == metafn) || (kfunc == cex) ||
             							(kfunc == unarg) || (kfunc == ctrlg) ;
-    unsigned c = getckey( prefix_f) ;
+    int c = getckey( prefix_f) ;
 
 /* change it to something we can print as well */
     cmdstr( c, outseq) ;
@@ -131,12 +130,26 @@ BINDABLE( bindtokey) {
 /* and dump it out */
     ostring( outseq) ;
 
+/* key sequence can't be an active prefix key */
+	if( c == metac || c == ctlxc || c == reptc || c == abortc) {
+		if( (c == metac  && kfunc == metafn)
+		||  (c == ctlxc  && kfunc == cex)
+		||  (c == reptc  && kfunc == unarg)
+		||  (c == abortc && kfunc == ctrlg))
+			return TRUE ;
+
+		mlwrite( "(Can't bind to active prefix)") ;
+		return FALSE ;
+	}
+
 /* if the function is a prefix key */
 	if( prefix_f) {
-    /* search and remove all existing binding for the prefix */
+    /* remove existing binding for the prefix */
         for( ktp = keytab ; ktp->k_code != 0 ; ktp++)
-            if( ktp->k_nbp == nbp)
-                unbindchar( ktp->k_code) ;
+            if( ktp->k_nbp == nbp) {
+				delkeybinding( ktp->k_code) ;
+				break ;
+			}
 
     /* set the appropriate global prefix variable */
         if( kfunc == metafn)
@@ -149,29 +162,13 @@ BINDABLE( bindtokey) {
             abortc = c ;
     }
 
-/* search the table to see if it exists */
-    for( ktp = keytab ; ktp->k_code != 0 ; ktp++) {
-        if( ktp->k_code == c) {
-		/* it exists, just change it then */
-			ktp->k_nbp = nbp ;
-			return TRUE ;
-        }
-    }
-
-/* otherwise we need to add it to the end */
-    /* if we run out of binding room, bitch */
-    if( ktp >= &keytab[ NBINDS]) {
+	ktp = setkeybinding( c, nbp) ;
+	if( ktp->k_code == 0) {
         mlwrite( "Binding table FULL!") ;
-        return FALSE ;
-    }
+		return FALSE ;
+	}
 
-    ktp->k_code = c;    /* add keycode */
-	ktp->k_nbp = nbp ;
-    ++ktp;      /* and make sure the next is null */
-    ktp->k_code = 0;
-	ktp->k_nbp = NULL ;
-
-    return TRUE;
+	return TRUE ;
 }
 
 /*
@@ -180,60 +177,34 @@ BINDABLE( bindtokey) {
  *
  * int f, n;        command arguments [IGNORED]
  */
-int unbindkey(int f, int n)
-{
-    int c;      /* command key to unbind */
-    char outseq[80];    /* output buffer for keystroke sequence */
+BINDABLE( unbindkey) {
+    char outseq[ 80] ;	/* output buffer for keystroke sequence */
 
-    /* prompt the user to type in a key to unbind */
-    mlwrite("unbind-key: ");
+/* prompt the user to type in a key to unbind */
+    mlwrite( "unbind-key: ") ;
 
-    /* get the command sequence to unbind */
-    c = getckey(FALSE); /* get a command sequence */
+/* get the command sequence to unbind */
+    int c = getckey( FALSE) ;	/* get a command sequence */
 
-    /* change it to something we can print as well */
-    cmdstr(c, &outseq[0]);
+/* change it to something we can print as well */
+    cmdstr( c, outseq) ;
 
-    /* and dump it out */
-    ostring(outseq);
+/* and dump it out */
+    ostring( outseq) ;
 
-    /* if it isn't bound, bitch */
-    if (unbindchar(c) == FALSE) {
-        mlwrite("(Key not bound)");
-        return FALSE;
+/* prefix key sequence can't be undound, just redefined */
+	if( c == reptc || c == abortc) {
+		mlwrite( "(Can't unbind prefix)") ;
+		return FALSE ;
+	}
+
+/* if it isn't bound, bitch */
+    if( delkeybinding( c) == FALSE) {
+        mlwrite( "(Key not bound)") ;
+        return FALSE ;
     }
-    return TRUE;
-}
-
-
-/*
- * unbindchar()
- *
- * int c;       command key to unbind
- */
-static boolean unbindchar( unsigned c) {
-    key_tab *ktp ;   /* pointer into the command table */
-
-/* search the table to see if the key exists */
-    for( ktp = keytab ; ktp->k_code != 0 ; ktp++) {
-        if (ktp->k_code == c) {
-	    /* save the pointer and scan to the end of the table */
-    		key_tab *sav_ktp = ktp ;
-    		while( (++ktp)->k_code != 0) ;
-    		ktp -= 1 ;          /* backup to the last legit entry */
-
-    	/* copy the last entry to the current one */
-    		sav_ktp->k_code = ktp->k_code ;
-		    sav_ktp->k_nbp  = ktp->k_nbp ;
-
-	    /* null out the last one */
-		    ktp->k_code = 0 ;
-		    ktp->k_nbp  = NULL ;
-		    return TRUE ;
-        }
-    }
-
-	return FALSE ;
+	
+	return TRUE ;
 }
 
 #if APROP
@@ -452,8 +423,10 @@ static void cmdstr( int c, char *seq) {
 
     /* apply ^X sequence if needed */
     if (c & CTLX) {
-        *ptr++ = '^';
-        *ptr++ = 'X';
+		if( ctlxc & CONTROL)
+	        *ptr++ = '^' ;
+
+        *ptr++ = ctlxc & 0x1FFFFF ;
     }
 
     /* apply SPEC sequence if needed */
@@ -469,7 +442,7 @@ static void cmdstr( int c, char *seq) {
 
     /* and output the final sequence */
 
-    *ptr++ = c & 255;   /* strip the prefixes */
+    *ptr++ = c & 0x1FFFFF ;   /* strip the prefixes */
 
     *ptr = 0;       /* terminate the string */
 }
