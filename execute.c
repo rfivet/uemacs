@@ -214,18 +214,16 @@ int execute( int c, int f, int n) {
 
 /* if the keystroke is a bound function...do it */
 	key_tab *ktp = getkeybind( c) ;
-	fnp_t execfunc = ktp->k_fp ;
-	if( execfunc != NULL) {
+	if( ktp->k_code != 0) {
 		thisflag = 0 ;
-		if( ktp->k_nbp == NULL)
-			ktp->k_nbp = getfncnb( execfunc) ;
-
-		assert( ktp->k_nbp->n_func == execfunc) ;
+		assert( ktp->k_nbp != NULL) ;
 		char tag = bind_tag( ktp->k_nbp) ;
 		if( (tag & 1) && (curbp->b_mode & MDVIEW))
 			status = rdonly() ;
-		else
+		else {
+			fnp_t execfunc = ktp->k_nbp->n_func ;
 			status = execfunc( f, n) ;
+		}
 
 		lastflag = thisflag ;
 		return status ;
@@ -340,11 +338,12 @@ void kbd_loop( void) {
 		newc = getcmd() ;
 		update( FALSE) ;
 		do {
+			key_tab *ktp ;
 			fnp_t execfunc ;
 
 			if( c == newc
-			&& (execfunc = getkeybind( c)->k_fp) != NULL
-			&& execfunc != insert_newline
+			&& (ktp = getkeybind( c))->k_code == c
+			&& (execfunc = ktp->k_nbp->k_func) != insert_newline
 			&& execfunc != insert_tab)
 				newc = getcmd() ;
 			else

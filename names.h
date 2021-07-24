@@ -3,8 +3,10 @@
 #ifndef _NAMES_H_
 #define _NAMES_H_
 
-/* Generic uEMACS function pointer type */
-typedef int (*fnp_t)( int, int) ;
+/* Bindable uEMACS function pointer type and definition template */
+#define BINDABLE( fname)	int fname( int f, int n)
+
+typedef BINDABLE( (*fnp_t)) ;
 
 
 /* Structure for the name binding table. */
@@ -14,13 +16,12 @@ typedef struct {
 	unsigned	n_keycode ;	/* default key assignment, 0 when none */
 } name_bind ;
 
-#define bind_name( p) (&(p)->n_name[ 1])
-#define bind_tag( p)  (p)->n_name[ 0]
+#define bind_name( p) (&( p)->n_name[ 1])
+#define bind_tag( p)  ( p)->n_name[ 0]
 
 /* Structure for the key bindings table. */
 typedef struct {
 	unsigned		k_code ;		/* Key code */
-	fnp_t			k_fp ;			/* Routine to handle it */
 	const name_bind	*k_nbp ;		/* entry in name to function map table */
 } key_tab ;
 
@@ -34,6 +35,12 @@ extern key_tab keytab[ NBINDS] ;	/* key bind to functions table  */
 
 void init_bindings( void) ;
 const name_bind *fncmatch( char *name) ;	/* look up by name */
+
+/* bindable functions mapped to prefix keys and hooks */
+BINDABLE( nullproc) ;
+BINDABLE( metafn) ;
+BINDABLE( cex) ;
+BINDABLE( unarg) ;
 
 #endif
 

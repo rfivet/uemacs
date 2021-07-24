@@ -204,7 +204,7 @@ const name_bind names[] = {
 	{" reverse-incremental-search", risearch,	CTLX | 'R'} ,
 #endif
 #if	PROC
-	{" run", execproc, 0} ,
+	{" run", execproc, 0} ,	// alias of execute-procedure
 #endif
 	{"!save-file", filesave,					CTLX | CTL_ | 'S'} , /* also X^D */
 	{" save-window", savewnd, 0} ,
@@ -278,7 +278,7 @@ const name_bind names[] = {
 static int lastidx = 0 ;
 
 key_tab keytab[ NBINDS] = {
-    {0, NULL, NULL}
+    {0, NULL}
 } ;
 
 
@@ -299,7 +299,6 @@ void init_bindings( void) {
 	/* Add key definition */
 		if( nbp->n_keycode) {
 			ktp->k_code = nbp->n_keycode ;
-			ktp->k_fp = nbp->n_func ;
 			ktp->k_nbp = nbp ;
 			ktp += 1 ;
 		}
@@ -320,7 +319,6 @@ void init_bindings( void) {
 		for( fnbp = names ; fnbp->n_func != NULL ; fnbp++)
 			if( fnbp->n_func == nbp->n_func) {
 				ktp->k_code = nbp->n_keycode ;
-				ktp->k_fp = nbp->n_func ;
 				ktp->k_nbp = fnbp ;
 				ktp += 1 ;
 				break ;
@@ -340,7 +338,6 @@ void init_bindings( void) {
 
 /* Mark position after last valid key entry */
 	ktp->k_code = 0 ;
-	ktp->k_fp = NULL ;
 	ktp->k_nbp = NULL ;
 }
 
@@ -372,6 +369,27 @@ const name_bind *fncmatch( char *name) {
 
 	return nbp ;
 #endif
+}
+
+
+/* user function that does NOTHING */
+BINDABLE( nullproc) {
+	return TRUE ;
+}
+
+/* dummy function for binding to meta prefix */
+BINDABLE( metafn) {
+	return TRUE ;
+}
+
+/* dummy function for binding to control-x prefix */
+BINDABLE( cex) {
+	return TRUE ;
+}
+
+/* dummy function for binding to universal-argument */
+BINDABLE( unarg) {
+	return TRUE ;
 }
 
 /* end of names.c */

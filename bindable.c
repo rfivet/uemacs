@@ -1,4 +1,4 @@
-/* bindable.h -- implements bindable.c */
+/* bindable.c -- implements bindable.h */
 #include "bindable.h"
 
 #include <stdlib.h>
@@ -135,9 +135,9 @@ int ctlxe(int f, int n)
 }
 
 /*
- * Abort.
- * Beep the beeper. Kill off any keyboard macro, etc., that is in progress.
- * Sometimes called as a routine, to do general aborting of stuff.
+ * abort:
+ *  Beep the beeper. Kill off any keyboard macro, etc., that is in progress.
+ *  Sometimes called as a routine, to do general aborting of stuff.
  */
 int ctrlg( int f, int n) {
 	kbdmode = STOP ;
@@ -145,26 +145,4 @@ int ctrlg( int f, int n) {
 	return ABORT ;
 }
 
-/* user function that does NOTHING */
-int nullproc(int f, int n)
-{
-	return TRUE;
-}
-
-/* dummy function for binding to meta prefix */
-int metafn(int f, int n)
-{
-	return TRUE;
-}
-
-/* dummy function for binding to control-x prefix */
-int cex(int f, int n)
-{
-	return TRUE;
-}
-
-/* dummy function for binding to universal-argument */
-int unarg(int f, int n)
-{
-	return TRUE;
-}
+/* end of bindable.c */

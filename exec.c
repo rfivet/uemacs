@@ -511,7 +511,7 @@ int execproc( int f, int n) {
     char *name ;
 
     /* find out what buffer the user wants to execute */
-    status = newmlarg( &name, "Execute procedure: ", sizeof bufn - 2) ;
+    status = newmlarg( &name, "execute-procedure: ", sizeof bufn - 2) ;
     if( status != TRUE)
         return status ;
 

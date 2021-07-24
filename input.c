@@ -157,17 +157,6 @@ int ectoc( int c) {
 	return c ;
 }
 
-const name_bind *getfncnb( fnp_t func) {
-	const name_bind *nptr ; /* pointer into the name binding table */
-
-    /* skim through the table, looking for a match */
-    for( nptr = names ; nptr->n_func != NULL ; nptr++)
-        if (nptr->n_func == func)
-            break ;
-
-    return nptr ;
-}
-
 /*
  * get a command name from the command line. Command completion means
  * that pressing a <SPACE> will attempt to complete an unfinished command

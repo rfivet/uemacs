@@ -134,7 +134,7 @@ int filefind( int f, int n) {
 	if( restflag)	/* don't allow this command if restricted */
 		return resterr() ;
 
-	status = newmlarg( &fname, "Find file: ", sizeof( fname_t)) ;
+	status = newmlarg( &fname, "find-file: ", sizeof( fname_t)) ;
 	if( status == TRUE) {
 		status = getfile( fname, TRUE) ;
 		free( fname) ;

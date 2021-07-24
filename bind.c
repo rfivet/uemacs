@@ -76,27 +76,22 @@ int help(int f, int n)
     return TRUE;
 }
 
-int deskey( int f, int n) {
 /* describe the command for a certain key */
-    int c;      /* key to describe */
-    char outseq[NSTRING];   /* output buffer for command sequence */
+BINDABLE( deskey) {
+    char outseq[ NSTRING] ;	/* output buffer for command sequence */
 
-    /* prompt the user to type us a key to describe */
-    mlwrite(": describe-key ");
+/* prompt the user to type a key to describe */
+    mlwrite( "describe-key: ");
 
-    /* get the command sequence to describe
-       change it to something we can print as well */
-    c = getckey( FALSE) ;
-    mlwrite( ": describe-key 0x%x, ", c) ;
-    cmdstr( c, &outseq[ 0]) ;
+/* get the command sequence to describe
+ * change it to something we can print as well */
+    int c = getckey( FALSE) ;
+    cmdstr( c, outseq) ;
 
-    /* and dump it out */
-    ostring(outseq);
-    ostring(" ");
-
-    /* output the command sequence */
-    ostring( getfname( c, "Not Bound")) ;
-    return TRUE;
+/* output the command sequence */
+	mlwrite( "describe-key %s: 0x%x, %s",
+			  outseq, c, getfname( c, "Not Bound")) ;
+    return TRUE ;
 }
 
 /*
@@ -105,12 +100,12 @@ int deskey( int f, int n) {
  *
  * int f, n;        command arguments [IGNORED]
  */
-int bindtokey( int f, int n) {
+BINDABLE( bindtokey) {
     key_tab *ktp ;		/* pointer into the command table */
     char outseq[ 80] ;  /* output buffer for keystroke sequence */
 
 /* prompt the user to type in a key to bind */
-    mlwrite(": bind-to-key ");
+    mlwrite("bind-to-key: ");
 
 /* get the function name to bind it to */
 	const name_bind *nbp = getname() ;
@@ -123,7 +118,7 @@ int bindtokey( int f, int n) {
         return FALSE ;
     }
 
-    ostring( " ") ;
+	mlwrite( "bind-to-key %s: ", bind_name( nbp)) ;
 
 /* get the command sequence to bind */
 	boolean prefix_f = (kfunc == metafn) || (kfunc == cex) ||
@@ -138,28 +133,27 @@ int bindtokey( int f, int n) {
 
 /* if the function is a prefix key */
 	if( prefix_f) {
-    /* search for an existing binding for the prefix key */
-        for( ktp = keytab ; ktp->k_fp != NULL ; ktp++)
-            if( ktp->k_fp == kfunc)
+    /* search and remove all existing binding for the prefix */
+        for( ktp = keytab ; ktp->k_code != 0 ; ktp++)
+            if( ktp->k_nbp == nbp)
                 unbindchar( ktp->k_code) ;
 
-        /* reset the appropriate global prefix variable */
-        if (kfunc == metafn)
-            metac = c;
-        if (kfunc == cex)
-            ctlxc = c;
-        if (kfunc == unarg)
-            reptc = c;
-        if (kfunc == ctrlg)
-            abortc = c;
+    /* set the appropriate global prefix variable */
+        if( kfunc == metafn)
+            metac = c ;
+        else if( kfunc == cex)
+            ctlxc = c ;
+        if( kfunc == unarg)
+            reptc = c ;
+        if( kfunc == ctrlg)
+            abortc = c ;
     }
 
 /* search the table to see if it exists */
-    for( ktp = keytab ; ktp->k_fp != NULL ; ktp++) {
+    for( ktp = keytab ; ktp->k_code != 0 ; ktp++) {
         if( ktp->k_code == c) {
 		/* it exists, just change it then */
-	        ktp->k_fp = kfunc ;
-			ktp->k_nbp = NULL ;
+			ktp->k_nbp = nbp ;
 			return TRUE ;
         }
     }
@@ -172,11 +166,9 @@ int bindtokey( int f, int n) {
     }
 
     ktp->k_code = c;    /* add keycode */
-    ktp->k_fp = kfunc;  /* and the function pointer */
-	ktp->k_nbp = NULL ;
+	ktp->k_nbp = nbp ;
     ++ktp;      /* and make sure the next is null */
     ktp->k_code = 0;
-    ktp->k_fp = NULL;
 	ktp->k_nbp = NULL ;
 
     return TRUE;
@@ -194,7 +186,7 @@ int unbindkey(int f, int n)
     char outseq[80];    /* output buffer for keystroke sequence */
 
     /* prompt the user to type in a key to unbind */
-    mlwrite(": unbind-key ");
+    mlwrite("unbind-key: ");
 
     /* get the command sequence to unbind */
     c = getckey(FALSE); /* get a command sequence */
@@ -223,21 +215,19 @@ static boolean unbindchar( unsigned c) {
     key_tab *ktp ;   /* pointer into the command table */
 
 /* search the table to see if the key exists */
-    for( ktp = keytab ; ktp->k_fp != NULL ; ktp++) {
+    for( ktp = keytab ; ktp->k_code != 0 ; ktp++) {
         if (ktp->k_code == c) {
 	    /* save the pointer and scan to the end of the table */
-    		key_tab *sktp = ktp ;
-    		while( (++ktp)->k_fp != NULL) ;
+    		key_tab *sav_ktp = ktp ;
+    		while( (++ktp)->k_code != 0) ;
     		ktp -= 1 ;          /* backup to the last legit entry */
 
     	/* copy the last entry to the current one */
-    		sktp->k_code = ktp->k_code ;
-		    sktp->k_fp   = ktp->k_fp ;
-		    sktp->k_nbp  = ktp->k_nbp ;
+    		sav_ktp->k_code = ktp->k_code ;
+		    sav_ktp->k_nbp  = ktp->k_nbp ;
 
 	    /* null out the last one */
 		    ktp->k_code = 0 ;
-		    ktp->k_fp   = NULL ;
 		    ktp->k_nbp  = NULL ;
 		    return TRUE ;
         }
@@ -289,7 +279,7 @@ int apro( int f, int n) {
 	char *mstring ;	/* string to match cmd names to */
 	int status ;	/* status return */
 
-    status = newmlarg( &mstring, "Apropos string: ", 0) ;
+    status = newmlarg( &mstring, "apropos: ", 0) ;
 	if( status == TRUE) {
 		status = buildlist( mstring) ;
 		free( mstring) ;
@@ -362,9 +352,8 @@ static int buildlist( char *mstring) {
         cpos = strlen(outseq);
 
         /* search down any keys bound to this */
-        ktp = &keytab[0];
-        while (ktp->k_fp != NULL) {
-            if (ktp->k_fp == nptr->n_func) {
+        for( ktp = keytab ; ktp->k_code != 0 ; ktp++) {
+            if( ktp->k_nbp == nptr) {
                 /* padd out some spaces */
                 while (cpos < 28)
                     outseq[cpos++] = ' ';
@@ -379,7 +368,6 @@ static int buildlist( char *mstring) {
 
                 cpos = 0;   /* and clear the line */
             }
-            ++ktp;
         }
 
         /* if no key was bound, we need to dump it anyway */
@@ -494,7 +482,7 @@ static void cmdstr( int c, char *seq) {
 key_tab *getkeybind( unsigned c) {
     key_tab *ktp ;
 
-    for( ktp = keytab ; ktp->k_fp != NULL ; ktp++)
+    for( ktp = keytab ; ktp->k_code != 0 ; ktp++)
         if (ktp->k_code == c)
 			break ;
 
@@ -504,17 +492,12 @@ key_tab *getkeybind( unsigned c) {
 static const char *getfname( unsigned keycode, char *failmsg) {
 /* takes a key code and gets the name of the function bound to it */
 	key_tab *kbp = getkeybind( keycode) ;
-	fnp_t func = kbp->k_fp ;
-	if( func == NULL)
+	if( kbp->k_code == 0)
 		return failmsg ;
 
-	if( kbp->k_nbp == NULL)
-		kbp->k_nbp = getfncnb( func) ;
-
-	assert( func == kbp->k_nbp->n_func) ;
 	const char *found = bind_name( kbp->k_nbp) ;
 	assert( *found) ;
-	return *found ? found : failmsg ;
+	return found ;
 }
 
 /*
