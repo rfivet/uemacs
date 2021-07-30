@@ -7,36 +7,39 @@
 
 
 /* Bindable uEMACS function pointer type and definition template */
-#define BINDABLE( fname)	int fname( int f, int n)
+#define BINDABLE( fname)    int fname( int f, int n)
 
 typedef BINDABLE( (*fnp_t)) ;
 
 
 /* Structure for the name binding table. */
 typedef struct {
-	const char	*n_name ;	/* name starting with one tag character */
-	fnp_t		n_func ;	/* function the name is bound to */
-	unsigned	n_keycode ;	/* default key assignment, 0 when none */
+    const char  *n_name ;   /* name starting with one tag character */
+    fnp_t       n_func ;    /* function the name is bound to */
+    unsigned    n_keycode ; /* default key assignment, 0 when none */
 } name_bind ;
+
+typedef const name_bind *nbind_p ;
 
 #define bind_name( p) (&( p)->n_name[ 1])
 #define bind_tag( p)  ( p)->n_name[ 0]
 
+
 /* Structure for the key bindings table. */
 typedef struct {
-	unsigned		k_code ;		/* Key code */
-	const name_bind	*k_nbp ;		/* entry in name to function map table */
-} key_tab ;
+    unsigned    k_code ;            /* Key code */
+    nbind_p     k_nbp ;             /* entry in name to function map table */
+} *kbind_p ;
 
 
-extern const name_bind	names[] ;	/* name to function mapping table */
-extern key_tab 			*keytab ;	/* key bind to functions table  */
+extern const name_bind  names[] ;   /* name to function mapping table */
+extern kbind_p          keytab ;    /* key bind to functions table  */
 
 
 boolean init_bindings( void) ;
-key_tab *setkeybinding( unsigned key, const name_bind *nbp) ;
+kbind_p setkeybinding( unsigned key, nbind_p nbp) ;
 boolean delkeybinding( unsigned key) ;
-const name_bind *fncmatch( char *name) ;	/* look up by name */
+nbind_p fncmatch( char *name) ;     /* look up by name */
 
 /* bindable functions mapped to prefix keys and hooks */
 BINDABLE( nullproc) ;

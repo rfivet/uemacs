@@ -90,7 +90,7 @@ int namedcmd( int f, int n) {
     mlwrite("execute-named-cmd: ");
 
     /* and now get the function name to execute */
-	const name_bind *nbp = getname() ;
+	nbind_p nbp = getname() ;
 	if( nbp == NULL)	/* abort */
 		return FALSE ;
 
@@ -190,7 +190,7 @@ static int docmd( char *cline) {
     }
 
     /* and match the token to see if it exists */
-	const name_bind *nbp = fncmatch( tkn) ;
+	nbind_p nbp = fncmatch( tkn) ;
     fnp_t fnc = nbp->n_func ;
     if( fnc == NULL) {
         mlwrite("(No such Function)");

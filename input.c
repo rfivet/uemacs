@@ -162,11 +162,11 @@ int ectoc( int c) {
  * that pressing a <SPACE> will attempt to complete an unfinished command
  * name if it is unique.
  */
-const name_bind *getname( void) {
+nbind_p getname( void) {
     int cpos;   /* current column on screen output */
-    const name_bind *ffp;  /* first ptr to entry in name binding table */
-    const name_bind *cffp; /* current ptr to entry in name binding table */
-    const name_bind *lffp; /* last ptr to entry in name binding table */
+    nbind_p ffp;  /* first ptr to entry in name binding table */
+    nbind_p cffp; /* current ptr to entry in name binding table */
+    nbind_p lffp; /* last ptr to entry in name binding table */
     char buf[NSTRING];  /* buffer to hold tentative command name */
 
     /* starting at the beginning of the string buffer */

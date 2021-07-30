@@ -39,15 +39,15 @@ static unsigned int stock( char *keyname) ;
 static const char *getfname( unsigned keycode, char *failmsg) ;
 
 
-int help(int f, int n)
-{               /* give me some help!!!!
-                   bring up a fake buffer and read the help file
-                   into it with view mode                 */
-    struct buffer *bp;  /* buffer pointer to help */
+BINDABLE( help) {
+/* give me some help!!!!
+   bring up a fake buffer and read the help file into it with view mode */
     char *fname = NULL; /* ptr to file returned by flook() */
 
-    /* first check if we are already here */
-    bp = bfind( hlpfname, FALSE, BFINVS);
+/* first check if we are already here */
+    buffer_p bp = bfind( hlpfname, FALSE, BFINVS);
+	if( bp == curbp)
+		return TRUE ;
 
     if (bp == NULL) {
         fname = flook( hlpfname, FALSE);
@@ -57,16 +57,17 @@ int help(int f, int n)
         }
     }
 
-    /* split the current window to make room for the help stuff */
-    if (splitwind(FALSE, 1) == FALSE)
-        return FALSE;
+/* split the current window to make room for the help stuff */
+	if( wheadp->w_wndp == NULL			/* One window */
+	&&  splitwind( FALSE, 1) == FALSE)	/* Split it */
+        return FALSE ;
 
     if (bp == NULL) {
         /* and read the stuff in */
         if (getfile(fname, FALSE) == FALSE)
             return FALSE;
     } else
-        swbuffer(bp);
+		swbuffer( bp) ;
 
     /* make this window in VIEW mode, update all mode lines */
     curwp->w_bufp->b_mode |= MDVIEW;
@@ -100,14 +101,14 @@ BINDABLE( deskey) {
  * int f, n;        command arguments [IGNORED]
  */
 BINDABLE( bindtokey) {
-    key_tab *ktp ;		/* pointer into the command table */
+    kbind_p ktp ;		/* pointer into the command table */
     char outseq[ 80] ;  /* output buffer for keystroke sequence */
 
 /* prompt the user to type in a key to bind */
     mlwrite("bind-to-key: ");
 
 /* get the function name to bind it to */
-	const name_bind *nbp = getname() ;
+	nbind_p nbp = getname() ;
 	if( nbp == NULL)	/* abort */
 		return FALSE ;
 
@@ -268,8 +269,8 @@ int apro( int f, int n) {
 static int buildlist( char *mstring) {
 #endif
     struct window *wp;         /* scanning pointer to windows */
-    key_tab *ktp;  /* pointer into the command table */
-    const name_bind *nptr;/* pointer into the name binding table */
+    kbind_p ktp;  /* pointer into the command table */
+    nbind_p nptr;/* pointer into the name binding table */
     struct buffer *bp;    /* buffer to put binding list into */
     char outseq[80];      /* output buffer for keystroke sequence */
 
@@ -452,8 +453,8 @@ static void cmdstr( int c, char *seq) {
  *
  * int c;       key to find what is bound to it
  */
-key_tab *getkeybind( unsigned c) {
-    key_tab *ktp ;
+kbind_p getkeybind( unsigned c) {
+    kbind_p ktp ;
 
     for( ktp = keytab ; ktp->k_code != 0 ; ktp++)
         if (ktp->k_code == c)
@@ -464,7 +465,7 @@ key_tab *getkeybind( unsigned c) {
 
 static const char *getfname( unsigned keycode, char *failmsg) {
 /* takes a key code and gets the name of the function bound to it */
-	key_tab *kbp = getkeybind( keycode) ;
+	kbind_p kbp = getkeybind( keycode) ;
 	if( kbp->k_code == 0)
 		return failmsg ;
 

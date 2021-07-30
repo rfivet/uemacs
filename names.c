@@ -275,7 +275,7 @@ const name_bind names[] = {
 static int lastnmidx = 0 ;	/* index of last name entry */
 
 
-key_tab *keytab ;
+kbind_p keytab ;
 static int ktsize = 140 ;	/* last check: need at least 133 + 1 */
 
 
@@ -290,7 +290,7 @@ boolean init_bindings( void) {
 	keytab->k_nbp = NULL ;
 
 /* Add default key bindings */
-	const name_bind *nbp ;
+	nbind_p nbp ;
 	for( nbp = names ; nbp->n_func != NULL ; nbp++) {
 	/* Check entries and strict order */
 		assert( (nbp->n_name != NULL) &&
@@ -301,7 +301,7 @@ boolean init_bindings( void) {
 
 	/* Add key definition */
 		if( nbp->n_keycode) {
-			key_tab *ktp = setkeybinding( nbp->n_keycode, nbp) ;
+			kbind_p ktp = setkeybinding( nbp->n_keycode, nbp) ;
 		/* check it was indeed an insertion at end of table not a
 		 * key code re-definition */
 			assert( (++ktp)->k_code == 0) ;
@@ -317,7 +317,7 @@ boolean init_bindings( void) {
 		assert( nbp->n_keycode && (nbp->n_name == NULL)) ;
 
 	/* Look for corresponding function and add extra key binding */
-		const name_bind *fnbp ;
+		nbind_p fnbp ;
 		for( fnbp = names ; fnbp->n_func != NULL ; fnbp++)
 			if( fnbp->n_func == nbp->n_func) {
 				setkeybinding( nbp->n_keycode, fnbp) ;
@@ -331,8 +331,8 @@ boolean init_bindings( void) {
 	return TRUE ;
 }
 
-key_tab *setkeybinding( unsigned key, const name_bind *nbp) {
-	key_tab *ktp ;
+kbind_p setkeybinding( unsigned key, nbind_p nbp) {
+	kbind_p ktp ;
 
 /* search the table to see if it exists */
     for( ktp = keytab ; ktp->k_code != 0 ; ktp++)
@@ -347,7 +347,7 @@ key_tab *setkeybinding( unsigned key, const name_bind *nbp) {
     if( ktp == &keytab[ ktsize - 1]) {
     /* out of binding room */
 		int newsize = ktsize + 10 ;
-		key_tab *newkeytab = realloc( keytab, newsize * sizeof *keytab) ;
+		kbind_p newkeytab = realloc( keytab, newsize * sizeof *keytab) ;
 		if( newkeytab == NULL)
 		/* out of space */
 	        return ktp ;
@@ -366,13 +366,13 @@ key_tab *setkeybinding( unsigned key, const name_bind *nbp) {
 }
 
 boolean delkeybinding( unsigned key) {
-    key_tab *ktp ;   /* pointer into the key binding table */
+    kbind_p ktp ;   /* pointer into the key binding table */
 
 /* search the table to see if the key exists */
     for( ktp = keytab ; ktp->k_code != 0 ; ktp++) {
         if( ktp->k_code == key) {
 	    /* save the pointer and scan to the end of the table */
-    		key_tab *sav_ktp = ktp ;
+    		kbind_p sav_ktp = ktp ;
     		while( (++ktp)->k_code != 0) ;
     		ktp -= 1 ;          /* backup to the last legit entry */
 
@@ -392,7 +392,7 @@ boolean delkeybinding( unsigned key) {
 
 #define BINARY 1
 
-const name_bind *fncmatch( char *name) {
+nbind_p fncmatch( char *name) {
 #ifdef BINARY
 	int found = lastnmidx ;
 	int low = 0 ;
@@ -411,7 +411,7 @@ const name_bind *fncmatch( char *name) {
 
 	return &names[ found] ;
 #else
-	const name_bind *nbp ;
+	nbind_p nbp ;
 	for( nbp = names ; nbp->n_func != NULL ; nbp++)
 		if( !strcmp( name, bind_name( nbp)))
 			break ;

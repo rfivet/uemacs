@@ -213,7 +213,7 @@ int execute( int c, int f, int n) {
 	int status ;
 
 /* if the keystroke is a bound function...do it */
-	key_tab *ktp = getkeybind( c) ;
+	kbind_p ktp = getkeybind( c) ;
 	if( ktp->k_code != 0) {
 		thisflag = 0 ;
 		assert( ktp->k_nbp != NULL) ;
@@ -338,7 +338,7 @@ void kbd_loop( void) {
 		newc = getcmd() ;
 		update( FALSE) ;
 		do {
-			key_tab *ktp ;
+			kbind_p ktp ;
 			fnp_t execfunc ;
 
 			if( c == newc

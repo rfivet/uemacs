@@ -19,7 +19,7 @@ int desbind( int f, int n) ;
 int startup( const char *fname) ;
 
 /* find a key to function association in the key to function mapping table */
-key_tab *getkeybind( unsigned keycode) ;	/* by key code */
+kbind_p getkeybind( unsigned keycode) ;	/* by key code */
 const char *transbind( char *skey) ;	/* by string representation of key */
 
 #endif

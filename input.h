@@ -29,7 +29,7 @@ int newmlargt( char **outbufref, const char *prompt, int size) ;
 int ectoc( int c) ;
 
 /* Get a command name from the command line or interactively */
-const name_bind *getname( void) ;
+nbind_p getname( void) ;
 
 int tgetc( void) ;
 int get1key( void) ;
