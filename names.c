@@ -19,6 +19,7 @@
 #include "display.h"
 #include "eval.h"
 #include "exec.h"
+#include "execute.h"
 #include "file.h"
 #include "isearch.h"
 #include "line.h"
@@ -31,58 +32,54 @@
 #include "word.h"
 
 
-#define CTL_ CONTROL
-
 const name_bind names[] = {
-	{" abort-command", ctrlg,	 					CTL_ | 'G'} ,
+	{" abort-command", ctrlg,	 					CTRL | 'G'} ,
 	{" add-global-mode", setgmode,					META | 'M'} ,
 	{" add-mode", setemode,							CTLX | 'M'} ,
-#if	APROP
 	{" apropos", apro,								META | 'A'} ,
-#endif
-	{" backward-character", (fnp_t) backchar,		CTL_ | 'B'} ,
+	{" backward-character", (fnp_t) backchar,		CTRL | 'B'} ,
 	{" begin-macro", ctlxlp,						CTLX | '('} ,
 	{" beginning-of-file", (fnp_t) gotobob,			META | '<'} ,
-	{" beginning-of-line", (fnp_t) gotobol,			CTL_ | 'A'} ,
+	{" beginning-of-line", (fnp_t) gotobol,			CTRL | 'A'} ,
 	{" bind-to-key", bindtokey,						META | 'K'} ,
 	{" buffer-position", showcpos,					CTLX | '='} ,
-	{"!case-region-lower", lowerregion,				CTLX | CTL_ | 'L'} ,
-	{"!case-region-upper", upperregion,				CTLX | CTL_ | 'U'} ,
+	{"!case-region-lower", lowerregion,				CTLX | CTRL | 'L'} ,
+	{"!case-region-upper", upperregion,				CTLX | CTRL | 'U'} ,
 	{"!case-word-capitalize", capword,				META | 'C'} ,
 	{"!case-word-lower", lowerword,					META | 'L'} ,
 	{"!case-word-upper", upperword,					META | 'U'} ,
 	{" change-file-name", filename,					CTLX | 'N'} ,
-	{" change-screen-size", newsize,				META | CTL_ | 'D'} , /* M^S */
-	{" change-screen-width", newwidth,				META | CTL_ | 'T'} ,
-	{" clear-and-redraw", redraw, 					CTL_ | 'L'} ,
+	{" change-screen-size", newsize,				META | CTRL | 'D'} , /* M^S */
+	{" change-screen-width", newwidth,				META | CTRL | 'T'} ,
+	{" clear-and-redraw", redraw, 					CTRL | 'L'} ,
 	{" clear-message-line", clrmes, 0} ,
 	{" copy-region", copyregion,					META | 'W'} ,
 #if	WORDPRO
-	{" count-words", wordcount,						META | CTL_ | 'C'} ,
+	{" count-words", wordcount,						META | CTRL | 'C'} ,
 #endif
-	{" ctlx-prefix", cex, 							CTL_ | 'X'} ,
-	{"!delete-blank-lines", deblank,				CTLX | CTL_ | 'O'} ,
+	{" ctlx-prefix", cex, 							CTRL | 'X'} ,
+	{"!delete-blank-lines", deblank,				CTLX | CTRL | 'O'} ,
 	{" delete-buffer", killbuffer,					CTLX | 'K'} ,
-	{" delete-global-mode", delgmode,				META | CTL_ | 'M'} ,
-	{" delete-mode", delmode,						CTLX | CTL_ | 'M'} ,
-	{"!delete-next-character", forwdel,				CTL_ | 'D'} ,
+	{" delete-global-mode", delgmode,				META | CTRL | 'M'} ,
+	{" delete-mode", delmode,						CTLX | CTRL | 'M'} ,
+	{"!delete-next-character", forwdel,				CTRL | 'D'} ,
 	{"!delete-next-word", delfword,					META | 'D'} ,
 	{" delete-other-windows", onlywind,				CTLX | '1'} ,
-	{"!delete-previous-character", backdel,			CTL_ | 'H'} , /* ^? */
-	{"!delete-previous-word", delbword,				META | CTL_ | 'H'} , /* M^? */
+	{"!delete-previous-character", backdel,			CTRL | 'H'} , /* ^? */
+	{"!delete-previous-word", delbword,				META | CTRL | 'H'} , /* M^? */
 	{" delete-window", delwind,						CTLX | '0'} ,
 	{" describe-bindings", desbind, 0} ,
 	{" describe-key", deskey,						CTLX | '?'} ,
 #if	AEDIT
-	{"!detab-line", detab, 							CTLX | CTL_ | 'D'} , /* X^A */
+	{"!detab-line", detab, 							CTLX | CTRL | 'D'} , /* X^A */
 #endif
 	{" end-macro", ctlxrp,							CTLX | ')'} ,
 	{" end-of-file", (fnp_t) gotoeob,				META | '>'} ,
-	{" end-of-line", (fnp_t) gotoeol,				CTL_ | 'E'} ,
+	{" end-of-line", (fnp_t) gotoeol,				CTRL | 'E'} ,
 #if	AEDIT
-	{"!entab-line", entab, 							CTLX | CTL_ | 'E'} ,
+	{"!entab-line", entab, 							CTLX | CTRL | 'E'} ,
 #endif
-	{" exchange-point-and-mark", (fnp_t) swapmark,	CTLX | CTL_ | 'X'} ,
+	{" exchange-point-and-mark", (fnp_t) swapmark,	CTLX | CTRL | 'X'} ,
 	{" execute-buffer", execbuf, 0} ,
 	{" execute-command-line", execcmd, 0} ,
 	{" execute-file", execfile, 0} ,
@@ -129,22 +126,22 @@ const name_bind names[] = {
 	{" execute-macro-9", cbuf9, 0} ,
 	{" execute-named-command", namedcmd,		META | 'X'} ,
 #if	PROC
-	{" execute-procedure", execproc,			META | CTL_ | 'E'} ,
+	{" execute-procedure", execproc,			META | CTRL | 'E'} ,
 #endif
 	{" execute-program", execprg,				CTLX | '$'} ,
-	{" exit-emacs", quit, 						CTLX | CTL_ | 'C'} ,
+	{" exit-emacs", quit, 						CTLX | CTRL | 'C'} ,
 #if	WORDPRO
 	{"!fill-paragraph", fillpara,				META | 'Q'} ,
 #endif
 	{"!filter-buffer", filter_buffer,			CTLX | '#'} ,
-	{" find-file", filefind, 					CTLX | CTL_ | 'F'} ,
-	{" forward-character", (fnp_t) forwchar,	CTL_ | 'F'} ,
+	{" find-file", filefind, 					CTLX | CTRL | 'F'} ,
+	{" forward-character", (fnp_t) forwchar,	CTRL | 'F'} ,
 	{" goto-line", gotoline,					META | 'G'} ,
 #if	CFENCE
-	{" goto-matching-fence", getfence,			META | CTL_ | 'F'} ,
+	{" goto-matching-fence", getfence,			META | CTRL | 'F'} ,
 #endif
 	{" grow-window", enlargewind,				CTLX | 'Z'} , /* X^ */
-	{"!handle-tab", insert_tab,					CTL_ | 'I'} ,
+	{"!handle-tab", insert_tab,					CTRL | 'I'} ,
 	{" help", help,								META | '?'} ,
 	{" hunt-backward", backhunt, 0} ,
 	{" hunt-forward", forwhunt,					META | 'S'} ,
@@ -152,48 +149,48 @@ const name_bind names[] = {
 #if	ISRCH
 	{" incremental-search", fisearch,			CTLX | 'S'} ,
 #endif
-	{"!insert-file", insfile,					CTLX | CTL_ | 'I'} ,
-	{"!insert-space", insspace,					CTL_ | 'C'} ,
+	{"!insert-file", insfile,					CTLX | CTRL | 'I'} ,
+	{"!insert-space", insspace,					CTRL | 'C'} ,
 	{"!insert-string", istring, 0} ,
 #if	WORDPRO
 #if	PKCODE
 	{"!justify-paragraph", justpara,			META | 'J'} ,
 #endif
-	{"!kill-paragraph", killpara,				META | CTL_ | 'W'} ,
+	{"!kill-paragraph", killpara,				META | CTRL | 'W'} ,
 #endif
-	{"!kill-region", killregion, 				CTL_ | 'W'} ,
-	{"!kill-to-end-of-line", killtext, 			CTL_ | 'K'} ,
-	{" list-buffers", listbuffers, 				CTLX | CTL_ | 'B'} ,
-	{" meta-prefix", metafn, 					CTL_ | '['} ,
-	{" move-window-down", mvdnwind,				CTLX | CTL_ | 'N'} ,
-	{" move-window-up", mvupwind,				CTLX | CTL_ | 'P'} ,
-	{" name-buffer", namebuffer,				META | CTL_ | 'N'} ,
-	{"!newline", insert_newline, 				CTL_ | 'M'} ,
-	{"!newline-and-indent", indent, 			CTL_ | 'J'} ,
+	{"!kill-region", killregion, 				CTRL | 'W'} ,
+	{"!kill-to-end-of-line", killtext, 			CTRL | 'K'} ,
+	{" list-buffers", listbuffers, 				CTLX | CTRL | 'B'} ,
+	{" meta-prefix", metafn, 					CTRL | '['} ,
+	{" move-window-down", mvdnwind,				CTLX | CTRL | 'N'} ,
+	{" move-window-up", mvupwind,				CTLX | CTRL | 'P'} ,
+	{" name-buffer", namebuffer,				META | CTRL | 'N'} ,
+	{"!newline", insert_newline, 				CTRL | 'M'} ,
+	{"!newline-and-indent", indent, 			CTRL | 'J'} ,
 	{" next-buffer", nextbuffer,				CTLX | 'X'} ,
-	{" next-line", (fnp_t) forwline, 			CTL_ | 'N'} ,
-	{" next-page", (fnp_t) forwpage,			CTL_ | 'V'} ,
+	{" next-line", (fnp_t) forwline, 			CTRL | 'N'} ,
+	{" next-page", (fnp_t) forwpage,			CTRL | 'V'} ,
 #if	WORDPRO
 	{" next-paragraph", gotoeop,				META | 'N'} ,
 #endif
 	{" next-window", nextwind,					CTLX | 'O'} ,
 	{" next-word", forwword,					META | 'F'} ,
 	{" nop", nullproc,							SPEC | META | 'C'}, /* hook */
-	{"!open-line", openline,					CTL_ | 'O'} ,
+	{"!open-line", openline,					CTRL | 'O'} ,
 	{" overwrite-string", ovstring, 0} ,
 	{" pipe-command", pipecmd,					CTLX | '@'} ,
-	{" previous-line", (fnp_t) backline, 		CTL_ | 'P'} ,
-	{" previous-page", (fnp_t) backpage,		CTL_ | 'Z'} , /* MV */
+	{" previous-line", (fnp_t) backline, 		CTRL | 'P'} ,
+	{" previous-page", (fnp_t) backpage,		CTRL | 'Z'} , /* MV */
 #if	WORDPRO
 	{" previous-paragraph", gotobop,			META | 'P'} ,
 #endif
 	{" previous-window", prevwind,				CTLX | 'P'} ,
 	{" previous-word", backword,				META | 'B'} ,
-	{"!query-replace-string", qreplace,			META | CTL_ | 'R'} ,
+	{"!query-replace-string", qreplace,			META | CTRL | 'R'} ,
 	{" quick-exit", quickexit,					META | 'Z'} ,
-	{"!quote-character", quote, 				CTL_ | 'Q'} , /* also XQ */
-	{"!read-file", fileread,					CTLX | CTL_ | 'R'} ,
-	{" redraw-display", reposition,				META | CTL_ | 'L'} , /* M! */
+	{"!quote-character", quote, 				CTRL | 'Q'} , /* also XQ */
+	{"!read-file", fileread,					CTLX | CTRL | 'R'} ,
+	{" redraw-display", reposition,				META | CTRL | 'L'} , /* M! */
 	{"!replace-string", sreplace,				META | 'R'} ,
 	{" resize-window", resize,					CTLX | 'W'} ,
 	{" restore-window", restwnd, 0} ,
@@ -203,18 +200,18 @@ const name_bind names[] = {
 #if	PROC
 	{" run", execproc, 0} ,	// alias of execute-procedure
 #endif
-	{"!save-file", filesave,					CTLX | CTL_ | 'S'} , /* also X^D */
+	{"!save-file", filesave,					CTLX | CTRL | 'S'} , /* also X^D */
 	{" save-window", savewnd, 0} ,
-	{" scroll-next-down", scrnextdw,			META | CTL_ | 'V'} ,
-	{" scroll-next-up", scrnextup,				META | CTL_ | 'Z'} ,
-	{" search-forward", forwsearch, 			CTL_ | 'S'} ,
-	{" search-reverse", backsearch, 			CTL_ | 'R'} ,
+	{" scroll-next-down", scrnextdw,			META | CTRL | 'V'} ,
+	{" scroll-next-up", scrnextup,				META | CTRL | 'Z'} ,
+	{" search-forward", forwsearch, 			CTRL | 'S'} ,
+	{" search-reverse", backsearch, 			CTRL | 'R'} ,
 	{" select-buffer", usebuffer,				CTLX | 'B'} ,
 	{" set", setvar,							CTLX | 'A'} ,
 	{" set-fill-column", setfillcol,			CTLX | 'F'} ,
 	{" set-mark", (fnp_t) setmark,				META | ' '} , /* M. */
 	{" shell-command", spawn,					CTLX | '!'} ,
-	{" shrink-window", shrinkwind,				CTLX | CTL_ | 'Z'} ,
+	{" shrink-window", shrinkwind,				CTLX | CTRL | 'Z'} ,
 	{" split-current-window", splitwind,		CTLX | '2'} ,
 	{" store-macro", storemac, 0} ,
 #if	PROC
@@ -223,31 +220,31 @@ const name_bind names[] = {
 #if	BSD | SVR4
 	{" suspend-emacs", bktoshell,				CTLX | 'D'} , /* BSD MS */
 #endif
-	{"!transpose-characters", (fnp_t) twiddle,	CTL_ | 'T'} ,
+	{"!transpose-characters", (fnp_t) twiddle,	CTRL | 'T'} ,
 #if	AEDIT
-	{"!trim-line", trim,						CTLX | CTL_ | 'T'} ,
+	{"!trim-line", trim,						CTLX | CTRL | 'T'} ,
 #endif
-	{" unbind-key", unbindkey,					META | CTL_ | 'K'} ,
-	{" universal-argument", unarg, 				CTL_ | 'U'} ,
+	{" unbind-key", unbindkey,					META | CTRL | 'K'} ,
+	{" universal-argument", unarg, 				CTRL | 'U'} ,
 	{" unmark-buffer", unmark,					META | '~'} ,
 	{" update-screen", upscreen, 0} ,
-	{" view-file", viewfile, 					CTLX | CTL_ | 'V'} ,
+	{" view-file", viewfile, 					CTLX | CTRL | 'V'} ,
 	{"!wrap-word", wrapword,					SPEC | META | 'W'} , /* hook */
-	{" write-file", filewrite,					CTLX | CTL_ | 'W'} ,
+	{" write-file", filewrite,					CTLX | CTRL | 'W'} ,
 	{" write-message", writemsg, 0} ,
-	{"!yank", yank,								CTL_ | 'Y'} ,
+	{"!yank", yank,								CTRL | 'Y'} ,
 
 	{" ", NULL, 0},
 /* extra key mapping */
-//	{ NULL, newsize,							META | CTL_ | 'S'},
-	{ NULL, backdel,							CTL_ | '?'},
-	{ NULL, delbword,							META | CTL_ | '?'},
-	{ NULL, detab,								CTLX | CTL_ | 'A'},
+//	{ NULL, newsize,							META | CTRL | 'S'},
+	{ NULL, backdel,							CTRL | '?'},
+	{ NULL, delbword,							META | CTRL | '?'},
+	{ NULL, detab,								CTLX | CTRL | 'A'},
 	{ NULL, enlargewind,						CTLX | '^'},
 	{ NULL, (fnp_t) backpage,					META | 'V'},
 	{ NULL, quote,				 				CTLX | 'Q'},
 	{ NULL, reposition,							META | '!'},
-//detab { NULL, filesave,						CTLX | CTL_ | 'D'},
+//detab { NULL, filesave,						CTLX | CTRL | 'D'},
 	{ NULL, (fnp_t) setmark,					META | '.'},
 //	{ NULL, bktoshell,							META | 'S'},
 
@@ -388,6 +385,21 @@ boolean delkeybinding( unsigned key) {
     }
 
 	return FALSE ;
+}
+
+/*
+ * This function looks a key binding up in the binding table
+ *
+ * int c;       key to find what is bound to it
+ */
+kbind_p getkeybinding( unsigned c) {
+    kbind_p ktp ;
+
+    for( ktp = keytab ; ktp->k_code != 0 ; ktp++)
+        if (ktp->k_code == c)
+			break ;
+
+    return ktp ;
 }
 
 #define BINARY 1

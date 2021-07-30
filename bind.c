@@ -29,10 +29,7 @@
 #include "window.h"
 
 
-#if APROP
 static int buildlist( char *mstring) ;
-#endif
-
 static void cmdstr( int c, char *seq) ;
 static unsigned int getckey( int mflag) ;
 static unsigned int stock( char *keyname) ;
@@ -208,7 +205,6 @@ BINDABLE( unbindkey) {
 	return TRUE ;
 }
 
-#if APROP
 /*
  * does source include sub?
  *
@@ -235,23 +231,20 @@ static boolean strinc( const char *source, const char *sub) {
 
     return FALSE ;
 }
-#endif
 
 /* describe bindings
  * bring up a fake buffer and list the key bindings
  * into it with view mode
  */
-int desbind( int f, int n) {
-#if APROP
+BINDABLE( desbind) {
     return buildlist( "") ;
 }
 
 /* Apropos (List functions that match a substring) */
-int apro( int f, int n) {
+BINDABLE( apro) {
 	char *mstring ;	/* string to match cmd names to */
-	int status ;	/* status return */
 
-    status = newmlarg( &mstring, "apropos: ", 0) ;
+    int status = newmlarg( &mstring, "apropos: ", 0) ;
 	if( status == TRUE) {
 		status = buildlist( mstring) ;
 		free( mstring) ;
@@ -267,7 +260,6 @@ int apro( int f, int n) {
  * char *mstring;   match string if a partial list, "" matches all
  */
 static int buildlist( char *mstring) {
-#endif
     struct window *wp;         /* scanning pointer to windows */
     kbind_p ktp;  /* pointer into the command table */
     nbind_p nptr;/* pointer into the name binding table */
@@ -275,7 +267,8 @@ static int buildlist( char *mstring) {
     char outseq[80];      /* output buffer for keystroke sequence */
 
     /* split the current window to make room for the binding list */
-    if (splitwind(FALSE, 1) == FALSE)
+	if( wheadp->w_wndp == NULL			/* One window */
+	&&  splitwind( FALSE, 1) == FALSE)	/* Split it */
         return FALSE;
 
     /* and get a buffer for it */
@@ -288,7 +281,7 @@ static int buildlist( char *mstring) {
     /* let us know this is in progress */
     mlwrite("(Building binding list)");
 
-    /* disconect the current buffer */
+    /* disconnect the current buffer */
     if (--curbp->b_nwnd == 0) { /* Last use.            */
         curbp->b_dotp = curwp->w_dotp;
         curbp->b_doto = curwp->w_doto;
@@ -313,12 +306,11 @@ static int buildlist( char *mstring) {
     for( nptr = names ; nptr->n_func != NULL ; nptr++) {
 	    int cpos ;	/* current position to use in outseq */
 
-#if APROP
         /* if we are executing an apropos command..... */
-            /* and current string doesn't include the search string */
+        /* and current string doesn't include the search string */
         if( *mstring && strinc( bind_name( nptr), mstring) == FALSE)
 			continue ;
-#endif
+
         /* add in the command name */
         mystrscpy( outseq, bind_name( nptr), sizeof outseq) ;
         cpos = strlen(outseq);
@@ -424,7 +416,7 @@ static void cmdstr( int c, char *seq) {
 
     /* apply ^X sequence if needed */
     if (c & CTLX) {
-		if( ctlxc & CONTROL)
+		if( ctlxc & CTRL)
 	        *ptr++ = '^' ;
 
         *ptr++ = ctlxc & 0x1FFFFF ;
@@ -437,7 +429,7 @@ static void cmdstr( int c, char *seq) {
     }
 
     /* apply control sequence if needed */
-    if (c & CONTROL) {
+    if (c & CTRL) {
         *ptr++ = '^';
     }
 
@@ -448,24 +440,9 @@ static void cmdstr( int c, char *seq) {
     *ptr = 0;       /* terminate the string */
 }
 
-/*
- * This function looks a key binding up in the binding table
- *
- * int c;       key to find what is bound to it
- */
-kbind_p getkeybind( unsigned c) {
-    kbind_p ktp ;
-
-    for( ktp = keytab ; ktp->k_code != 0 ; ktp++)
-        if (ktp->k_code == c)
-			break ;
-
-    return ktp ;
-}
-
 static const char *getfname( unsigned keycode, char *failmsg) {
 /* takes a key code and gets the name of the function bound to it */
-	kbind_p kbp = getkeybind( keycode) ;
+	kbind_p kbp = getkeybinding( keycode) ;
 	if( kbp->k_code == 0)
 		return failmsg ;
 
@@ -506,11 +483,11 @@ static unsigned int stock( char *keyname) {
 
     /* a control char? */
     if (*keyname == '^' && *(keyname + 1) != 0) {
-        c |= CONTROL;
+        c |= CTRL;
         ++keyname;
     }
     if (*keyname < 32) {
-        c |= CONTROL;
+        c |= CTRL;
         *keyname += 'A';
     }
 

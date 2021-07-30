@@ -43,7 +43,6 @@ int setemode( int f, int n) ;
 int delmode( int f, int n) ;
 int setgmode( int f, int n) ;
 int delgmode( int f, int n) ;
-int getfence( int f, int n) ;
 int istring( int f, int n) ;
 int ovstring( int f, int n) ;
 

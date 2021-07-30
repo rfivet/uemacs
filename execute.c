@@ -8,7 +8,6 @@
 #include <unistd.h>
 
 #include "estruct.h"
-#include "bind.h"
 #include "random.h"
 #include "display.h"
 #include "file.h"
@@ -203,17 +202,106 @@ static void fmatch( int ch) {
 #endif
 
 
+#if	CFENCE
+/*
+ * the cursor is moved to a matching fence
+ *
+ * int f, n;		not used
+ */
+BINDABLE( getfence) {
+	struct line *oldlp;	/* original line pointer */
+	int oldoff;	/* and offset */
+	int sdir;	/* direction of search (1/-1) */
+	int count;	/* current fence level count */
+	char ch;	/* fence type to match against */
+	char ofence;	/* open fence */
+	char c;	/* current character in scan */
+
+	/* save the original cursor position */
+	oldlp = curwp->w_dotp;
+	oldoff = curwp->w_doto;
+
+	/* get the current character */
+	if (oldoff == llength(oldlp))
+		ch = '\n';
+	else
+		ch = lgetc(oldlp, oldoff);
+
+	/* setup proper matching fence */
+	switch (ch) {
+	case '(':
+		ofence = ')';
+		sdir = FORWARD;
+		break;
+	case '{':
+		ofence = '}';
+		sdir = FORWARD;
+		break;
+	case '[':
+		ofence = ']';
+		sdir = FORWARD;
+		break;
+	case ')':
+		ofence = '(';
+		sdir = REVERSE;
+		break;
+	case '}':
+		ofence = '{';
+		sdir = REVERSE;
+		break;
+	case ']':
+		ofence = '[';
+		sdir = REVERSE;
+		break;
+	default:
+		TTbeep();
+		return FALSE;
+	}
+
+	/* scan until we find a match, or reach the end of file */
+	count = 1 ;
+	do {
+		if( boundry( curwp->w_dotp, curwp->w_doto, sdir)) {
+		/* at buffer limit, no match to be found */
+			/* restore the current position */
+			curwp->w_dotp = oldlp ;
+			curwp->w_doto = oldoff ;
+			TTbeep() ;
+			return FALSE ;
+		}
+
+		if( sdir == FORWARD)
+			forwchar( FALSE, 1) ;
+		else
+			backchar( FALSE, 1) ;
+
+		/* if no eol */
+		if( curwp->w_doto != llength(curwp->w_dotp)) {
+			c = curwbyte() ;
+			if( c == ch)
+				++count ;
+			else if( c == ofence)
+				--count ;
+		}
+	} while( count > 0) ;
+
+	/* we have a match, move the sucker */
+	curwp->w_flag |= WFMOVE ;
+	return TRUE ;
+}
+#endif
+
 /*
  * This is the general command execution routine. It handles the fake binding
  * of all the keys to "self-insert". It also clears out the "thisflag" word,
  * and arranges to move it to the "lastflag", so that the next command can
  * look at it. Return the status of command.
  */
-int execute( int c, int f, int n) {
+int execute( unsigned c, int f, int n) {
 	int status ;
 
 /* if the keystroke is a bound function...do it */
-	kbind_p ktp = getkeybind( c) ;
+	kbind_p ktp = getkeybinding( c) ;
 	if( ktp->k_code != 0) {
 		thisflag = 0 ;
 		assert( ktp->k_nbp != NULL) ;
@@ -342,7 +430,7 @@ void kbd_loop( void) {
 			fnp_t execfunc ;
 
 			if( c == newc
-			&& (ktp = getkeybind( c))->k_code == c
+			&& (ktp = getkeybinding( c))->k_code == c
 			&& (execfunc = ktp->k_nbp->k_func) != insert_newline
 			&& execfunc != insert_tab)
 				newc = getcmd() ;

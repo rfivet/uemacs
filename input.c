@@ -41,12 +41,12 @@ kbdstate kbdmode = STOP ;   /* current keyboard macro mode  */
 int lastkey = 0 ;       /* last keystoke                */
 int kbdrep = 0 ;        /* number of repetitions        */
 
-int metac = CONTROL | '[' ;		/* current meta character 	 */
-int ctlxc = CONTROL | 'X' ;		/* current control X prefix char */
-int reptc = CONTROL | 'U' ;		/* current universal repeat char */
-int abortc = CONTROL | 'G' ;		/* current abort command char	 */
+int metac = CTRL | '[' ;		/* current meta character 	 */
+int ctlxc = CTRL | 'X' ;		/* current control X prefix char */
+int reptc = CTRL | 'U' ;		/* current universal repeat char */
+int abortc = CTRL | 'G' ;		/* current abort command char	 */
 
-const int nlc = CONTROL | 'J' ;		/* end of input char */
+const int nlc = CTRL | 'J' ;		/* end of input char */
 
 
 void ue_system( const char *cmd) {
@@ -145,11 +145,11 @@ int newmlargt( char **outbufref, const char *prompt, int size) {
 /*
  * ectoc:
  *  expanded character to character
- *  collapse the CONTROL and SPEC flags back into an ascii code
+ *  collapse the CTRL and SPEC flags back into an ascii code
  */
 int ectoc( int c) {
-	if( c & CONTROL)
-		c ^= CONTROL | 0x40 ;
+	if( c & CTRL)
+		c ^= CTRL | 0x40 ;
 
 	if( c & SPEC)
 		c &= 255 ;
@@ -325,7 +325,7 @@ int tgetc(void)
 }
 
 /*  GET1KEY: Get one keystroke. The only prefixs legal here are the SPEC
-    and CONTROL prefixes. */
+    and CTRL prefixes. */
 int get1key( void) {
     int c ;
 
@@ -333,7 +333,7 @@ int get1key( void) {
     c = tgetc();
 
     if( (c >= 0x00 && c <= 0x1F) || c == 0x7F)	/* C0 control -> C-     */
-		c ^= CONTROL | 0x40 ;
+		c ^= CTRL | 0x40 ;
 
     return c ;
 }
@@ -377,7 +377,7 @@ int getcmd(void)
     if (c == 128+27)        /* CSI */
         goto handle_CSI;
     /* process META prefix */
-    if (c == (CONTROL | '[')) {
+    if (c == (CTRL | '[')) {
         c = get1key();
 #if VT220
         if (c == '[' || c == 'O') { /* CSI P.K. */
@@ -416,7 +416,7 @@ handle_CSI:
         }
 #endif
 #if VT220
-        if (c == (CONTROL | '[')) {
+        if (c == (CTRL | '[')) {
             cmask = META;
             goto proc_metac;
         }
@@ -424,14 +424,14 @@ handle_CSI:
         if( islower( c)) /* Force to upper */
             c = flipcase( c) ;
         else if( c >= 0x00 && c <= 0x1F) /* control key */
-            c = CONTROL | (c + '@');
+            c = CTRL | (c + '@');
         return META | c;
     }
 #if PKCODE
     else if (c == metac) {
         c = get1key();
 #if VT220
-        if (c == (CONTROL | '[')) {
+        if (c == (CTRL | '[')) {
             cmask = META;
             goto proc_metac;
         }
@@ -439,7 +439,7 @@ handle_CSI:
         if( islower( c)) /* Force to upper */
             c = flipcase( c) ;
         else if( c >= 0x00 && c <= 0x1F) /* control key */
-            c = CONTROL | (c + '@');
+            c = CTRL | (c + '@');
         return META | c;
     }
 #endif
@@ -452,7 +452,7 @@ handle_CSI:
     if (c == ctlxc) {
         c = get1key();
 #if VT220
-        if (c == (CONTROL | '[')) {
+        if (c == (CTRL | '[')) {
             cmask = CTLX;
             goto proc_metac;
         }
@@ -460,7 +460,7 @@ handle_CSI:
         if (c >= 'a' && c <= 'z')   /* Force to upper */
             c -= 0x20;
         if (c >= 0x00 && c <= 0x1F) /* control key */
-            c = CONTROL | (c + '@');
+            c = CTRL | (c + '@');
         return CTLX | c;
     }
 
@@ -554,8 +554,8 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
 		}
 
 	/* If it is a <ret>, change it to a <NL> */
-        if( c == (CONTROL | 'M'))
-            c = CONTROL | 0x40 | '\n' ;
+        if( c == (CTRL | 'M'))
+            c = CTRL | 0x40 | '\n' ;
 
         if( c == eolchar) {
 		/* if they hit the line terminator, wrap it up */

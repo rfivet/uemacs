@@ -6,6 +6,12 @@
 #include "retcode.h"
 
 
+#define CTRL    0x01000000  /* Control flag, or'ed in       */
+#define META    0x02000000  /* Meta flag, or'ed in          */
+#define CTLX    0x04000000  /* ^X flag, or'ed in            */
+#define SPEC    0x08000000  /* special key (function keys)  */
+
+
 /* Bindable uEMACS function pointer type and definition template */
 #define BINDABLE( fname)    int fname( int f, int n)
 
@@ -39,7 +45,11 @@ extern kbind_p          keytab ;    /* key bind to functions table  */
 boolean init_bindings( void) ;
 kbind_p setkeybinding( unsigned key, nbind_p nbp) ;
 boolean delkeybinding( unsigned key) ;
+kbind_p getkeybinding( unsigned key) ;	/* look up by key code */
+
+/* find a name to function association in the name to function mapping table */
 nbind_p fncmatch( char *name) ;     /* look up by name */
+
 
 /* bindable functions mapped to prefix keys and hooks */
 BINDABLE( nullproc) ;

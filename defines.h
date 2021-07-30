@@ -5,7 +5,7 @@
 
 
 /* Must define one of
-	USG | BSD
+    USG | BSD
 */
 #define USG 1
 
@@ -13,12 +13,7 @@
 #define SCROLLCODE 1   /* scrolling code P.K.                          */
 #define ENVFUNC 1
 
-#define	NSTRING	128		/* # of bytes, string buffers	*/
-
-#define CONTROL 0x01000000	/* Control flag, or'ed in       */
-#define META    0x02000000	/* Meta flag, or'ed in          */
-#define CTLX    0x04000000	/* ^X flag, or'ed in            */
-#define	SPEC	0x08000000	/* special key (function keys)  */
+#define NSTRING 128     /* # of bytes, string buffers   */
 
 #endif
 

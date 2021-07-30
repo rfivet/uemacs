@@ -93,7 +93,6 @@
 
 /*	Configuration options	*/
 
-#define	CFENCE	1  /* fench matching in CMODE                      */
 #define	VISMAC	0  /* update display during keyboard macros        */
 
 #ifndef	AUTOCONF
