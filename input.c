@@ -324,13 +324,32 @@ int tgetc(void)
     return c;
 }
 
-/*  GET1KEY: Get one keystroke. The only prefixs legal here are the SPEC
+static int get1unicode( int *k) {
+/* Accept UTF-8 sequence */
+	int c = *k ;
+	if( c > 0xC1 && c <= 0xF4) {
+		char utf[ 4] ;
+    	char cc ;
+
+		utf[ 0] = c ;
+		utf[ 1] = cc = tgetc() ;
+		if( (c & 0x20) && ((cc & 0xC0) == 0x80)) { /* at least 3 bytes and a valid encoded char */
+			utf[ 2] = cc = tgetc() ;
+			if( (c & 0x10) && ((cc & 0xC0) == 0x80)) /* at least 4 bytes and a valid encoded char */
+				utf[ 3] = tgetc() ;
+		}
+
+		return utf8_to_unicode( utf, 0, sizeof utf, (unicode_t *) k) ;
+	} else
+		return 1 ;
+}
+
+/*  GET1KEY: Get one keystroke. The only prefixes legal here are the SPEC
     and CTRL prefixes. */
 int get1key( void) {
-    int c ;
-
     /* get a keystroke */
-    c = tgetc();
+    int c = tgetc() ;
+	get1unicode( &c) ;
 
     if( (c >= 0x00 && c <= 0x1F) || c == 0x7F)	/* C0 control -> C-     */
 		c ^= CTRL | 0x40 ;
@@ -340,26 +359,6 @@ int get1key( void) {
 
 /*  GETCMD: Get a command from the keyboard. Process all applicable
     prefix keys */
-
-static int get1unicode( int *k) {
-/* Accept UTF-8 sequence */
-	int c = *k ;
-	if( c > 0xC1 && c <= 0xF4) {
-		char utf[ 4] ;
-    	char cc ;
-
-		utf[ 0] = c ;
-		utf[ 1] = cc = get1key() ;
-		if( (c & 0x20) && ((cc & 0xC0) == 0x80)) { /* at least 3 bytes and a valid encoded char */
-			utf[ 2] = cc = get1key() ;
-			if( (c & 0x10) && ((cc & 0xC0) == 0x80)) /* at least 4 bytes and a valid encoded char */
-				utf[ 3] = get1key() ;
-		}
-
-		return utf8_to_unicode( utf, 0, sizeof utf, (unicode_t *) k) ;
-	} else
-		return 1 ;
-}
 
 int getcmd(void)
 {
@@ -465,7 +464,7 @@ handle_CSI:
     }
 
 #ifdef CYGWIN
-	get1unicode( &c) ;
+//	get1unicode( &c) ;
 #endif
 	
     /* otherwise, just return it */
@@ -696,9 +695,8 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
 			quote_f = TRUE ;
         else {
 		/* store as it is */
-			int n ;
-
-			n = get1unicode( &c) ;	/* fetch multiple bytes */
+//			n = get1unicode( &c) ;	/* fetch multiple bytes */
+			int n = 4 ;	/* long utf-8 encoding */
             if( cpos + n < nbuf) {
 				cpos += unicode_to_utf8( c, &buf[ cpos]) ;
 				echov( c) ;
