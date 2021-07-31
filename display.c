@@ -89,7 +89,7 @@ static void modeline(struct window *wp);
 static void mlputi(int i, int r);
 static void mlputli(long l, int r);
 static void mlputf(int s);
-static void mlputs( unsigned char *s) ;
+static void mlputs( const char *s) ;
 #if SIGWINCH
 static int newscreensize(int h, int w);
 #endif
@@ -1274,7 +1274,7 @@ void mlerase( void) {
 static void mlputc( unicode_t c) {
 	if( ttcol < term.t_ncol) {
 		TTputc( c) ;
-		++ttcol ;
+		ttcol += utf8_width( c) ;
 	}
 }
 
@@ -1284,11 +1284,8 @@ static void mlputc( unicode_t c) {
  * char *s;     string to output
  */
 void ostring( const char *s) {
-	unsigned char c ;
-
 	if( discmd)
-		while( (c = *s++) != 0)
-			mlputc( c) ;
+		mlputs( s) ;
 }
 
 
@@ -1302,8 +1299,6 @@ void ostring( const char *s) {
  * char *arg;		pointer to first argument to print
  */
 void vmlwrite( const char *fmt, va_list ap) {
-	int c;		/* current char in format string */
-
 	/* if we are not currently echoing on the command line, abort this */
 	if (discmd == FALSE) {
 		movecursor(term.t_nrow, 0);
@@ -1322,13 +1317,17 @@ void vmlwrite( const char *fmt, va_list ap) {
 		movecursor( term.t_nrow, 0) ;
 
 	mpresf = *fmt ? TRUE : FALSE ;	/* flag if line has content or not */
-	while( ( c = *fmt++) != 0)
+	while( *fmt) {
+		unicode_t c ;
+
+		fmt += utf8_to_unicode( fmt, 0, 4, &c) ;
 		if( c != '%')
 			mlputc( c) ;
-		else if( ( c = *fmt++) == 0) {
+		else if( *fmt == 0) {
 			mlputc( '%') ;
 			break ;
-		} else
+		} else {
+			fmt += utf8_to_unicode( fmt, 0, 4, &c) ;
 			switch( c) {
 			case 'd':
 				mlputi(va_arg(ap, int), 10);
@@ -1347,7 +1346,7 @@ void vmlwrite( const char *fmt, va_list ap) {
 				break;
 
 			case 's':
-				mlputs( (unsigned char *) va_arg( ap, char *)) ;
+				mlputs( (char *) va_arg( ap, char *)) ;
 				break;
 
 			case 'f':
@@ -1364,6 +1363,8 @@ void vmlwrite( const char *fmt, va_list ap) {
 			case '%':
 				mlputc( c) ;
 			}
+		}
+	}
 
 	/* if we can, erase to the end of screen */
 	if( eolexist == TRUE && ttcol < term.t_ncol)
@@ -1385,31 +1386,16 @@ void mlwrite( const char *fmt, ...) {
  * the characters in the string all have width "1"; if this is not the case
  * things will get screwed up a little.
  */
-static void mlputs( unsigned char *s) {
-	unicode_t c ;
+static void mlputs( const char *s) {
+	while( *s && (ttcol < term.t_ncol)) {
+		unicode_t uc ;
 
-	while( ((c = *s++) != 0) && (ttcol < term.t_ncol)) {
-		if( c == '\t')						/* Don't render tabulation */
-			c = ' ' ;
-		else if( c > 0xC1 && c <= 0xF4) {	/* Accept UTF-8 sequence */
-			char utf[ 4] ;
-			char cc ;
-			int bytes ;
+		s += utf8_to_unicode( (char *) s, 0, 4, &uc) ;
+		if( uc == '\t')	/* Don't render tabulation */
+			uc = ' ' ;
 
-			utf[ 0] = c ;
-			utf[ 1] = cc = *s ;
-			if( (c & 0x20) && ((cc & 0xC0) == 0x80)) { /* at least 3 bytes and a valid encoded char */
-				utf[ 2] = cc = s[ 1] ;
-				if( (c & 0x10) && ((cc & 0xC0) == 0x80)) /* at least 4 bytes and a valid encoded char */
-					utf[ 3] = s[ 2] ;
-			}
-
-			bytes = utf8_to_unicode( utf, 0, sizeof utf, (unicode_t *) &c) ;
-			s += bytes - 1 ;
-		}
-
-		TTputc( c) ;
-		++ttcol ;
+		TTputc( uc) ;
+		ttcol += utf8_width( uc) ;
 	}
 }
 

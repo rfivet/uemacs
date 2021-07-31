@@ -6,10 +6,11 @@
 #include "retcode.h"
 
 
-#define CTRL    0x01000000  /* Control flag, or'ed in       */
-#define META    0x02000000  /* Meta flag, or'ed in          */
-#define CTLX    0x04000000  /* ^X flag, or'ed in            */
-#define SPEC    0x08000000  /* special key (function keys)  */
+#define CTRL    	0x01000000  /* Control flag, or'ed in       */
+#define META    	0x02000000  /* Meta flag, or'ed in          */
+#define CTLX    	0x04000000  /* ^X flag, or'ed in            */
+#define SPEC    	0x08000000  /* special key (function keys)  */
+#define PRFXMASK	0x0F000000	/* prefix mask */
 
 
 /* Bindable uEMACS function pointer type and definition template */

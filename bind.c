@@ -30,7 +30,7 @@
 
 
 static int buildlist( char *mstring) ;
-static void cmdstr( int c, char *seq) ;
+static char *cmdstr( unsigned c, char *seq) ;
 static unsigned int getckey( int mflag) ;
 static unsigned int stock( char *keyname) ;
 static const char *getfname( unsigned keycode, char *failmsg) ;
@@ -75,19 +75,19 @@ BINDABLE( help) {
 
 /* describe the command for a certain key */
 BINDABLE( deskey) {
+	const char cmdname[] = "describe-key" ;
     char outseq[ NSTRING] ;	/* output buffer for command sequence */
 
 /* prompt the user to type a key to describe */
-    mlwrite( "describe-key: ");
+    mlwrite( "%s: ", cmdname) ;
 
 /* get the command sequence to describe
  * change it to something we can print as well */
-    int c = getckey( FALSE) ;
-    cmdstr( c, outseq) ;
+    unsigned keycode = getckey( FALSE) ;
 
 /* output the command sequence */
-	mlwrite( "describe-key %s: 0x%x, %s",
-			  outseq, c, getfname( c, "Not Bound")) ;
+    mlwrite( "%s %s: 0x%x, %s", cmdname, cmdstr( keycode, outseq), keycode,
+                                            getfname( keycode, "Not Bound")) ;
     return TRUE ;
 }
 
@@ -123,10 +123,8 @@ BINDABLE( bindtokey) {
     int c = getckey( prefix_f) ;
 
 /* change it to something we can print as well */
-    cmdstr( c, outseq) ;
-
 /* and dump it out */
-    ostring( outseq) ;
+    ostring( cmdstr( c, outseq)) ;
 
 /* key sequence can't be an active prefix key */
 	if( c == metac || c == ctlxc || c == reptc || c == abortc) {
@@ -185,10 +183,8 @@ BINDABLE( unbindkey) {
     int c = getckey( FALSE) ;	/* get a command sequence */
 
 /* change it to something we can print as well */
-    cmdstr( c, outseq) ;
-
 /* and dump it out */
-    ostring( outseq) ;
+    ostring( cmdstr( c, outseq)) ;
 
 /* prefix key sequence can't be undound, just redefined */
 	if( c == reptc || c == abortc) {
@@ -403,41 +399,37 @@ int startup( const char *fname) {
  * int c;       sequence to translate
  * char *seq;       destination string for sequence
  */
-static void cmdstr( int c, char *seq) {
-    char *ptr;      /* pointer into current position in sequence */
+static char *cmdstr( unsigned c, char *seq) {
+    char *ptr = seq ;	/* pointer into current position in sequence */
 
-    ptr = seq;
-
-    /* apply meta sequence if needed */
-    if (c & META) {
+/* apply meta sequence if needed */
+    if( c & META) {
         *ptr++ = 'M';
         *ptr++ = '-';
     }
 
-    /* apply ^X sequence if needed */
-    if (c & CTLX) {
+/* apply ^X sequence if needed */
+    if( c & CTLX) {
 		if( ctlxc & CTRL)
 	        *ptr++ = '^' ;
 
-        *ptr++ = ctlxc & 0x1FFFFF ;
+        *ptr++ = ctlxc & ~PRFXMASK ;
     }
 
-    /* apply SPEC sequence if needed */
-    if (c & SPEC) {
-        *ptr++ = 'F';
-        *ptr++ = 'N';
+/* apply SPEC sequence if needed */
+    if( c & SPEC) {
+        *ptr++ = 'F' ;
+        *ptr++ = 'N' ;
     }
 
-    /* apply control sequence if needed */
-    if (c & CTRL) {
-        *ptr++ = '^';
-    }
+/* apply control sequence if needed */
+    if( c & CTRL)
+        *ptr++ = '^' ;
 
-    /* and output the final sequence */
-
-    *ptr++ = c & 0x1FFFFF ;   /* strip the prefixes */
-
-    *ptr = 0;       /* terminate the string */
+/* and output the final sequence */
+	ptr += unicode_to_utf8( c & ~PRFXMASK, ptr) ;
+    *ptr = 0 ;			/* terminate the string */
+	return seq ;
 }
 
 static const char *getfname( unsigned keycode, char *failmsg) {
