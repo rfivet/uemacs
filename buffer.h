@@ -17,11 +17,11 @@ typedef char bname_t[ 16] ;		/* buffer name type */
  * 	Buffers may be "Inactive" which means the files associated with them
  * have not been read in yet. These get read in at "use buffer" time.
  */
-struct buffer {
+typedef struct buffer {
     struct buffer *b_bufp;	/* Link to next struct buffer   */
-	struct line *b_dotp;	/* Link to "." struct line structure   */
-	struct line *b_markp;	/* The same as the above two,   */
-	struct line *b_linep;	/* Link to the header struct line      */
+	line_p b_dotp ;		/* Link to "." struct line structure   */
+	line_p b_markp ;	/* The same as the above two,   */
+	line_p b_linep ;	/* Link to the header struct line      */
 	int b_doto;		/* Offset of "." in above struct line  */
 	int b_marko;		/* but for the "mark"           */
 	int b_mode;		/* editor mode of this buffer   */
@@ -30,11 +30,11 @@ struct buffer {
 	char b_flag;		/* Flags                        */
 	fname_t b_fname ;	/* File name                    */
 	bname_t b_bname ;	/* Buffer name                  */
-};
+} *buffer_p ;
 
-extern struct buffer *curbp ;	/* Current buffer               */
-extern struct buffer *bheadp ;	/* Head of list of buffers      */
-extern struct buffer *blistp ;	/* Buffer for C-X C-B           */
+extern buffer_p curbp ;		/* Current buffer               */
+extern buffer_p bheadp ;	/* Head of list of buffers      */
+extern buffer_p blistp ;	/* Buffer for C-X C-B           */
 
 #define BFINVS  0x01		/* Internal invisable buffer    */
 #define BFCHG   0x02		/* Changed since last write     */
@@ -60,15 +60,15 @@ extern int gmode ;		/* global editor mode           */
 
 int usebuffer( int f, int n) ;
 int nextbuffer( int f, int n) ;
-int swbuffer( struct buffer *bp) ;
+int swbuffer( buffer_p bp) ;
 int killbuffer( int f, int n) ;
-int zotbuf( struct buffer *bp) ;
+int zotbuf( buffer_p bp) ;
 int namebuffer( int f, int n) ;
 int listbuffers( int f, int n) ;
 int anycb( void) ;
-int bclear( struct buffer *bp) ;
+int bclear( buffer_p bp) ;
 int unmark( int f, int n) ;
 /* Lookup a buffer by name. */
-struct buffer *bfind( const char *bname, int cflag, int bflag) ;
+buffer_p bfind( const char *bname, int cflag, int bflag) ;
 
 #endif
