@@ -324,9 +324,13 @@ int tgetc(void)
     return c;
 }
 
-static int get1unicode( int *k) {
+/*  GET1KEY: Get one keystroke. The only prefixes legal here are the SPEC
+    and CTRL prefixes. */
+static int get1unicode( int *up) {
 /* Accept UTF-8 sequence */
-	int c = *k ;
+	int bytes ;
+
+	int c = tgetc() ;
 	if( c > 0xC1 && c <= 0xF4) {
 		char utf[ 4] ;
     	char cc ;
@@ -339,22 +343,23 @@ static int get1unicode( int *k) {
 				utf[ 3] = tgetc() ;
 		}
 
-		return utf8_to_unicode( utf, 0, sizeof utf, (unicode_t *) k) ;
-	} else
-		return 1 ;
+		bytes = utf8_to_unicode( utf, 0, sizeof utf, (unicode_t *) up) ;
+	} else {
+	    if( (c >= 0x00 && c <= 0x1F) || c == 0x7F)	/* C0 control -> C- */
+			c ^= CTRL | 0x40 ;
+
+		*up = c ;
+		bytes = 1 ;
+	}
+
+    return bytes ;
 }
 
-/*  GET1KEY: Get one keystroke. The only prefixes legal here are the SPEC
-    and CTRL prefixes. */
 int get1key( void) {
-    /* get a keystroke */
-    int c = tgetc() ;
+	int c ;
+
 	get1unicode( &c) ;
-
-    if( (c >= 0x00 && c <= 0x1F) || c == 0x7F)	/* C0 control -> C-     */
-		c ^= CTRL | 0x40 ;
-
-    return c ;
+	return c ;
 }
 
 /*  GETCMD: Get a command from the keyboard. Process all applicable
@@ -463,12 +468,8 @@ handle_CSI:
         return CTLX | c;
     }
 
-#ifdef CYGWIN
-//	get1unicode( &c) ;
-#endif
-	
-    /* otherwise, just return it */
-    return c;
+/* otherwise, just return it */
+    return c ;
 }
 
 /*  A more generalized prompt/reply function allowing the caller
@@ -490,16 +491,17 @@ static void echov( int c) {
 	}
 }
 
-static void rubc( char c) {
+static void rubc( int c) {
 	rubout() ;
 	if( (c >= 0 && c < ' ') || c == 0x7F) {
 	/* ^x range */
 		rubout() ;
-		if( c == '\n') {
+		if( c == '\n') {	/* <NL> */
 			rubout() ;
 			rubout() ;
 		}
-	}
+	} else if( utf8_width( c) == 2)
+		rubout() ;
 }
 
 int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
@@ -537,14 +539,14 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
         didtry = 0;
 #endif
 	/* get a character from the user */
-        c = get1key();
+		int bytes = get1unicode( &c) ;
 
 	/* Quoting? Store as it is */
 		if( quote_f == TRUE) {
 			quote_f = FALSE ;
-			if( cpos < nbuf - 1) {
+			if( cpos < nbuf - bytes) {
 				c = ectoc( c) ;
-				buf[ cpos++] = c ;
+				cpos += unicode_to_utf8( c, &buf[ cpos]) ;
 				echov( c) ;
 				TTflush() ;
 			}
@@ -579,8 +581,12 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
         if( c == 0x7F || c == 0x08) {
 		/* rubout/erase */
             if (cpos != 0) {
-				rubc( buf[ --cpos]) ;
+				int c ;
+
+				cpos -= 1 ;
 				cpos -= utf8_revdelta( (unsigned char *) &buf[ cpos], cpos) ;
+				utf8_to_unicode( &buf[ cpos], 0, 4, (unicode_t *) &c) ;
+				rubc( c) ;
                 TTflush();
             }
         } else if( c == 0x15) {
@@ -695,9 +701,7 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
 			quote_f = TRUE ;
         else {
 		/* store as it is */
-//			n = get1unicode( &c) ;	/* fetch multiple bytes */
-			int n = 4 ;	/* long utf-8 encoding */
-            if( cpos + n < nbuf) {
+            if( cpos + bytes < nbuf) {
 				cpos += unicode_to_utf8( c, &buf[ cpos]) ;
 				echov( c) ;
 				TTflush() ;

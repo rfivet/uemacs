@@ -954,7 +954,7 @@ static int iovstring( int f, int n, const char *prompt, int (*fun)( char *)) {
  * int f, n;		ignored arguments
  */
 int istring( int f, int n) {
-	return iovstring( f, n, "String to insert<META>: ", linstr) ;
+	return iovstring( f, n, "insert-string<META>: ", linstr) ;
 }
 
 /*
@@ -964,7 +964,7 @@ int istring( int f, int n) {
  * int f, n;		ignored arguments
  */
 int ovstring( int f, int n) {
-	return iovstring( f, n, "String to overwrite<META>: ", lover) ;
+	return iovstring( f, n, "overwrite-string<META>: ", lover) ;
 }
 
 /* end of random.c */

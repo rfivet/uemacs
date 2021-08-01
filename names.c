@@ -177,7 +177,7 @@ const name_bind names[] = {
 	{" next-word", forwword,					META | 'F'} ,
 	{" nop", nullproc,							SPEC | META | 'C'}, /* hook */
 	{"!open-line", openline,					CTRL | 'O'} ,
-	{" overwrite-string", ovstring, 0} ,
+	{"!overwrite-string", ovstring, 0} ,
 	{" pipe-command", pipecmd,					CTLX | '@'} ,
 	{" previous-line", (fnp_t) backline, 		CTRL | 'P'} ,
 	{" previous-page", (fnp_t) backpage,		CTRL | 'Z'} , /* MV */
