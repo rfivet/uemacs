@@ -78,7 +78,7 @@ static int insbrace( int n, int c) {
 
 	count = 1 ;
 	do {
-		if( boundry( curwp->w_dotp, curwp->w_doto, REVERSE)) {
+		if( boundary( curwp->w_dotp, curwp->w_doto, REVERSE)) {
 		/* at beginning of buffer, no match to be found */
 			curwp->w_dotp = oldlp ;
 			curwp->w_doto = oldoff ;
@@ -166,7 +166,7 @@ static void fmatch( int ch) {
 	do {
 		/* At beginning of window or buffer, no match to be found */
 		if( curwp->w_dotp == toplp
-		||	boundry( curwp->w_dotp, curwp->w_doto, REVERSE))
+		||	boundary( curwp->w_dotp, curwp->w_doto, REVERSE))
 			break ;
 
 		backchar( FALSE, 1) ;
@@ -261,7 +261,7 @@ BINDABLE( getfence) {
 	/* scan until we find a match, or reach the end of file */
 	count = 1 ;
 	do {
-		if( boundry( curwp->w_dotp, curwp->w_doto, sdir)) {
+		if( boundary( curwp->w_dotp, curwp->w_doto, sdir)) {
 		/* at buffer limit, no match to be found */
 			/* restore the current position */
 			curwp->w_dotp = oldlp ;

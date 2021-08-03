@@ -1,6 +1,7 @@
-/*	line.c
- *
- * The functions in this file are a general set of line management utilities.
+/* line.c -- implements line.h */
+#include "line.h"
+
+/* The functions in this file are a general set of line management utilities.
  * They are the only routines that touch the text. They also touch the buffer
  * and window structures, to make sure that the necessary updating gets done.
  * There are routines in this file that handle the kill buffer too. It isn't
@@ -13,12 +14,9 @@
  *
  */
 
-#include "line.h"
-
 #include <assert.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <stddef.h>	/* NULL, offsetof() */
+#include <stdlib.h> /* malloc(), free() */
 #include <string.h>
 
 #include "buffer.h"
@@ -41,13 +39,13 @@ static int ldelnewline( void) ;
 
 #define	KBLOCK	250		/* sizeof kill buffer chunks    */
 
-struct kill {
+typedef struct kill {
 	struct kill *d_next;   /* Link to next chunk, NULL if last. */
 	char d_chunk[KBLOCK];  /* Deleted text. */
-};
+} *kill_p ;
 
-static struct kill *kbufp = NULL ;	/* current kill buffer chunk pointer */
-static struct kill *kbufh = NULL ;	/* kill buffer header pointer */
+static kill_p kbufp = NULL ;	/* current kill buffer chunk pointer */
+static kill_p kbufh = NULL ;	/* kill buffer header pointer */
 static int kused = KBLOCK ;		/* # of bytes used in kill buffer */
 static int klen ;					/* length of kill buffer content */
 static char *value = NULL ;			/* temp buffer for value */
@@ -56,7 +54,7 @@ static char *value = NULL ;			/* temp buffer for value */
  * return some of the contents of the kill buffer
  */
 char *getkill( void) {
-	struct kill *kp ;
+	kill_p kp ;
 	char *cp ;
 
 	if (kbufh == NULL)
@@ -160,12 +158,14 @@ boolean forwchar( int f, int n) {
  */
 line_p lalloc( int used) {
 #define	BLOCK_SIZE 16	/* Line block chunk size. */
-	line_p lp ;
-	int size ;
 
-/*	size = used + BLOCK_SIZE - used % BLOCK_SIZE ; */
-	size = (used + BLOCK_SIZE) & ~(BLOCK_SIZE - 1) ; /* as BLOCK_SIZE is power of 2 */
-	lp = (line_p) malloc( offsetof( struct line, l_text) + size) ;
+/* rounding down use masking instead or modulo when BLOCK_SIZE is power of 2 */
+#if (BLOCK_SIZE & -BLOCK_SIZE) == BLOCK_SIZE
+	int size = (used + BLOCK_SIZE) & ~(BLOCK_SIZE - 1) ;
+#else
+	int size = used + BLOCK_SIZE - used % BLOCK_SIZE ;
+#endif
+	line_p lp = (line_p) malloc( offsetof( struct line, l_text) + size) ;
 	if( lp == NULL)
 		mloutstr( "(OUT OF MEMORY)") ;
 	else {
@@ -183,7 +183,7 @@ line_p lalloc( int used) {
  * conditions described in the above comments don't hold here.
  */
 void lfree( line_p lp) {
-	struct buffer *bp;
+	buffer_p bp;
 	struct window *wp;
 
 	wp = wheadp;
@@ -295,18 +295,13 @@ int linstr( char *instr) {
 boolean linsert_byte( int n, int c) {
 	char *cp1;
 	char *cp2;
-	struct line *lp1;
-	struct line *lp2;
-	struct line *lp3;
+	line_p lp1, lp2, lp3 ;
 	int doto;
 	int i;
 	struct window *wp;
 
 	assert( (curbp->b_mode & MDVIEW) == 0) ;
-#if 0
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
-#endif
+
 	lchange(WFEDIT);
 	lp1 = curwp->w_dotp;	/* Current line         */
 	if (lp1 == curbp->b_linep) {	/* At the end: special  */
@@ -314,8 +309,11 @@ boolean linsert_byte( int n, int c) {
 			mloutstr( "bug: linsert") ;
 			return FALSE;
 		}
-		if ((lp2 = lalloc(n)) == NULL)	/* Allocate new line        */
-			return FALSE;
+
+		lp2 = lalloc( n) ;	/* Allocate new line */
+		if( lp2 == NULL)
+			return FALSE ;
+
 		lp3 = lp1->l_bp;	/* Previous line        */
 		lp3->l_fp = lp2;	/* Link in              */
 		lp2->l_fp = lp1;
@@ -329,8 +327,10 @@ boolean linsert_byte( int n, int c) {
 	}
 	doto = curwp->w_doto;	/* Save for later.      */
 	if (lp1->l_used + n > lp1->l_size) {	/* Hard: reallocate     */
-		if ((lp2 = lalloc(lp1->l_used + n)) == NULL)
-			return FALSE;
+		lp2 = lalloc( lp1->l_used + n) ;
+		if( lp2 == NULL)
+			return FALSE ;
+
 		cp1 = &lp1->l_text[0];
 		cp2 = &lp2->l_text[0];
 		while (cp1 != &lp1->l_text[doto])
@@ -374,8 +374,6 @@ boolean linsert_byte( int n, int c) {
 
 int linsert( int n, unicode_t c) {
 	assert( n >= 0) ;
-//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-//		return rdonly();	/* we are in read only mode     */
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	if( n > 0) {
@@ -398,16 +396,14 @@ int linsert( int n, unicode_t c) {
 	return TRUE;
 }
 
-/*
- * Overwrite a character into the current line at the current position
+/* Overwrite a character into the current line at the current position
  *
- * int c;	character to overwrite on current position
+ * int c ;	character to overwrite on current position
  */
 static int lowrite( int c) {
 	if( curwp->w_doto < curwp->w_dotp->l_used
-	&& (
-		lgetc(curwp->w_dotp, curwp->w_doto) != '\t' ||
-		((curwp->w_doto) % tabwidth) == (tabwidth - 1)
+	&& (	lgetc( curwp->w_dotp, curwp->w_doto) != '\t'
+		|| 	(curwp->w_doto % tabwidth) == (tabwidth - 1)
 	))
 		ldelchar( 1, FALSE) ;
 
@@ -420,15 +416,12 @@ static int lowrite( int c) {
 int lover( char *ostr) {
 	int status = TRUE ;
 
-	if (ostr != NULL) {
+	if( ostr != NULL) {
 		char tmpc ;
 
 		while( (tmpc = *ostr++)) {
-			status =
-			    (tmpc == '\n' ? lnewline() : lowrite(tmpc));
-
-			/* Insertion error? */
-			if( status != TRUE) {
+			status = (tmpc == '\n' ? lnewline() : lowrite( tmpc)) ;
+			if( status != TRUE) {	/* Insertion error? */
 				mloutstr( "%Out of memory while overwriting") ;
 				return status ;
 			}
@@ -446,17 +439,13 @@ int lover( char *ostr) {
  * update of dot and mark is a bit easier then in the above case, because the
  * split forces more updating.
  */
-int lnewline(void)
-{
+int lnewline( void) {
 	char *cp1;
 	char *cp2;
-	struct line *lp1;
-	struct line *lp2;
+	line_p lp1, lp2 ;
 	int doto;
 	struct window *wp;
 
-//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-//		return rdonly();	/* we are in read only mode     */
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
 #if SCROLLCODE
@@ -466,8 +455,10 @@ int lnewline(void)
 #endif
 	lp1 = curwp->w_dotp;	/* Get the address and  */
 	doto = curwp->w_doto;	/* offset of "."        */
-	if ((lp2 = lalloc(doto)) == NULL)	/* New first half line      */
-		return FALSE;
+	lp2 = lalloc( doto) ;	/* New first half line */
+	if( lp2 == NULL)	
+		return FALSE ;
+
 	cp1 = &lp1->l_text[0];	/* Shuffle text around  */
 	cp2 = &lp2->l_text[0];
 	while (cp1 != &lp1->l_text[doto])
@@ -519,12 +510,14 @@ int lgetchar( unicode_t *c) {
  */
 boolean ldelchar( long n, boolean kflag) {
 /* testing for read only mode is done by ldelete() */
-	while (n-- > 0) {
+	while( n-- > 0) {
 		unicode_t c;
-		if (!ldelete(lgetchar(&c), kflag))
-			return FALSE;
+
+		if( !ldelete( lgetchar( &c), kflag))
+			return FALSE ;
 	}
-	return TRUE;
+
+	return TRUE ;
 }
 
 /*
@@ -539,13 +532,11 @@ boolean ldelchar( long n, boolean kflag) {
 boolean ldelete( long n, boolean kflag) {
 	char *cp1;
 	char *cp2;
-	struct line *dotp;
+	line_p dotp;
 	int doto;
 	int chunk;
 	struct window *wp;
 
-//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-//		return rdonly();	/* we are in read only mode     */
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	while( n > 0) {
@@ -641,20 +632,14 @@ char *getctext( void) {
  * about in memory. Return FALSE on error and TRUE if all looks ok. Called by
  * "ldelete" only.
  */
-static int ldelnewline(void)
-{
+static int ldelnewline( void) {
 	char *cp1;
 	char *cp2;
-	struct line *lp1;
-	struct line *lp2;
-	struct line *lp3;
+	line_p lp1, lp2, lp3 ;
 	struct window *wp;
 
 	assert( (curbp->b_mode & MDVIEW) == 0) ;
-#if 0
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
-#endif
+
 	lp1 = curwp->w_dotp;
 	lp2 = lp1->l_fp;
 	if (lp2 == curbp->b_linep) {	/* At the buffer end.   */
@@ -687,8 +672,11 @@ static int ldelnewline(void)
 		free((char *) lp2);
 		return TRUE;
 	}
-	if ((lp3 = lalloc(lp1->l_used + lp2->l_used)) == NULL)
-		return FALSE;
+
+	lp3 = lalloc( lp1->l_used + lp2->l_used) ;
+	if( lp3 == NULL)
+		return FALSE ;
+
 	cp1 = &lp1->l_text[0];
 	cp2 = &lp3->l_text[0];
 	while (cp1 != &lp1->l_text[lp1->l_used])
@@ -730,7 +718,7 @@ static int ldelnewline(void)
  */
 void kdelete(void)
 {
-	struct kill *kp;		/* ptr to scan kill buffer chunk list */
+	kill_p kp;		/* ptr to scan kill buffer chunk list */
 
 	if (kbufh != NULL) {
 
@@ -759,30 +747,30 @@ void kdelete(void)
  *
  * int c;			character to insert in the kill buffer
  */
-int kinsert(int c)
-{
-	struct kill *nchunk;		/* ptr to newly malloced chunk */
-
+int kinsert( int c) {
 	/* check to see if we need a new chunk */
-	if (kused >= KBLOCK) {
-		if ((nchunk = (struct kill *)malloc(sizeof(struct kill))) == NULL)
-			return FALSE;
+	if( kused >= KBLOCK) {
+		kill_p nchunk = malloc( sizeof *nchunk) ;
+		if( nchunk == NULL)
+			return FALSE ;
+
 		if( kbufh == NULL) {	/* set head ptr if first time */
-			kbufh = nchunk;
+			kbufh = nchunk ;
 			klen = 0 ;
 		}
 
-		if (kbufp != NULL)	/* point the current to this new one */
-			kbufp->d_next = nchunk;
-		kbufp = nchunk;
-		kbufp->d_next = NULL;
-		kused = 0;
+		if( kbufp != NULL)	/* point the current to this new one */
+			kbufp->d_next = nchunk ;
+
+		kbufp = nchunk ;
+		kbufp->d_next = NULL ;
+		kused = 0 ;
 	}
 
 	/* and now insert the character */
-	kbufp->d_chunk[kused++] = c;
+	kbufp->d_chunk[ kused++] = c ;
 	klen += 1 ;
-	return TRUE;
+	return TRUE ;
 }
 
 /*
@@ -790,15 +778,12 @@ int kinsert(int c)
  * is done by the standard insert routines. All you do is run the loop, and
  * check for errors. Bound to "C-Y".
  */
-int yank(int f, int n)
-{
+BINDABLE( yank) {
 	int c;
 	int i;
 	char *sp;	/* pointer into string to insert */
-	struct kill *kp;		/* pointer into kill buffer */
+	kill_p kp;		/* pointer into kill buffer */
 
-//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-//		return rdonly();	/* we are in read only mode     */
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	if (n < 0)
@@ -839,3 +824,5 @@ boolean rdonly( void) {
 	mloutfmt( "%B(Key illegal in VIEW mode)") ;
 	return FALSE ;
 }
+
+/* end of line.c */

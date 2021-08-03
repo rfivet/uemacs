@@ -1,7 +1,9 @@
-#ifndef LINE_H_
-#define LINE_H_
+/* line.h -- line centric interface */
 
-#include "retcode.h"
+#ifndef _LINE_H_
+#define _LINE_H_
+
+#include "names.h"
 #include "utf8.h"
 
 /*
@@ -34,8 +36,8 @@ char *getkill( void) ;
 /* Bindable functions */
 boolean backchar( int f, int n) ;
 boolean forwchar( int f, int n) ;
-int insspace( int f, int n) ;
-int yank( int f, int n) ;
+BINDABLE( insspace) ;
+BINDABLE( yank) ;
 
 void lfree( line_p lp) ;
 void lchange( int flag) ;
@@ -46,7 +48,7 @@ int lover( char *ostr) ;
 int lnewline( void) ;
 boolean ldelete(  long n, boolean kflag) ;
 boolean ldelchar( long n, boolean kflag) ;
-int lgetchar( unicode_t *) ;
+int lgetchar( unicode_t *cref) ;
 char *getctext( void) ;
 void kdelete( void) ;
 int kinsert( int c) ;
@@ -54,4 +56,6 @@ line_p lalloc( int minsize) ;  /* Allocate a line of at least minsize chars. */
 
 boolean rdonly( void) ;		/* Read Only error message */
 
-#endif  /* LINE_H_ */
+#endif  /* _LINE_H_ */
+
+/* end of line.h */

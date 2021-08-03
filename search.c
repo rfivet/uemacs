@@ -87,7 +87,7 @@
 unsigned int matchlen = 0 ;
 static unsigned int mlenold = 0 ;
 char *patmatch = NULL ;
-static struct line *matchline = NULL;
+static line_p matchline = NULL;
 static int matchoff = 0;
 
 spat_t pat ;	/* Search pattern               */
@@ -165,10 +165,10 @@ static struct magic_replacement rmcpat[NPAT]; /* The replacement magic array. */
 static int mcscanner( struct magic *mcpatrn, int direct, int beg_or_end) ;
 #endif
 
-static int amatch(struct magic *mcptr, int direct, struct line **pcwline, int *pcwoff);
+static int amatch(struct magic *mcptr, int direct, line_p *pcwline, int *pcwoff);
 static int readpattern(char *prompt, char *apat, int srch);
 static int replaces(int kind, int f, int n);
-static int nextch(struct line **pcurline, int *pcuroff, int dir);
+static int nextch( line_p *pcurline, int *pcuroff, int dir);
 static int mcstr(void);
 static int rmcstr(void);
 static int mceq(int bc, struct magic *mt);
@@ -390,7 +390,7 @@ int backhunt(int f, int n)
  */
 static int mcscanner(struct magic *mcpatrn, int direct, int beg_or_end)
 {
-	struct line *curline;		/* current line during scan */
+	line_p curline;		/* current line during scan */
 	int curoff;		/* position within current line */
 
 	/* If we are going in reverse, then the 'end' is actually
@@ -413,7 +413,7 @@ static int mcscanner(struct magic *mcpatrn, int direct, int beg_or_end)
 
 	/* Scan each character until we hit the head link record.
 	 */
-	while (!boundry(curline, curoff, direct)) {
+	while (!boundary(curline, curoff, direct)) {
 		/* Save the current position in case we need to
 		 * restore it on a match, and initialize matchlen to
 		 * zero in case we are doing a search for replacement.
@@ -454,13 +454,13 @@ static int mcscanner(struct magic *mcpatrn, int direct, int beg_or_end)
  *
  * struct magic *mcptr;		string to scan for
  * int direct;		which way to go.
- * struct line **pcwline;	current line during scan
+ * line_p *pcwline;	current line during scan
  * int *pcwoff;		position within current line
  */
-static int amatch(struct magic *mcptr, int direct, struct line **pcwline, int *pcwoff)
+static int amatch(struct magic *mcptr, int direct, line_p *pcwline, int *pcwoff)
 {
 	int c;		/* character at current position */
-	struct line *curline;		/* current line during scan */
+	line_p curline;		/* current line during scan */
 	int curoff;		/* position within current line */
 	int nchars;
 
@@ -600,9 +600,9 @@ int scanner(const char *patrn, int direct, int beg_or_end)
 {
 	int c;		/* character at current position */
 	const char *patptr;	/* pointer into pattern */
-	struct line *curline;		/* current line during scan */
+	line_p curline;		/* current line during scan */
 	int curoff;		/* position within current line */
-	struct line *scanline;		/* current line during scanning */
+	line_p scanline;		/* current line during scanning */
 	int scanoff;		/* position in scanned line */
 
 	/* If we are going in reverse, then the 'end' is actually
@@ -617,7 +617,7 @@ int scanner(const char *patrn, int direct, int beg_or_end)
 
 	/* Scan each character until we hit the head link record.
 	 */
-	while (!boundry(curline, curoff, direct)) {
+	while (!boundary(curline, curoff, direct)) {
 		/* Save the current position in case we match
 		 * the search string at this point.
 		 */
@@ -749,7 +749,7 @@ static int readpattern(char *prompt, char *apat, int srch)
 void savematch(void)
 {
 	char *ptr;	/* pointer to last match string */
-	struct line *curline;		/* line of last match */
+	line_p curline;		/* line of last match */
 	int curoff;		/* offset "      "    */
 
 	/* Free any existing match string, then
@@ -828,17 +828,15 @@ static int replaces(int kind, int f, int n)
 	int nlrepl;		/* was a replace done on the last line? */
 	char c;			/* input char for query */
 	spat_t tpat ;	/* temporary to hold search pattern */
-	struct line *origline;		/* original "." position */
+	line_p origline;		/* original "." position */
 	int origoff;		/* and offset (for . query option) */
-	struct line *lastline;		/* position of last replace and */
+	line_p lastline;		/* position of last replace and */
 	int lastoff;		/* offset (for 'u' query option) */
 
 ///* rfi */
 	lastline = NULL ;
 	lastoff = 0 ;
 
-//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-//		return rdonly();	/* we are in read only mode     */
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	/* Check for negative repetitions.
@@ -1116,25 +1114,23 @@ int expandp(char *srcstr, char *deststr, int maxlength)
 	return TRUE;
 }
 
-/*
- * boundry -- Return information depending on whether we may search no
- *	further.  Beginning of file and end of file are the obvious
- *	cases, but we may want to add further optional boundry restrictions
- *	in future, a' la VMS EDT.  At the moment, just return TRUE or
- *	FALSE depending on if a boundry is hit (ouch).
- */
-int boundry(struct line *curline, int curoff, int dir)
-{
-	int border;
 
-	if (dir == FORWARD) {
-		border = (curoff == llength(curline)) &&
-		    (lforw(curline) == curbp->b_linep);
-	} else {
-		border = (curoff == 0) &&
-		    (lback(curline) == curbp->b_linep);
-	}
-	return border;
+/* boundary -- Returns information depending on whether we may search no
+   further.  Beginning of file and end of file are the obvious cases, but
+   we may want to add further optional boundary restrictions in future, a'
+   la VMS EDT.  At the moment, just return TRUE or FALSE depending on if a
+   boundary is hit (ouch).
+ */
+int boundary( line_p curline, int curoff, int dir) {
+	int border ;
+
+	if( dir == FORWARD)
+		border = (curoff == llength( curline)) &&
+										(lforw( curline) == curbp->b_linep) ;
+	else
+		border = (curoff == 0) && (lback( curline) == curbp->b_linep) ;
+
+	return border ;
 }
 
 /*
@@ -1145,9 +1141,9 @@ int boundry(struct line *curline, int curoff, int dir)
  *	the current character and move, reverse searches move and
  *	look at the character.
  */
-static int nextch(struct line **pcurline, int *pcuroff, int dir)
+static int nextch( line_p *pcurline, int *pcuroff, int dir)
 {
-	struct line *curline;
+	line_p curline;
 	int curoff;
 	int c;
 
@@ -1606,3 +1602,5 @@ static void setbit(int bc, char *cclmap)
 		*(cclmap + (bc >> 3)) |= BIT(bc & 7);
 }
 #endif
+
+/* end of search.c */

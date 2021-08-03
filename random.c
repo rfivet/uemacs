@@ -51,26 +51,22 @@ int lastflag ;			/* Flags, last command		*/
 static int adjustmode( int kind, int global) ;
 static int cinsert( void) ;
 
-/*
- * Set fill column to n.
+/* Set fill column to n. Bound to C-X F set-fill-column.
  */
-int setfillcol(int f, int n)
-{
-	fillcol = n;
-	mlwrite("(Fill column is %d)", n);
-	return TRUE;
+BINDABLE( setfillcol) {
+	fillcol = n ;
+	mlwrite( "(Fill column is %d)", n) ;
+	return TRUE ;
 }
 
-/*
- * Display the current position of the cursor, in origin 1 X-Y coordinates,
- * the character that is under the cursor (in hex), and the fraction of the
- * text that is before the cursor. The displayed column is not the current
- * column, but the column that would be used on an infinite width display.
- * Normally this is bound to "C-X =".
+/* Display the current position of the cursor, in origin 1 X-Y coordinates,
+   the character that is under the cursor (in hex), and the fraction of the
+   text that is before the cursor.  The displayed column is not the current
+   column, but the column that would be used on an infinite width display.
+   Normally this is bound to C-X = buffer-position.
  */
-int showcpos(int f, int n)
-{
-	struct line *lp;	/* current line */
+BINDABLE( showcpos) {
+	line_p lp ;	/* current line */
 	long numchars;	/* # of chars in file */
 	int numlines;	/* # of lines in file */
 	long predchars;	/* # chars preceding point */
@@ -128,7 +124,7 @@ int showcpos(int f, int n)
 
 int getcline(void)
 {				/* get the current line number */
-	struct line *lp;	/* current line */
+	line_p lp ;	/* current line */
 	int numlines;	/* # of lines before point */
 
 	/* starting at the beginning of the buffer */
@@ -154,7 +150,7 @@ int getcline(void)
 int getccol(int bflg)
 {
 	int i, col;
-	struct line *dlp = curwp->w_dotp;
+	line_p dlp = curwp->w_dotp ;
 	int byte_offset = curwp->w_doto;
 	int len = llength(dlp);
 
@@ -224,14 +220,11 @@ boolean setccol( int pos) {
  */
 boolean twiddle( int f, int n) {
 	unicode_t	c ;
-	int	len ;
 	boolean eof_f = FALSE ;
 
-//	if( curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-//		return rdonly() ;		/* we are in read only mode     */
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
-	len = llength( curwp->w_dotp) ;
+	int len = llength( curwp->w_dotp) ;
 	if( len < 2 || curwp->w_doto == 0)	/* at least 2 chars & not bol */
 		return FALSE ;
 
@@ -255,44 +248,36 @@ boolean twiddle( int f, int n) {
 	return TRUE ;
 }
 
-/*
- * Quote the next character, and insert it into the buffer. All the characters
- * are taken literally, with the exception of the newline, which always has
- * its line splitting meaning. The character is always read, even if it is
- * inserted 0 times, for regularity. Bound to "C-Q"
+/* Quote the next character, and insert it into the buffer.  All the
+   characters are taken literally, with the exception of the newline, which
+   always has its line splitting meaning.  The character is always read,
+   even if it is inserted 0 times, for regularity.  Bound to C-Q
+   quote-character.
  */
-int quote(int f, int n)
-{
-//	int c;
-//
-//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-//		return rdonly();	/* we are in read only mode     */
+BINDABLE( quote) {
+	int ret ;
+
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
-	int c = tgetc();
-	if (n < 0)
-		return FALSE;
-	if (n == 0)
-		return TRUE;
-	if (c == '\n') {
-		int s ;
+	int c = ectoc( get1key()) ;
+	if( n < 0)
+		ret = FALSE ;
+	else if( n == 0)
+		ret = TRUE ;
+	else if( c == '\n')
+		do
+			ret = lnewline() ;
+		while( ret == TRUE && --n) ;
+	else
+		ret = linsert( n, c) ;
 
-		do {
-			s = lnewline();
-		} while (s == TRUE && --n);
-		return s;
-	}
-	return linsert(n, c);
+	return ret ;
 }
 
-/*
- * Set tab size if given non-default argument (n <> 1).  Otherwise, insert a
- * tab into file.  If given argument, n, of zero, change to true tabs.
- * If n > 1, simulate tab stop every n-characters using spaces. This has to be
- * done in this slightly funny way because the tab (in ASCII) has been turned
- * into "C-I" (in 10 bit code) already. Bound to "C-I".
+/* Insert tab/blank/space up to nth next tabulation according to hard/soft
+   tab current state and tab width.  Bound to C-I handle-tab.
  */
-int insert_tab( int f, int n) {
+BINDABLE( insert_tab) {
 	int status ;
 
 	if( n < 0)
@@ -309,27 +294,20 @@ int insert_tab( int f, int n) {
 	return status ;
 }
 
-#if	AEDIT
 /*
  * change tabs to spaces
  *
  * int f, n;		default flag and numeric repeat count
  */
-int detab(int f, int n)
-{
-	int inc;	/* increment to next line [sgn(n)] */
-
-//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-//		return rdonly();	/* we are in read only mode     */
-
+BINDABLE( detab) {
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
-	if (f == FALSE)
-		n = 1;
+	if( f == FALSE)
+		n = 1 ;
 
 	/* loop thru detabbing n lines */
-	inc = ((n > 0) ? 1 : -1);
-	while (n) {
+	int inc = (n > 0) ? 1 : -1 ;	/* increment to next line [sgn(n)] */
+	for( ; n ; n -= inc) {
 		curwp->w_doto = 0;	/* start at the beginning */
 
 		/* detab the entire current line */
@@ -349,9 +327,8 @@ int detab(int f, int n)
 		/* advance/or back to the next line */
 		if( forwline( TRUE, inc) == FALSE)
 			break ;
-
-		n -= inc;
 	}
+
 	curwp->w_doto = 0;	/* to the begining of the line */
 	thisflag &= ~CFCPCN;	/* flag that this resets the goal column */
 	lchange(WFEDIT);	/* yes, we have made at least an edit */
@@ -359,27 +336,21 @@ int detab(int f, int n)
 }
 
 /*
- * change spaces to tabs where posible
+ * change spaces to tabs where possible
  *
  * int f, n;		default flag and numeric repeat count
  */
-int entab(int f, int n)
-{
+BINDABLE( entab) {
 #define	nextab(a)	(a + tabwidth - a % tabwidth)
-
-	int inc;	/* increment to next line [sgn(n)] */
-
-//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-//		return rdonly();	/* we are in read only mode     */
 
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
-	if (f == FALSE)
-		n = 1;
+	if( f == FALSE)
+		n = 1 ;
 
 	/* loop thru entabbing n lines */
-	inc = ((n > 0) ? 1 : -1);
-	while (n) {
+	int inc = (n > 0) ? 1 : -1 ;	/* increment to next line [sgn(n)] */
+	for( ; n ; n -= inc) {
 		int fspace ;	/* pointer to first space if in a run */
 		int ccol ;		/* current cursor column */
 
@@ -426,9 +397,8 @@ int entab(int f, int n)
 		/* advance/or back to the next line */
 		if( forwline( TRUE, inc) == FALSE)
 			break ;
-
-		n -= inc;
 	}
+
 	curwp->w_doto = 0;	/* to the begining of the line */
 	thisflag &= ~CFCPCN;	/* flag that this resets the goal column */
 	lchange(WFEDIT);	/* yes, we have made at least an edit */
@@ -440,21 +410,15 @@ int entab(int f, int n)
  *
  * int f, n;		default flag and numeric repeat count
  */
-int trim(int f, int n)
-{
-	int inc;	/* increment to next line [sgn(n)] */
-
-//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-//		return rdonly();	/* we are in read only mode     */
-
+BINDABLE( trim) {
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
-	if (f == FALSE)
-		n = 1;
+	if( f == FALSE)
+		n = 1 ;
 
 	/* loop thru trimming n lines */
-	inc = ((n > 0) ? 1 : -1);
-	while (n) {
+	int inc = (n > 0) ? 1 : -1 ;	/* increment to next line [sgn(n)] */
+	for( ; n ; n -= inc) {
 		line_p	lp ;	/* current line pointer */
 		int offset ;	/* original line offset position */
 		int length ;	/* current length */
@@ -468,60 +432,46 @@ int trim(int f, int n)
 			if( c != ' ' && c != '\t')
 				break ;
 		}
-		
+
 		lp->l_used = length;
 
 		/* advance/or back to the next line */
 		if( forwline( TRUE, inc) == FALSE)
 			break ;
-
-		n -= inc;
 	}
+
 	lchange(WFEDIT);
 	thisflag &= ~CFCPCN;	/* flag that this resets the goal column */
 	return (n == 0) ? TRUE : FALSE ;
 }
-#endif
 
 /*
  * Open up some blank space. The basic plan is to insert a bunch of newlines,
  * and then back up over them. Everything is done by the subcommand
  * procerssors. They even handle the looping. Normally this is bound to "C-O".
  */
-int openline(int f, int n)
-{
-	int i;
-	int s;
-
-//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-//		return rdonly();	/* we are in read only mode     */
+BINDABLE( openline) {
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
-	if (n < 0)
-		return FALSE;
-	if (n == 0)
-		return TRUE;
-	i = n;			/* Insert newlines.     */
-	do {
-		s = lnewline();
-	} while (s == TRUE && --i);
-	if (s == TRUE)		/* Then back up overtop */
-		s = backchar(f, n);	/* of them all.         */
-	return s;
+	int ret = (n < 0) ? FALSE : TRUE ;
+	for( int i = n ; ret == TRUE && i ; i--)	/* Insert newlines. */
+		ret = lnewline() ;
+
+	if( ret == TRUE)			/* Then back up overtop */
+		ret = backchar( f, n) ;	/* of them all.         */
+
+	return ret ;
 }
 
 /*
  * Insert a newline. Bound to "C-M". If we are in CMODE, do automatic
  * indentation as specified.
  */
-int insert_newline(int f, int n)
-{
-//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-//		return rdonly();	/* we are in read only mode     */
+BINDABLE( insert_newline) {
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
-	if (n < 0)
-		return FALSE;
+	if( n < 0)
+		return FALSE ;
 
 	/* if we are in C mode and this is a default <NL> */
 	if (n == 1 && (curbp->b_mode & MDCMOD) &&
@@ -569,7 +519,7 @@ static int cinsert(void)
 	nicol = 0 ;
 	for( i = 0 ; i < tptr ; i += 1) {
 		int ch ;
-		
+
 		ch = cptr[ i] ;
 		if( ch == ' ')
 			nicol += 1 ;
@@ -610,22 +560,17 @@ static int cinsert(void)
 }
 
 
-/*
- * Delete blank lines around dot. What this command does depends if dot is
- * sitting on a blank line. If dot is sitting on a blank line, this command
- * deletes all the blank lines above and below the current line. If it is
- * sitting on a non blank line then it deletes all of the blank lines after
- * the line. Normally this command is bound to "C-X C-O". Any argument is
- * ignored.
+/* Delete blank lines around dot.  What this command does depends if dot is
+ * sitting on a blank line.  If dot is sitting on a blank line, this
+ * command deletes all the blank lines above and below the current line.
+ * If it is sitting on a non blank line then it deletes all of the blank
+ * lines after the line.  Normally this command is bound to C-X C-O
+ * delete-blank-lines.  Any argument is ignored.   
  */
-int deblank(int f, int n)
-{
-	struct line *lp1;
-	struct line *lp2;
-	long nld;
+BINDABLE( deblank) {
+	line_p lp1, lp2 ;
+	long nld ;
 
-//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-//		return rdonly();	/* we are in read only mode     */
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	lp1 = curwp->w_dotp;
@@ -642,20 +587,16 @@ int deblank(int f, int n)
 	return ldelete(nld, FALSE);
 }
 
-/*
- * Insert a newline, then enough tabs and spaces to duplicate the indentation
- * of the previous line. Assumes tabs are every tabwidth characters.
- * Figure out the indentation of the current line. Insert a newline by calling
- * the standard routine. Insert the indentation by inserting the right number
- * of tabs and spaces. Return TRUE if all ok. Return FALSE if one of the
- * subcomands failed. Normally bound to "C-J".
+/* Insert a newline, then enough tabs and spaces to duplicate the
+ * indentation of the previous line.  Assumes tabs are every tabwidth
+ * characters.  Figure out the indentation of the current line.  Insert a
+ * newline by calling the standard routine.  Insert the indentation by
+ * inserting the right number of tabs and spaces.  Return TRUE if all ok.
+ * Return FALSE if one of the subcomands failed.  Normally bound to C-J
+ * newline-and-indent.
  */
-int indent( int f, int n) {
-	int nicol ;
+BINDABLE( indent) {
 	int i ;
-
-//	if( curbp->b_mode & MDVIEW)	/* don't allow this command if	*/
-//		return rdonly() ;		/* we are in read only mode		*/
 
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
@@ -663,7 +604,7 @@ int indent( int f, int n) {
 		return FALSE ;
 
 /* number of columns to indent */
-	nicol = 0 ;
+	int nicol = 0 ;
 	for( i = 0 ; i < llength( curwp->w_dotp) ; i += 1) {
 		int c ;
 
@@ -693,10 +634,7 @@ int indent( int f, int n) {
  * If any argument is present, it kills rather than deletes, to prevent loss
  * of text if typed with a big argument. Normally bound to "C-D".
  */
-int forwdel( int f, int n) {
-//	if( curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-//		return rdonly() ;	/* we are in read only mode     */
-
+BINDABLE( forwdel) {
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	if( n == 0)
@@ -719,10 +657,7 @@ int forwdel( int f, int n) {
  * forward, this actually does a kill if presented with an argument. Bound to
  * both "RUBOUT" and "C-H".
  */
-int backdel( int f, int n) {
-//	if( curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-//		return rdonly() ;	/* we are in read only mode     */
-
+BINDABLE( backdel) {
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	if( n == 0)
@@ -747,13 +682,10 @@ int backdel( int f, int n) {
  * number of newlines. If called with a negative argument it kills backwards
  * that number of newlines. Normally bound to "C-K".
  */
-int killtext(int f, int n)
-{
-	struct line *nextp;
+BINDABLE( killtext) {
+	line_p nextp ;
 	long chunk;
 
-//	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-//		return rdonly();	/* we are in read only mode     */
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	if ((lastflag & CFKILL) == 0)	/* Clear kill buffer if */
@@ -953,7 +885,7 @@ static int iovstring( int f, int n, const char *prompt, int (*fun)( char *)) {
  *
  * int f, n;		ignored arguments
  */
-int istring( int f, int n) {
+BINDABLE( istring) {
 	return iovstring( f, n, "insert-string<META>: ", linstr) ;
 }
 
@@ -963,7 +895,7 @@ int istring( int f, int n) {
  *
  * int f, n;		ignored arguments
  */
-int ovstring( int f, int n) {
+BINDABLE( ovstring) {
 	return iovstring( f, n, "overwrite-string<META>: ", lover) ;
 }
 

@@ -1,3 +1,5 @@
+/* search.h -- */
+
 #ifndef _SEARCH_H_
 #define _SEARCH_H_
 
@@ -26,18 +28,20 @@ extern spat_t rpat ;	/* replacement pattern          */
 
 int scanner( const char *patrn, int direct, int beg_or_end) ;
 
-int forwsearch( int f, int n) ;
-int forwhunt( int f, int n) ;
-int backsearch( int f, int n) ;
-int backhunt( int f, int n) ;
+/* Bindable functions */
+BINDABLE( forwsearch) ;
+BINDABLE( forwhunt) ;
+BINDABLE( backsearch) ;
+BINDABLE( backhunt) ;
+BINDABLE( sreplace) ;
+BINDABLE( qreplace) ;
+
 int eq( unsigned char bc, unsigned char pc) ;
 void savematch( void) ;
 void rvstrcpy( char *rvstr, char *str) ;
-int sreplace( int f, int n) ;
-int qreplace( int f, int n) ;
 int delins( int dlength, char *instr, int use_meta) ;
 int expandp( char *srcstr, char *deststr, int maxlength) ;
-int boundry( struct line *curline, int curoff, int dir) ;
+int boundary( line_p curline, int curoff, int dir) ;
 
 void setprompt( char *tpat, unsigned tpat_size, char *prompt, char *apat) ;
 
@@ -47,3 +51,5 @@ void rmcclear( void) ;
 #endif
 
 #endif
+
+/* end of search.h */

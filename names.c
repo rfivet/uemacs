@@ -54,9 +54,7 @@ const name_bind names[] = {
 	{" clear-and-redraw", redraw, 					CTRL | 'L'} ,
 	{" clear-message-line", clrmes, 0} ,
 	{" copy-region", copyregion,					META | 'W'} ,
-#if	WORDPRO
 	{" count-words", wordcount,						META | CTRL | 'C'} ,
-#endif
 	{" ctlx-prefix", cex, 							CTRL | 'X'} ,
 	{"!delete-blank-lines", deblank,				CTLX | CTRL | 'O'} ,
 	{" delete-buffer", killbuffer,					CTLX | 'K'} ,
@@ -70,15 +68,11 @@ const name_bind names[] = {
 	{" delete-window", delwind,						CTLX | '0'} ,
 	{" describe-bindings", desbind, 0} ,
 	{" describe-key", deskey,						CTLX | '?'} ,
-#if	AEDIT
 	{"!detab-line", detab, 							CTLX | CTRL | 'D'} , /* X^A */
-#endif
 	{" end-macro", ctlxrp,							CTLX | ')'} ,
 	{" end-of-file", (fnp_t) gotoeob,				META | '>'} ,
 	{" end-of-line", (fnp_t) gotoeol,				CTRL | 'E'} ,
-#if	AEDIT
 	{"!entab-line", entab, 							CTLX | CTRL | 'E'} ,
-#endif
 	{" exchange-point-and-mark", (fnp_t) swapmark,	CTLX | CTRL | 'X'} ,
 	{" execute-buffer", execbuf, 0} ,
 	{" execute-command-line", execcmd, 0} ,
@@ -130,9 +124,7 @@ const name_bind names[] = {
 #endif
 	{" execute-program", execprg,				CTLX | '$'} ,
 	{" exit-emacs", quit, 						CTLX | CTRL | 'C'} ,
-#if	WORDPRO
 	{"!fill-paragraph", fillpara,				META | 'Q'} ,
-#endif
 	{"!filter-buffer", filter_buffer,			CTLX | '#'} ,
 	{" find-file", filefind, 					CTLX | CTRL | 'F'} ,
 	{" forward-character", (fnp_t) forwchar,	CTRL | 'F'} ,
@@ -152,12 +144,10 @@ const name_bind names[] = {
 	{"!insert-file", insfile,					CTLX | CTRL | 'I'} ,
 	{"!insert-space", insspace,					CTRL | 'C'} ,
 	{"!insert-string", istring, 0} ,
-#if	WORDPRO
 #if	PKCODE
 	{"!justify-paragraph", justpara,			META | 'J'} ,
 #endif
 	{"!kill-paragraph", killpara,				META | CTRL | 'W'} ,
-#endif
 	{"!kill-region", killregion, 				CTRL | 'W'} ,
 	{"!kill-to-end-of-line", killtext, 			CTRL | 'K'} ,
 	{" list-buffers", listbuffers, 				CTLX | CTRL | 'B'} ,
@@ -170,9 +160,7 @@ const name_bind names[] = {
 	{" next-buffer", nextbuffer,				CTLX | 'X'} ,
 	{" next-line", (fnp_t) forwline, 			CTRL | 'N'} ,
 	{" next-page", (fnp_t) forwpage,			CTRL | 'V'} ,
-#if	WORDPRO
 	{" next-paragraph", gotoeop,				META | 'N'} ,
-#endif
 	{" next-window", nextwind,					CTLX | 'O'} ,
 	{" next-word", forwword,					META | 'F'} ,
 	{" nop", nullproc,							SPEC | META | 'C'}, /* hook */
@@ -181,9 +169,7 @@ const name_bind names[] = {
 	{" pipe-command", pipecmd,					CTLX | '@'} ,
 	{" previous-line", (fnp_t) backline, 		CTRL | 'P'} ,
 	{" previous-page", (fnp_t) backpage,		CTRL | 'Z'} , /* MV */
-#if	WORDPRO
 	{" previous-paragraph", gotobop,			META | 'P'} ,
-#endif
 	{" previous-window", prevwind,				CTLX | 'P'} ,
 	{" previous-word", backword,				META | 'B'} ,
 	{"!query-replace-string", qreplace,			META | CTRL | 'R'} ,
@@ -221,9 +207,7 @@ const name_bind names[] = {
 	{" suspend-emacs", bktoshell,				CTLX | 'D'} , /* BSD MS */
 #endif
 	{"!transpose-characters", (fnp_t) twiddle,	CTRL | 'T'} ,
-#if	AEDIT
 	{"!trim-line", trim,						CTLX | CTRL | 'T'} ,
-#endif
 	{" unbind-key", unbindkey,					META | CTRL | 'K'} ,
 	{" universal-argument", unarg, 				CTRL | 'U'} ,
 	{" unmark-buffer", unmark,					META | '~'} ,

@@ -183,7 +183,7 @@ int execprg( int f, int n) {
 int pipecmd( int f, int n) {
 	int s ;		/* return status from CLI */
 	struct window *wp ;	/* pointer to new window */
-	struct buffer *bp ;	/* pointer to buffer to zot */
+	buffer_p bp ;		/* pointer to buffer to zot */
 	char *mlarg ;
 	char *line ;	/* command line send to shell */
 	static char bname[] = "command" ;
@@ -277,7 +277,7 @@ int pipecmd( int f, int n) {
  */
 int filter_buffer( int f, int n) {
 	int s ;				/* return status from CLI */
-	struct buffer *bp ;	/* pointer to buffer to zot */
+	buffer_p bp ;		/* pointer to buffer to zot */
 	char *mlarg ;
 	char *line ;		/* command line send to shell */
 	fname_t tmpnam ;	/* place to store real file name */
@@ -290,8 +290,6 @@ int filter_buffer( int f, int n) {
 	if( restflag)
 		return resterr() ;
 
-//	if( curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-//		return rdonly() ;		/* we are in read only mode     */
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	/* get the filter name and its args */

@@ -1,5 +1,4 @@
 /* file.c -- implements file.h */
-
 #include "file.h"
 
 /*	file.c
@@ -65,21 +64,17 @@ boolean resterr( void) {
 	return FALSE ;
 }
 
-/*
- * Read a file into the current
- * buffer. This is really easy; all you do is
- * find the name of the file, and call the standard
- * "read a file into the current buffer" code.
- * Bound to "C-X C-R".
+/* Read a file into the current buffer.  This is really easy; all you do is
+ * find the name of the file, and call the standard "read a file into the
+ * current buffer" code.  Bound to C-X C-R read-file.
  */
-int fileread( int f, int n) {
-	int status ;
+BINDABLE( fileread) {
 	char *fname ;
 
 	if( restflag)		/* don't allow this command if restricted */
 		return resterr() ;
 
-	status = newmlarg( &fname, "Read file: ", sizeof( fname_t)) ;
+	int status = newmlarg( &fname, "read-file: ", sizeof( fname_t)) ;
 	if( status == TRUE) {
 		status = readin( fname, TRUE) ;
 		free( fname) ;
@@ -88,25 +83,19 @@ int fileread( int f, int n) {
 	return status ;
 }
 
-/*
- * Insert a file into the current
- * buffer. This is really easy; all you do is
- * find the name of the file, and call the standard
- * "insert a file into the current buffer" code.
- * Bound to "C-X C-I".
+/* Insert a file into the current buffer.  This is really easy; all you do
+ * is find the name of the file, and call the standard "insert a file into
+ * the current buffer" code.  Bound to C-X C-I insert-file.
  */
-int insfile( int f, int n) {
-	int status ;
+BINDABLE( insfile) {
 	char *fname ;
 
 	if( restflag)		/* don't allow this command if restricted */
 		return resterr() ;
 
-//	if( curbp->b_mode & MDVIEW) /* don't allow this command if	*/
-//		return rdonly() ;		/* we are in read only mode 	*/
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
-	status = newmlarg( &fname, "Insert file: ", sizeof( fname_t)) ;
+	int status = newmlarg( &fname, "insert-file: ", sizeof( fname_t)) ;
 	if( status == TRUE) {
 		status = ifile( fname) ;
 		free( fname) ;
@@ -118,23 +107,18 @@ int insfile( int f, int n) {
 	return reposition( TRUE, -1) ;	/* Redraw with dot at bottom of window */
 }
 
-/*
- * Select a file for editing.
- * Look around to see if you can find the
- * file in another buffer; if you can find it
- * just switch to the buffer. If you cannot find
- * the file, create a new buffer, read in the
- * text, and switch to the new buffer.
- * Bound to C-X C-F.
+/* Select a file for editing.  Look around to see if you can find the file
+ * in another buffer; if you can find it just switch to the buffer.  If you
+ * cannot find the file, create a new buffer, read in the text, and switch
+ * to the new buffer.  Bound to C-X C-F find-file.
  */
-int filefind( int f, int n) {
+BINDABLE( filefind) {
 	char *fname ;	/* file user wishes to find */
-	int status ;	/* status return */
 
 	if( restflag)	/* don't allow this command if restricted */
 		return resterr() ;
 
-	status = newmlarg( &fname, "find-file: ", sizeof( fname_t)) ;
+	int status = newmlarg( &fname, "find-file: ", sizeof( fname_t)) ;
 	if( status == TRUE) {
 		status = getfile( fname, TRUE) ;
 		free( fname) ;
@@ -152,16 +136,15 @@ static void upd_mode( void) {
 			wp->w_flag |= WFMODE ;
 }
 
-int viewfile( int f, int n) {	/* visit a file in VIEW mode */
+BINDABLE( viewfile) {	/* visit a file in VIEW mode */
 	char *fname ;	/* file user wishes to find */
-	int status ;	/* status return */
 
 	if( restflag)		/* don't allow this command if restricted */
 		return resterr() ;
 
-	status = newmlarg( &fname, "View file: ", sizeof( fname_t)) ;
+	int status = newmlarg( &fname, "view-file: ", sizeof( fname_t)) ;
 	if( status == TRUE) {
-		status = getfile(fname, FALSE) ;
+		status = getfile( fname, FALSE) ;
 		free( fname) ;
 
 		if( status == TRUE) {	/* if we succeed, put it in view mode */
@@ -180,7 +163,7 @@ int viewfile( int f, int n) {	/* visit a file in VIEW mode */
  * boolean lockfl;		check the file for locks?
  */
 int getfile( const char *fname, boolean lockfl) {
-	struct buffer *bp;
+	buffer_p bp;
 	int s;
 	bname_t bname ;  /* buffer name to put file */
 
@@ -264,7 +247,7 @@ int getfile( const char *fname, boolean lockfl) {
 int readin(const char *fname, boolean lockfl)
 {
 	struct window *wp;
-	struct buffer *bp;
+	buffer_p bp;
 	int status ;
 	fio_code s ;
 
@@ -437,23 +420,17 @@ void unqname(char *name)
 	}
 }
 
-/*
- * Ask for a file name, and write the
- * contents of the current buffer to that file.
- * Update the remembered file name and clear the
- * buffer changed flag. This handling of file names
- * is different from the earlier versions, and
- * is more compatible with Gosling EMACS than
- * with ITS EMACS. Bound to "C-X C-W".
+/* Ask for a file name, and write the content of the current buffer to that
+ * file.  Update the remembered file name and clear the buffer changed
+ * flag.  Bound to C-X C-W write-file.
  */
-int filewrite( int f, int n) {
-	int status ;
+BINDABLE( filewrite) {
 	char *fname ;
 
 	if( restflag)		/* don't allow this command if restricted */
 		return resterr() ;
 
-	status = newmlarg( &fname, "Write file: ", sizeof( fname_t)) ;
+	int status = newmlarg( &fname, "write-file: ", sizeof( fname_t)) ;
 	if( status == TRUE) {
 		if( strlen( fname) > sizeof( fname_t) - 1)
 			status = FALSE ;
@@ -469,32 +446,27 @@ int filewrite( int f, int n) {
 	return status ;
 }
 
-/*
- * Save the contents of the current
- * buffer in its associated file. Do nothing
- * if nothing has changed (this may be a bug, not a
- * feature). Error if there is no remembered file
- * name for the buffer. Bound to "C-X C-S". May
- * get called by "C-Z".
+/* Save the content of the current buffer in its associated file.  Do
+ * nothing if nothing has changed (this may be a bug, not a feature).
+ * Error if there is no remembered file name for the buffer.  Bound to "C-X
+ * C-S save-file".  May get called by "M-Z quick-exit".
  */
-int filesave( int f, int n) {
-//	if (curbp->b_mode & MDVIEW) /* don't allow this command if		*/
-//		return rdonly();	/* we are in read only mode 	*/
+BINDABLE( filesave) {
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
-	if ((curbp->b_flag & BFCHG) == 0)	/* Return, no changes.	*/
-		return TRUE;
-	if (curbp->b_fname[0] == 0) {	/* Must have a name.	*/
-		mloutstr( "No file name") ;
-		return FALSE;
+	if( (curbp->b_flag & BFCHG) == 0)	/* Return, no changes. */
+		return TRUE ;
+
+	if( curbp->b_fname[0] == 0) {		/* Must have a name. */
+		mloutfmt( "%BNo file name") ;
+		return FALSE ;
 	}
 
 	/* complain about truncated files */
-	if ((curbp->b_flag & BFTRUNC) != 0) {
-		if (mlyesno("Truncated file ... write it out") == FALSE) {
-			mloutstr( "(Aborted)") ;
-			return FALSE;
-		}
+	if( (curbp->b_flag & BFTRUNC) != 0
+	&&	mlyesno("Truncated file ... write it out") == FALSE) {
+		mloutfmt( "%B(Aborted)") ;
+		return FALSE ;
 	}
 
 	return writeout( curbp->b_fname) ;
@@ -544,23 +516,19 @@ int writeout( const char *fn) {
 	return FALSE ;
 }
 
-/*
- * The command allows the user
- * to modify the file name associated with
- * the current buffer. It is like the "f" command
- * in UNIX "ed". The operation is simple; just zap
- * the name in the buffer structure, and mark the windows
- * as needing an update. You can type a blank line at the
- * prompt if you wish.
+/* The command allows the user to modify the file name associated with the
+   current buffer.  It is like the "f" command in UNIX "ed".  The operation
+   is simple; just zap the name in the buffer structure, and mark the
+   windows as needing an update.  You can type a blank line at the prompt
+   if you wish.  Bound to C-X N change-file-name.
  */
-int filename( int f, int n) {
-	int status ;
+BINDABLE( filename) {
 	char *fname ;
 
 	if( restflag)		/* don't allow this command if restricted */
 		return resterr() ;
 
-	status = newmlarg( &fname, "Name: ", sizeof( fname_t)) ;
+	int status = newmlarg( &fname, "Name: ", sizeof( fname_t)) ;
 	if( status == ABORT)
 		return status ;
 	else if( status == FALSE)
@@ -653,3 +621,5 @@ static int ifile( const char *fname) {
 
 	return (s == FIOERR) ? FALSE : TRUE ;
 }
+
+/* end of file.c */

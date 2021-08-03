@@ -11,7 +11,6 @@
  */
 
 #include <assert.h>
-#include <stdio.h>
 #include <stdlib.h>	/* malloc, free */
 #include <string.h> /* memcpy */
 
@@ -152,9 +151,6 @@ static boolean uniflip( boolean toupper_f) {	/* flip unicode case and forward */
 }
 
 static boolean capcapword( int n, boolean first_f, boolean rest_f) {
-//	if( curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-//		return rdonly() ;		/* we are in read only mode     */
-
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	if( n < 0)
@@ -210,14 +206,9 @@ int capword( int f, int n) {
  */
 int delfword(int f, int n)
 {
-	struct line *dotp;	/* original cursor line */
+	line_p dotp;	/* original cursor line */
 	int doto;	/*      and row */
 	int c;		/* temp char */
-	long size;		/* # of chars to delete */
-
-//	/* don't allow this command if we are in read only mode */
-//	if (curbp->b_mode & MDVIEW)
-//		return rdonly();
 
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
@@ -235,7 +226,7 @@ int delfword(int f, int n)
 	doto = curwp->w_doto;
 
 	/* figure out how many characters to give the axe */
-	size = 0;
+	long size = 0 ;
 
 	/* get us into a word.... */
 	while (inword() == FALSE) {
@@ -301,12 +292,6 @@ int delfword(int f, int n)
  */
 int delbword(int f, int n)
 {
-	long size;
-
-//	/* don't allow this command if we are in read only mode */
-//	if (curbp->b_mode & MDVIEW)
-//		return rdonly();
-
 	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	/* ignore the command if there is a nonpositive argument */
@@ -320,7 +305,8 @@ int delbword(int f, int n)
 
 	if (backchar(FALSE, 1) == FALSE)
 		return FALSE;
-	size = 0;
+
+	long size = 0 ;
 	while (n--) {
 		while (inword() == FALSE) {
 			if (backchar(FALSE, 1) == FALSE)
@@ -352,7 +338,6 @@ static int inword( void) {
 	return isletter( c) || ( c >= '0' && c <= '9') ;
 }
 
-#if	WORDPRO
 static int parafillnjustify( int f, int n, int justify_f) {
 	unicode_t c;		/* current char during scan	*/
 	unicode_t *wbuf ;	/* buffer for current word	*/
@@ -361,7 +346,7 @@ static int parafillnjustify( int f, int n, int justify_f) {
 	int clength;	/* position on line during fill */
 	int eopflag;	/* Are we at the End-Of-Paragraph? */
 	int firstflag = TRUE ;	/* first word? (needs no space) */
-	struct line *eopline;	/* pointer to line just past EOP */
+	line_p eopline;	/* pointer to line just past EOP */
 	int	dotflag = 0 ;		/* was the last char a period?  */
 	int leftmarg = 0 ;		/* left marginal */
 
@@ -549,7 +534,7 @@ int killpara(int f, int n)
  */
 int wordcount(int f, int n)
 {
-	struct line *lp;	/* current line to scan */
+	line_p lp;	/* current line to scan */
 	int offset;	/* current char to scan */
 	long size;		/* size of region left to count */
 	int ch;	/* current character to scan */
@@ -560,10 +545,10 @@ int wordcount(int f, int n)
 	int nlines;		/* total number of lines in region */
 	int avgch;		/* average number of chars/word */
 	int status;		/* status return code */
-	struct region region;		/* region to look at */
+	region_t region ;	/* region to look at */
 
 	/* make sure we have a region to count */
-	if ((status = getregion(&region)) != TRUE)
+	if( (status = getregion( &region)) != TRUE)
 		return status;
 	lp = region.r_linep;
 	offset = region.r_offset;
@@ -684,6 +669,5 @@ int gotoeop(int f, int n)
 	curwp->w_flag |= WFMOVE;  /* force screen update */
 	return TRUE;
 }
-#endif
 
 /* end of word.c */
