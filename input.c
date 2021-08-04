@@ -355,121 +355,85 @@ static int get1unicode( int *up) {
     return bytes ;
 }
 
+static int keystack[ 8] ;
+static int *stackptr = &keystack[ 8] ;
+#define KPUSH( c) *(--stackptr) = (c)
+
 int get1key( void) {
 	int c ;
 
+/* fetch from queue if any were pushed back */
+	if( stackptr != &keystack[ 8])
+		return *(stackptr++) ;
+
+/* fetch from keyboard */
 	get1unicode( &c) ;
 	return c ;
 }
 
-/*  GETCMD: Get a command from the keyboard. Process all applicable
-    prefix keys */
+/* GETCMD: Get a command from the keyboard.  Process all applicable prefix
+   keys.
+*/
+int getcmd( void) {
+	int cmask = 0 ;
+	int c, d, e, f ;	/* read up to ^[[24~ */
 
-int getcmd(void)
-{
-    int c;          /* fetched keystroke */
-#if VT220
-    int d;          /* second character P.K. */
-    int cmask = 0;
-#endif
-    /* get initial character */
-    c = get1key();
+	for( ;;) {
+		c = get1key() ;
+		if( c == (CTRL | '[')) {
+		/* fetch terminal sequence */
+			c = get1key() ;
+			if( c == 'O') {	/* F1 .. F4 */
+				d = get1key() ;
+				if( d >= 'P' && d <= 'S') {
+					c = d | SPEC ;
+					break ;
+				}
+				
+				KPUSH( d) ;
+			} else if( c == '[') {
+				d = get1key() ;
+				if( d >= 'A' && d <= 'Z') {	/* Arrows, Home, End, ReverseTab */
+					c = d | SPEC ;
+					break ;
+				} else if( d >= '0' && d <= '9') {
+					e = get1key() ;
+					if( e == '~') {	/* Insert, Delete, PageUp, PageDown */
+						c = d | SPEC ;
+						break ;
+					} else if( e >= '0' && e <= '9') {
+						f = get1key() ;
+						if( f == '~') {	/* F5 .. F12 */
+							c = (16 + (d - '0') * 16 + e) | SPEC ;
+							break ;
+						}
 
-#if VT220
-      proc_metac:
-#endif
-    if (c == 128+27)        /* CSI */
-        goto handle_CSI;
-    /* process META prefix */
-    if (c == (CTRL | '[')) {
-        c = get1key();
-#if VT220
-        if (c == '[' || c == 'O') { /* CSI P.K. */
-handle_CSI:
-            c = get1key();
-            if (c >= 'A' && c <= 'D')
-                return SPEC | c | cmask;
-            if (c >= 'E' && c <= 'z' && c != 'i' && c != 'c')
-                return SPEC | c | cmask;
-            d = get1key();
-            if (d == '~')   /* ESC [ n ~   P.K. */
-                return SPEC | c | cmask;
-            switch (c) {    /* ESC [ n n ~ P.K. */
-            case '1':
-                c = d + 32;
-                break;
-            case '2':
-                c = d + 48;
-                break;
-            case '3':
-                c = d + 64;
-                break;
-            default:
-                c = '?';
-                break;
-            }
-            if (d != '~')   /* eat tilde P.K. */
-                get1key();
-            if (c == 'i') { /* DO key    P.K. */
-                c = ctlxc;
-                goto proc_ctlxc;
-            } else if (c == 'c')    /* ESC key   P.K. */
-                c = get1key();
-            else
-                return SPEC | c | cmask;
-        }
-#endif
-#if VT220
-        if (c == (CTRL | '[')) {
-            cmask = META;
-            goto proc_metac;
-        }
-#endif
-        if( islower( c)) /* Force to upper */
-            c = flipcase( c) ;
-        else if( c >= 0x00 && c <= 0x1F) /* control key */
-            c = CTRL | (c + '@');
-        return META | c;
-    }
-#if PKCODE
-    else if (c == metac) {
-        c = get1key();
-#if VT220
-        if (c == (CTRL | '[')) {
-            cmask = META;
-            goto proc_metac;
-        }
-#endif
-        if( islower( c)) /* Force to upper */
-            c = flipcase( c) ;
-        else if( c >= 0x00 && c <= 0x1F) /* control key */
-            c = CTRL | (c + '@');
-        return META | c;
-    }
-#endif
+						KPUSH( f) ;
+					}
+					
+					KPUSH( e) ;
+				}
 
+				KPUSH( d) ;
+			}
 
-#if VT220
-      proc_ctlxc:
-#endif
-    /* process CTLX prefix */
-    if (c == ctlxc) {
-        c = get1key();
-#if VT220
-        if (c == (CTRL | '[')) {
-            cmask = CTLX;
-            goto proc_metac;
-        }
-#endif
-        if (c >= 'a' && c <= 'z')   /* Force to upper */
-            c -= 0x20;
-        if (c >= 0x00 && c <= 0x1F) /* control key */
-            c = CTRL | (c + '@');
-        return CTLX | c;
-    }
+			KPUSH( c) ;
 
-/* otherwise, just return it */
-    return c ;
+			c = CTRL | '[' ;
+		}
+
+		if( c == metac) {
+			cmask |= META ;
+		} else if( c == ctlxc) {
+			cmask |= CTLX ;
+		} else
+			break ;
+	}
+
+	if( cmask && islower( c))
+		c = flipcase( c) ;
+
+    return c | cmask ;
 }
 
 /*  A more generalized prompt/reply function allowing the caller
