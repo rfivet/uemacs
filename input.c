@@ -1,10 +1,7 @@
 /* input.c -- implements input.h */
-
 #include "input.h"
 
-/*  input.c
- *
- *  Various input routines
+/*  Various input routines
  *
  *  written by Daniel Lawrence 5/9/86
  *  modified by Petri Kutvonen
@@ -355,15 +352,17 @@ static int get1unicode( int *up) {
     return bytes ;
 }
 
-static int keystack[ 8] ;
-static int *stackptr = &keystack[ 8] ;
+/* Terminal sequences need up to 6 read ahead characters */
+#define STACKSIZE	6
+static int keystack[ STACKSIZE] ;
+static int *stackptr = &keystack[ STACKSIZE] ;
 #define KPUSH( c) *(--stackptr) = (c)
 
 int get1key( void) {
 	int c ;
 
 /* fetch from queue if any were pushed back */
-	if( stackptr != &keystack[ 8])
+	if( stackptr != &keystack[ STACKSIZE])
 		return *(stackptr++) ;
 
 /* fetch from keyboard */
@@ -372,52 +371,62 @@ int get1key( void) {
 }
 
 /* GETCMD: Get a command from the keyboard.  Process all applicable prefix
-   keys.
+   keys.  Handle alted and controlled FNx, not shifted.  Allow double
+   prefix M-^X.
 */
 int getcmd( void) {
-	int cmask = 0 ;
-	int c, d, e, f ;	/* read up to ^[[24~ */
+	int cmask = 0 ;				/* prefixes M- & ^X */
+	int keyread[ STACKSIZE] ;	/* room to process sequences like ^[[24;2~ */
+	int *kptr = keyread ;
+	int c ;
 
 	for( ;;) {
 		c = get1key() ;
 		if( c == (CTRL | '[')) {
 		/* fetch terminal sequence */
-			c = get1key() ;
+			c = *(kptr++) = get1key() ;
 			if( c == 'O') {	/* F1 .. F4 */
-				d = get1key() ;
-				if( d >= 'P' && d <= 'S') {
-					c = d | SPEC ;
-					break ;
-				}
-				
-				KPUSH( d) ;
+				c = *(kptr++) = get1key() ;
+				if( c >= 'P' && c <= 'S')
+					return c | SPEC | cmask ;
 			} else if( c == '[') {
-				d = get1key() ;
-				if( d >= 'A' && d <= 'Z') {	/* Arrows, Home, End, ReverseTab */
-					c = d | SPEC ;
-					break ;
-				} else if( d >= '0' && d <= '9') {
-					e = get1key() ;
-					if( e == '~') {	/* Insert, Delete, PageUp, PageDown */
-						c = d | SPEC ;
-						break ;
-					} else if( e >= '0' && e <= '9') {
-						f = get1key() ;
-						if( f == '~') {	/* F5 .. F12 */
-							c = (16 + (d - '0') * 16 + e) | SPEC ;
-							break ;
+				int v = 0 ;		/* ^[[v1;v~ or ^[[v~ */
+				int v1 = 0 ;
+				while( kptr < &keyread[ STACKSIZE]) {
+					c = *(kptr++) = get1key() ;
+					if( (c == '~') || (c >= 'A' && c <= 'Z')) {
+					/* Found end of sequence */
+						if( v1) {	/* Handle ALT/CTL, not SHFT */
+							if( (v - 1) & 4)
+								cmask |= CTRL ;
+
+							if( (v - 1) & 2)
+								cmask |= META ;
+
+							v = v1 ;
 						}
 
-						KPUSH( f) ;
-					}
-					
-					KPUSH( e) ;
-				}
+						if( c == '~') {
+							if( v)
+								c = v + ((v <= 9) ? '0' : 'a' - 10) ;
+							else
+								break ;
+						}
 
-				KPUSH( d) ;
+						return c | SPEC | cmask ;
+					} else if( c == ';') {	/* Start of SHFT/ALT/CTL state */
+						v1 = v ;
+						v = 0 ;
+					} else if( c >= '0' && c <= '9')
+						v = v * 10 + c - '0' ;
+					else
+						break ;
+				}
 			}
 
-			KPUSH( c) ;
+		/* not a match, unget the keys read so far */
+			while( kptr > keyread)
+				KPUSH( *(--kptr)) ;
 
 			c = CTRL | '[' ;
 		}
@@ -681,3 +690,5 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
 
 	return retval ;
 }
+
+/* end of input.c */

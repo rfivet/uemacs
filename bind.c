@@ -1,9 +1,7 @@
 /* bind.c -- implements bind.h */
 #include "bind.h"
 
-/*  bind.c
- *
- *  This file is for functions having to do with key bindings,
+/*  This file is for functions having to do with key bindings,
  *  descriptions, help commands and startup file.
  *
  *  Written 11-feb-86 by Daniel Lawrence
@@ -33,8 +31,13 @@ static int buildlist( char *mstring) ;
 static char *cmdstr( unsigned c, char *seq) ;
 static unsigned int getckey( int mflag) ;
 static unsigned int stock( char *keyname) ;
-static const char *getfname( unsigned keycode, char *failmsg) ;
+static const char *getfname( unsigned keycode, const char *failmsg) ;
 
+
+static boolean cmdfail( const char *msg) {
+	mlwrite( "%s", msg) ;
+	return FALSE ;
+}
 
 BINDABLE( help) {
 /* give me some help!!!!
@@ -46,12 +49,10 @@ BINDABLE( help) {
 	if( bp == curbp)
 		return TRUE ;
 
-    if (bp == NULL) {
-        fname = flook( hlpfname, FALSE);
-        if (fname == NULL) {
-            mlwrite("(Help file is not online)");
-            return FALSE;
-        }
+    if( bp == NULL) {
+        fname = flook( hlpfname, FALSE) ;
+        if( fname == NULL)
+			return cmdfail( "(Help file is not online)") ;
     }
 
 /* split the current window to make room for the help stuff */
@@ -73,6 +74,10 @@ BINDABLE( help) {
     return TRUE;
 }
 
+static boolean invalidkey( void) {
+	return cmdfail( "(Invalid key sequence)") ;
+}
+
 /* describe the command for a certain key */
 BINDABLE( deskey) {
 	const char cmdname[] = "describe-key" ;
@@ -84,6 +89,8 @@ BINDABLE( deskey) {
 /* get the command sequence to describe
  * change it to something we can print as well */
     unsigned keycode = getckey( FALSE) ;
+	if( keycode == (unsigned) ~0)
+		return invalidkey() ;
 
 /* output the command sequence */
     mlwrite( "%s %s: 0x%x, %s", cmdname, cmdstr( keycode, outseq), keycode,
@@ -110,10 +117,8 @@ BINDABLE( bindtokey) {
 		return FALSE ;
 
     fnp_t kfunc = nbp->n_func ;
-    if( kfunc == NULL) {
-        mlwrite( "(No such function)") ;
-        return FALSE ;
-    }
+    if( kfunc == NULL)
+		return cmdfail( "(No such function)") ;
 
 	mlwrite( "bind-to-key %s: ", bind_name( nbp)) ;
 
@@ -121,6 +126,8 @@ BINDABLE( bindtokey) {
 	boolean prefix_f = (kfunc == metafn) || (kfunc == cex) ||
             							(kfunc == unarg) || (kfunc == ctrlg) ;
     int c = getckey( prefix_f) ;
+	if( c == ~0)
+		return invalidkey() ;
 
 /* change it to something we can print as well */
 /* and dump it out */
@@ -134,8 +141,7 @@ BINDABLE( bindtokey) {
 		||  (c == abortc && kfunc == ctrlg))
 			return TRUE ;
 
-		mlwrite( "(Can't bind to active prefix)") ;
-		return FALSE ;
+		return cmdfail( "(Can't bind to active prefix)") ;
 	}
 
 /* if the function is a prefix key */
@@ -159,10 +165,8 @@ BINDABLE( bindtokey) {
     }
 
 	ktp = setkeybinding( c, nbp) ;
-	if( ktp->k_code == 0) {
-        mlwrite( "Binding table FULL!") ;
-		return FALSE ;
-	}
+	if( ktp->k_code == 0)
+		return cmdfail( "Binding table FULL!") ;
 
 	return TRUE ;
 }
@@ -181,16 +185,16 @@ BINDABLE( unbindkey) {
 
 /* get the command sequence to unbind */
     int c = getckey( FALSE) ;	/* get a command sequence */
+	if( c == ~0)
+		return invalidkey() ;
 
 /* change it to something we can print as well */
 /* and dump it out */
     ostring( cmdstr( c, outseq)) ;
 
 /* prefix key sequence can't be undound, just redefined */
-	if( c == reptc || c == abortc) {
-		mlwrite( "(Can't unbind prefix)") ;
-		return FALSE ;
-	}
+	if( c == reptc || c == abortc)
+		return cmdfail( "(Can't unbind prefix)") ;
 
 /* if it isn't bound, bitch */
     if( delkeybinding( c) == FALSE) {
@@ -269,10 +273,8 @@ static int buildlist( char *mstring) {
 
     /* and get a buffer for it */
     bp = bfind("*Binding list*", TRUE, 0);
-    if (bp == NULL || bclear(bp) == FALSE) {
-        mlwrite("Can not display binding list");
-        return FALSE;
-    }
+    if( bp == NULL || bclear( bp) == FALSE)
+		return cmdfail( "Can't display binding list") ;
 
     /* let us know this is in progress */
     mlwrite("(Building binding list)");
@@ -352,17 +354,16 @@ static int buildlist( char *mstring) {
  * get a command key sequence from the keyboard
  *
  * int mflag;       going for a meta sequence?
+ * returns ~0 on failure
  */
 static unsigned int getckey( int mflag) {
     unsigned int c ;	/* character fetched */
 
     /* check to see if we are executing a command line */
     if( clexec) {
-		char *tok ;	/* command incoming */
-		
-		tok = getnewtokval() ;	/* get the next token */
+		char *tok = getnewtokval() ;	/* get the next token */
 		if( tok == NULL)
-			c = 0 ;	/* return dummy key on failure */
+			c = ~0 ;	/* return invalid key on failure */
 		else {
 			c = stock( tok) ;
 			free( tok) ;
@@ -416,15 +417,15 @@ static char *cmdstr( unsigned c, char *seq) {
         *ptr++ = ctlxc & ~PRFXMASK ;
     }
 
+/* apply control sequence if needed */
+    if( c & CTRL)
+        *ptr++ = '^' ;
+
 /* apply SPEC sequence if needed */
     if( c & SPEC) {
         *ptr++ = 'F' ;
         *ptr++ = 'N' ;
     }
-
-/* apply control sequence if needed */
-    if( c & CTRL)
-        *ptr++ = '^' ;
 
 /* and output the final sequence */
 	ptr += unicode_to_utf8( c & ~PRFXMASK, ptr) ;
@@ -432,7 +433,7 @@ static char *cmdstr( unsigned c, char *seq) {
 	return seq ;
 }
 
-static const char *getfname( unsigned keycode, char *failmsg) {
+static const char *getfname( unsigned keycode, const char *failmsg) {
 /* takes a key code and gets the name of the function bound to it */
 	kbind_p kbp = getkeybinding( keycode) ;
 	if( kbp->k_code == 0)
@@ -443,54 +444,58 @@ static const char *getfname( unsigned keycode, char *failmsg) {
 	return found ;
 }
 
-/*
- * stock:
+/* stock:
  *  String key name TO Command Key
  *
  * char *keyname;   name of key to translate to Command key form
+ * fmt: [M-][^X][^][FN]X
+ * returns ~0 on invalid sequence
  */
 static unsigned int stock( char *keyname) {
-    unsigned int c; /* key sequence to return */
+/* parse it up */
+    unsigned c = 0 ;
 
-    /* parse it up */
-    c = 0;
-
-    /* first, the META prefix */
-    if (*keyname == 'M' && *(keyname + 1) == '-') {
-        c = META;
-        keyname += 2;
+/* first, the META prefix */
+    if( *keyname == 'M' && keyname[ 1] == '-') {
+        c = META ;
+        keyname += 2 ;
     }
 
-    /* next the function prefix */
-    if (*keyname == 'F' && *(keyname + 1) == 'N') {
-        c |= SPEC;
-        keyname += 2;
+/* control-x prefix */
+    if( *keyname == '^' && keyname[ 1] == 'X') {
+        c |= CTLX ;
+        keyname += 2 ;
     }
 
-    /* control-x as well... (but not with FN) */
-    if (*keyname == '^' && *(keyname + 1) == 'X' && !(c & SPEC)) {
-        c |= CTLX;
-        keyname += 2;
+/* a control char? */
+    if( *keyname == '^' && keyname[ 1] != 0) {
+        c |= CTRL ;
+        ++keyname ;
     }
 
-    /* a control char? */
-    if (*keyname == '^' && *(keyname + 1) != 0) {
-        c |= CTRL;
-        ++keyname;
-    }
-    if (*keyname < 32) {
-        c |= CTRL;
-        *keyname += 'A';
+/* next the function prefix */
+    if( *keyname == 'F' && keyname[ 1] == 'N') {
+        c |= SPEC ;
+        keyname += 2 ;
     }
 
+/* only one character left to parse */
+	if( !*keyname || keyname[1])
+		return ~0 ;
 
-    /* make sure we are not lower case (not with function keys) */
-    if (*keyname >= 'a' && *keyname <= 'z' && !(c & SPEC))
-        *keyname -= 32;
+/* only way to redefine ^X is by quoting binary value */
+    if( *keyname < 32 || *keyname == 0x7F) {
+        c |= CTRL ;
+        *keyname ^= 0x40 ;
+    }
 
-    /* the final sequence... */
+/* make sure we are not lower case (not with function keys) */
+    if( *keyname >= 'a' && *keyname <= 'z' && !(c & SPEC))
+        *keyname -= 32 ;
+
+/* the final sequence... */
     c |= *keyname & 0xFFU ;
-    return c;
+    return c ;
 }
 
 /*
@@ -499,5 +504,13 @@ static unsigned int stock( char *keyname) {
  * char *skey;      name of key to get binding for
  */
 const char *transbind( char *skey) {
-    return getfname( stock( skey), "ERROR") ;
+	static const char failmsg[] = "ERROR" ;
+
+	unsigned c = stock( skey) ;
+	if( c == (unsigned) ~0)
+		return failmsg ;
+	else
+	    return getfname( c, failmsg) ;
 }
+
+/* end of bind.c */
