@@ -3,13 +3,11 @@
 #ifndef _ESTRUCT_H_
 #define _ESTRUCT_H_
 
-/*      ESTRUCT.H
- *
- *      Structure and preprocessor defines
+/*  Structure and preprocessor defines
  *
  *	written by Dave G. Conroy
  *	modified by Steve Wilhite, George Jones
- *      substantially modified by Daniel Lawrence
+ *  substantially modified by Daniel Lawrence
  *	modified by Petri Kutvonen
  */
 
@@ -66,29 +64,12 @@
 #endif
 
 #ifndef	AUTOCONF
-
-/*   Special keyboard definitions            */
-
-#define VT220	0		/* Use keypad escapes P.K.      */
-#define VT100   0		/* Handle VT100 style keypad.   */
-
 /*	Terminal Output definitions		*/
-
-#define ANSI    0		/* ANSI escape sequences        */
-#define VT52    0		/* VT52 terminal (Zenith).      */
-#define TERMCAP 0		/* Use TERMCAP                  */
-#define	IBMPC	1		/* IBM-PC CGA/MONO/EGA driver   */
-
+# define TERMCAP	0		/* Use TERMCAP                  */
+# define IBMPC		1		/* IBM-PC CGA/MONO/EGA driver   */
 #else
-
-#define	VT220	UNIX
-#define	VT100	0
-
-#define	ANSI	0
-#define	VT52	0
-#define	TERMCAP	UNIX
-#define	IBMPC	MSDOS
-
+# define TERMCAP	UNIX
+# define IBMPC		MSDOS
 #endif /* Autoconf. */
 
 /*	Configuration options	*/

@@ -232,7 +232,7 @@ const name_bind names[] = {
 	{ NULL, (fnp_t) setmark,					META | '.'},
 //	{ NULL, bktoshell,							META | 'S'},
 
-#if VT220
+/* special key mapping */
 	{ NULL, yank,								SPEC | '2'}, /* Insert */
 	{ NULL, forwdel /* killregion */,			SPEC | '3'}, /* Delete */
     { NULL, (fnp_t) backpage,					SPEC | '5'}, /* Page Up */
@@ -244,7 +244,6 @@ const name_bind names[] = {
     { NULL, (fnp_t) gotoeob,					SPEC | 'F'}, /* End */
     { NULL, (fnp_t) gotobob,					SPEC | 'H'}, /* Home */
     { NULL, help,								SPEC | 'P'}, /* F1 */
-#endif
 
 /* hooks */
 	{ NULL, nullproc,							SPEC | META | 'R'}, /* hook */

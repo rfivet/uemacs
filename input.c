@@ -352,8 +352,8 @@ static int get1unicode( int *up) {
     return bytes ;
 }
 
-/* Terminal sequences need up to 6 read ahead characters */
-#define STACKSIZE	6
+/* Terminal sequences need up to 7 read ahead characters */
+#define STACKSIZE	7
 static int keystack[ STACKSIZE] ;
 static int *stackptr = &keystack[ STACKSIZE] ;
 #define KPUSH( c) *(--stackptr) = (c)
@@ -381,8 +381,10 @@ int getcmd( void) {
 	int c ;
 
 	for( ;;) {
-		c = get1key() ;
-		if( c == (CTRL | '[')) {
+		c = *(kptr++) = get1key() ;
+		if( c == 0x9B)
+			goto foundCSI ;
+		else if( c == (CTRL | '[')) {
 		/* fetch terminal sequence */
 			c = *(kptr++) = get1key() ;
 			if( c == 'O') {	/* F1 .. F4 */
@@ -390,8 +392,10 @@ int getcmd( void) {
 				if( c >= 'P' && c <= 'S')
 					return c | SPEC | cmask ;
 			} else if( c == '[') {
-				int v = 0 ;		/* ^[[v1;v~ or ^[[v~ */
-				int v1 = 0 ;
+				int v1, v ;		/* ^[[v1;v~ or ^[[v~ */
+
+			foundCSI:
+				v1 = v = 0 ;
 				while( kptr < &keyread[ STACKSIZE]) {
 					c = *(kptr++) = get1key() ;
 					if( (c == '~') || (c >= 'A' && c <= 'Z')) {
@@ -428,7 +432,7 @@ int getcmd( void) {
 			while( kptr > keyread)
 				KPUSH( *(--kptr)) ;
 
-			c = CTRL | '[' ;
+			c = get1key() ;
 		}
 
 		if( c == metac) {
