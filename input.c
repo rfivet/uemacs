@@ -371,11 +371,10 @@ int get1key( void) {
 }
 
 /* GETCMD: Get a command from the keyboard.  Process all applicable prefix
-   keys.  Handle alted and controlled FNx, not shifted.  Allow double
-   prefix M-^X.
+   keys.  Handle alted and controlled FNx, not shifted.
 */
 int getcmd( void) {
-	int cmask = 0 ;				/* prefixes M- & ^X */
+	int prefix = 0 ;			/* prefixes M- or ^X */
 	int keyread[ STACKSIZE] ;	/* room to process sequences like ^[[24;2~ */
 	int *kptr = keyread ;
 	int c ;
@@ -390,7 +389,7 @@ int getcmd( void) {
 			if( c == 'O') {	/* F1 .. F4 */
 				c = *(kptr++) = get1key() ;
 				if( c >= 'P' && c <= 'S')
-					return c | SPEC | cmask ;
+					return c | SPEC | prefix ;
 			} else if( c == '[') {
 				int v1, v ;		/* ^[[v1;v~ or ^[[v~ */
 
@@ -398,14 +397,17 @@ int getcmd( void) {
 				v1 = v = 0 ;
 				while( kptr < &keyread[ STACKSIZE]) {
 					c = *(kptr++) = get1key() ;
-					if( (c == '~') || (c >= 'A' && c <= 'Z')) {
+					if( (c == '~')
+					||	(c >= 'A' && c <= 'Z')
+					||	(c >= 'a' && c <= 'z')) {
 					/* Found end of sequence */
+						int mask = prefix ;
 						if( v1) {	/* Handle ALT/CTL, not SHFT */
-							if( (v - 1) & 4)
-								cmask |= CTRL ;
-
 							if( (v - 1) & 2)
-								cmask |= META ;
+								mask = META ;
+
+							if( (v - 1) & 4)
+								mask |= CTRL ;
 
 							v = v1 ;
 						}
@@ -417,7 +419,7 @@ int getcmd( void) {
 								break ;
 						}
 
-						return c | SPEC | cmask ;
+						return c | SPEC | mask ;
 					} else if( c == ';') {	/* Start of SHFT/ALT/CTL state */
 						v1 = v ;
 						v = 0 ;
@@ -433,20 +435,24 @@ int getcmd( void) {
 				KPUSH( *(--kptr)) ;
 
 			c = get1key() ;
-		}
+		} else
+			kptr-- ;
 
 		if( c == metac) {
-			cmask |= META ;
+			prefix = META ;
 		} else if( c == ctlxc) {
-			cmask |= CTLX ;
+			if( prefix)
+				break ;	/* ^X^X or M-^X */
+			else
+				prefix = CTLX ;
 		} else
 			break ;
 	}
 
-	if( cmask && islower( c))
+	if( prefix && islower( c))
 		c = flipcase( c) ;
 
-    return c | cmask ;
+    return c | prefix ;
 }
 
 /*  A more generalized prompt/reply function allowing the caller

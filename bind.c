@@ -448,22 +448,19 @@ static const char *getfname( unsigned keycode, const char *failmsg) {
  *  String key name TO Command Key
  *
  * char *keyname;   name of key to translate to Command key form
- * fmt: [M-][^X][^][FN]X
+ * fmt: [M-|^X][^][FN]X
  * returns ~0 on invalid sequence
  */
 static unsigned int stock( char *keyname) {
 /* parse it up */
     unsigned c = 0 ;
 
-/* first, the META prefix */
+/* first, the prefix META or ^X */
     if( *keyname == 'M' && keyname[ 1] == '-') {
         c = META ;
         keyname += 2 ;
-    }
-
-/* control-x prefix */
-    if( *keyname == '^' && keyname[ 1] == 'X') {
-        c |= CTLX ;
+    } else if( *keyname == '^' && keyname[ 1] == 'X') {
+        c = CTLX ;
         keyname += 2 ;
     }
 
@@ -487,10 +484,9 @@ static unsigned int stock( char *keyname) {
     if( *keyname < 32 || *keyname == 0x7F) {
         c |= CTRL ;
         *keyname ^= 0x40 ;
-    }
-
-/* make sure we are not lower case (not with function keys) */
-    if( *keyname >= 'a' && *keyname <= 'z' && !(c & SPEC))
+    } else	if( c && !(c & SPEC)
+			&&	*keyname >= 'a' && *keyname <= 'z')
+	/* make sure we are not lower case (not with function keys) */
         *keyname -= 32 ;
 
 /* the final sequence... */
