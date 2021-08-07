@@ -1,13 +1,11 @@
 /* region.c -- implements region.h */
 #include "region.h"
 
-/*	region.c
- *
- *      The routines in this file deal with the region, that magic space
- *      between "." and mark. Some functions are commands. Some functions are
- *      just for internal use.
- *
- *	Modified by Petri Kutvonen
+/* The routines in this file deal with the region, that magic space between
+   "." and mark.  Some functions are commands.  Some functions are just for
+   internal use.
+
+	Modified by Petri Kutvonen
  */
 
 #include <assert.h>
@@ -20,123 +18,114 @@
 #include "random.h"
 #include "window.h"
 
-/* Kill the region.  Ask "getregion" to figure out the bounds of the
- * region.  Move "." to the start, and kill the characters.  Bound to
- * "C-W".
+/* Kill the region.  Ask getregion() to figure out the bounds of the
+   region.  Move "." to the start, and kill the characters.  Bound to C-W
+   kill-region.
  */
 BINDABLE( killregion) {
-	int s;
-	region_t region;
+	region_t region ;
 
 	assert( !(curbp->b_mode & MDVIEW)) ;
-	
-	if ((s = getregion(&region)) != TRUE)
-		return s;
-	if ((lastflag & CFKILL) == 0)	/* This is a kill type  */
-		kdelete();	/* command, so do magic */
-	thisflag |= CFKILL;	/* kill buffer stuff.   */
-	curwp->w_dotp = region.r_linep;
-	curwp->w_doto = region.r_offset;
-	return ldelete(region.r_size, TRUE);
+
+	int ret = getregion( &region) ;
+	if( ret != TRUE)
+		return ret ;
+
+	if( (lastflag & CFKILL) == 0)	/* This is a kill type  */
+		kdelete() ;	/* command, so do magic */
+
+	thisflag |= CFKILL ;	/* kill buffer stuff.   */
+	curwp->w_dotp = region.r_linep ;
+	curwp->w_doto = region.r_offset ;
+	return ldelete( region.r_size, TRUE) ;
 }
 
 /* Copy all of the characters in the region to the kill buffer.  Don't move
- * dot at all.  This is a bit like a kill region followed by a yank.  Bound
- * to "M-W".
+   dot at all.  This is a bit like a kill region followed by a yank.  Bound
+   to M-W copy-region.
  */
 BINDABLE( copyregion) {
-	line_p linep;
-	int loffs;
-	int s;
-	region_t region;
+	region_t region ;
 
-	if ((s = getregion(&region)) != TRUE)
-		return s;
-	if ((lastflag & CFKILL) == 0)	/* Kill type command.   */
-		kdelete();
-	thisflag |= CFKILL;
-	linep = region.r_linep;	/* Current line.        */
-	loffs = region.r_offset;	/* Current offset.      */
-	while (region.r_size--) {
-		if (loffs == llength(linep)) {	/* End of line.         */
-			if ((s = kinsert('\n')) != TRUE)
-				return s;
-			linep = lforw(linep);
-			loffs = 0;
+	int ret = getregion( &region) ;
+	if( ret != TRUE)
+		return ret ;
+
+	if( (lastflag & CFKILL) == 0)	/* Kill type command.   */
+		kdelete() ;
+
+	thisflag |= CFKILL ;
+	line_p linep = region.r_linep ;	/* Current line.        */
+	int loffs = region.r_offset ;	/* Current offset.      */
+	while( region.r_size--) {
+		if( loffs == llength( linep)) {	/* End of line.         */
+			ret = kinsert( '\n') ;
+			if( ret != TRUE)
+				return ret ;
+
+			linep = lforw( linep) ;
+			loffs = 0 ;
 		} else {	/* Middle of line.      */
-			if ((s = kinsert(lgetc(linep, loffs))) != TRUE)
-				return s;
-			++loffs;
+			ret = kinsert( lgetc( linep, loffs)) ;
+			if( ret != TRUE)
+				return ret ;
+
+			++loffs ;
 		}
 	}
+
 	mloutstr( "(region copied)") ;
-	return TRUE;
+	return TRUE ;
 }
 
-/* Lower case region.  Zap all of the upper case characters in the region
- * to lower case.  Use the region code to set the limits.  Scan the buffer,
- * doing the changes.  Call "lchange" to ensure that redisplay is done in
- * all buffers.  Bound to "C-X C-L".
+/* Lower case region & Upper case region.  Zap all of the upper/lower case
+   characters in the region to lower/upper case.  Use the region code to
+   set the limits.  Scan the buffer, doing the changes.  Call "lchange" to
+   ensure that redisplay is done in all buffers.  Bound to C-X C-L
+   case-region-lower and C-X C-U case-region-upper.
  */
+static int utol( int c) {
+	return (c >= 'A' && c <= 'Z') ? c + 'a' - 'A' : -1 ;
+}
+
+static int ltou( int c) {
+	return (c >= 'a' && c <= 'z') ? c + 'A' - 'a' : -1 ;
+}
+
+static int caseregion( int (* cconv)( int)) {
+	region_t region ;
+
+	assert( !(curbp->b_mode & MDVIEW)) ;
+	
+	int ret = getregion( &region) ;
+	if( ret != TRUE)
+		return ret ;
+
+	lchange( WFHARD) ;
+	line_p linep = region.r_linep ;
+	int loffs = region.r_offset ;
+	while( region.r_size--) {
+		if( loffs == llength( linep)) {
+			linep = lforw( linep) ;
+			loffs = 0 ;
+		} else {
+			int c = cconv( lgetc( linep, loffs)) ;
+			if( c != -1)
+				lputc( linep, loffs, c) ;
+
+			++loffs ;
+		}
+	}
+
+	return TRUE ;
+}
+
 BINDABLE( lowerregion) {
-	line_p linep;
-	int loffs;
-	int c;
-	int s;
-	region_t region;
-
-	assert( !(curbp->b_mode & MDVIEW)) ;
-	
-	if ((s = getregion(&region)) != TRUE)
-		return s;
-	lchange(WFHARD);
-	linep = region.r_linep;
-	loffs = region.r_offset;
-	while (region.r_size--) {
-		if (loffs == llength(linep)) {
-			linep = lforw(linep);
-			loffs = 0;
-		} else {
-			c = lgetc(linep, loffs);
-			if (c >= 'A' && c <= 'Z')
-				lputc(linep, loffs, c + 'a' - 'A');
-			++loffs;
-		}
-	}
-	return TRUE;
+	return caseregion( utol) ;
 }
 
-/* Upper case region.  Zap all of the lower case characters in the region
- * to upper case.  Use the region code to set the limits.  Scan the buffer,
- * doing the changes.  Call "lchange" to ensure that redisplay is done in
- * all buffers.  Bound to "C-X C-L".
- */
 BINDABLE( upperregion) {
-	line_p linep;
-	int loffs;
-	int c;
-	int s;
-	region_t region;
-
-	assert( !(curbp->b_mode & MDVIEW)) ;
-	
-	if ((s = getregion(&region)) != TRUE)
-		return s;
-	lchange(WFHARD);
-	linep = region.r_linep;
-	loffs = region.r_offset;
-	while (region.r_size--) {
-		if (loffs == llength(linep)) {
-			linep = lforw(linep);
-			loffs = 0;
-		} else {
-			c = lgetc(linep, loffs);
-			if (c >= 'a' && c <= 'z')
-				lputc(linep, loffs, c - 'a' + 'A');
-			++loffs;
-		}
-	}
-	return TRUE;
+	return caseregion( ltou) ;
 }
 
 /* This routine figures out the bounds of the region in the current window,
