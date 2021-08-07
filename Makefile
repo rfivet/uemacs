@@ -1,5 +1,5 @@
-# Makefile -- uEMACS
-# Copyright (c) 2014-2021 Renaud Fivet
+# Makefile -- µEMACS
+# Copyright © 2013-2021 Renaud Fivet
 
 # Make the build silent by default
 V =
@@ -25,7 +25,7 @@ WARNINGS=-pedantic -Wall -Wextra -Wstrict-prototypes -Wno-unused-parameter
 CFLAGS=-O2 $(WARNINGS)
 LDFLAGS=-s
 LIBS=-lcurses
-DEFINES=-DAUTOCONF -DPROGRAM=$(PROGRAM)
+DEFINES=-DAUTOCONF -DPROGRAM=$(PROGRAM) # -DNDEBUG
 ifeq ($(uname_S),Linux)
  DEFINES += -DPOSIX -DUSG
 else ifeq ($(uname_S),CYGWIN)
@@ -38,18 +38,6 @@ else
  $(error $(uname_S) needs configuration)
 endif
 
-#ifeq ($(uname_S),FreeBSD)
-# DEFINES=-DAUTOCONF -DPOSIX -DSYSV -D_FREEBSD_C_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE -D_XOPEN_SOURCE=600
-#endif
-#ifeq ($(uname_S),Darwin)
-# DEFINES=-DAUTOCONF -DPOSIX -DSYSV -D_DARWIN_C_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE -D_XOPEN_SOURCE=600
-#endif
-
-#LIBS=-ltermcap			# BSD
-#LIBS=-lcurses			# SYSV
-#LIBS=-ltermlib
-#LIBS=-L/usr/lib/termcap -ltermcap
-LFLAGS=-hbx
 BINDIR=/usr/bin
 LIBDIR=/usr/lib
 
@@ -60,15 +48,9 @@ $(PROGRAM): $(OBJS)
 	$(E) "  LINK    " $@
 	$(Q) $(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 
-SPARSE=sparse
-SPARSE_FLAGS=-D__LITTLE_ENDIAN__ -D__x86_64__ -D__linux__ -D__unix__
-
-sparse:
-	$(SPARSE) $(SPARSE_FLAGS) $(DEFINES) $(SRCS)
-
 clean:
 	$(E) "  CLEAN"
-	$(Q) rm -f $(PROGRAM) core lintout makeout tags *.o
+	$(Q) rm -f $(PROGRAM) depend.mak *.o
 
 install: $(PROGRAM)
 	strip $(PROGRAM)
@@ -77,22 +59,6 @@ install: $(PROGRAM)
 	cp emacs.rc ${LIBDIR}/.emacsrc
 	chmod 755 ${BINDIR}/$(PROGRAM)
 	chmod 644 ${LIBDIR}/emacs.hlp ${LIBDIR}/.emacsrc
-
-lint:	${SRC}
-	@rm -f lintout
-	lint ${LFLAGS} ${SRC} >lintout
-	cat lintout
-
-splint:
-	splint -weak $(DEFINES) $(SRCS) -booltype boolean -booltrue TRUE -boolfalse FALSE +posixlib +matchanyintegral
-
-errs:
-	@rm -f makeout
-	make $(PROGRAM) >makeout 2>&1
-
-tags:	${SRC}
-	@rm -f tags
-	ctags ${SRC}
 
 .c.o:
 	$(E) "  CC      " $@
