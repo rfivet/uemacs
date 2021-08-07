@@ -1,9 +1,9 @@
+/* lock.h -- */
+
 #ifndef _LOCK_H_
 #define _LOCK_H_
 
-#ifndef _ESTRUCT_H_
-#error uEmacs compilation settings needs to be done!
-#endif
+#include "estruct.h"
 
 #if	BSD | SVR4
 
@@ -14,3 +14,5 @@ int unlock( const char *fname) ;
 
 #endif
 #endif
+
+/* end of lock.h */

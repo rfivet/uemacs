@@ -1,6 +1,4 @@
 /* lock.c -- implements lock.h */
-
-#include "estruct.h"
 #include "lock.h"
 
 /*	LOCK.C
