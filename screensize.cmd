@@ -1,4 +1,5 @@
 # Visualize Screen Dimensions
+select-buffer screensize
 insert-string &cat $curwidth &cat "x" $pagelen
 insert-string &rig "---------+" &sub 10 $curcol
 &sub &div $curwidth 10 1 insert-string "---------+"
