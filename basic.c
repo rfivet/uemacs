@@ -320,6 +320,7 @@ boolean setmark( int f, int n) {
     return TRUE ;
 }
 
+
 /* Swap the values of "." and "mark" in the current window.  If no mark as
    been previously set, set it.  Bound to C-X C-X exchange-point-and-mark.
  */
