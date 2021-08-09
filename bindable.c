@@ -3,146 +3,127 @@
 
 #include <stdlib.h>
 
-
 #include "defines.h"
 #include "buffer.h"
-#include "display.h"
-#include "estruct.h"
+#include "display.h"    /* vttidy() */
 #include "file.h"
 #include "input.h"
 #include "lock.h"
 #include "mlout.h"
 #include "terminal.h"
 
-/*
- * Fancy quit command, as implemented by Norm. If the any buffer has
- * changed do a write on that buffer and exit emacs, otherwise simply exit.
+
+/* Fancy quit command, as implemented by Norm.  If any buffer has changed
+   do a write on that buffer and exit emacs, otherwise simply exit.
  */
-int quickexit(int f, int n)
-{
-	struct buffer *bp;	/* scanning pointer to buffers */
-	struct buffer *oldcb;	/* original current buffer */
-	int status;
+BINDABLE( quickexit) {
+    buffer_p oldcb = curbp ;    /* save in case we fail */
+    for( buffer_p bp = bheadp ; bp != NULL ; bp = bp->b_bufp) {
+        if( (bp->b_flag & (BFCHG | BFTRUNC | BFINVS)) == BFCHG) {
+        /* Changed, Not truncated and real buffer */
+            curbp = bp ;    /* make that buffer cur */
+            mloutfmt( "(Saving %s)", bp->b_fname) ;
+            int status = filesave( f, n) ;
+            if( status != TRUE) {
+                curbp = oldcb ; /* restore curbp */
+                return status ;
+            }
+        }
+    }
 
-	oldcb = curbp;		/* save in case we fail */
-
-	bp = bheadp;
-	while (bp != NULL) {
-		if ((bp->b_flag & BFCHG) != 0	/* Changed.             */
-		    && (bp->b_flag & BFTRUNC) == 0	/* Not truncated P.K.   */
-		    && (bp->b_flag & BFINVS) == 0) {	/* Real.                */
-			curbp = bp;	/* make that buffer cur */
-			mloutfmt( "(Saving %s)", bp->b_fname) ;
-#if	PKCODE
-#else
-			mloutstr( "\n") ;
-#endif
-			if ((status = filesave(f, n)) != TRUE) {
-				curbp = oldcb;	/* restore curbp */
-				return status;
-			}
-		}
-		bp = bp->b_bufp;	/* on to the next buffer */
-	}
-	quit(f, n);		/* conditionally quit   */
-	return TRUE;
+    return quit( f, n) ;    /* conditionally quit   */
 }
 
-/*
- * Quit command. If an argument, always quit. Otherwise confirm if a buffer
+
+/* Quit command. If an argument, always quit. Otherwise confirm if a buffer
  * has been changed and not written out. Normally bound to "C-X C-C".
  */
-int quit(int f, int n)
-{
-	int s;
+BINDABLE( quit) {
+    int s ; /* status of user query */
 
-	if (f != FALSE		/* Argument forces it.  */
-	    || anycb() == FALSE	/* All buffers clean.   */
-	    /* User says it's OK.   */
-	    || (s =
-		mlyesno("Modified buffers exist. Leave anyway")) == TRUE) {
-#if	(FILOCK && BSD) || SVR4
-		if (lockrel() != TRUE) {
-			TTputc('\n');
-			TTputc('\r');
-			TTclose();
-			TTkclose();
-			exit( EXIT_FAILURE) ;
-		}
+    if( f != FALSE      /* Argument forces it.  */
+    || anycb() == FALSE /* All buffers clean.   */
+                        /* User says it's OK.   */
+    || (s = mlyesno( "Modified buffers exist. Leave anyway")) == TRUE) {
+#if (FILOCK && BSD) || SVR4
+        if( lockrel() != TRUE) {
+            TTputc('\n') ;
+            TTputc('\r') ;
+            TTclose() ;
+            TTkclose() ;
+            exit( EXIT_FAILURE) ;
+        }
 #endif
-		vttidy();
-		if (f)
-			exit(n);
-		else
-			exit( EXIT_SUCCESS) ;
-	}
-	mloutstr( "") ;
-	return s;
+        vttidy() ;
+        if( f)
+            exit( n) ;
+        else
+            exit( EXIT_SUCCESS) ;
+    }
+
+    mloutstr( "") ;
+    return s ;
 }
 
-/*
- * Begin a keyboard macro.
+
+/* Begin a keyboard macro.
  * Error if not at the top level in keyboard processing. Set up variables and
  * return.
  */
-int ctlxlp(int f, int n)
-{
-	if (kbdmode != STOP) {
-		mloutstr( "%Macro already active") ;
-		return FALSE;
-	}
-	mloutstr( "(Start macro)") ;
-	kbdptr = &kbdm[0];
-	kbdend = kbdptr;
-	kbdmode = RECORD;
-	return TRUE;
+BINDABLE( ctlxlp) {
+    if( kbdmode != STOP)
+        return mloutfail( "%Macro already active") ;
+
+    mloutstr( "(Start macro)") ;
+    kbdptr = kbdm ;
+    kbdend = kbdptr ;
+    kbdmode = RECORD ;
+    return TRUE ;
 }
 
-/*
- * End keyboard macro. Check for the same limit conditions as the above
+
+/* End keyboard macro. Check for the same limit conditions as the above
  * routine. Set up the variables and return to the caller.
  */
-int ctlxrp(int f, int n)
-{
-	if (kbdmode == STOP) {
-		mloutstr( "%Macro not active") ;
-		return FALSE;
-	}
-	if (kbdmode == RECORD) {
-		mloutstr( "(End macro)") ;
-		kbdmode = STOP;
-	}
-	return TRUE;
+BINDABLE( ctlxrp) {
+    if( kbdmode == STOP)
+        return mloutfail( "%Macro not active") ;
+
+    if (kbdmode == RECORD) {
+        mloutstr( "(End macro)") ;
+        kbdmode = STOP;
+    }
+
+    return TRUE ;
 }
 
-/*
- * Execute a macro.
+
+/* Execute a macro.
  * The command argument is the number of times to loop. Quit as soon as a
  * command gets an error. Return TRUE if all ok, else FALSE.
  */
-int ctlxe(int f, int n)
-{
-	if (kbdmode != STOP) {
-		mloutstr( "%Macro already active") ;
-		return FALSE;
-	}
-	if (n <= 0)
-		return TRUE;
-	kbdrep = n;		/* remember how many times to execute */
-	kbdmode = PLAY;		/* start us in play mode */
-	kbdptr = &kbdm[0];	/*    at the beginning */
-	return TRUE;
+BINDABLE( ctlxe) {
+    if( kbdmode != STOP)
+        return mloutfail( "%Macro already active") ;
+
+    if( n <= 0)
+        return TRUE ;
+
+    kbdrep = n ;        /* remember how many times to execute */
+    kbdmode = PLAY ;    /* start us in play mode */
+    kbdptr = kbdm ;     /*    at the beginning */
+    return TRUE ;
 }
 
-/*
- * abort:
+
+/* abort:
  *  Beep the beeper. Kill off any keyboard macro, etc., that is in progress.
  *  Sometimes called as a routine, to do general aborting of stuff.
  */
-int ctrlg( int f, int n) {
-	kbdmode = STOP ;
-	mloutfmt( "%B(Aborted)") ;
-	return ABORT ;
+BINDABLE( ctrlg) {
+    kbdmode = STOP ;
+    mloutfmt( "%B(Aborted)") ;
+    return ABORT ;
 }
 
 /* end of bindable.c */
