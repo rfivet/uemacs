@@ -249,12 +249,11 @@ void lchange(int flag)
  *
  * int f, n;		default flag and numeric argument
  */
-int insspace(int f, int n)
-{
+BINDABLE( insspace) {
 	assert( !(curbp->b_mode & MDVIEW)) ;
-	linsert(n, ' ');
-	backchar(f, n);
-	return TRUE;
+	linsert( n, ' ') ;
+	backchar( f, n) ;
+	return TRUE ;
 }
 
 /*
@@ -821,8 +820,7 @@ BINDABLE( yank) {
  * VIEW (read-only) mode
  */
 boolean rdonly( void) {
-	mloutfmt( "%B(Key illegal in VIEW mode)") ;
-	return FALSE ;
+	return mloutfail( "(Key illegal in VIEW mode)") ;
 }
 
 /* end of line.c */

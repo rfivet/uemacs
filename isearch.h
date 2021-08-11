@@ -1,11 +1,11 @@
+/* isearch.h -- incremental search */
 #ifndef __ISEARCH_H__
 #define __ISEARCH_H__
 
-#define	ISRCH	1	/* Incremental searches like ITS EMACS */
+# include "names.h"	/* BINDABLE */
 
-#if ISRCH
-int risearch( int f, int n) ;
-int fisearch( int f, int n) ;
-#endif
+BINDABLE( risearch) ;
+BINDABLE( fisearch) ;
 
 #endif
+/* end of isearch */

@@ -12,4 +12,9 @@ void mloutstr( const char *str) {
 	mloutfmt( (*str) ? "%s" : "", str) ;
 }
 
+boolean mloutfail( const char *msg) {
+	mloutfmt( "%B%s", msg) ;
+	return FALSE ;
+}
+
 /* end of mlout.c */

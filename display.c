@@ -1,17 +1,14 @@
 /* display.c -- implements display.h */
-
 #include "display.h"
 
 #define	REVSTA	1  /* Status line appears in reverse video         */
 
-/*	display.c
- *
- *      The functions in this file handle redisplay. There are two halves, the
- *      ones that update the virtual display screen, and the ones that make the
- *      physical display screen the same as the virtual display screen. These
- *      functions use hints that are left in the windows by the commands.
- *
- *	Modified by Petri Kutvonen
+/* The functions in this file handle redisplay.  There are two halves, the
+   ones that update the virtual display screen, and the ones that make the
+   physical display screen the same as the virtual display screen.  These
+   functions use hints that are left in the windows by the commands.
+
+   Modified by Petri Kutvonen
  */
 
 #include <errno.h>
@@ -251,40 +248,37 @@ static void vteeol( void) {
 		vcp[ vtcol++] = ' ' ;
 }
 
-/*
- * upscreen:
+/* upscreen:
  *	user routine to force a screen update
  *	always finishes complete update
  */
-int upscreen(int f, int n)
-{
-	update(TRUE);
-	return TRUE;
+BINDABLE( upscreen) {
+	update( TRUE) ;
+	return TRUE ;
 }
 
 #if SCROLLCODE
 static int scrflags;
 #endif
 
-/*
- * Make sure that the display is right. This is a three part process. First,
- * scan through all of the windows looking for dirty ones. Check the framing,
- * and refresh the screen. Second, make sure that "currow" and "curcol" are
- * correct for the current window. Third, make the virtual and physical
- * screens the same.
- *
- * int force;		force update past type ahead?
+
+/* Make sure that the display is right.  This is a three part process.
+   First, scan through all of the windows looking for dirty ones.  Check
+   the framing, and refresh the screen.  Second, make sure that "currow"
+   and "curcol" are correct for the current window.  Third, make the
+   virtual and physical screens the same.
+
+   boolean force_f ;		force update past type ahead?
  */
-int update(int force)
-{
+int update( boolean force_f) {
 	struct window *wp;
 
 #if	TYPEAH && ! PKCODE
-	if (force == FALSE && typahead())
+	if( force_f == FALSE && typahead())
 		return TRUE;
 #endif
 #if	VISMAC == 0
-	if (force == FALSE && kbdmode == PLAY)
+	if( force_f == FALSE && kbdmode == PLAY)
 		return TRUE;
 #endif
 
@@ -359,7 +353,7 @@ int update(int force)
 		updgar();
 
 	/* update the virtual screen to the physical screen */
-	updupd(force);
+	updupd( force_f) ;
 
 	/* update the cursor and flush the buffers */
 	movecursor(currow, curcol - lbound);

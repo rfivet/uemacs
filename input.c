@@ -15,9 +15,10 @@
 #include "bind.h"
 #include "estruct.h"
 #include "bindable.h"
-#include "display.h"
+#include "display.h"	/* rubout(), echos(), echoc(), update() */
 #include "exec.h"
 #include "isa.h"
+#include "mlout.h"
 #include "names.h"
 #include "terminal.h"
 #include "utf8.h"
@@ -38,12 +39,12 @@ kbdstate kbdmode = STOP ;   /* current keyboard macro mode  */
 int lastkey = 0 ;       /* last keystoke                */
 int kbdrep = 0 ;        /* number of repetitions        */
 
-int metac = CTRL | '[' ;		/* current meta character 	 */
-int ctlxc = CTRL | 'X' ;		/* current control X prefix char */
-int reptc = CTRL | 'U' ;		/* current universal repeat char */
-int abortc = CTRL | 'G' ;		/* current abort command char	 */
+int metac = CTL_ | '[' ;		/* current meta character 	 */
+int ctlxc = CTL_ | 'X' ;		/* current control X prefix char */
+int reptc = CTL_ | 'U' ;		/* current universal repeat char */
+int abortc = CTL_ | 'G' ;		/* current abort command char	 */
 
-const int nlc = CTRL | 'J' ;		/* end of input char */
+const int nlc = CTL_ | 'J' ;		/* end of input char */
 
 
 void ue_system( const char *cmd) {
@@ -66,7 +67,7 @@ int mlyesno( const char *prompt)
 
     for (;;) {
         /* prompt the user */
-		mlwrite( "%s (y/n)? ", prompt) ;
+		mloutfmt( "%s (y/n)? ", prompt) ;
 
         /* get the response */
         c = get1key() ;
@@ -142,11 +143,11 @@ int newmlargt( char **outbufref, const char *prompt, int size) {
 /*
  * ectoc:
  *  expanded character to character
- *  collapse the CTRL and SPEC flags back into an ascii code
+ *  collapse the CTL_ and SPEC flags back into an ascii code
  */
 int ectoc( int c) {
-	if( c & CTRL)
-		c ^= CTRL | 0x40 ;
+	if( c & CTL_)
+		c ^= CTL_ | 0x40 ;
 
 	if( c & SPEC)
 		c &= 255 ;
@@ -189,10 +190,10 @@ nbind_p getname( void) {
             /* and match it off */
             return fncmatch( buf) ;
 
-        } else if (c == ectoc(abortc)) {    /* Bell, abort */
-            ctrlg(FALSE, 0);
-            TTflush();
-            return NULL;
+        } else if( c == ectoc(abortc)) {    /* Bell, abort */
+            ctrlg( FALSE, 1) ;
+            TTflush() ;
+            return NULL ;
 
         } else if (c == 0x7F || c == 0x08) {    /* rubout/erase */
             if (cpos != 0) {
@@ -322,7 +323,7 @@ int tgetc(void)
 }
 
 /*  GET1KEY: Get one keystroke. The only prefixes legal here are the SPEC
-    and CTRL prefixes. */
+    and CTL_ prefixes. */
 static int get1unicode( int *up) {
 /* Accept UTF-8 sequence */
 	int bytes ;
@@ -343,7 +344,7 @@ static int get1unicode( int *up) {
 		bytes = utf8_to_unicode( utf, 0, sizeof utf, (unicode_t *) up) ;
 	} else {
 	    if( (c >= 0x00 && c <= 0x1F) || c == 0x7F)	/* C0 control -> C- */
-			c ^= CTRL | 0x40 ;
+			c ^= CTL_ | 0x40 ;
 
 		*up = c ;
 		bytes = 1 ;
@@ -383,7 +384,7 @@ int getcmd( void) {
 		c = *(kptr++) = get1key() ;
 		if( c == 0x9B)
 			goto foundCSI ;
-		else if( c == (CTRL | '[')) {
+		else if( c == (CTL_ | '[')) {
 		/* fetch terminal sequence */
 			c = *(kptr++) = get1key() ;
 			if( c == 'O') {	/* F1 .. F4 */
@@ -407,7 +408,7 @@ int getcmd( void) {
 								mask = META ;
 
 							if( (v - 1) & 4)
-								mask |= CTRL ;
+								mask |= CTL_ ;
 
 							v = v1 ;
 						}
@@ -513,7 +514,7 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
     quote_f = FALSE;
 
     /* prompt the user for the input string */
-    mlwrite( "%s", prompt);
+    mloutstr( prompt);
 
     for (;;) {
 #if COMPLC
@@ -538,23 +539,22 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
 		}
 
 	/* If it is a <ret>, change it to a <NL> */
-        if( c == (CTRL | 'M'))
-            c = CTRL | 0x40 | '\n' ;
+        if( c == (CTL_ | 'M'))
+            c = CTL_ | 0x40 | '\n' ;
 
         if( c == eolchar) {
 		/* if they hit the line terminator, wrap it up */
             buf[ cpos] = 0 ;
 
 		/* clear the message line */
-            mlwrite("");
+            mloutstr( "") ;
 
 		/* if we default the buffer, return FALSE */
 			retval = cpos != 0 ;
 			break ;
         } else if( c == abortc) {
 		/* Abort the input? */
-            ctrlg( FALSE, 0) ;
-			retval = ABORT ;
+            retval = ctrlg( FALSE, 1) ;
 			break ;
 		}
 
@@ -574,7 +574,7 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
             }
         } else if( c == 0x15) {
         /* C-U, kill */
-			mlwrite( "%s", prompt) ;
+			mloutstr( prompt) ;
 			cpos = 0 ;
 #if COMPLC
         } else if( (c == 0x09 || c == ' ') && file_f) {
@@ -588,7 +588,7 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
 
             didtry = 1;
             ocpos = cpos;
-			mlwrite( "%s", prompt) ;
+			mloutstr( prompt) ;
 			while( cpos != 0) {
 				c = buf[ --cpos] ;
                 if( c == '*' || c == '?') {

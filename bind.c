@@ -119,8 +119,8 @@ BINDABLE( bindtokey) {
     mloutfmt( "bind-to-key %s: ", bind_name( nbp)) ;
 
 /* get the command sequence to bind */
-    boolean prefix_f = (kfunc == metafn) || (kfunc == cex) ||
-                                        (kfunc == unarg) || (kfunc == ctrlg) ;
+    boolean prefix_f = (kfunc == (fnp_t) metafn) || (kfunc == (fnp_t) cex) ||
+                        (kfunc == (fnp_t) unarg) || (kfunc == (fnp_t) ctrlg) ;
     int c = getckey( prefix_f) ;
     if( c == ~0)
         return invalidkey() ;
@@ -131,10 +131,10 @@ BINDABLE( bindtokey) {
 
 /* key sequence can't be an active prefix key */
     if( c == metac || c == ctlxc || c == reptc || c == abortc) {
-        if( (c == metac  && kfunc == metafn)
-        ||  (c == ctlxc  && kfunc == cex)
-        ||  (c == reptc  && kfunc == unarg)
-        ||  (c == abortc && kfunc == ctrlg))
+        if( (c == metac  && kfunc == (fnp_t) metafn)
+        ||  (c == ctlxc  && kfunc == (fnp_t) cex)
+        ||  (c == reptc  && kfunc == (fnp_t) unarg)
+        ||  (c == abortc && kfunc == (fnp_t) ctrlg))
             return TRUE ;   /* be silent if keep current */
 
         return mloutfail( "(Can't bind to active prefix)") ;
@@ -150,13 +150,13 @@ BINDABLE( bindtokey) {
             }
 
     /* set the appropriate global prefix variable */
-        if( kfunc == metafn)
+        if( kfunc == (fnp_t) metafn)
             metac = c ;
-        else if( kfunc == cex)
+        else if( kfunc == (fnp_t) cex)
             ctlxc = c ;
-        if( kfunc == unarg)
+        if( kfunc == (fnp_t) unarg)
             reptc = c ;
-        if( kfunc == ctrlg)
+        if( kfunc == (fnp_t) ctrlg)
             abortc = c ;
     }
 
@@ -404,14 +404,14 @@ static char *cmdstr( unsigned c, char *seq) {
 
 /* apply ^X sequence if needed */
     if( c & CTLX) {
-        if( ctlxc & CTRL)
+        if( ctlxc & CTL_)
             *ptr++ = '^' ;
 
         *ptr++ = ctlxc & ~PRFXMASK ;
     }
 
 /* apply control sequence if needed */
-    if( c & CTRL)
+    if( c & CTL_)
         *ptr++ = '^' ;
 
 /* apply SPEC sequence if needed */
@@ -461,7 +461,7 @@ static unsigned int stock( char *keyname) {
 
 /* a control char? */
     if( *keyname == '^' && keyname[ 1] != 0) {
-        c |= CTRL ;
+        c |= CTL_ ;
         ++keyname ;
     }
 
@@ -477,7 +477,7 @@ static unsigned int stock( char *keyname) {
 
 /* only way to redefine ^X is by quoting binary value */
     if( *keyname < 32 || *keyname == 0x7F) {
-        c |= CTRL ;
+        c |= CTL_ ;
         *keyname ^= 0x40 ;
     } else  if( c && !(c & SPEC)
             &&  *keyname >= 'a' && *keyname <= 'z')

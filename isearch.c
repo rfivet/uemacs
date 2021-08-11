@@ -1,8 +1,7 @@
+/* isearch.c -- implements isearch.h */
 #include "isearch.h"
 
-/*	isearch.c
- *
- * The functions in this file implement commands that perform incremental
+/* The functions in this file implement commands that perform incremental
  * searches in the forward and backward directions.  This "ISearch" command
  * is intended to emulate the same command from the original EMACS
  * implementation (ITS).  Contains references to routines internal to
@@ -24,7 +23,6 @@
  *	Modified by Petri Kutvonen
  */
 
-#include <stdio.h>
 #include <string.h>
 
 #include "basic.h"
@@ -42,8 +40,6 @@
 /*
  * Incremental search defines.
  */
-#if	ISRCH
-
 #define	CMDBUFLEN	256	/* Length of our command buffer */
 
 #define	IS_ABORT	0x07	/* Abort the isearch */
@@ -60,10 +56,7 @@
 
 /* IS_QUIT is no longer used, the variable metac is used instead */
 
-#endif
-
-
-static int isearch( int f, int n) ;
+static BINDABLE( isearch) ;	/* internal use, not to be bound */
 static int checknext( char chr, char *patrn, int dir) ;
 static int scanmore( char *patrn, int dir) ;
 static int match_pat( char *patrn) ;
@@ -72,8 +65,6 @@ static int get_char( void) ;
 static int uneat( void) ;
 static void reeat( int c) ;
 
-
-#if	ISRCH
 
 static int echo_char(int c, int col);
 
@@ -89,12 +80,10 @@ static int cmd_offset;			/* Current offset into command buff */
 static int cmd_reexecute = -1;		/* > 0 if re-executing command */
 
 
-/*
- * Subroutine to do incremental reverse search.  It actually uses the
+/* Subroutine to do incremental reverse search.  It actually uses the
  * same code as the normal incremental search, as both can go both ways.
  */
-int risearch(int f, int n)
-{
+BINDABLE( risearch) {
 	struct line *curline;		/* Current line on entry              */
 	int curoff;		/* Current offset on entry            */
 
@@ -124,11 +113,10 @@ int risearch(int f, int n)
 	return TRUE;
 }
 
-/*
- * Again, but for the forward direction
+
+/* Again, but for the forward direction
  */
-int fisearch(int f, int n)
-{
+BINDABLE( fisearch) {
 	struct line *curline;		/* Current line on entry              */
 	int curoff;		/* Current offset on entry            */
 
@@ -156,8 +144,8 @@ int fisearch(int f, int n)
 	return TRUE;
 }
 
-/*
- * Subroutine to do an incremental search.  In general, this works similarly
+
+/* Subroutine to do an incremental search.  In general, this works similarly
  * to the older micro-emacs search function, except that the search happens
  * as each character is typed, with the screen and cursor updated with each
  * new search character.
@@ -182,8 +170,7 @@ int fisearch(int f, int n)
  * exists (or until the search is aborted).
  */
 
-static int isearch(int f, int n)
-{
+static BINDABLE( isearch) {
 	int status;		/* Search status */
 	int col;		/* prompt column */
 	unsigned cpos ;	/* character number in search string  */
@@ -541,8 +528,6 @@ static void reeat(int c)
 	saved_get_char = term.t_getchar;	/* Save the char get routine          */
 	term.t_getchar = uneat;	/* Replace it with ours               */
 }
-#else
-int isearch(int f, int n)
-{
-}
-#endif
+
+
+/* end of isearch.c */

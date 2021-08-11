@@ -22,7 +22,7 @@
 #define CVMVAS  1   /* arguments to page forward/back in pages */
 
 int overlap = 0 ;   /* $overlap: line overlap in forw/back page */
-int curgoal ;       /* $target:  Goal for C-P, C-N */
+int curgoal ;       /* $target:  column goal for C-P, C-N */
 
 
 /* This routine, given a pointer to a struct line, and the current cursor
@@ -60,14 +60,14 @@ static unsigned getgoal( line_p dlp) {
 
 
 /* Move the cursor to the beginning of the current line of active window. */
-boolean gotobol( int f, int n) {
+TBINDABLE( gotobol) {
     curwp->w_doto = 0 ;
     return TRUE ;
 }
 
 
 /* Move the cursor to the end of the current line of active window. */
-boolean gotoeol( int f, int n) {
+TBINDABLE( gotoeol) {
     curwp->w_doto = llength( curwp->w_dotp) ;
     return TRUE ;
 }
@@ -77,7 +77,7 @@ boolean gotoeol( int f, int n) {
    considered to be hard motion; it really isn't if the original value of
    dot is the same as the new value of dot.  Normally bound to "M-<".
  */
-boolean gotobob( int f, int n) {
+TBINDABLE( gotobob) {
     curwp->w_dotp = lforw( curbp->b_linep) ;
     curwp->w_doto = 0 ;
     curwp->w_flag |= WFHARD ;
@@ -89,7 +89,7 @@ boolean gotobob( int f, int n) {
    (ZJ).  The standard screen code does most of the hard parts of update.
    Bound to "M->".
  */
-boolean gotoeob( int f, int n) {
+TBINDABLE( gotoeob) {
     curwp->w_dotp = curbp->b_linep ;
     curwp->w_doto = 0 ;
     curwp->w_flag |= WFHARD ;
@@ -102,14 +102,8 @@ boolean gotoeob( int f, int n) {
    command controls how the goal column is set.  Bound to "C-N".  No errors
    are possible.
  */
-boolean forwline( int f, int n) {
+BBINDABLE( forwline) {
     assert( f == TRUE || n == 1) ;
-    if( n < 0)
-        return backline( f, -n) ;
-
-/* if we are on the last line as we start....fail the command */
-    if( n && curwp->w_dotp == curbp->b_linep)
-        return FALSE ;
 
 /* if the last command was not a line move, reset the goal column */
     if( (lastflag & CFCPCN) == 0)
@@ -119,16 +113,26 @@ boolean forwline( int f, int n) {
     thisflag |= CFCPCN ;
 
 /* and move the point down */
-    line_p dlp = curwp->w_dotp ;
-    while( n && dlp != curbp->b_linep) {
-        dlp = lforw( dlp) ;
-        n -= 1 ;
+    if( n) {
+        line_p dlp = curwp->w_dotp ;
+        if( n > 0)
+            while( n && dlp != curbp->b_linep) {
+                dlp = lforw( dlp) ;
+                n -= 1 ;
+            }
+        else {
+            while( n && lback( dlp) != curbp->b_linep) {
+                dlp = lback( dlp) ;
+                n += 1 ;
+            }
+        }
+
+    /* resetting the current position */
+        curwp->w_dotp = dlp ;
+        curwp->w_doto = getgoal( dlp) ;
+        curwp->w_flag |= WFMOVE ;
     }
 
-/* reseting the current position */
-    curwp->w_dotp = dlp ;
-    curwp->w_doto = getgoal( dlp) ;
-    curwp->w_flag |= WFMOVE ;
     return (n == 0) ? TRUE : FALSE ;
 }
 
@@ -138,33 +142,10 @@ boolean forwline( int f, int n) {
    your alternate.  Figure out the new line and call "movedot" to perform
    the motion.  No errors are possible.  Bound to "C-P".
  */
-boolean backline( int f, int n) {
-    if( n < 0)
-        return forwline( f, -n) ;
+BBINDABLE( backline) {
+    assert( f == TRUE || n == 1) ;
 
-/* if we are on the first line as we start....fail the command */
-    if( n && lback( curwp->w_dotp) == curbp->b_linep)
-        return FALSE ;
-
-/* if the last command was not a line move, reset the goal column */
-    if( (lastflag & CFCPCN) == 0)
-        curgoal = getccol( FALSE) ;
-
-/* flag this command as a line move */
-    thisflag |= CFCPCN ;
-
-/* and move the point up */
-    line_p dlp = curwp->w_dotp ;
-    while( n && lback( dlp) != curbp->b_linep) {
-        dlp = lback( dlp) ;
-        n -= 1 ;
-    }
-
-/* reseting the current position */
-    curwp->w_dotp = dlp ;
-    curwp->w_doto = getgoal( dlp) ;
-    curwp->w_flag |= WFMOVE ;
-    return (n == 0) ? TRUE : FALSE ;
+    return forwline( TRUE, -n) ;
 }
 
 
@@ -209,7 +190,7 @@ BINDABLE( gotoline) {
    Because this zaps the top line in the display window, we have to do a
    hard update.
  */
-boolean forwpage( int f, int n) {
+TBINDABLE( forwpage) {
     line_p lp ;
 
     if( f == FALSE) {
@@ -226,23 +207,21 @@ boolean forwpage( int f, int n) {
         if (n <= 0) /* Forget the overlap. */
             n = 1;  /* If tiny window. */
     } else if( n < 0)
-        return backpage(f, -n);
+        return backpage( f, -n) ;
 #if     CVMVAS
     else            /* Convert from pages. */
         n *= curwp->w_ntrows;   /* To lines. */
 #endif
 
-/*  lp = curwp->w_linep; */
     lp = curwp->w_dotp ;
     while( n && lp != curbp->b_linep) {
         lp = lforw( lp) ;
         n -= 1 ;
     }
 
-/*  curwp->w_linep = lp; */
-    curwp->w_dotp = lp;
-    curwp->w_doto = 0;
-    reposition( TRUE, 0) ;
+    curwp->w_dotp = lp ;
+    curwp->w_doto = 0 ;
+    reposition( TRUE, 0) ;  /* center at dot, always succeed */
 
 #if SCROLLCODE
     curwp->w_flag |= WFHARD | WFKILLS;
@@ -258,7 +237,7 @@ boolean forwpage( int f, int n) {
    ITS EMACS manual.  Bound to "M-V".  We do a hard update for exactly the
    same reason.
  */
-boolean backpage( int f, int n) {
+TBINDABLE( backpage) {
     line_p lp ;
 
     if( f == FALSE) {   /* interactive, default n = 1 supplied */
@@ -313,7 +292,7 @@ boolean backpage( int f, int n) {
 /* Set the mark in the current window to the value of "." in the window.
    No errors are possible.  Bound to M-. set-mark.
  */
-boolean setmark( int f, int n) {
+TBINDABLE( setmark) {
     curwp->w_markp = curwp->w_dotp ;
     curwp->w_marko = curwp->w_doto ;
     mloutstr( "(Mark set)") ;
@@ -324,7 +303,7 @@ boolean setmark( int f, int n) {
 /* Swap the values of "." and "mark" in the current window.  If no mark as
    been previously set, set it.  Bound to C-X C-X exchange-point-and-mark.
  */
-boolean swapmark( int f, int n) {
+TBINDABLE( swapmark) {
     line_p odotp = curwp->w_dotp ;
     int odoto = curwp->w_doto ;
     if( curwp->w_markp) {

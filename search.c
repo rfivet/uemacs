@@ -1,9 +1,7 @@
 /* search.c -- implements search.h */
 #include "search.h"
 
-/*	search.c
- *
- * The functions in this file implement commands that search in the forward
+/* The functions in this file implement commands that search in the forward
  * and backward directions.  There are no special characters in the search
  * strings.  Probably should have a regular expression search, or something
  * like that.
@@ -177,15 +175,14 @@ static int biteq(int bc, char *cclmap);
 static char *clearbits(void);
 static void setbit(int bc, char *cclmap);
 
-/*
- * forwsearch -- Search forward.  Get a search string from the user, and
+
+/* forwsearch -- Search forward.  Get a search string from the user, and
  *	search for the string.  If found, reset the "." to be just after
  *	the match string, and (perhaps) repaint the display.
  *
  * int f, n;			default flag / numeric argument
  */
-int forwsearch(int f, int n)
-{
+BINDABLE( forwsearch) {
 	int status = TRUE;
 
 	/* If n is negative, search backwards.
@@ -223,15 +220,14 @@ int forwsearch(int f, int n)
 	return status;
 }
 
-/*
- * forwhunt -- Search forward for a previously acquired search string.
+
+/* forwhunt -- Search forward for a previously acquired search string.
  *	If found, reset the "." to be just after the match string,
  *	and (perhaps) repaint the display.
  *
  * int f, n;		default flag / numeric argument
  */
-int forwhunt(int f, int n)
-{
+BINDABLE( forwhunt) {
 	int status = TRUE;
 
 	if (n < 0)		/* search backwards */
@@ -276,16 +272,15 @@ int forwhunt(int f, int n)
 	return status;
 }
 
-/*
- * backsearch -- Reverse search.  Get a search string from the user, and
+
+/* backsearch -- Reverse search.  Get a search string from the user, and
  *	search, starting at "." and proceeding toward the front of the buffer.
  *	If found "." is left pointing at the first character of the pattern
  *	(the last character that was matched).
  *
  * int f, n;		default flag / numeric argument
  */
-int backsearch(int f, int n)
-{
+BINDABLE( backsearch) {
 	int status = TRUE;
 
 	/* If n is negative, search forwards.
@@ -324,16 +319,15 @@ int backsearch(int f, int n)
 	return status;
 }
 
-/*
- * backhunt -- Reverse search for a previously acquired search string,
+
+/* backhunt -- Reverse search for a previously acquired search string,
  *	starting at "." and proceeding toward the front of the buffer.
  *	If found "." is left pointing at the first character of the pattern
  *	(the last character that was matched).
  *
  * int f, n;		default flag / numeric argument
  */
-int backhunt(int f, int n)
-{
+BINDABLE( backhunt) {
 	int status = TRUE;
 
 	if (n < 0)
@@ -788,26 +782,24 @@ void rvstrcpy(char *rvstr, char *str)
 	*rvstr = '\0';
 }
 
-/*
- * sreplace -- Search and replace.
+
+/* sreplace -- Search and replace.
  *
  * int f;		default flag
  * int n;		# of repetitions wanted
  */
-int sreplace(int f, int n)
-{
-	return replaces(FALSE, f, n);
+BINDABLE( sreplace) {
+	return replaces( FALSE, f, n) ;
 }
 
-/*
- * qreplace -- search and replace with query.
+
+/* qreplace -- search and replace with query.
  *
  * int f;		default flag
  * int n;		# of repetitions wanted
  */
-int qreplace(int f, int n)
-{
-	return replaces(TRUE, f, n);
+BINDABLE( qreplace) {
+	return replaces( TRUE, f, n) ;
 }
 
 /*

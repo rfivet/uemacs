@@ -144,15 +144,13 @@ int getcline(void)
 	return numlines + 1;
 }
 
-/*
- * Return current column.  Stop at first non-blank given TRUE argument.
+/* Return current column.  Stop at first non-blank given TRUE argument.
  */
-int getccol(int bflg)
-{
-	int i, col;
+int getccol( int bflg) {
+	int i, col ;
 	line_p dlp = curwp->w_dotp ;
-	int byte_offset = curwp->w_doto;
-	int len = llength(dlp);
+	int byte_offset = curwp->w_doto ;
+	int len = llength( dlp) ;
 
 	col = i = 0;
 	while (i < byte_offset) {
@@ -160,17 +158,20 @@ int getccol(int bflg)
 
 		i += utf8_to_unicode(dlp->l_text, i, len, &c);
 		if( bflg && c != ' ' && c != '\t')	/* Request Stop at first non-blank */
-			break;
+			break ;
 		if (c == '\t')
 			col += tabwidth - col % tabwidth ;
 		else if (c < 0x20 || c == 0x7F)		/* displayed as ^c */
 			col += 2 ;
 		else if (c >= 0x80 && c <= 0xa0)	/* displayed as \xx */
 			col += 3 ;
-		else
-			col += 1 ;
+		else {
+			int w = utf8_width( c) ;		/* incomplete wc_width */
+			col += (w < 0) ? 2 : w ; 
+		}
 	}
-	return col;
+
+	return col ;
 }
 
 /*
@@ -714,60 +715,40 @@ BINDABLE( killtext) {
 	return ldelete(chunk, TRUE);
 }
 
-/*
- * prompt and set an editor mode
+
+/* prompt and set an editor mode
  *
  * int f, n;		default and argument
  */
-int setemode(int f, int n)
-{
-#if 	PKCODE
-	return adjustmode(TRUE, FALSE);
-#else
-	adjustmode(TRUE, FALSE);
-#endif
+BINDABLE( setemode) {
+	return adjustmode( TRUE, FALSE) ;
 }
 
-/*
- * prompt and delete an editor mode
+
+/* prompt and delete an editor mode
  *
  * int f, n;		default and argument
  */
-int delmode(int f, int n)
-{
-#if	PKCODE
-	return adjustmode(FALSE, FALSE);
-#else
-	adjustmode(FALSE, FALSE);
-#endif
+BINDABLE( delmode) {
+	return adjustmode( FALSE, FALSE) ;
 }
 
-/*
- * prompt and set a global editor mode
+
+/* prompt and set a global editor mode
  *
  * int f, n;		default and argument
  */
-int setgmode(int f, int n)
-{
-#if	PKCODE
-	return adjustmode(TRUE, TRUE);
-#else
-	adjustmode(TRUE, TRUE);
-#endif
+BINDABLE( setgmode) {
+	return adjustmode( TRUE, TRUE) ;
 }
 
-/*
- * prompt and delete a global editor mode
+
+/* prompt and delete a global editor mode
  *
  * int f, n;		default and argument
  */
-int delgmode(int f, int n)
-{
-#if	PKCODE
-	return adjustmode(FALSE, TRUE);
-#else
-	adjustmode(FALSE, TRUE);
-#endif
+BINDABLE( delgmode) {
+	return adjustmode( FALSE, TRUE) ;
 }
 
 /*
@@ -858,11 +839,10 @@ static int adjustmode( int kind, int global) {
 
 
 static int iovstring( int f, int n, const char *prompt, int (*fun)( char *)) {
-	int status ;	/* status return code */
 	char *tstring ;	/* string to add */
 
-	/* ask for string to insert */
-	status = newmlargt( &tstring, prompt, 0) ; /* grab as big a token as screen allow */
+/* ask for string to insert */
+ 	int status = newmlargt( &tstring, prompt, 0) ;
 	if( tstring == NULL)
 		return status ;
 

@@ -9,7 +9,7 @@
  */
 
 #include <assert.h>
-#include <stdio.h>
+#include <stddef.h>
 
 #include "buffer.h"
 #include "estruct.h"
@@ -139,10 +139,9 @@ int getregion( region_p rp) {
 	line_p flp, blp ;
 	long fsize, bsize ;
 
-	if (curwp->w_markp == NULL) {
-		mloutstr( "No mark set in this window") ;
-		return FALSE;
-	}
+	if (curwp->w_markp == NULL)
+		return mloutfail( "No mark set in this window") ;
+
 	if (curwp->w_dotp == curwp->w_markp) {
 		rp->r_linep = curwp->w_dotp;
 		if (curwp->w_doto < curwp->w_marko) {
@@ -182,8 +181,8 @@ int getregion( region_p rp) {
 			}
 		}
 	}
-	mloutstr( "Bug: lost mark") ;
-	return FALSE;
+
+	return mloutfail( "Bug: lost mark") ;
 }
 
 /* end of region.c */

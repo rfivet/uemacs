@@ -1,69 +1,65 @@
+/* exec.h -- bindable functions to execute functions, macros and procedures */
 #ifndef _EXEC_H_
-#define _EXEC_H_
+# define _EXEC_H_
 
-#include "retcode.h"
+#include "names.h"
 
+extern boolean clexec ; /* command line execution flag  */
 
-#define	PROC	1	/* named procedures  */
-
-#if PROC
-int storeproc( int f, int n) ;
-int execproc( int f, int n) ;
-#endif
-
-
-extern boolean clexec ;	/* command line execution flag  */
-
-
-int namedcmd( int f, int n) ;
-int execcmd( int f, int n) ;
+int dofile( const char *fname) ;
 void gettoken( char *tok, int maxtoksize) ;
 boolean gettokval( char *tok, int maxtoksize) ;
 char *getnewtokval( void) ;
-int storemac( int f, int n) ;
-int execbuf( int f, int n) ;
-int execfile( int f, int n) ;
-int dofile( const char *fname) ;
 
-int cbuf1( int f, int n) ;
-int cbuf2( int f, int n) ;
-int cbuf3( int f, int n) ;
-int cbuf4( int f, int n) ;
-int cbuf5( int f, int n) ;
-int cbuf6( int f, int n) ;
-int cbuf7( int f, int n) ;
-int cbuf8( int f, int n) ;
-int cbuf9( int f, int n) ;
-int cbuf10( int f, int n) ;
-int cbuf11( int f, int n) ;
-int cbuf12( int f, int n) ;
-int cbuf13( int f, int n) ;
-int cbuf14( int f, int n) ;
-int cbuf15( int f, int n) ;
-int cbuf16( int f, int n) ;
-int cbuf17( int f, int n) ;
-int cbuf18( int f, int n) ;
-int cbuf19( int f, int n) ;
-int cbuf20( int f, int n) ;
-int cbuf21( int f, int n) ;
-int cbuf22( int f, int n) ;
-int cbuf23( int f, int n) ;
-int cbuf24( int f, int n) ;
-int cbuf25( int f, int n) ;
-int cbuf26( int f, int n) ;
-int cbuf27( int f, int n) ;
-int cbuf28( int f, int n) ;
-int cbuf29( int f, int n) ;
-int cbuf30( int f, int n) ;
-int cbuf31( int f, int n) ;
-int cbuf32( int f, int n) ;
-int cbuf33( int f, int n) ;
-int cbuf34( int f, int n) ;
-int cbuf35( int f, int n) ;
-int cbuf36( int f, int n) ;
-int cbuf37( int f, int n) ;
-int cbuf38( int f, int n) ;
-int cbuf39( int f, int n) ;
-int cbuf40( int f, int n) ;
+/* Bindable functions */
+BINDABLE( execbuf) ;
+BINDABLE( execcmd) ;
+BINDABLE( execfile) ;
+BINDABLE( execproc) ;
+BINDABLE( namedcmd) ;
+BINDABLE( storemac) ;
+BINDABLE( storeproc) ;
+BINDABLE( cbuf1) ;
+BINDABLE( cbuf2) ;
+BINDABLE( cbuf3) ;
+BINDABLE( cbuf4) ;
+BINDABLE( cbuf5) ;
+BINDABLE( cbuf6) ;
+BINDABLE( cbuf7) ;
+BINDABLE( cbuf8) ;
+BINDABLE( cbuf9) ;
+BINDABLE( cbuf10) ;
+BINDABLE( cbuf11) ;
+BINDABLE( cbuf12) ;
+BINDABLE( cbuf13) ;
+BINDABLE( cbuf14) ;
+BINDABLE( cbuf15) ;
+BINDABLE( cbuf16) ;
+BINDABLE( cbuf17) ;
+BINDABLE( cbuf18) ;
+BINDABLE( cbuf19) ;
+BINDABLE( cbuf20) ;
+BINDABLE( cbuf21) ;
+BINDABLE( cbuf22) ;
+BINDABLE( cbuf23) ;
+BINDABLE( cbuf24) ;
+BINDABLE( cbuf25) ;
+BINDABLE( cbuf26) ;
+BINDABLE( cbuf27) ;
+BINDABLE( cbuf28) ;
+BINDABLE( cbuf29) ;
+BINDABLE( cbuf30) ;
+BINDABLE( cbuf31) ;
+BINDABLE( cbuf32) ;
+BINDABLE( cbuf33) ;
+BINDABLE( cbuf34) ;
+BINDABLE( cbuf35) ;
+BINDABLE( cbuf36) ;
+BINDABLE( cbuf37) ;
+BINDABLE( cbuf38) ;
+BINDABLE( cbuf39) ;
+BINDABLE( cbuf40) ;
 
 #endif
+
+/* end of exec.h */

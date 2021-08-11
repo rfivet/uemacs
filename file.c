@@ -1,13 +1,11 @@
 /* file.c -- implements file.h */
 #include "file.h"
 
-/*	file.c
- *
- *	The routines in this file handle the reading, writing
- *	and lookup of disk files.  All of details about the
- *	reading and writing of the disk are in "fileio.c".
- *
- *	modified by Petri Kutvonen
+/* The routines in this file handle the reading, writing and lookup of disk
+   files.  All of details about the reading and writing of the disk are in
+   "fileio.c".
+
+   modified by Petri Kutvonen
  */
 
 #include <assert.h>
@@ -233,8 +231,8 @@ int getfile( const char *fname, boolean lockfl) {
 	return s;
 }
 
-/*
- * Read file "fname" into the current buffer, blowing away any text
+
+/* Read file "fname" into the current buffer, blowing away any text
  * found there.  Called by both the read and find commands.  Return
  * the final status of the read.  Also called by the mainline, to
  * read in a file specified on the command line as an argument.
@@ -284,10 +282,10 @@ int readin(const char *fname, boolean lockfl)
 
 	/* read the file in */
 		mloutstr( "(Reading file)") ;
-		while ((s = ffgetline()) == FIOSUC) {
+		while( (s = ffgetline()) == FIOSUC) {
 			line_p	lp ;
 
-			if( nline >= 10000000 /* MAXNLINE Maximum # of lines from one file */
+			if( nline >= 10000000 /* Maximum # of lines from one file */
 			||	(lp = lalloc( fpayload)) == NULL) {
 				s = FIOMEM ;	/* Keep message on the	*/
 				break ; 		/* display. 			*/
@@ -327,12 +325,11 @@ int readin(const char *fname, boolean lockfl)
 		if( fcode == FCODE_UTF_8)
 			curbp->b_mode |= MDUTF8 ;
 
-		if( s == FIOERR) {
-			errmsg = "I/O ERROR, " ;
+		if( s == FIOERR
+		||	s == FIOMEM) {
+			errmsg = (s == FIOERR) ? "I/O ERROR, " : "OUT OF MEMORY, " ;
 			curbp->b_flag |= BFTRUNC ;
-		} else if( s == FIOMEM) {
-			errmsg = "OUT OF MEMORY, " ;
-			curbp->b_flag |= BFTRUNC ;
+			curbp->b_mode |= MDVIEW ;	/* force view mode as lost data */
 		} else
 			errmsg = "" ;
 
@@ -464,10 +461,8 @@ BINDABLE( filesave) {
 
 	/* complain about truncated files */
 	if( (curbp->b_flag & BFTRUNC) != 0
-	&&	mlyesno("Truncated file ... write it out") == FALSE) {
-		mloutfmt( "%B(Aborted)") ;
-		return FALSE ;
-	}
+	&&	mlyesno( "Truncated file ... write it out") == FALSE)
+		return mloutfail( "(Aborted)") ;
 
 	return writeout( curbp->b_fname) ;
 }

@@ -1,77 +1,65 @@
 /* window.c -- inplements window.h */
-
 #include "window.h"
 
-/*	window.c
- *
- *      Window management. Some of the functions are internal, and some are
- *      attached to keys that the user actually types.
- *
+/* Window management.  Some of the functions are internal, and some are
+   attached to keys that the user actually types.
  */
 
 #include <assert.h>
-#include <stdio.h>
 
 #include "basic.h"
 #include "buffer.h"
-#include "display.h"
+#include "display.h"	/* upmode() */
 #include "estruct.h"
 #include "execute.h"
 #include "line.h"
+#include "mlout.h"
 #include "terminal.h"
 #include "wrapper.h"
 
+window_p curwp ;		/* Current window               */
+window_p wheadp ;		/* Head of list of windows      */
 
-struct window *curwp ;		/* Current window               */
-struct window *wheadp ;		/* Head of list of windows      */
-
-static struct window *swindow = NULL ;	/* saved window pointer */
+static window_p savwindow = NULL ;	/* saved window pointer */
 
 
-/*
- * Reposition dot in the current window to line "n". If the argument is
- * positive, it is that line. If it is negative it is that line from the
- * bottom. If it is 0 the window is centered (this is what the standard
- * redisplay code does). With no argument it defaults to 0. Bound to M-!.
+/* Reposition dot in the current window to line "n".  If the argument is
+   positive, it is that line.  If it is negative it is that line from the
+   bottom.  If it is 0 the window is centered (this is what the standard
+   redisplay code does).  With no argument it defaults to 0.  Bound to M-!.
  */
-int reposition(int f, int n)
-{
-	if (f == FALSE)		/* default to 0 to center screen */
-		n = 0;
-	curwp->w_force = n;
-	curwp->w_flag |= WFFORCE;
-	return TRUE;
+TBINDABLE( reposition) {
+	curwp->w_force = (f == FALSE) ? 0 : n ;	/* default to 0 to center screen */
+	curwp->w_flag |= WFFORCE ;
+	return TRUE ;
 }
 
-/*
- * Refresh the screen. With no argument, it just does the refresh. With an
- * argument it recenters "." in the current window. Bound to "C-L".
+
+/* Refresh the screen.  With no argument, it just does the refresh.  With
+   an argument it recenters "." in the current window.  Bound to "C-L".
  */
-int redraw(int f, int n)
-{
-	if (f == FALSE)
-		sgarbf = TRUE;
+TBINDABLE( redraw) {
+	if( f == FALSE)
+		sgarbf = TRUE ;
 	else {
-		curwp->w_force = 0;	/* Center dot. */
-		curwp->w_flag |= WFFORCE;
+		curwp->w_force = 0 ;	/* Center dot. */
+		curwp->w_flag |= WFFORCE ;
 	}
 
-	return TRUE;
+	return TRUE ;
 }
 
-/*
- * The command make the next window (next => down the screen) the current
- * window. There are no real errors, although the command does nothing if
- * there is only 1 window on the screen. Bound to "C-X C-N".
- *
- * with an argument this command finds the <n>th window from the top
- *
- * int f, n;		default flag and numeric argument
- *
+
+/* The command make the next window (next => down the screen) the current
+   window.  There are no real errors, although the command does nothing if
+   there is only 1 window on the screen.  Bound to "C-X C-N".
+
+   with an argument this command finds the <n>th window from the top
+ 
+   int f, n;		default flag and numeric argument
  */
-int nextwind(int f, int n)
-{
-	struct window *wp;
+BINDABLE( nextwind) {
+	window_p wp;
 	int nwindows;	/* total number of windows */
 
 	if (f) {
@@ -94,10 +82,8 @@ int nextwind(int f, int n)
 			wp = wheadp;
 			while (--n)
 				wp = wp->w_wndp;
-		} else {
-			mlwrite("Window number out of range");
-			return FALSE;
-		}
+		} else
+			return mloutfail( "Window number out of range") ;
 	} else if ((wp = curwp->w_wndp) == NULL)
 		wp = wheadp;
 	curwp = wp;
@@ -107,15 +93,14 @@ int nextwind(int f, int n)
 	return TRUE;
 }
 
-/*
- * This command makes the previous window (previous => up the screen) the
- * current window. There arn't any errors, although the command does not do a
- * lot if there is 1 window.
+
+/* This command makes the previous window (previous => up the screen) the
+   current window.  There arn't any errors, although the command does not
+   do a lot if there is 1 window.
  */
-int prevwind(int f, int n)
-{
-	struct window *wp1;
-	struct window *wp2;
+BINDABLE( prevwind) {
+	window_p wp1;
+	window_p wp2;
 
 	/* if we have an argument, we mean the nth window from the bottom */
 	if (f)
@@ -137,28 +122,26 @@ int prevwind(int f, int n)
 	return TRUE;
 }
 
-/*
- * This command moves the current window down by "arg" lines. Recompute the
+
+/* This command moves the current window down by "arg" lines. Recompute the
  * top line in the window. The move up and move down code is almost completely
  * the same; most of the work has to do with reframing the window, and picking
  * a new dot. We share the code by having "move down" just be an interface to
  * "move up". Magic. Bound to "C-X C-N".
  */
-int mvdnwind(int f, int n)
-{
-	return mvupwind(f, -n);
+BINDABLE( mvdnwind) {
+	return mvupwind( f, -n) ;
 }
 
-/*
- * Move the current window up by "arg" lines. Recompute the new top line of
+
+/* Move the current window up by "arg" lines. Recompute the new top line of
  * the window. Look to see if "." is still on the screen. If it is, you win.
  * If it isn't, then move "." to center it in the new framing of the window
  * (this command does not really move "."; it moves the frame). Bound to
  * "C-X C-P".
  */
-int mvupwind(int f, int n)
-{
-	struct line *lp;
+BINDABLE( mvupwind) {
+	line_p lp;
 	int i;
 
 	lp = curwp->w_linep;
@@ -193,17 +176,16 @@ int mvupwind(int f, int n)
 	return TRUE;
 }
 
-/*
- * This command makes the current window the only window on the screen. Bound
+
+/* This command makes the current window the only window on the screen. Bound
  * to "C-X 1". Try to set the framing so that "." does not have to move on the
  * display. Some care has to be taken to keep the values of dot and mark in
  * the buffer structures right if the distruction of a window makes a buffer
  * become undisplayed.
  */
-int onlywind(int f, int n)
-{
-	struct window *wp;
-	struct line *lp;
+BINDABLE( onlywind) {
+	window_p wp;
+	line_p lp;
 	int i;
 
 	while (wheadp != curwp) {
@@ -241,23 +223,20 @@ int onlywind(int f, int n)
 	return TRUE;
 }
 
-/*
- * Delete the current window, placing its space in the window above,
+
+/* Delete the current window, placing its space in the window above,
  * or, if it is the top window, the window below. Bound to C-X 0.
  *
  * int f, n;	arguments are ignored for this command
  */
-int delwind(int f, int n)
-{
-	struct window *wp;	/* window to recieve deleted space */
-	struct window *lwp;	/* ptr window before curwp */
+BINDABLE( delwind) {
+	window_p wp;	/* window to recieve deleted space */
+	window_p lwp;	/* ptr window before curwp */
 	int target;	/* target line to search for */
 
 	/* if there is only one window, don't delete it */
-	if (wheadp->w_wndp == NULL) {
-		mlwrite("Can not delete this window");
-		return FALSE;
-	}
+	if( wheadp->w_wndp == NULL)
+		return mloutfail( "Can not delete this window") ;
 
 	/* find window before curwp in linked list */
 	wp = wheadp;
@@ -316,8 +295,8 @@ int delwind(int f, int n)
 	return TRUE;
 }
 
-/*
- * Split the current window.  A window smaller than 3 lines cannot be
+
+/* Split the current window.  A window smaller than 3 lines cannot be
  * split.  An argument of 1 forces the cursor into the upper window, an
  * argument of two forces the cursor to the lower window.  The only
  * other error that is possible is a "malloc" failure allocating the
@@ -325,21 +304,21 @@ int delwind(int f, int n)
  *
  * int f, n;	default flag and numeric argument
  */
-int splitwind(int f, int n)
-{
-	struct window *wp;
-	struct line *lp;
+BINDABLE( splitwind) {
+	window_p wp;
+	line_p lp;
 	int ntru;
 	int ntrl;
 	int ntrd;
-	struct window *wp1;
-	struct window *wp2;
+	window_p wp1;
+	window_p wp2;
 
-	if (curwp->w_ntrows < 3) {
-		mlwrite("Cannot split a %d line window", curwp->w_ntrows);
-		return FALSE;
+	if( curwp->w_ntrows < 3) {
+		mloutfmt( "Cannot split a %d line window", curwp->w_ntrows) ;
+		return FALSE ;
 	}
-	wp = xmalloc(sizeof(struct window));
+
+	wp = xmalloc( sizeof *wp) ;
 	++curbp->b_nwnd;	/* Displayed twice.     */
 	wp->w_bufp = curbp;
 	wp->w_dotp = curwp->w_dotp;
@@ -398,33 +377,30 @@ int splitwind(int f, int n)
 	return TRUE;
 }
 
-/*
- * Enlarge the current window. Find the window that loses space. Make sure it
+
+/* Enlarge the current window. Find the window that loses space. Make sure it
  * is big enough. If so, hack the window descriptions, and ask redisplay to do
  * all the hard work. You don't just set "force reframe" because dot would
  * move. Bound to "C-X Z".
  */
-int enlargewind(int f, int n)
-{
-	struct window *adjwp;
-	struct line *lp;
+BINDABLE( enlargewind) {
+	window_p adjwp;
+	line_p lp;
 	int i;
 
 	if (n < 0)
 		return shrinkwind(f, -n);
-	if (wheadp->w_wndp == NULL) {
-		mlwrite("Only one window");
-		return FALSE;
-	}
+	if( wheadp->w_wndp == NULL)
+		return mloutfail( "Only one window") ;
+
 	if ((adjwp = curwp->w_wndp) == NULL) {
 		adjwp = wheadp;
 		while (adjwp->w_wndp != curwp)
 			adjwp = adjwp->w_wndp;
 	}
-	if (adjwp->w_ntrows <= n) {
-		mlwrite("Impossible change");
-		return FALSE;
-	}
+	if( adjwp->w_ntrows <= n)
+		return mloutfail( "Impossible change") ;
+
 	if (curwp->w_wndp == adjwp) {	/* Shrink below.        */
 		lp = adjwp->w_linep;
 		for (i = 0; i < n && lp != adjwp->w_bufp->b_linep; ++i)
@@ -450,32 +426,29 @@ int enlargewind(int f, int n)
 	return TRUE;
 }
 
-/*
- * Shrink the current window. Find the window that gains space. Hack at the
+
+/* Shrink the current window. Find the window that gains space. Hack at the
  * window descriptions. Ask the redisplay to do all the hard work. Bound to
  * "C-X C-Z".
  */
-int shrinkwind(int f, int n)
-{
-	struct window *adjwp;
-	struct line *lp;
+BINDABLE( shrinkwind) {
+	window_p adjwp;
+	line_p lp;
 	int i;
 
 	if (n < 0)
 		return enlargewind(f, -n);
-	if (wheadp->w_wndp == NULL) {
-		mlwrite("Only one window");
-		return FALSE;
-	}
+	if( wheadp->w_wndp == NULL)
+		return mloutfail( "Only one window") ;
+
 	if ((adjwp = curwp->w_wndp) == NULL) {
 		adjwp = wheadp;
 		while (adjwp->w_wndp != curwp)
 			adjwp = adjwp->w_wndp;
 	}
-	if (curwp->w_ntrows <= n) {
-		mlwrite("Impossible change");
-		return FALSE;
-	}
+	if( curwp->w_ntrows <= n)
+		return mloutfail( "Impossible change") ;
+
 	if (curwp->w_wndp == adjwp) {	/* Grow below.          */
 		lp = adjwp->w_linep;
 		for (i = 0; i < n && lback(lp) != adjwp->w_bufp->b_linep;
@@ -502,13 +475,12 @@ int shrinkwind(int f, int n)
 	return TRUE;
 }
 
-/*
- * Resize the current window to the requested size
+
+/* Resize the current window to the requested size
  *
  * int f, n;		default flag and numeric argument
  */
-int resize(int f, int n)
-{
+BINDABLE( resize) {
 	int clines;		/* current # of lines in window */
 
 	/* must have a non-default argument, else ignore call */
@@ -525,14 +497,14 @@ int resize(int f, int n)
 	return enlargewind(TRUE, n - clines);
 }
 
-/*
- * Pick a window for a pop-up. Split the screen if there is only one window.
+
+/* Pick a window for a pop-up. Split the screen if there is only one window.
  * Pick the uppermost window that isn't the current window. An LRU algorithm
  * might be better. Return a pointer, or NULL on error.
  */
-struct window *wpopup(void)
+window_p wpopup(void)
 {
-	struct window *wp;
+	window_p wp;
 
 	if (wheadp->w_wndp == NULL	/* Only 1 window        */
 	    && splitwind(FALSE, 0) == FALSE)	/* and it won't split   */
@@ -543,59 +515,57 @@ struct window *wpopup(void)
 	return wp;
 }
 
-int scrnextup(int f, int n)
-{				/* scroll the next window up (back) a page */
+
+/* scroll the next window up (back) a page */
+BINDABLE( scrnextup) {
 	nextwind(FALSE, 1);
 	backpage(f, n);
 	prevwind(FALSE, 1);
 	return TRUE;
 }
 
-int scrnextdw(int f, int n)
-{				/* scroll the next window down (forward) a page */
+
+/* scroll the next window down (forward) a page */
+BINDABLE( scrnextdw) {
 	nextwind(FALSE, 1);
 	forwpage(f, n);
 	prevwind(FALSE, 1);
 	return TRUE;
 }
 
-int savewnd(int f, int n)
-{				/* save ptr to current window */
-	swindow = curwp;
-	return TRUE;
+
+/* save ptr to current window */
+BINDABLE( savewnd) {
+	savwindow = curwp ;
+	return TRUE ;
 }
 
-int restwnd(int f, int n)
-{				/* restore the saved screen */
-	struct window *wp;
 
-	/* find the window */
-	wp = wheadp;
-	while (wp != NULL) {
-		if (wp == swindow) {
-			curwp = wp;
-			curbp = wp->w_bufp;
-			upmode();
-			return TRUE;
+/* restore the saved screen */
+BINDABLE( restwnd) {
+/* check the saved window still exists */
+	for( window_p wp = wheadp ; wp != NULL ; wp = wp->w_wndp) {
+		if( wp == savwindow) {
+			curwp = wp ;
+			curbp = wp->w_bufp ;
+			upmode() ;
+			return TRUE ;
 		}
-		wp = wp->w_wndp;
 	}
 
-	mlwrite("(No such window exists)");
-	return FALSE;
+	return mloutfail( "(No such window exists)") ;
 }
 
-/*
- * resize the screen, re-writing the screen
+
+/* resize the screen, re-writing the screen
  *
  * int f;	default flag
  * int n;	numeric argument
  */
-int newsize(int f, int n)
-{
-	struct window *wp;		/* current window being examined */
-	struct window *nextwp;	/* next window to scan */
-	struct window *lastwp;	/* last window scanned */
+BINDABLE( newsize) {
+	window_p wp;		/* current window being examined */
+	window_p nextwp;	/* next window to scan */
+	window_p lastwp;	/* last window scanned */
 	int lastline;		/* screen line of last line of current window */
 
 	/* if the command defaults, assume the largest */
@@ -603,10 +573,8 @@ int newsize(int f, int n)
 		n = term.t_mrow ;
 
 	/* make sure it's in range */
-	if (n < 3 || n > term.t_mrow) {
-		mlwrite("%%Screen size out of range");
-		return FALSE;
-	}
+	if( n < 3 || n > term.t_mrow)
+		return mloutfail( "%%Screen size out of range") ;
 
 	if (term.t_nrow == n - 1)
 		return TRUE;
@@ -674,25 +642,22 @@ int newsize(int f, int n)
 	return TRUE;
 }
 
-/*
- * resize the screen, re-writing the screen
+
+/* resize the screen, re-writing the screen
  *
  * int f;		default flag
  * int n;		numeric argument
  */
-int newwidth(int f, int n)
-{
-	struct window *wp;
+BINDABLE( newwidth) {
+	window_p wp;
 
 	/* if the command defaults, assume the largest */
 	if (f == FALSE)
 		n = term.t_mcol;
 
 	/* make sure it's in range */
-	if (n < 10 || n > term.t_mcol) {
-		mlwrite("%%Screen width out of range");
-		return FALSE;
-	}
+	if (n < 10 || n > term.t_mcol)
+		return mloutfail( "%%Screen width out of range") ;
 
 	/* otherwise, just re-width it (no big deal) */
 	term.t_ncol = n;
@@ -713,7 +678,7 @@ int newwidth(int f, int n)
 int getwpos(void)
 {				/* get screen offset of current line in current window */
 	int sline;	/* screen line from top of window */
-	struct line *lp;	/* scannile line pointer */
+	line_p lp;	/* scannile line pointer */
 
 	/* search down the line we want */
 	lp = curwp->w_linep;
@@ -731,3 +696,5 @@ void cknewwindow(void)
 {
 	execute(META | SPEC | 'X', FALSE, 1);
 }
+
+/* end of window.c */

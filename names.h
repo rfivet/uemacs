@@ -1,12 +1,10 @@
 /* names.h -- mapping of functions to names and keys */
-
 #ifndef _NAMES_H_
-#define _NAMES_H_
+# define _NAMES_H_
 
 #include "retcode.h"
 
-
-#define CTRL    	0x01000000  /* Control flag, or'ed in       */
+#define CTL_    	0x01000000  /* Control flag, or'ed in       */
 #define META    	0x02000000  /* Meta flag, or'ed in          */
 #define CTLX    	0x04000000  /* ^X flag, or'ed in            */
 #define SPEC    	0x08000000  /* special key (function keys)  */
@@ -14,7 +12,9 @@
 
 
 /* Bindable uEMACS function pointer type and definition template */
-#define BINDABLE( fname)    int fname( int f, int n)
+#define  BINDABLE( fname)    int fname( boolean f, int n)
+#define BBINDABLE( fname)    boolean fname( boolean f, int n)
+#define TBINDABLE	BBINDABLE
 
 typedef BINDABLE( (*fnp_t)) ;
 
@@ -53,11 +53,10 @@ nbind_p fncmatch( char *name) ;     /* look up by name */
 
 
 /* bindable functions mapped to prefix keys and hooks */
-BINDABLE( nullproc) ;
-BINDABLE( metafn) ;
-BINDABLE( cex) ;
-BINDABLE( unarg) ;
+TBINDABLE( nullproc) ;
+TBINDABLE( metafn) ;
+TBINDABLE( cex) ;
+TBINDABLE( unarg) ;
 
 #endif
-
 /* end of names.h */

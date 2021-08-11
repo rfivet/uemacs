@@ -70,7 +70,7 @@ BINDABLE( quit) {
  * Error if not at the top level in keyboard processing. Set up variables and
  * return.
  */
-BINDABLE( ctlxlp) {
+BBINDABLE( ctlxlp) {
     if( kbdmode != STOP)
         return mloutfail( "%Macro already active") ;
 
@@ -85,7 +85,7 @@ BINDABLE( ctlxlp) {
 /* End keyboard macro. Check for the same limit conditions as the above
  * routine. Set up the variables and return to the caller.
  */
-BINDABLE( ctlxrp) {
+BBINDABLE( ctlxrp) {
     if( kbdmode == STOP)
         return mloutfail( "%Macro not active") ;
 
@@ -102,7 +102,7 @@ BINDABLE( ctlxrp) {
  * The command argument is the number of times to loop. Quit as soon as a
  * command gets an error. Return TRUE if all ok, else FALSE.
  */
-BINDABLE( ctlxe) {
+BBINDABLE( ctlxe) {
     if( kbdmode != STOP)
         return mloutfail( "%Macro already active") ;
 

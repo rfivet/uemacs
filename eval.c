@@ -1,9 +1,7 @@
 /* eval.c -- implements eval.h */
 #include "eval.h"
 
-/*	eval.c
- *
- *	Expression evaluation functions
+/*	Expression evaluation functions
  *
  *	written 1986 by Daniel Lawrence
  *	modified by Petri Kutvonen
@@ -210,7 +208,7 @@ static struct {
 	{ "and", UFAND		| DYNAMIC },	/* logical and */
 	{ "asc", UFASCII	| MONAMIC },	/* char to integer conversion */
 	{ "ban", UFBAND		| DYNAMIC },	/* bitwise and   9-10-87  jwm */
-	{ "bin", UFBIND		| MONAMIC },	/* loopup what function name is bound to a key */
+	{ "bin", UFBIND		| MONAMIC },	/* look up function name bound to key */
 	{ "bno", UFBNOT		| MONAMIC },	/* bitwise not */
 	{ "bor", UFBOR		| DYNAMIC },	/* bitwise or    9-10-87  jwm */
 	{ "bxo", UFBXOR		| DYNAMIC },	/* bitwise xor   9-10-87  jwm */
@@ -797,14 +795,13 @@ static char *gtenv( char *vname) {
 	return errorm ;
 }
 
-/*
- * set a variable
+
+/* set a variable
  *
  * int f;		default flag
  * int n;		numeric arg (can overide prompted value)
  */
-int setvar(int f, int n)
-{
+BINDABLE( setvar) {
 	int status;	/* status return */
 	struct variable_description vd;		/* variable num/type */
 	char var[NVSIZE + 2];	/* name of variable to fetch %1234567890\0 */
@@ -1466,28 +1463,25 @@ static void mlforce( char *s) {
 	discmd = oldcmd;	/* and restore the original setting */
 }
 
-/*
- * This function simply clears the message line,
- * mainly for macro usage
+
+/* This function simply clears the message line, mainly for macro usage
  *
  * int f, n;		arguments ignored
  */
-int clrmes( int f, int n) {
+TBINDABLE( clrmes) {
 	mlforce( "") ;
 	return TRUE ;
 }
 
-/*
- * This function writes a string on the message line
- * mainly for macro usage
- *
- * int f, n;		arguments ignored
- */
-int writemsg( int f, int n) {
-	int status ;
-	char *buf ;		/* buffer to receive message into */
 
-	status = newmlarg( &buf, "Message to write: ", 0) ;
+/* This function writes a string on the message line mainly for macro usage
+ *
+ * int f, n; arguments ignored
+ */
+BINDABLE( writemsg) {
+	char *buf ; /* buffer to receive message into */
+
+	int status = newmlarg( &buf, "write-message: ", 0) ;
 	if( status == TRUE) {
 	/* write the message out */
 		mlforce( buf) ;
