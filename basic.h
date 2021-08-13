@@ -1,8 +1,8 @@
 /* basic.h -- basic commands for cursor movement in active window */
 #ifndef _BASIC_H_
-# define _BASIC_H_
+#define _BASIC_H_
 
-# include "names.h"
+#include "names.h"  /* BINDABLE() */
 
 /* $overlap is the size of the line overlap when kbd calls page forw/back
    if 0, page will move by 2/3 of the window size (1/3 page overlap)

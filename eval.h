@@ -1,14 +1,13 @@
 /* eval.h -- variables and operands evaluation */
 #ifndef _EVAL_H_
-# define _EVAL_H_
+#define _EVAL_H_
 
 #include "names.h"
 
 #define DEBUGM  1       /* $debug triggers macro debugging  */
-
-# if    DEBUGM
-int mdbugout( char *fmt, ...) ;
-# endif
+#if DEBUGM
+  int mdbugout( char *fmt, ...) ;
+#endif
 
 extern int macbug ;     /* macro debuging flag          */
 extern int cmdstatus ;  /* last command status          */
@@ -25,9 +24,8 @@ char *mklower( char *str) ;
 
 /* Bindable functions */
 TBINDABLE( clrmes) ;
-BINDABLE( setvar) ;
-BINDABLE( writemsg) ;
+ BINDABLE( setvar) ;
+ BINDABLE( writemsg) ;
 
 #endif
-
 /* end of eval.h */

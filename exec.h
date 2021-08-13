@@ -1,6 +1,6 @@
 /* exec.h -- bindable functions to execute functions, macros and procedures */
 #ifndef _EXEC_H_
-# define _EXEC_H_
+#define _EXEC_H_
 
 #include "names.h"
 
@@ -61,5 +61,4 @@ BINDABLE( cbuf39) ;
 BINDABLE( cbuf40) ;
 
 #endif
-
 /* end of exec.h */

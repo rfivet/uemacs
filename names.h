@@ -1,20 +1,20 @@
 /* names.h -- mapping of functions to names and keys */
 #ifndef _NAMES_H_
-# define _NAMES_H_
+#define _NAMES_H_
 
 #include "retcode.h"
 
-#define CTL_    	0x01000000  /* Control flag, or'ed in       */
-#define META    	0x02000000  /* Meta flag, or'ed in          */
-#define CTLX    	0x04000000  /* ^X flag, or'ed in            */
-#define SPEC    	0x08000000  /* special key (function keys)  */
-#define PRFXMASK	0x0F000000	/* prefix mask */
+#define CTL_        0x01000000  /* Control flag, or'ed in       */
+#define META        0x02000000  /* Meta flag, or'ed in          */
+#define CTLX        0x04000000  /* ^X flag, or'ed in            */
+#define SPEC        0x08000000  /* special key (function keys)  */
+#define PRFXMASK    0x0F000000  /* prefix mask */
 
 
 /* Bindable uEMACS function pointer type and definition template */
 #define  BINDABLE( fname)    int fname( boolean f, int n)
 #define BBINDABLE( fname)    boolean fname( boolean f, int n)
-#define TBINDABLE	BBINDABLE
+#define TBINDABLE   BBINDABLE
 
 typedef BINDABLE( (*fnp_t)) ;
 
@@ -46,7 +46,7 @@ extern kbind_p          keytab ;    /* key bind to functions table  */
 boolean init_bindings( void) ;
 kbind_p setkeybinding( unsigned key, nbind_p nbp) ;
 boolean delkeybinding( unsigned key) ;
-kbind_p getkeybinding( unsigned key) ;	/* look up by key code */
+kbind_p getkeybinding( unsigned key) ;  /* look up by key code */
 
 /* find a name to function association in the name to function mapping table */
 nbind_p fncmatch( char *name) ;     /* look up by name */

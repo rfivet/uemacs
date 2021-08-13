@@ -4,14 +4,13 @@
 
 #include "line.h"
 
-/*
- * The starting position of a region, and the size of the region in
- * characters, is kept in a region structure.  Used by the region commands.
+/* The starting position of a region, and the size of the region in
+   characters, is kept in a region structure.  Used by the region commands.
  */
 typedef struct {
-	line_p	r_linep ;	/* Origin struct line address.	*/
-	int 	r_offset ;	/* Origin struct line offset.   */
-	long 	r_size ;	/* Length in characters.        */
+    line_p  r_linep ;   /* Origin struct line address.  */
+    int     r_offset ;  /* Origin struct line offset.   */
+    long    r_size ;    /* Length in characters.        */
 } region_t ;
 
 typedef region_t *region_p ;
@@ -25,5 +24,4 @@ BINDABLE( upperregion) ;
 int getregion( region_p rp) ;
 
 #endif
-
 /* end of region.h */

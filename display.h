@@ -1,19 +1,19 @@
 /* display.h -- display functionality */
 #ifndef _DISPLAY_H_
-# define _DISPLAY_H_
+#define _DISPLAY_H_
 
-# include <stdarg.h>
+#include <stdarg.h>
 
-# include "estruct.h"
-# include "names.h"		/* BINDABLE() */
-# include "utf8.h"		/* unicode_t */
+#include "estruct.h"
+#include "names.h"          /* BINDABLE() */
+#include "utf8.h"           /* unicode_t */
 
-extern int mpresf ;		/* Stuff in message line */
-extern int scrollcount ;	/* number of lines to scroll */
-extern int discmd ;		/* display command flag         */
-extern int disinp ;		/* display input characters (echo)	*/
-extern int gfcolor ;		/* global forgrnd color (white) */
-extern int gbcolor ;		/* global backgrnd color (black) */
+extern int mpresf ;         /* Stuff in message line */
+extern int scrollcount ;    /* number of lines to scroll */
+extern int discmd ;         /* display command flag         */
+extern int disinp ;         /* display input characters (echo)  */
+extern int gfcolor ;        /* global forgrnd color (white) */
+extern int gbcolor ;        /* global backgrnd color (black) */
 
 /* Bindable functions */
 BINDABLE( upscreen) ;
@@ -37,13 +37,14 @@ void echos( const char *s) ;
 void rubout( void) ;
 void getscreensize( int *widthp, int *heightp) ;
 
-# if UNIX
-#  include <signal.h>
-#  ifdef SIGWINCH
-extern int chg_width, chg_height ;
+#if UNIX
+# include <signal.h>
+# ifdef SIGWINCH
+   extern int chg_width, chg_height ;
 
-void sizesignal( int signr) ;
-#  endif
+   void sizesignal( int signr) ;
 # endif
+#endif
+
 #endif
 /* end of display.h */

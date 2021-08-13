@@ -2,13 +2,13 @@
 #ifndef _BINDABLE_H_
 #define _BINDABLE_H_
 
-#include "names.h"
+#include "names.h"  /* BINDABLE() */
 
 /* functions that can be bound to keys or procedure names */
 BBINDABLE( ctlxe) ;
 BBINDABLE( ctlxlp) ;
 BBINDABLE( ctlxrp) ;
- BINDABLE( ctrlg) ;		/* ABORT */
+ BINDABLE( ctrlg) ;     /* ABORT */
  BINDABLE( quickexit) ;
  BINDABLE( quit) ;
 

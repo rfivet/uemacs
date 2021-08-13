@@ -1,9 +1,9 @@
 /* buffer.h -- buffer type and functions */
 #ifndef _BUFFER_H_
-# define _BUFFER_H_
+#define _BUFFER_H_
 
-#include "line.h"
-#include "names.h"
+#include "line.h"   /* line_p */
+#include "names.h"  /* BINDABLE() */
 
 /* Text is kept in buffers.  A buffer header, described below, exists for
    every buffer in the system.  The buffers are kept in a big list, so that

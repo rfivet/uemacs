@@ -1,20 +1,19 @@
 /* execute.h -- */
+#ifndef _EXECUTE_H_
+#define _EXECUTE_H_
 
-#define	CFENCE	1  /* fence matching in CMODE */
+#include "names.h"      /* BINDABLE() */
 
-
-#include "names.h"		/* key code */
-
-
-extern int gasave ;		/* global ASAVE size            */
-extern int gacount ;	/* count until next ASAVE       */
-
+extern int gasave ;     /* global ASAVE size            */
+extern int gacount ;    /* count until next ASAVE       */
 
 int execute( unsigned keycode, int f, int n) ;
 void kbd_loop( void) ;
 
+#define CFENCE  1       /* fence matching in CMODE */
 #if CFENCE
-BINDABLE( getfence) ;
+  BINDABLE( getfence) ;
 #endif
 
+#endif
 /* end of execute.h */

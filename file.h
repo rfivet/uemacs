@@ -1,13 +1,12 @@
 /* file.h -- file centric commands */
-
 #ifndef _FILE_H_
 #define _FILE_H_
 
-#include "buffer.h"
-#include "names.h"
+#include "buffer.h" /* bname_t */
+#include "names.h"  /* BINDABLE() */
 
-extern boolean restflag ;		/* restricted use?              */
-boolean resterr( void) ;		/* restricted error message		*/
+extern boolean restflag ;       /* restricted use?              */
+boolean resterr( void) ;        /* restricted error message     */
 
 /* Bindable functions */
 BINDABLE( filefind) ;
@@ -25,5 +24,4 @@ void unqname( char *name) ;
 int writeout( const char *fn) ;
 
 #endif
-
 /* end of file.h */

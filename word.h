@@ -21,5 +21,4 @@ BINDABLE( killpara) ;
 BINDABLE( wordcount) ;
 
 #endif
-
 /* end of word.h */
