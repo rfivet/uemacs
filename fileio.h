@@ -17,10 +17,9 @@ typedef enum {
 /*      FTYPE_MIXED [ 3, 5, 6, 7] */
 
 #define FCODE_ASCII 0
-#define FCODE_MASK  0x80
-#define FCODE_UTF_8 0x81
-#define FCODE_EXTND 0x82
-#define FCODE_MIXED 0x83
+#define FCODE_UTF_8 1
+#define FCODE_EXTND 2
+#define FCODE_MIXED 3
 
 extern char *fline ;        /* dynamic return line     */
 extern int  ftype ;
