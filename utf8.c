@@ -7,10 +7,9 @@
 #include <assert.h>
 #include <wchar.h>
 
-/*
- * Display width of UTF-8 character
- */
-int utf8_width( unicode_t c) {
+
+/* Display width of UTF-8 character */
+int _utf8_width( unicode_t c) {
 #if CYGWIN
 	assert( sizeof( wchar_t) == 2) ;	/* wcwidth only supports UTF-16 */
 	return (c < 0x10000) ? wcwidth( (wchar_t) c) : -1 ;
@@ -19,8 +18,14 @@ int utf8_width( unicode_t c) {
 #endif
 }
 
-/*
- * utf8_to_unicode()
+
+int utf8_width( unicode_t c) {
+	int w = _utf8_width( c) ;
+	return (w < 0) ? 2 : w ;		/* display \u if can't figure out width */
+}
+
+
+/* utf8_to_unicode()
  *
  * Convert a UTF-8 sequence to its unicode value, and return the length of
  * the sequence in bytes.
@@ -84,8 +89,8 @@ unsigned utf8_to_unicode( const char *line, unsigned index, unsigned len,
     return bytes;
 }
 
-/*
- * unicode_to_utf8()
+
+/* unicode_to_utf8()
  *
  * Convert a unicode value to its canonical utf-8 sequence.
  *

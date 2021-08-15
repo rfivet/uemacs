@@ -44,10 +44,8 @@ static unsigned getgoal( line_p dlp) {
             col += 2 ;
         else if( c >= 0x80 && c <= 0xA0)    /* \xx */
             col += 3 ;
-        else {
-            int w = utf8_width( c) ;        /* work around */
-            col += (w < 0) ? 2 : w ;        /* unknown unicode width as \u */
-        }
+        else
+            col += utf8_width( c) ;
 
         if( col > curgoal)
             break ;

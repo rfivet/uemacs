@@ -164,8 +164,7 @@ int getccol( int bflg) {
         else if (c >= 0x80 && c <= 0xa0)    /* displayed as \xx */
             col += 3 ;
         else {
-            int w = utf8_width( c) ;        /* incomplete wc_width */
-            col += (w < 0) ? 2 : w ;
+            col += utf8_width( c) ;
         }
     }
 

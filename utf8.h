@@ -4,7 +4,8 @@
 
 typedef unsigned int unicode_t ;
 
-int utf8_width( unicode_t c) ;
+int _utf8_width( unicode_t c) ;	/* straight width */
+int  utf8_width( unicode_t c) ;	/* workaround width */
 unsigned utf8_to_unicode( const char *line, unsigned index, unsigned len,
                                                             unicode_t *res) ;
 unsigned utf8_revdelta( unsigned char *buf, unsigned pos) ;

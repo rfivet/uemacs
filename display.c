@@ -12,7 +12,6 @@
  */
 
 #include <errno.h>
-#include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 #include <unistd.h>
@@ -28,16 +27,16 @@
 #include "utf8.h"
 #include "window.h"
 
-struct video {
-	int v_flag;		/* Flags */
+typedef struct {
+	int v_flag ;			/* Flags */
 #if	COLOR
-	int v_fcolor;		/* current forground color */
-	int v_bcolor;		/* current background color */
-	int v_rfcolor;		/* requested forground color */
-	int v_rbcolor;		/* requested background color */
+	int v_fcolor ;			/* current foreground color */
+	int v_bcolor ;			/* current background color */
+	int v_rfcolor ;			/* requested foreground color */
+	int v_rbcolor ;			/* requested background color */
 #endif
 	unicode_t v_text[] ;	/* Screen data. */
-};
+} *video_p ;
 
 #define VFCHG   0x0001		/* Changed flag                 */
 #define	VFEXT	0x0002		/* extended (beyond column 80)  */
@@ -45,19 +44,20 @@ struct video {
 #define	VFREQ	0x0008		/* reverse video request        */
 #define	VFCOL	0x0010		/* color change requested       */
 
-static struct video **vscreen;		/* Virtual screen. */
+static video_p *vscreen ;	/* Virtual screen. */
 #if	MEMMAP == 0 || SCROLLCODE
-static struct video **pscreen;		/* Physical screen. */
+static video_p *pscreen ;	/* Physical screen. */
 #endif
 
 static int displaying = TRUE;
 #if UNIX
-#include <signal.h>
+# include <signal.h>
 #endif
+
 #ifdef SIGWINCH
-#include <sys/ioctl.h>
+# include <sys/ioctl.h>
 /* for window size changes */
-int chg_width, chg_height;
+ int chg_width, chg_height ;
 #endif
 
 static int currow ;		/* Cursor row                   */
@@ -73,16 +73,16 @@ int discmd = TRUE ;	/* display command flag         */
 int disinp = TRUE ;	/* display input characters (echo)	*/
 
 
-static int reframe(struct window *wp);
-static void updone(struct window *wp);
-static void updall(struct window *wp);
+static int reframe( window_p wp) ;
+static void updone( window_p wp) ;
+static void updall( window_p wp) ;
 static int scrolls(int inserts);
 static void scrscroll(int from, int to, int count);
 static int texttest(int vrow, int prow);
 static int endofline(unicode_t *s, int n);
 static void updext(void);
-static int updateline(int row, struct video *vp1, struct video *vp2);
-static void modeline(struct window *wp);
+static int updateline(int row, video_p vp1, video_p vp2);
+static void modeline( window_p wp) ;
 static void mlputi(int i, int r);
 static void mlputli(long l, int r);
 static void mlputf(int s);
@@ -91,100 +91,90 @@ static void mlputs( const char *s) ;
 static int newscreensize(int h, int w);
 #endif
 
-/*
- * Initialize the data structures used by the display code. The edge vectors
- * used to access the screens are set up. The operating system's terminal I/O
- * channel is set up. All the other things get initialized at compile time.
- * The original window has "WFCHG" set, so that it will get completely
- * redrawn on the first call to "update".
+
+/* Initialize the data structures used by the display code.  The edge
+   vectors used to access the screens are set up.  The operating system's
+   terminal I/O channel is set up.  All the other things get initialized at
+   compile time.  The original window has "WFCHG" set, so that it will get
+   completely redrawn on the first call to "update".
  */
-void vtinit(void)
-{
-	int i;
-	struct video *vp;
-
-	TTopen();		/* open the screen */
-	TTkopen();		/* open the keyboard */
-	TTrev(FALSE);
-	vscreen = xmalloc( term.t_maxrow * sizeof( struct video *)) ;
+void vtinit( void) {
+	TTopen() ;		/* open the screen */
+	TTkopen() ;		/* open the keyboard */
+	TTrev(FALSE) ;
+	vscreen = xmalloc( term.t_maxrow * sizeof( video_p )) ;
 
 #if	MEMMAP == 0 || SCROLLCODE
-	pscreen = xmalloc( term.t_maxrow * sizeof( struct video *)) ;
+	pscreen = xmalloc( term.t_maxrow * sizeof( video_p )) ;
 #endif
-	for( i = 0 ; i < term.t_maxrow ; ++i) {
-		vp = xmalloc( sizeof( struct video) + term.t_maxcol * sizeof( unicode_t)) ;
-		vp->v_flag = 0;
+	for( int i = 0 ; i < term.t_maxrow ; ++i) {
+		video_p vp = xmalloc( sizeof *vp + term.t_maxcol * sizeof( unicode_t)) ;
+		vp->v_flag = 0 ;
 #if	COLOR
-		vp->v_rfcolor = 7;
-		vp->v_rbcolor = 0;
+		vp->v_rfcolor = 7 ;
+		vp->v_rbcolor = 0 ;
 #endif
-		vscreen[i] = vp;
+		vscreen[ i] = vp ;
 #if	MEMMAP == 0 || SCROLLCODE
-		vp = xmalloc( sizeof( struct video) + term.t_maxcol * sizeof( unicode_t)) ;
-		vp->v_flag = 0;
-		pscreen[i] = vp;
+		vp = xmalloc( sizeof *vp + term.t_maxcol * sizeof( unicode_t)) ;
+		vp->v_flag = 0 ;
+		pscreen[ i] = vp ;
 #endif
 	}
 }
 
 #if	CLEAN
 /* free up all the dynamically allocated video structures */
-
-void vtfree(void)
-{
-	int i;
-	for( i = 0 ; i < term.t_maxrow; ++i ) {
-		free(vscreen[i]);
+void vtfree( void) {
+	for( int i = 0 ; i < term.t_maxrow; ++i ) {
+		free( vscreen[ i]) ;
 #if	MEMMAP == 0 || SCROLLCODE
-		free(pscreen[i]);
+		free( pscreen[ i]) ;
 #endif
 	}
-	free(vscreen);
+
+	free( vscreen) ;
 #if	MEMMAP == 0 || SCROLLCODE
-	free(pscreen);
+	free( pscreen) ;
 #endif
 }
 #endif
 
-/*
- * Clean up the virtual terminal system, in anticipation for a return to the
- * operating system. Move down to the last line and clear it out (the next
- * system prompt will be written in the line). Shut down the channel to the
- * terminal.
+
+/* Clean up the virtual terminal system, in anticipation for a return to
+   the operating system.  Move down to the last line and clear it out (the
+   next system prompt will be written in the line).  Shut down the channel
+   to the terminal.
  */
-void vttidy(void)
-{
+void vttidy( void) {
 	mlerase() ;	/* ends with movecursor( term.t_nrow, 0) and TTflush() */
-	TTclose();
-	TTkclose();
+	TTclose() ;
+	TTkclose() ;
 #ifdef PKCODE
-	{
-		int ret ;
-		ret = write( 1, "\r", 1) ;
-		if( ret != 1) {
+	int ret = write( 1, "\r", 1) ;
+	if( ret != 1) {
 		/* some error handling here */
-		}
 	}
 #endif
 }
 
-/*
- * Set the virtual cursor to the specified row and column on the virtual
- * screen. There is no checking for nonsense values; this might be a good
- * idea during the early stages.
+
+/* Set the virtual cursor to the specified row and column on the virtual
+   screen.  There is no checking for nonsense values; this might be a good
+   idea during the early stages.
  */
 static void vtmove( int row, int col) {
-	vtrow = row;
-	vtcol = col;
+	vtrow = row ;
+	vtcol = col ;
 }
 
-/*
- * Write a character to the virtual screen. The virtual row and
- * column are updated. If we are not yet on left edge, don't print
- * it yet. If the line is too long put a "$" in the last column.
- *
- * This routine only puts printing characters into the virtual
- * terminal buffers. Only column overflow is checked.
+
+/* Write a character to the virtual screen.  The virtual row and column are
+   updated.  If we are not yet on left edge, don't print it yet.  If the
+   line is too long put a "$" in the last column.
+
+   This routine only puts printing characters into the virtual terminal
+   buffers.  Only column overflow is checked.
  */
 
 static void sane_vtputc( unicode_t c) {
@@ -216,7 +206,7 @@ static void vtputc( unicode_t c) {
 		sane_vtputc( '\\') ;
 		sane_vtputc( hex[ c >> 4]) ;
 		sane_vtputc( hex[ c & 15]) ;
-	} else if( utf8_width( c) < 0) {
+	} else if( _utf8_width( c) < 0) {
 		sane_vtputc( '\\') ;		/* show as non printable */
 		sane_vtputc( 'u') ;
 	} else
@@ -231,7 +221,7 @@ static int vtputs( const char *s) {
 		
 		s += utf8_to_unicode( s, 0, 4, &c) ;
 		vtputc( c) ;
-		n += utf8_width( c) ;	/* To Do: only works if all printable */
+		n += utf8_width( c) ;
 	}
 
 	return n ;
@@ -271,8 +261,6 @@ static int scrflags;
    boolean force_f ;		force update past type ahead?
  */
 int update( boolean force_f) {
-	struct window *wp;
-
 #if	TYPEAH && ! PKCODE
 	if( force_f == FALSE && typahead())
 		return TRUE;
@@ -286,59 +274,45 @@ int update( boolean force_f) {
 
 #if SCROLLCODE
 
-	/* first, propagate mode line changes to all instances of
-	   a buffer displayed in more than one window */
-	wp = wheadp;
-	while (wp != NULL) {
-		if (wp->w_flag & WFMODE) {
-			if (wp->w_bufp->b_nwnd > 1) {
-				/* make sure all previous windows have this */
-				struct window *owp;
-				owp = wheadp;
-				while (owp != NULL) {
-					if (owp->w_bufp == wp->w_bufp)
-						owp->w_flag |= WFMODE;
-					owp = owp->w_wndp;
-				}
-			}
-		}
-		wp = wp->w_wndp;
-	}
-
+/* first, propagate mode line changes to all instances of a buffer displayed
+ * in more than one window */
+	window_p wp ;
+	for( wp = wheadp ; wp != NULL ; wp = wp->w_wndp)
+		if( wp->w_flag & WFMODE
+		&&  wp->w_bufp->b_nwnd > 1)
+		/* make sure all previous windows have this */
+			for( window_p owp = wheadp ; owp != NULL ; owp = owp->w_wndp)
+				if( owp->w_bufp == wp->w_bufp)
+					owp->w_flag |= WFMODE ;
 #endif
 
-	/* update any windows that need refreshing */
-	wp = wheadp;
-	while (wp != NULL) {
-		if (wp->w_flag) {
-			/* if the window has changed, service it */
-			reframe(wp);	/* check the framing */
+/* update any windows that need refreshing */
+	for( wp = wheadp ; wp != NULL ; wp = wp->w_wndp)
+		if( wp->w_flag) {
+		/* if the window has changed, service it */
+			reframe( wp) ;	/* check the framing */
 #if SCROLLCODE
-			if (wp->w_flag & (WFKILLS | WFINS)) {
-				scrflags |=
-				    (wp->w_flag & (WFINS | WFKILLS));
-				wp->w_flag &= ~(WFKILLS | WFINS);
+			if( wp->w_flag & (WFKILLS | WFINS)) {
+				scrflags |= wp->w_flag & (WFINS | WFKILLS) ;
+				wp->w_flag &= ~(WFKILLS | WFINS) ;
 			}
 #endif
-			if ((wp->w_flag & ~WFMODE) == WFEDIT)
-				updone(wp);	/* update EDITed line */
-			else if (wp->w_flag & ~WFMOVE)
-				updall(wp);	/* update all lines */
+			if( (wp->w_flag & ~WFMODE) == WFEDIT)
+				updone( wp) ;	/* update EDITed line */
+			else if( wp->w_flag & ~WFMOVE)
+				updall( wp) ;	/* update all lines */
 #if SCROLLCODE
-			if (scrflags || (wp->w_flag & WFMODE))
+			if( scrflags || (wp->w_flag & WFMODE))
 #else
-			if (wp->w_flag & WFMODE)
+			if( wp->w_flag & WFMODE)
 #endif
-				modeline(wp);	/* update modeline */
-			wp->w_flag = 0;
-			wp->w_force = 0;
+				modeline( wp) ;	/* update modeline */
+			wp->w_flag = 0 ;
+			wp->w_force = 0 ;
 		}
-		/* on to the next window */
-		wp = wp->w_wndp;
-	}
 
 	/* recalc the current hardware cursor location */
-	updpos();
+	updpos() ;
 
 #if	MEMMAP && ! SCROLLCODE
 	/* update the cursor and flush the buffers */
@@ -371,9 +345,8 @@ int update( boolean force_f) {
  *	check to see if the cursor is on in the window
  *	and re-frame it if needed or wanted
  */
-static int reframe(struct window *wp)
-{
-	struct line *lp, *lp0;
+static int reframe( window_p wp) {
+	line_p lp, lp0 ;
 	int i = 0;
 
 	/* if not a requested reframe, check for a needed one */
@@ -455,7 +428,7 @@ static int reframe(struct window *wp)
 	return TRUE;
 }
 
-static void show_line(struct line *lp)
+static void show_line( line_p lp)
 {
 	int i = 0, len = llength(lp);
 
@@ -470,11 +443,11 @@ static void show_line(struct line *lp)
  * updone:
  *	update the current line	to the virtual screen
  *
- * struct window *wp;		window to update current line in
+ * window_p wp;		window to update current line in
  */
-static void updone(struct window *wp)
+static void updone(window_p wp)
 {
-	struct line *lp;	/* line to update */
+	line_p lp;	/* line to update */
 	int sline;	/* physical screen line to update */
 
 	/* search down the line we want */
@@ -488,7 +461,7 @@ static void updone(struct window *wp)
 	/* and update the virtual line */
 	vscreen[sline]->v_flag |= VFCHG;
 	vscreen[sline]->v_flag &= ~VFREQ;
-	vtmove(sline, 0);
+	vtmove( sline, 0) ;
 	show_line(lp);
 #if	COLOR
 	vscreen[sline]->v_rfcolor = wp->w_fcolor;
@@ -501,11 +474,11 @@ static void updone(struct window *wp)
  * updall:
  *	update all the lines in a window on the virtual screen
  *
- * struct window *wp;		window to update lines in
+ * window_p wp;		window to update lines in
  */
-static void updall(struct window *wp)
+static void updall(window_p wp)
 {
-	struct line *lp;	/* line to update */
+	line_p lp;	/* line to update */
 	int sline;	/* physical screen line to update */
 
 	/* search down the lines, updating them */
@@ -516,7 +489,7 @@ static void updall(struct window *wp)
 		/* and update the virtual line */
 		vscreen[sline]->v_flag |= VFCHG;
 		vscreen[sline]->v_flag &= ~VFREQ;
-		vtmove(sline, 0);
+		vtmove( sline, 0) ;
 		if (lp != wp->w_bufp->b_linep) {
 			/* if we are not at the end */
 			show_line(lp);
@@ -534,49 +507,43 @@ static void updall(struct window *wp)
 
 }
 
-/*
- * updpos:
- *	update the position of the hardware cursor and handle extended
- *	lines. This is the only update for simple moves.
- */
-void updpos(void)
-{
-	struct line *lp;
-	int i;
 
-	/* find the current row */
-	lp = curwp->w_linep;
-	currow = curwp->w_toprow;
-	while (lp != curwp->w_dotp) {
-		++currow;
-		lp = lforw(lp);
+/* updpos:
+    update the position of the hardware cursor and handle extended lines.
+    This is the only update for simple moves.
+ */
+void updpos(void) {
+/* find the current row */
+	line_p lp = curwp->w_linep ;
+	currow = curwp->w_toprow ;
+	while( lp != curwp->w_dotp) {
+		++currow ;
+		lp = lforw( lp) ;
 	}
 
-	/* find the current column */
+/* find the current column */
 	curcol = 0;
-	i = 0;
-	while (i < curwp->w_doto) {
-		unicode_t c;
+	int i = 0 ;
+	while( i < curwp->w_doto) {
+		unicode_t c ;
 
 		i += utf8_to_unicode( lp->l_text, i, curwp->w_doto, &c) ;
 		if( c == '\t')
 			curcol += tabwidth - curcol % tabwidth ;
 		else if( c < 0x20 || c == 0x7F)
-				curcol += 2 ;	/* displayed as ^c */
+			curcol += 2 ;	/* displayed as ^c */
 		else if( c >= 0x80 && c <= 0xA0)
-				curcol += 3 ;	/* displayed as \xx */
-		else {
-			int width = utf8_width( c) ;
-			curcol += (width < 0) ? 2 : width ;	/* non printable are displayed as \u */
-		}
+			curcol += 3 ;	/* displayed as \xx */
+		else
+			curcol += utf8_width( c) ;	/* non printable are displayed as \u */
 	}
 
-	/* if extended, flag so and update the virtual line image */
-	if (curcol >= term.t_ncol - 1) {
-		vscreen[currow]->v_flag |= (VFEXT | VFCHG);
-		updext();
+/* if extended, flag so and update the virtual line image */
+	if( curcol >= term.t_ncol - 1) {
+		vscreen[ currow]->v_flag |= (VFEXT | VFCHG) ;
+		updext() ;
 	} else
-		lbound = 0;
+		lbound = 0 ;
 }
 
 /*
@@ -585,8 +552,8 @@ void updpos(void)
  */
 void upddex(void)
 {
-	struct window *wp;
-	struct line *lp;
+	window_p wp;
+	line_p lp;
 	int i;
 
 	wp = wheadp;
@@ -599,7 +566,7 @@ void upddex(void)
 			if (vscreen[i]->v_flag & VFEXT) {
 				if ((wp != curwp) || (lp != wp->w_dotp) ||
 				    (curcol < term.t_ncol - 1)) {
-					vtmove(i, 0);
+					vtmove( i, 0) ;
 					show_line(lp);
 					vteeol();
 
@@ -659,7 +626,7 @@ void updgar(void)
  */
 int updupd(int force)
 {
-	struct video *vp1;
+	video_p vp1;
 	int i;
 
 #if SCROLLCODE
@@ -697,8 +664,8 @@ int updupd(int force)
  */
 static int scrolls(int inserts)
 {				/* returns true if it does something */
-	struct video *vpv;	/* virtual screen image */
-	struct video *vpp;	/* physical screen image */
+	video_p vpv;	/* virtual screen image */
+	video_p vpp;	/* physical screen image */
 	int i, j, k;
 	int rows, cols;
 	int first, match, count, target, end;
@@ -834,8 +801,8 @@ static void scrscroll(int from, int to, int count)
  */
 static int texttest(int vrow, int prow)
 {
-	struct video *vpv = vscreen[vrow];	/* virtual screen image */
-	struct video *vpp = pscreen[prow];	/* physical screen image */
+	video_p vpv = vscreen[vrow];	/* virtual screen image */
+	video_p vpp = pscreen[prow];	/* physical screen image */
 
 	return !memcmp(vpv->v_text, vpp->v_text, 4*term.t_ncol);
 }
@@ -864,7 +831,7 @@ static int endofline(unicode_t *s, int n)
 static void updext(void)
 {
 	int rcursor;	/* real cursor location */
-	struct line *lp;	/* pointer to current line */
+	line_p lp;	/* pointer to current line */
 
 	/* calculate what column the real cursor will end up in */
 	rcursor = ((curcol - term.t_ncol) % term.t_scrsiz) + term.t_margin;
@@ -872,7 +839,7 @@ static void updext(void)
 
 	/* scan through the line outputing characters to the virtual screen */
 	/* once we reach the left edge                                  */
-	vtmove(currow, -lbound);	/* start scanning offscreen */
+	vtmove( currow, -lbound) ;	/* start scanning offscreen */
 	lp = curwp->w_dotp;	/* line to output */
 	show_line(lp);
 
@@ -892,7 +859,7 @@ static void updext(void)
 #if	MEMMAP
 /*	UPDATELINE specific code for the IBM-PC and other compatables */
 
-static int updateline(int row, struct video *vp1, struct video *vp2)
+static int updateline(int row, video_p vp1, video_p vp2)
 {
 #if	SCROLLCODE
 	unicode_t *cp1;
@@ -925,15 +892,13 @@ static int updateline(int row, struct video *vp1, struct video *vp2)
 
 #else
 
-/*
- * updateline()
+/* updateline()
  *
- * int row;		row of screen to update
- * struct video *vp1;	virtual screen image
- * struct video *vp2;	physical screen image
+ * int row ;	row of screen to update
+ * video_p vp1 ;	virtual screen image
+ * video_p vp2 ;	physical screen image
  */
-static int updateline(int row, struct video *vp1, struct video *vp2)
-{
+static int updateline(int row, video_p vp1, video_p vp2) {
 /*	UPDATELINE code for all other versions		*/
 
 	unicode_t *cp1;
@@ -1069,10 +1034,9 @@ static int updateline(int row, struct video *vp1, struct video *vp2)
  * change the modeline format by hacking at this routine. Called by "update"
  * any time there is a dirty window.
  */
-static void modeline(struct window *wp)
-{
+static void modeline( window_p wp) {
 	int n;		/* cursor position count */
-	struct buffer *bp;
+	buffer_p bp ;
 	int i;		/* loop index */
 	int lchar;	/* character to draw line in buffer with */
 	int firstm;	/* is this the first mode? */
@@ -1083,7 +1047,7 @@ static void modeline(struct window *wp)
 	vscreen[n]->v_rfcolor = 0;	/* black on */
 	vscreen[n]->v_rbcolor = 7;	/* white..... */
 #endif
-	vtmove(n, 0);		/* Seek to right line. */
+	vtmove( n, 0) ;		/* Seek to right line. */
 	if (wp == curwp)	/* mark the current buffer */
 #if	PKCODE && REVSTA
 		lchar = '-';
@@ -1148,7 +1112,7 @@ static void modeline(struct window *wp)
 	}
 
 	{			/* determine if top line, bottom line, or both are visible */
-		struct line *lp = wp->w_linep;
+		line_p lp = wp->w_linep;
 		int rows = wp->w_ntrows;
 		char *msg = NULL;
 		char tline[ 6] ;	/* buffer for part of mode line */
@@ -1172,7 +1136,7 @@ static void modeline(struct window *wp)
 			}
 		}
 		if (!msg) {
-			struct line *lp;
+			line_p lp;
 			int numlines, predlines ;
 
 			lp = lforw(bp->b_linep);
@@ -1215,7 +1179,7 @@ static void modeline(struct window *wp)
 
 void upmode(void)
 {				/* update all the mode lines */
-	struct window *wp;
+	window_p wp;
 
 	wp = wheadp;
 	while (wp != NULL) {
