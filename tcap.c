@@ -1,9 +1,7 @@
 /* tcap.c -- implements terminal.h */
 #include "terminal.h"
 
-/*	tcap.c
- *
- *	Unix V7 SysV and BS4 Termcap video driver
+/*	Unix V7 SysV and BS4 Termcap video driver
  *
  *	modified by Petri Kutvonen
  */
@@ -35,9 +33,9 @@ boolean sgarbf = TRUE ;		/* TRUE if screen is garbage    */
 char sres[ 16] ;		/* current screen resolution    */
 				/* NORMAL, CGA, EGA, VGA	*/
 
-#if UNIX
-#include <signal.h>
-#endif
+# if UNIX
+# include <signal.h>
+# endif
 
 #define	MARGIN	8
 #define	SCRSIZ	64
@@ -57,33 +55,33 @@ static void tcapscrollregion(int top, int bot);
 static void putpad(char *str);
 
 static void tcapopen(void);
-#if PKCODE
-static void tcapclose(void);
-#endif
+# if PKCODE
+   static void tcapclose(void);
+# endif
 
-#if COLOR
-static void tcapfcol(void);
-static void tcapbcol(void);
-#endif
-#if SCROLLCODE
-static void tcapscroll_reg(int from, int to, int linestoscroll);
-static void tcapscroll_delins(int from, int to, int linestoscroll);
-#endif
+# if COLOR
+   static void tcapfcol(void);
+   static void tcapbcol(void);
+# endif
+# if SCROLLCODE
+   static void tcapscroll_reg(int from, int to, int linestoscroll);
+   static void tcapscroll_delins(int from, int to, int linestoscroll);
+# endif
 
 #define TCAPSLEN 315
 static char tcapbuf[TCAPSLEN];
 static char *_UP, _PC, *CM, *CE, *CL, *SO, *SE;
 
-#if PKCODE
-static char *TI, *TE;
-#if USE_BROKEN_OPTIMIZATION
-static int term_init_ok = 0;
-#endif
-#endif
+# if PKCODE
+   static char *TI, *TE;
+#  if USE_BROKEN_OPTIMIZATION
+    static int term_init_ok = 0;
+#  endif
+# endif
 
-#if SCROLLCODE
-static char *CS, *DL, *AL, *SF, *SR;
-#endif
+# if SCROLLCODE
+   static char *CS, *DL, *AL, *SF, *SR;
+# endif
 
 struct terminal term = {
 	480,	/* actual 479 on 2560x1440 landscape terminal window */
@@ -96,11 +94,11 @@ struct terminal term = {
 	SCRSIZ,
 	NPAUSE,
 	tcapopen,
-#if	PKCODE
+# if PKCODE
 	tcapclose,
-#else
+# else
 	ttclose,
-#endif
+# endif
 	tcapkopen,
 	tcapkclose,
 	ttgetc,
@@ -112,14 +110,14 @@ struct terminal term = {
 	tcapbeep,
 	tcaprev,
 	tcapcres
-#if	COLOR
-	    , tcapfcol,
+# if COLOR
+    , tcapfcol,
 	tcapbcol
-#endif
-#if     SCROLLCODE
-	    , NULL		/* set dynamically at open time */
-#endif
-};
+# endif
+# if SCROLLCODE
+    , NULL		/* set dynamically at open time */
+# endif
+} ;
 
 static void tcapopen(void)
 {
@@ -128,9 +126,9 @@ static void tcapopen(void)
 	char *tv_stype;
 	int int_col, int_row;
 
-#if PKCODE && USE_BROKEN_OPTIMIZATION
+# if PKCODE && USE_BROKEN_OPTIMIZATION
 	if (!term_init_ok) {
-#endif
+# endif
 		if ((tv_stype = getenv("TERM")) == NULL) {
 			fputs( "Environment variable TERM not defined!\n", stderr) ;
 			exit( EXIT_FAILURE) ;
@@ -177,7 +175,7 @@ static void tcapopen(void)
 		SO = tgetstr("so", &p);
 		if (SO != NULL)
 			revexist = TRUE;
-#if	PKCODE
+# if PKCODE
 		if (tgetnum("sg") > 0) {	/* can reverse be used? P.K. */
 			revexist = FALSE;
 			SE = NULL;
@@ -185,7 +183,7 @@ static void tcapopen(void)
 		}
 		TI = tgetstr("ti", &p);	/* terminal init and exit */
 		TE = tgetstr("te", &p);
-#endif
+# endif
 
 		if (CL == NULL || CM == NULL || _UP == NULL) {
 			fputs( "Incomplete termcap entry\n", stderr) ;
@@ -194,7 +192,7 @@ static void tcapopen(void)
 
 		if (CE == NULL)	/* will we be able to use clear to EOL? */
 			eolexist = FALSE;
-#if SCROLLCODE
+# if SCROLLCODE
 		CS = tgetstr("cs", &p);
 		SF = tgetstr("sf", &p);
 		SR = tgetstr("sr", &p);
@@ -210,20 +208,20 @@ static void tcapopen(void)
 		} else {
 			term.t_scroll = NULL;
 		}
-#endif
+# endif
 
 		if (p >= &tcapbuf[TCAPSLEN]) {
 			fputs( "Terminal description too big!\n", stderr) ;
 			exit( EXIT_FAILURE) ;
 		}
-#if PKCODE && USE_BROKEN_OPTIMIZATION
+# if PKCODE && USE_BROKEN_OPTIMIZATION
 		term_init_ok = 1;
 	}
-#endif
+# endif
 	ttopen();
 }
 
-#if	PKCODE
+# if PKCODE
 static void tcapclose(void)
 {
 	putpad(tgoto(CM, 0, term.t_nrow));
@@ -231,26 +229,26 @@ static void tcapclose(void)
 	ttflush();
 	ttclose();
 }
-#endif
+# endif
 
 static void tcapkopen(void)
 {
-#if	PKCODE
+# if PKCODE
 	putpad(TI);
 	ttflush();
 	ttrow = 999;
 	ttcol = 999;
 	sgarbf = TRUE;
-#endif
+# endif
 	strcpy(sres, "NORMAL");
 }
 
 static void tcapkclose(void)
 {
-#if	PKCODE
+# if PKCODE
 	putpad(TE);
 	ttflush();
-#endif
+# endif
 }
 
 static void tcapmove(int row, int col)
@@ -288,7 +286,7 @@ static int tcapcres(char *res)
 	return TRUE;
 }
 
-#if SCROLLCODE
+# if SCROLLCODE
 
 /* move howmanylines lines starting at from to to */
 static void tcapscroll_reg(int from, int to, int howmanylines)
@@ -340,9 +338,9 @@ static void tcapscrollregion(int top, int bot)
 	putpad(tgoto(CS, bot, top));
 }
 
-#endif
+# endif
 
-#if COLOR
+# if COLOR
 /* No colors here, ignore this. */
 static void tcapfcol(void)
 {
@@ -351,7 +349,7 @@ static void tcapfcol(void)
 static void tcapbcol(void)
 {
 }
-#endif
+# endif
 
 static void tcapbeep(void)
 {
@@ -363,3 +361,5 @@ static void putpad(char *str)
 	tputs( str, 1, (int (*)( int)) ttputc) ;
 }
 #endif /* TERMCAP */
+
+/* end of tcap.c */

@@ -1,9 +1,6 @@
 /* main.c -- */
 
-/*
- *	main.c
- *
- *	µEMACS 4.2
+/*	µEMACS 4.2
  *
  *	Based on:
  *
@@ -438,7 +435,7 @@ static void dspram( void)
 #endif
 #endif
 
-/*	On some primitave operation systems, and when emacs is used as
+/*	On some primitive operation systems, and when emacs is used as
 	a subprogram to a larger project, emacs needs to de-alloc its
 	own used memory
 */
@@ -483,3 +480,5 @@ void cexit( int status) {
 	exit(status);
 }
 #endif
+
+/* end of main.c */
