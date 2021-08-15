@@ -1,50 +1,46 @@
+/* random.h -- various commands */
 #ifndef _RANDOM_H_
 #define _RANDOM_H_
 
+#include "names.h"
 
-#include "retcode.h"
+/* Command flags */
+#define CFCPCN  0x0001      /* Flag that last command was C-P, C-N  */
+#define CFKILL  0x0002      /* Flag that last command was a kill    */
+
+extern int thisflag ;       /* Flags, this command */
+extern int lastflag ;       /* Flags, last command */
+
+extern int fillcol ;        /* Fill column */
+extern boolean  hardtab ;   /* Use hard tab instead of soft tab */
 
 
-#define AEDIT 1
-
-extern int fillcol ;	/* Fill column                  */
-extern boolean	hardtab ;	/* Use hard tab instead of soft tab */
-
-
-/* Uninitialized global external declarations. */
-
-#define CFCPCN  0x0001	/* Last command was C-P, C-N    */
-#define CFKILL  0x0002	/* Last command was a kill      */
-
-extern int thisflag ;	/* Flags, this command          */
-extern int lastflag ;	/* Flags, last command          */
-
-int setfillcol( int f, int n) ;
-int showcpos( int f, int n) ;
 int getcline( void) ;
 int getccol( int bflg) ;
 boolean setccol( int pos) ;
-boolean twiddle( int f, int n) ;
-int quote( int f, int n) ;
-int insert_tab( int f, int n) ;
-#if AEDIT
-int detab( int f, int n) ;
-int entab( int f, int n) ;
-int trim( int f, int n) ;
-#endif
-int openline( int f, int n) ;
-int insert_newline( int f, int n) ;
-int deblank( int f, int n) ;
-int indent( int f, int n) ;
-int forwdel( int f, int n) ;
-int backdel( int f, int n) ;
-int killtext( int f, int n) ;
-int setemode( int f, int n) ;
-int delmode( int f, int n) ;
-int setgmode( int f, int n) ;
-int delgmode( int f, int n) ;
-int getfence( int f, int n) ;
-int istring( int f, int n) ;
-int ovstring( int f, int n) ;
+
+/* Bindable functions */
+ BINDABLE( setfillcol) ;
+ BINDABLE( showcpos) ;
+BBINDABLE( twiddle) ;
+ BINDABLE( quote) ;
+ BINDABLE( insert_tab) ;
+ BINDABLE( detab) ;
+ BINDABLE( entab) ;
+ BINDABLE( trim) ;
+ BINDABLE( openline) ;
+ BINDABLE( insert_newline) ;
+ BINDABLE( deblank) ;
+ BINDABLE( indent) ;
+ BINDABLE( forwdel) ;
+ BINDABLE( backdel) ;
+ BINDABLE( killtext) ;
+ BINDABLE( setemode) ;
+ BINDABLE( delmode) ;
+ BINDABLE( setgmode) ;
+ BINDABLE( delgmode) ;
+ BINDABLE( istring) ;
+ BINDABLE( ovstring) ;
 
 #endif
+/* end of random.h */

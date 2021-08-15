@@ -1,16 +1,14 @@
 /* word.c -- implements word.h */
 #include "word.h"
 
-/*	word.c
- *
- *      The routines in this file implement commands that work word or a
- *      paragraph at a time.  There are all sorts of word mode commands.  If I
- *      do any sentence mode commands, they are likely to be put in this file.
- *
- *	Modified by Petri Kutvonen
+/* The routines in this file implement commands that work word or a
+   paragraph at a time.  There are all sorts of word mode commands.  If I
+   do any sentence mode commands, they are likely to be put in this file.
+
+   Modified by Petri Kutvonen
  */
 
-#include <stdio.h>
+#include <assert.h>
 #include <stdlib.h>	/* malloc, free */
 #include <string.h> /* memcpy */
 
@@ -31,18 +29,18 @@ static int justflag = FALSE ;		/* justify, don't fill */
 
 static int inword( void) ;
 
-/* Word wrap on n-spaces. Back-over whatever precedes the point on the current
- * line and stop on the first word-break or the beginning of the line. If we
- * reach the beginning of the line, jump back to the end of the word and start
- * a new line.	Otherwise, break the line at the word-break, eat it, and jump
- * back to the end of the word.
- * Returns TRUE on success, FALSE on errors.
- *
- * @f: default flag.
- * @n: numeric argument.
+/* Word wrap on n-spaces.  Back-over whatever precedes the point on the
+   current line and stop on the first word-break or the beginning of the
+   line.  If we reach the beginning of the line, jump back to the end of
+   the word and start a new line.  Otherwise, break the line at the
+   word-break, eat it, and jump back to the end of the word.
+
+   Returns TRUE on success, FALSE on errors.
+ 
+   @f: default flag.
+   @n: numeric argument.
  */
-int wrapword(int f, int n)
-{
+BINDABLE( wrapword) {
 	int cnt;	/* size of word wrapped to next line */
 	int c;		/* charector temporary */
 
@@ -81,11 +79,12 @@ int wrapword(int f, int n)
 	return TRUE;
 }
 
-/* Move the cursor backward by "n" words. All of the details of motion are
- * performed by the "backchar" and "forwchar" routines. Error if you try to
- * move beyond the buffers.
+
+/* Move the cursor backward by "n" words.  All of the details of motion are
+   performed by the "backchar" and "forwchar" routines.  Error if you try
+   to move beyond the buffers.
  */
-int backword( int f, int n) {
+BINDABLE( backword) {
 	if( n < 0)
 		return forwword( f, -n) ;
 
@@ -106,10 +105,12 @@ int backword( int f, int n) {
 	return forwchar( FALSE, 1) ;
 }
 
-/* Move the cursor forward by the specified number of words. All of the motion
- * is done by "forwchar". Error if you try and move beyond the buffer's end.
+
+/* Move the cursor forward by the specified number of words.  All of the
+   motion is done by "forwchar".  Error if you try and move beyond the
+   buffer's end.
  */
-int forwword( int f, int n) {
+BINDABLE( forwword) {
 	if( n < 0)
 		return backword( f, -n) ;
 
@@ -151,8 +152,7 @@ static boolean uniflip( boolean toupper_f) {	/* flip unicode case and forward */
 }
 
 static boolean capcapword( int n, boolean first_f, boolean rest_f) {
-	if( curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly() ;		/* we are in read only mode     */
+	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	if( n < 0)
 		return FALSE ;
@@ -173,48 +173,46 @@ static boolean capcapword( int n, boolean first_f, boolean rest_f) {
 	return TRUE ;
 }
 
-/* Move the cursor forward by the specified number of words. As you move,
- * convert any characters to upper case. Error if you try and move beyond the
- * end of the buffer. Bound to "M-U".
+
+/* Move the cursor forward by the specified number of words.  As you move,
+   convert any characters to upper case.  Error if you try and move beyond
+   the end of the buffer.  Bound to "M-U".
  */
-int upperword( int f, int n) {
+BINDABLE( upperword) {
 	return capcapword( n, TRUE, TRUE) ;
 }
 
 
-/* Move the cursor forward by the specified number of words. As you move
- * convert characters to lower case. Error if you try and move over the end of
- * the buffer. Bound to "M-L".
+/* Move the cursor forward by the specified number of words.  As you move
+   convert characters to lower case.  Error if you try and move over the
+   end of the buffer.  Bound to "M-L".
  */
-int lowerword( int f, int n) {
+BINDABLE( lowerword) {
 	return capcapword( n, FALSE, FALSE) ;
 }
 
-/* Move the cursor forward by the specified number of words. As you move
- * convert the first character of the word to upper case, and subsequent
- * characters to lower case. Error if you try and move past the end of the
- * buffer. Bound to "M-C".
+
+/* Move the cursor forward by the specified number of words.  As you move
+   convert the first character of the word to upper case, and subsequent
+   characters to lower case.  Error if you try and move past the end of the
+   buffer.  Bound to "M-C".
  */
-int capword( int f, int n) {
+BINDABLE( capword) {
 	return capcapword( n, TRUE, FALSE) ;
 }
 
-/*
- * Kill forward by "n" words. Remember the location of dot. Move forward by
- * the right number of words. Put dot back where it was and issue the kill
- * command for the right number of characters. With a zero argument, just
- * kill one word and no whitespace. Bound to "M-D".
+
+/* Kill forward by "n" words.  Remember the location of dot.  Move forward
+   by the right number of words.  Put dot back where it was and issue the
+   kill command for the right number of characters.  With a zero argument,
+   just kill one word and no whitespace.  Bound to "M-D".
  */
-int delfword(int f, int n)
-{
-	struct line *dotp;	/* original cursor line */
+BINDABLE( delfword) {
+	line_p dotp;	/* original cursor line */
 	int doto;	/*      and row */
 	int c;		/* temp char */
-	long size;		/* # of chars to delete */
 
-	/* don't allow this command if we are in read only mode */
-	if (curbp->b_mode & MDVIEW)
-		return rdonly();
+	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	/* ignore the command if there is a negative argument */
 	if (n < 0)
@@ -230,7 +228,7 @@ int delfword(int f, int n)
 	doto = curwp->w_doto;
 
 	/* figure out how many characters to give the axe */
-	size = 0;
+	long size = 0 ;
 
 	/* get us into a word.... */
 	while (inword() == FALSE) {
@@ -289,18 +287,14 @@ int delfword(int f, int n)
 	return ldelete(size, TRUE);
 }
 
-/*
- * Kill backwards by "n" words. Move backwards by the desired number of words,
- * counting the characters. When dot is finally moved to its resting place,
- * fire off the kill command. Bound to "M-Rubout" and to "M-Backspace".
- */
-int delbword(int f, int n)
-{
-	long size;
 
-	/* don't allow this command if we are in read only mode */
-	if (curbp->b_mode & MDVIEW)
-		return rdonly();
+/* Kill backwards by "n" words.  Move backwards by the desired number of
+   words, counting the characters.  When dot is finally moved to its
+   resting place, fire off the kill command.  Bound to "M-Rubout" and to
+   "M-Backspace".
+ */
+BINDABLE( delbword) {
+	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	/* ignore the command if there is a nonpositive argument */
 	if (n <= 0)
@@ -313,7 +307,8 @@ int delbword(int f, int n)
 
 	if (backchar(FALSE, 1) == FALSE)
 		return FALSE;
-	size = 0;
+
+	long size = 0 ;
 	while (n--) {
 		while (inword() == FALSE) {
 			if (backchar(FALSE, 1) == FALSE)
@@ -345,7 +340,6 @@ static int inword( void) {
 	return isletter( c) || ( c >= '0' && c <= '9') ;
 }
 
-#if	WORDPRO
 static int parafillnjustify( int f, int n, int justify_f) {
 	unicode_t c;		/* current char during scan	*/
 	unicode_t *wbuf ;	/* buffer for current word	*/
@@ -354,23 +348,19 @@ static int parafillnjustify( int f, int n, int justify_f) {
 	int clength;	/* position on line during fill */
 	int eopflag;	/* Are we at the End-Of-Paragraph? */
 	int firstflag = TRUE ;	/* first word? (needs no space) */
-	struct line *eopline;	/* pointer to line just past EOP */
+	line_p eopline;	/* pointer to line just past EOP */
 	int	dotflag = 0 ;		/* was the last char a period?  */
 	int leftmarg = 0 ;		/* left marginal */
 
-	if (curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly();	/* we are in read only mode     */
-	if (fillcol == 0) {	/* no fill column set */
-		mloutstr( "No fill column set") ;
-		return FALSE;
-	}
+	assert( !(curbp->b_mode & MDVIEW)) ;
+
+	if( fillcol == 0)	/* no fill column set */
+		return mloutfail( "No fill column set") ;
 
 	if( justify_f) {
 		leftmarg = getccol( FALSE) ;
-		if (leftmarg + 10 > fillcol) {
-			mloutstr( "Column too narrow") ;
-			return FALSE;
-		}
+		if( leftmarg + 10 > fillcol)
+			return mloutfail( "Column too narrow") ;
 
 		justflag = justify_f ;
 	}
@@ -480,35 +470,33 @@ static int parafillnjustify( int f, int n, int justify_f) {
 	return TRUE;
 }
 
-/*
- * Fill the current paragraph according to the current
+
+/* Fill the current paragraph according to the current
  * fill column
  *
  * f and n - deFault flag and Numeric argument
  */
-int fillpara( int f, int n) {
+BINDABLE( fillpara) {
 	return parafillnjustify( f, n, FALSE) ;
 }
+
 
 /* Fill the current paragraph according to the current
  * fill column and cursor position
  *
  * int f, n;		deFault flag and Numeric argument
  */
-int justpara( int f, int n) {
+BINDABLE( justpara) {
 	return parafillnjustify( f, n, TRUE) ;
 }
 
-/*
- * delete n paragraphs starting with the current one
+
+/* delete n paragraphs starting with the current one
  *
  * int f	default flag
  * int n	# of paras to delete
  */
-int killpara(int f, int n)
-{
-	int status;	/* returned status of functions */
-
+BINDABLE( killpara) {
 	while (n--) {		/* for each paragraph to delete */
 
 		/* mark out the end and beginning of the para to delete */
@@ -523,26 +511,26 @@ int killpara(int f, int n)
 		curwp->w_doto = 0;	/* force us to the beginning of line */
 
 		/* and delete it */
-		if ((status = killregion(FALSE, 1)) != TRUE)
-			return status;
+		int status = killregion( FALSE, 1) ;
+		if( status != TRUE)
+			return status ;
 
 		/* and clean up the 2 extra lines */
 		ldelete(2L, TRUE);
 	}
-	return TRUE;
+
+	return TRUE ;
 }
 
 
-/*
- *	wordcount:	count the # of words in the marked region,
+/*	wordcount:	count the # of words in the marked region,
  *			along with average word sizes, # of chars, etc,
  *			and report on them.
  *
  * int f, n;		ignored numeric arguments
  */
-int wordcount(int f, int n)
-{
-	struct line *lp;	/* current line to scan */
+BINDABLE( wordcount) {
+	line_p lp;	/* current line to scan */
 	int offset;	/* current char to scan */
 	long size;		/* size of region left to count */
 	int ch;	/* current character to scan */
@@ -553,10 +541,10 @@ int wordcount(int f, int n)
 	int nlines;		/* total number of lines in region */
 	int avgch;		/* average number of chars/word */
 	int status;		/* status return code */
-	struct region region;		/* region to look at */
+	region_t region ;	/* region to look at */
 
 	/* make sure we have a region to count */
-	if ((status = getregion(&region)) != TRUE)
+	if( (status = getregion( &region)) != TRUE)
 		return status;
 	lp = region.r_linep;
 	offset = region.r_offset;
@@ -599,15 +587,14 @@ int wordcount(int f, int n)
 	return TRUE;
 }
 
-/*
- * go back to the beginning of the current paragraph
+
+/* go back to the beginning of the current paragraph
  * here we look for a <NL><NL> or <NL><TAB> or <NL><SPACE>
  * combination to delimit the beginning of a paragraph
  *
  * int f, n;		default Flag & Numeric argument
  */
-int gotobop(int f, int n)
-{
+BINDABLE( gotobop) {
 	if (n < 0) /* the other way... */
 		return gotoeop(f, -n);
 
@@ -637,15 +624,14 @@ int gotobop(int f, int n)
 	return TRUE;
 }
 
-/*
- * Go forward to the end of the current paragraph
- * here we look for a <NL><NL> or <NL><TAB> or <NL><SPACE>
- * combination to delimit the beginning of a paragraph
- *
- * int f, n;		default Flag & Numeric argument
+
+/* Go forward to the end of the current paragraph here we look for a
+   <NL><NL> or <NL><TAB> or <NL><SPACE> combination to delimit the
+   beginning of a paragraph
+
+   int f, n;		default Flag & Numeric argument
  */
-int gotoeop(int f, int n)
-{
+BINDABLE( gotoeop) {
 	if (n < 0)  /* the other way... */
 		return gotobop(f, -n);
 
@@ -677,6 +663,5 @@ int gotoeop(int f, int n)
 	curwp->w_flag |= WFMOVE;  /* force screen update */
 	return TRUE;
 }
-#endif
 
 /* end of word.c */

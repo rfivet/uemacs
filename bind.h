@@ -1,23 +1,21 @@
+/* bind.h -- bindable functions dealing with name and key bindings */
 #ifndef _BIND_H_
 #define _BIND_H_
 
-#define	APROP	1  /* Add code for Apropos command                 */
+#include "names.h"  /* BINDABLE() */
 
-#if APROP
-int apro( int f, int n) ;
-#endif
+/* Bindable uEMACS functions */
+BINDABLE( apro) ;
+BINDABLE( bindtokey) ;
+BINDABLE( desbind) ;
+BINDABLE( deskey) ;
+BINDABLE( help) ;
+BINDABLE( unbindkey) ;
 
-/* Some global fuction declarations. */
-typedef int (*fn_t)(int, int);
-
-int help( int f, int n) ;
-int deskey( int f, int n) ;
-int bindtokey( int f, int n) ;
-int unbindkey( int f, int n) ;
-int desbind( int f, int n) ;
 int startup( const char *fname) ;
-fn_t getbind( unsigned keycode) ;
-fn_t fncmatch( char *) ;
-char *transbind( char *skey) ;
+
+/* find a key to function association in the key to function mapping table */
+const char *transbind( char *skey) ;    /* by string representation of key */
 
 #endif
+/* end of bind.h */

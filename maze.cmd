@@ -9,6 +9,8 @@ set %D3 0
 set %D4 -1
 set %D5 0
 
+select-buffer maze
+
 # draw the maze layout
 $curwidth insert-string " "
 newline
@@ -98,3 +100,5 @@ write-message $line
 set $curline 3
 set $curcol 1
 set $curchar 32
+
+unmark-buffer

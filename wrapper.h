@@ -1,10 +1,12 @@
+/* wrapper.h -- */
 #ifndef WRAPPER_H_
 #define WRAPPER_H_
 
-#include <stdlib.h>
+#include <stdlib.h> /* size_t */
 
 void xmkstemp( char *fname_template) ;
 
 void *xmalloc( size_t size) ;
 
-#endif  /* WRAPPER_H_ */
+#endif
+/* end of wrapper.h */

@@ -1,9 +1,6 @@
 /* main.c -- */
 
-/*
- *	main.c
- *
- *	µEMACS 4.2
+/*	µEMACS 4.2
  *
  *	Based on:
  *
@@ -164,11 +161,10 @@ int main(int argc, char **argv)
 		}
 	}
 
-	/* Initialize the editor. */
-	vtinit();		/* Display */
+	vtinit() ;			/* Display */
 	mloutfmt = mlwrite ;
-	edinit("main");		/* Buffers, windows */
-	varinit();		/* user variables */
+	edinit( "main") ;	/* Bindings, buffers, windows */
+	varinit() ;			/* user variables */
 
 	viewflag = FALSE;	/* view mode defaults off in command line */
 	gotoflag = FALSE;	/* set to off to begin with */
@@ -327,14 +323,14 @@ int main(int argc, char **argv)
  * as an argument, because the main routine may have been told to read in a
  * file by default, and we want the buffer name to be right.
  */
-static void edinit(char *bname)
-{
-	struct buffer *bp;
+static void edinit( char *bname) {
+	buffer_p bp;
 	struct window *wp;
 
-	if( NULL == (bp = bfind( bname, TRUE, 0))	/* First buffer         */
-	||	NULL == (blistp = bfind( "*List*", TRUE, BFINVS))	/* Buffer list buffer   */
-	||	NULL == (wp = (struct window *) malloc( sizeof( struct window)))) {	/* First window         */
+	if( !init_bindings()	/* initialize mapping of function to name and key */
+	||  NULL == (bp = bfind( bname, TRUE, 0))				/* First buffer */
+	||	NULL == (blistp = bfind( "*List*", TRUE, BFINVS))	/* Buffer list */
+	||	NULL == (wp = malloc( sizeof *wp))) {				/* First window */
 		fputs( "First initialisation failed!\n", stderr) ;
 		exit( EXIT_FAILURE) ;
 	}
@@ -439,7 +435,7 @@ static void dspram( void)
 #endif
 #endif
 
-/*	On some primitave operation systems, and when emacs is used as
+/*	On some primitive operation systems, and when emacs is used as
 	a subprogram to a larger project, emacs needs to de-alloc its
 	own used memory
 */
@@ -484,3 +480,5 @@ void cexit( int status) {
 	exit(status);
 }
 #endif
+
+/* end of main.c */

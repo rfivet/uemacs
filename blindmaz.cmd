@@ -67,3 +67,4 @@ set %D 0		# looking EAST
 beginning-of-file
 set $curline 3
 set $curcol 1
+unmark-buffer

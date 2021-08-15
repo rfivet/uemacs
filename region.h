@@ -1,22 +1,27 @@
+/* region.h -- a region starts at the mark and end at the dot */
 #ifndef _REGION_H_
 #define _REGION_H_
 
 #include "line.h"
 
-/*
- * The starting position of a region, and the size of the region in
- * characters, is kept in a region structure.  Used by the region commands.
+/* The starting position of a region, and the size of the region in
+   characters, is kept in a region structure.  Used by the region commands.
  */
-struct region {
-	struct line *r_linep;	/* Origin struct line address.         */
-	int r_offset;		/* Origin struct line offset.          */
-	long r_size;		/* Length in characters.        */
-};
+typedef struct {
+    line_p  r_linep ;   /* Origin struct line address.  */
+    int     r_offset ;  /* Origin struct line offset.   */
+    long    r_size ;    /* Length in characters.        */
+} region_t ;
 
-int killregion( int f, int n) ;
-int copyregion( int f, int n) ;
-int lowerregion( int f, int n) ;
-int upperregion( int f, int n) ;
-int getregion( struct region *rp) ;
+typedef region_t *region_p ;
+
+/* Bindable functions */
+BINDABLE( killregion) ;
+BINDABLE( copyregion) ;
+BINDABLE( lowerregion) ;
+BINDABLE( upperregion) ;
+
+int getregion( region_p rp) ;
 
 #endif
+/* end of region.h */

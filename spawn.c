@@ -1,13 +1,12 @@
 /* spawn.c -- implements spawn.h */
 #include "spawn.h"
 
-/*	spawn.c
- *
- *	Various operating system access commands.
+/*	Various operating system access commands.
  *
  *	Modified by Petri Kutvonen
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,13 +32,11 @@
 #endif
 
 
-/*
- * Create a subjob with a copy of the command intrepreter in it. When the
+/* Create a subjob with a copy of the command intrepreter in it. When the
  * command interpreter exits, mark the screen as garbage so that you do a full
  * repaint. Bound to "^X C".
  */
-int spawncli(int f, int n)
-{
+BINDABLE( spawncli) {
 #if	USG | BSD
 	char *cp;
 #endif
@@ -80,9 +77,8 @@ int spawncli(int f, int n)
 }
 
 #if	BSD | SVR4
-
-int bktoshell(int f, int n)
-{				/* suspend MicroEMACS and wait to wake up */
+/* suspend MicroEMACS and wait to wake up */
+BINDABLE( bktoshell) {
 	vttidy();
 /******************************
 	int pid;
@@ -102,12 +98,12 @@ void rtfrmshell(void)
 }
 #endif
 
-/*
- * Run a one-liner in a subjob. When the command returns, wait for a single
+
+/* Run a one-liner in a subjob. When the command returns, wait for a single
  * character to be typed, then mark the screen as garbage so a full repaint is
  * done. Bound to "C-X !".
  */
-int spawn( int f, int n) {
+BINDABLE( spawn) {
 	int s ;
 	char *line ;
 
@@ -140,13 +136,13 @@ int spawn( int f, int n) {
 #endif
 }
 
-/*
- * Run an external program with arguments. When it returns, wait for a single
+
+/* Run an external program with arguments. When it returns, wait for a single
  * character to be typed, then mark the screen as garbage so a full repaint is
  * done. Bound to "C-X $".
  */
 
-int execprg( int f, int n) {
+BINDABLE( execprg) {
 	int s ;
 	char *line ;
 
@@ -175,14 +171,14 @@ int execprg( int f, int n) {
 #endif
 }
 
-/*
- * Pipe a one line command into a window
+
+/* Pipe a one line command into a window
  * Bound to ^X @
  */
-int pipecmd( int f, int n) {
+BINDABLE( pipecmd) {
 	int s ;		/* return status from CLI */
 	struct window *wp ;	/* pointer to new window */
-	struct buffer *bp ;	/* pointer to buffer to zot */
+	buffer_p bp ;		/* pointer to buffer to zot */
 	char *mlarg ;
 	char *line ;	/* command line send to shell */
 	static char bname[] = "command" ;
@@ -270,13 +266,13 @@ int pipecmd( int f, int n) {
 	return TRUE;
 }
 
-/*
- * filter a buffer through an external DOS program
+
+/* filter a buffer through an external DOS program
  * Bound to ^X #
  */
-int filter_buffer( int f, int n) {
+BINDABLE( filter_buffer) {
 	int s ;				/* return status from CLI */
-	struct buffer *bp ;	/* pointer to buffer to zot */
+	buffer_p bp ;		/* pointer to buffer to zot */
 	char *mlarg ;
 	char *line ;		/* command line send to shell */
 	fname_t tmpnam ;	/* place to store real file name */
@@ -289,8 +285,7 @@ int filter_buffer( int f, int n) {
 	if( restflag)
 		return resterr() ;
 
-	if( curbp->b_mode & MDVIEW)	/* don't allow this command if      */
-		return rdonly() ;		/* we are in read only mode     */
+	assert( !(curbp->b_mode & MDVIEW)) ;
 
 	/* get the filter name and its args */
 	s = newmlarg( &mlarg, "#", 0) ;
