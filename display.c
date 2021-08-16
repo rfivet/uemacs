@@ -69,9 +69,11 @@ static int taboff = 0 ;	/* tab offset for display       */
 
 int mpresf = FALSE ;	/* TRUE if message in last line */
 int scrollcount = 1 ;	/* number of lines to scroll */
-int discmd = TRUE ;	/* display command flag         */
-int disinp = TRUE ;	/* display input characters (echo)	*/
+int discmd = TRUE ;		/* display command flag         */
+int disinp = TRUE ;		/* display input characters (echo)	*/
 
+/* global variables */
+boolean viewtab = FALSE ;	/* $viewtab = TRUE to visualize hardcoded tab */
 
 static int reframe( window_p wp) ;
 static void updone( window_p wp) ;
@@ -198,11 +200,11 @@ static void vtputc( unicode_t c) {
 	if( c > 0x10FFFF)	/* Let's assume this is due to sign extension */
 		c &= 0xFF ;
 
-	if( c == '\t')
-		do {
+	if( c == '\t') {
+		sane_vtputc( viewtab ? 0x226B : ' ') ;	/* 0x226B: '≫' */
+		while( ((vtcol + taboff) % tabwidth) != 0)
 			sane_vtputc( ' ') ;
-		} while( ((vtcol + taboff) % tabwidth) != 0) ;
-	else if( c < 0x20 || c == 0x7F) {
+	} else if( c < 0x20 || c == 0x7F) {
 		sane_vtputc( '^') ;
 		sane_vtputc( c ^ 0x40) ;
 	} else if( c >= 0x80 && c <= 0xA0) {

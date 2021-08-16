@@ -129,6 +129,7 @@ static const char *envars[] = {
 	"rval",			/* child process return value */
 	"tab",			/* tab width, 1... */
 	"hardtab",		/* TRUE for hard coded tab, FALSE for soft ones */
+	"viewtab",		/* TRUE to visualize hard coded tabs */
 	"overlap",
 	"jump",
 #if SCROLLCODE
@@ -177,9 +178,10 @@ static const char *envars[] = {
 #define	EVRVAL		36
 #define EVTAB		37
 #define EVHARDTAB	38
-#define EVOVERLAP	39
-#define EVSCROLLCOUNT	40
-#define EVSCROLL	41
+#define EVVIEWTAB	39
+#define EVOVERLAP	40
+#define EVSCROLLCOUNT	41
+#define EVSCROLL	42
 
 enum function_type {
 	NILNAMIC	= 0,
@@ -212,7 +214,7 @@ static struct {
 	{ "bno", UFBNOT		| MONAMIC },	/* bitwise not */
 	{ "bor", UFBOR		| DYNAMIC },	/* bitwise or    9-10-87  jwm */
 	{ "bxo", UFBXOR		| DYNAMIC },	/* bitwise xor   9-10-87  jwm */
-	{ "cat", UFCAT		| DYNAMIC },	/* concatinate string */
+	{ "cat", UFCAT		| DYNAMIC },	/* concatenate string */
 	{ "chr", UFCHR		| MONAMIC },	/* integer to char conversion */
 	{ "div", UFDIV		| DYNAMIC },	/* division */
 	{ "env", UFENV		| MONAMIC },	/* retrieve a system environment var */
@@ -237,7 +239,7 @@ static struct {
 	{ "sgr", UFSGREAT	| DYNAMIC },	/* string logical greater than */
 	{ "sin", UFSINDEX	| DYNAMIC },	/* find the index of one string in another */
 	{ "sle", UFSLESS	| DYNAMIC },	/* string logical less than */
-	{ "sub", UFSUB		| DYNAMIC },	/* subtraction */
+	{ "sub", UFSUB		| DYNAMIC },	/* substraction */
 	{ "tim", UFTIMES	| DYNAMIC },	/* multiplication */
 	{ "tru", UFTRUTH	| MONAMIC },	/* Truth of the universe logical test */
 	{ "upp", UFUPPER	| MONAMIC },	/* uppercase string */
@@ -413,19 +415,14 @@ static const char *gtfun( char *fname) {
 	}
 		break ;
 	case UFLEFT | DYNAMIC: {
-		int	sz1, i ;
-
-		sz1 = strlen( arg1) ;
+		int sz1 = strlen( arg1) ;
 		sz = 0 ;
-		for( i = atoi( arg2) ; i > 0 ; i -= 1) {
+		for( int i = atoi( arg2) ; i > 0 ; i -= 1) {
 			unicode_t c ;
-			int bytc ;
 
-			bytc = utf8_to_unicode( arg1, sz, sz1, &c) ;
-			if( bytc == 0)
+			sz += utf8_to_unicode( arg1, sz, sz1, &c) ;
+			if( sz == sz1)
 				break ;
-			else
-				sz += bytc ;
 		}
 
 		if( sz >= ressize) {
@@ -449,26 +446,23 @@ static const char *gtfun( char *fname) {
 		retstr = strcpy( result, &arg1[ strlen( arg1) - sz]) ;
 		break ;
 	case UFMID | TRINAMIC: {
-		int sz1, start, i, bytc ;
+		int i ;
 		unicode_t c ;
 
-		sz1 = strlen( arg1) ;
-		start = 0 ;
+		int sz1 = strlen( arg1) ;
+		int start = 0 ;
 		for( i = atoi( arg2) - 1 ; i > 0 ; i -= 1) {
-			bytc = utf8_to_unicode( arg1, start, sz1, &c) ;
-			if( bytc == 0)
+			start +=  utf8_to_unicode( arg1, start, sz1, &c) ;
+			if( start == sz1)
 				break ;
-			else
-				start += bytc ;
 		}
 
 		sz = start ;
+		if( sz < sz1)
 		for( i = atoi( arg3) ; i > 0 ; i -= 1) {
-			bytc = utf8_to_unicode( arg1, sz, sz1, &c) ;
-			if( bytc == 0)
+			sz += utf8_to_unicode( arg1, sz, sz1, &c) ;
+			if( sz == sz1)
 				break ;
-			else
-				sz += bytc ;
 		}
 
 		sz -= start ;
@@ -656,8 +650,8 @@ static char *gtusr( char *vname) {
 	return errorm;
 }
 
-/*
- * gtenv()
+
+/* gtenv()
  *
  * char *vname;			name of environment variable to retrieve
  */
@@ -665,24 +659,20 @@ static char *gtenv( char *vname) {
 	unsigned vnum ;	/* ordinal number of var referenced */
 
 	/* scan the list, looking for the referenced name */
-	for (vnum = 0; vnum < ARRAY_SIZE(envars); vnum++)
-		if (strcmp(vname, envars[vnum]) == 0)
-			break;
+	for( vnum = 0 ; vnum < ARRAY_SIZE( envars) ; vnum++)
+		if( strcmp( vname, envars[ vnum]) == 0)
+			break ;
 
 	/* return errorm on a bad reference */
-	if (vnum == ARRAY_SIZE(envars))
+	if( vnum == ARRAY_SIZE( envars)) {
 #if	ENVFUNC
-	{
 		char *ename = getenv(vname);
 
-		if (ename != NULL)
-			return ename;
-		else
-			return errorm;
-	}
-#else
-		return errorm;
+		if( ename != NULL)
+			return ename ;
 #endif
+		return errorm ;
+	}
 
 	/* otherwise, fetch the appropriate value */
 	switch (vnum) {
@@ -778,6 +768,8 @@ static char *gtenv( char *vname) {
 		return i_to_a( tabwidth) ;
 	case EVHARDTAB:
 		return ltos( hardtab) ;
+	case EVVIEWTAB:
+		return ltos( viewtab) ;
 	case EVOVERLAP:
 		return i_to_a(overlap);
 	case EVSCROLLCOUNT:
@@ -1100,6 +1092,9 @@ static int svar(struct variable_description *var, char *value)
 		case EVHARDTAB:
 			hardtab = stol( value) ;
 			break ;
+		case EVVIEWTAB:
+			viewtab = stol( value) ;
+			break ;
 		case EVOVERLAP:
 			overlap = atoi(value);
 			break;
@@ -1368,30 +1363,26 @@ static int ernd( int i) {
 	return (i <= 0) ? s : s % i + 1 ;
 }
 
-/*
- * find pattern within source
+
+/* find pattern within source
  *
  * char *source;	source string to search
  * char *pattern;	string to look for
  */
 static int sindex( char *source, char *pattern) {
-	char *sp;		/* ptr to current position to scan */
-
-	/* scanning through the source string */
-	sp = source;
+/* scanning through the source string */
+	char *sp = source ;		/* ptr to current position to scan */
 	int idx = 1 ;
 	int pos = 0 ;
 	int len = strlen( source) ;
 
-	while (*sp) {
-		char *csp;		/* ptr to source string during comparison */
-		char *cp;		/* ptr to place to check for equality */
+	while( *sp) {
 		char c ;
 		unicode_t uc ;
 		
 		/* scan through the pattern */
-		cp = pattern;
-		csp = sp;
+		char *cp = pattern ;		/* ptr to place to check for equality */
+		char *csp = sp ;			/* ptr to source string during comparison */
 
 		while( (c = *cp++) && eq( c, *csp))
 			csp++ ;
@@ -1406,7 +1397,7 @@ static int sindex( char *source, char *pattern) {
 	}
 
 	/* no match at all.. */
-	return 0;
+	return 0 ;
 }
 
 /*

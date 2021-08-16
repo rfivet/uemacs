@@ -1,4 +1,4 @@
-/* utf8.h -- */
+/* utf8.h -- conversion between unicode and UTF-8 */
 #ifndef _UTF8_H_
 #define _UTF8_H_
 

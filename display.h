@@ -15,6 +15,9 @@ extern int disinp ;         /* display input characters (echo)  */
 extern int gfcolor ;        /* global forgrnd color (white) */
 extern int gbcolor ;        /* global backgrnd color (black) */
 
+/* global variables */
+extern boolean viewtab ;    /* $viewtab = TRUE to visualize hardcoded tab */
+
 /* Bindable functions */
 BINDABLE( upscreen) ;
 
