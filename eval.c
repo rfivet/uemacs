@@ -8,7 +8,6 @@
  */
 
 #include <assert.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -30,8 +29,6 @@
 #include "util.h"
 #include "version.h"
 #include "window.h"
-
-#define	MAXVARS	255
 
 /*	Macro argument token types					*/
 
@@ -71,14 +68,16 @@ static int saveflag = 0 ;	/* Flags, saved with the $target var */
 long envram = 0l ;		/* # of bytes current in use by malloc */
 
 
-/* Max #chars in a var name. */
-#define	NVSIZE	10
+/* User variables ******************************************/
+#define	MAXVARS	255
+#define	NVSIZE	10	/* Max #chars in a var name. */
 
 /* Structure to hold user variables and their definitions. */
-struct user_variable {
-	char u_name[NVSIZE + 1]; /* name of user variable */
-	char *u_value;		 /* value (string) */
-};
+static struct {
+	char u_name[ NVSIZE + 1] ;	/* name of user variable */
+	char *u_value ;				/* value (string) */
+} uv[ MAXVARS + 1] ;
+
 
 static char errorm[] = "ERROR" ;	/* error literal                */
 
@@ -137,7 +136,7 @@ static const char *envars[] = {
 #endif
 };
 
-/* And its preprocesor definitions. */
+/* And its preprocessor definitions. */
 
 #define	EVFILLCOL	0
 #define	EVPAGELEN	1
@@ -190,6 +189,9 @@ enum function_type {
 	TRINAMIC	= (3 << 6)
 } ;
 
+#define ARGCOUNT( ft) (ft >> 6)
+#define FUNID( ft) (ft & ((1 << 6) - 1))
+
 enum function_code {
 	UFADD = 0,	UFSUB,		UFTIMES,	UFDIV,		UFMOD,		UFNEG,
 	UFCAT,		UFLEFT,		UFRIGHT,	UFMID,		UFNOT,		UFEQUAL,
@@ -204,7 +206,7 @@ enum function_code {
 static struct {
 	const char f_name[ 4] ;
 	const int  f_type ;
-} funcs[] = {
+} const funcs[] = {
 	{ "abs", UFABS		| MONAMIC },	/* absolute value of a number */
 	{ "add", UFADD		| DYNAMIC },	/* add two numbers together */
 	{ "and", UFAND		| DYNAMIC },	/* logical and */
@@ -247,20 +249,17 @@ static struct {
 } ;
 
 
-/* User variables */
-static struct user_variable uv[MAXVARS + 1];
-
 /* When emacs' command interpetor needs to get a variable's name,
  * rather than it's value, it is passed back as a variable description
  * structure. The v_num field is a index into the appropriate variable table.
  */
-struct variable_description {
-	int v_type;  /* Type of variable. */
-	int v_num;   /* Ordinal pointer to variable in list. */
-};
+typedef struct {
+	int v_type ;	/* Type of variable. */
+	int v_num ;		/* Ordinal pointer to variable in list. */
+} variable_description ;
 
-static void findvar( char *var, struct variable_description *vd, int size) ;
-static int svar( struct variable_description *var, char *value) ;
+static void findvar( char *var, variable_description *vd, int size) ;
+static int svar( variable_description *var, char *value) ;
 static char *i_to_a( int i) ;
 
 /*
@@ -309,25 +308,22 @@ void varinit(void)
 	seed = time( NULL) ;
 }
 
-/*
- * Evaluate a function.
+
+/* Evaluate a function.
  *
  * @fname: name of function to evaluate.
  */
 static const char *gtfun( char *fname) {
-	unsigned fnum ;				/* index to function to eval */
-	char *arg1 ; 				/* value of first argument */
-	char *arg2 ; 				/* value of second argument */
-	char *arg3 ;				/* last argument */
-	const char *retstr ;				/* return value */
-	int	low, high ;				/* binary search indexes */
+	char *argv[ 3] ;
+	const char *retstr ;		/* return value */
+	int i ;
 
-	/* look the function up in the function table */
-	fname[3] = 0;		/* only first 3 chars significant */
-	mklower(fname);		/* and let it be upper or lower case */
-	fnum = ARRAY_SIZE( funcs) ;
-	low = 0 ;
-	high = fnum - 1 ;
+/* look the function up in the function table */
+	fname[ 3] = 0 ;		/* only first 3 chars significant */
+	mklower( fname) ;	/* and let it be upper or lower case */
+	unsigned fnum = ARRAY_SIZE( funcs) ;	/* index to function to eval */
+	int low = 0 ;				/* binary search low bound */
+	int high = fnum - 1 ;		/* binary search high bound */
 	do {
 		int s, cur ;
 
@@ -342,85 +338,68 @@ static const char *gtfun( char *fname) {
 			low = cur + 1 ;
 	} while( low <= high) ;
 
-	/* return errorm on a bad reference */
-	if (fnum == ARRAY_SIZE(funcs))
-		return errorm;
+/* return errorm on a bad reference */
+	if( fnum == ARRAY_SIZE( funcs))
+		return errorm ;
 
-	arg1 = arg2 = arg3 = NULL ;
+/* fetch arguments */
 	assert( clexec == TRUE) ; /* means macarg can be replaced by gettokval */
-	/* if needed, retrieve the first argument */
-	if (funcs[fnum].f_type >= MONAMIC) {
-		arg1 = getnewtokval() ;
-		if( arg1 == NULL)
-			return errorm;
+	int argc = ARGCOUNT( funcs[ fnum].f_type) ;
+	for( int i = 0 ; i < argc ; i++) {
+		argv[ i] = getnewtokval() ;
+		if( argv[ i] == NULL) {
+			while( i > 0)
+				free( argv[ --i]) ;
 
-		/* if needed, retrieve the second argument */
-		if (funcs[fnum].f_type >= DYNAMIC) {
-			arg2 = getnewtokval() ;
-			if( arg2 == NULL) {
-				free( arg1) ;
-				return errorm;
-			}
-
-			/* if needed, retrieve the third argument */
-			if (funcs[fnum].f_type >= TRINAMIC) {
-				arg3 = getnewtokval() ;
-				if( arg3 == NULL) {
-					free( arg1) ;
-					free( arg2) ;
-					return errorm;
-				}
-			}
+			return errorm ;
 		}
 	}
 
-	/* and now evaluate it! */
-	switch( funcs[ fnum].f_type) {
-		int sz ;
+/* and now evaluate it! */
+	switch( FUNID( funcs[ fnum].f_type)) {
+		int sz, sz1 ;
+		unicode_t c ;
 
-	case UFADD | DYNAMIC:
-		retstr = i_to_a( atoi( arg1) + atoi( arg2)) ;
+	case UFADD:
+		retstr = i_to_a( atoi( argv[ 0]) + atoi( argv[ 1])) ;
 		break ;
-	case UFSUB | DYNAMIC:
-		retstr = i_to_a( atoi( arg1) - atoi( arg2)) ;
+	case UFSUB:
+		retstr = i_to_a( atoi( argv[ 0]) - atoi( argv[ 1])) ;
 		break ;
-	case UFTIMES | DYNAMIC:
-		retstr = i_to_a( atoi( arg1) * atoi( arg2)) ;
+	case UFTIMES:
+		retstr = i_to_a( atoi( argv[ 0]) * atoi( argv[ 1])) ;
 		break ;
-	case UFDIV | DYNAMIC:
-		sz = atoi( arg2) ;
-		retstr = (sz == 0) ? errorm : i_to_a( atoi( arg1) / sz) ;
+	case UFDIV:
+		sz = atoi( argv[ 1]) ;
+		retstr = (sz == 0) ? errorm : i_to_a( atoi( argv[ 0]) / sz) ;
 		break ;
-	case UFMOD | DYNAMIC:
-		sz = atoi( arg2) ;
-		retstr = (sz == 0) ? errorm : i_to_a( atoi( arg1) % sz) ;
+	case UFMOD:
+		sz = atoi( argv[ 1]) ;
+		retstr = (sz == 0) ? errorm : i_to_a( atoi( argv[ 0]) % sz) ;
 		break ;
-	case UFNEG | MONAMIC:
-		retstr = i_to_a( -atoi( arg1)) ;
+	case UFNEG:
+		retstr = i_to_a( -atoi( argv[ 0])) ;
 		break ;
-	case UFCAT | DYNAMIC: {
-		int sz1 ;
-
-		sz1 = strlen( arg1) ;
-		sz = sz1 + strlen( arg2) + 1 ;
+	case UFCAT:
+		sz1 = strlen( argv[ 0]) ;
+		sz = sz1 + strlen( argv[ 1]) + 1 ;
 		if( sz > ressize) {
 			free( result) ;
 			result = malloc( sz) ;
 			ressize = sz ;
 		}
 
-		strcpy( result, arg1) ;
-		strcpy( &result[ sz1], arg2) ;
+		strcpy( result, argv[ 0]) ;
+		strcpy( &result[ sz1], argv[ 1]) ;
 		retstr = result ;
-	}
 		break ;
-	case UFLEFT | DYNAMIC: {
-		int sz1 = strlen( arg1) ;
+	case UFLEFT:
+		sz1 = strlen( argv[ 0]) ;
 		sz = 0 ;
-		for( int i = atoi( arg2) ; i > 0 ; i -= 1) {
+		for( int i = atoi( argv[ 1]) ; i > 0 ; i -= 1) {
 			unicode_t c ;
 
-			sz += utf8_to_unicode( arg1, sz, sz1, &c) ;
+			sz += utf8_to_unicode( argv[ 0], sz, sz1, &c) ;
 			if( sz == sz1)
 				break ;
 		}
@@ -431,36 +410,32 @@ static const char *gtfun( char *fname) {
 			ressize = sz + 1 ;
 		}
 
-		mystrscpy( result, arg1, sz + 1) ;
+		mystrscpy( result, argv[ 0], sz + 1) ;
 		retstr = result ;
-	}
 		break ;
-	case UFRIGHT | DYNAMIC:
-		sz = atoi( arg2) ;
+	case UFRIGHT:
+		sz = atoi( argv[ 1]) ;
 		if( sz >= ressize) {
 			free( result) ;
 			result = malloc( sz + 1) ;
 			ressize = sz + 1 ;
 		}
 		
-		retstr = strcpy( result, &arg1[ strlen( arg1) - sz]) ;
+		retstr = strcpy( result, &(argv[ 0][ strlen( argv[ 0]) - sz])) ;
 		break ;
-	case UFMID | TRINAMIC: {
-		int i ;
-		unicode_t c ;
-
-		int sz1 = strlen( arg1) ;
+	case UFMID:
+		sz1 = strlen( argv[ 0]) ;
 		int start = 0 ;
-		for( i = atoi( arg2) - 1 ; i > 0 ; i -= 1) {
-			start +=  utf8_to_unicode( arg1, start, sz1, &c) ;
+		for( i = atoi( argv[ 1]) - 1 ; i > 0 ; i -= 1) {
+			start +=  utf8_to_unicode( argv[ 0], start, sz1, &c) ;
 			if( start == sz1)
 				break ;
 		}
 
 		sz = start ;
 		if( sz < sz1)
-		for( i = atoi( arg3) ; i > 0 ; i -= 1) {
-			sz += utf8_to_unicode( arg1, sz, sz1, &c) ;
+		for( i = atoi( argv[ 2]) ; i > 0 ; i -= 1) {
+			sz += utf8_to_unicode( argv[ 0], sz, sz1, &c) ;
 			if( sz == sz1)
 				break ;
 		}
@@ -472,33 +447,32 @@ static const char *gtfun( char *fname) {
 			ressize = sz + 1 ;
 		}
 
-		mystrscpy( result, &arg1[ start], sz + 1) ;
+		mystrscpy( result, &(argv[ 0][ start]), sz + 1) ;
 		retstr = result ;
-	}
 		break ;
-	case UFNOT | MONAMIC:
-		retstr = ltos( stol( arg1) == FALSE) ;
+	case UFNOT:
+		retstr = ltos( stol( argv[ 0]) == FALSE) ;
 		break ;
-	case UFEQUAL | DYNAMIC:
-		retstr = ltos( atoi( arg1) == atoi( arg2)) ;
+	case UFEQUAL:
+		retstr = ltos( atoi( argv[ 0]) == atoi( argv[ 1])) ;
 		break ;
-	case UFLESS | DYNAMIC:
-		retstr = ltos( atoi( arg1) < atoi( arg2)) ;
+	case UFLESS:
+		retstr = ltos( atoi( argv[ 0]) < atoi( argv[ 1])) ;
 		break ;
-	case UFGREATER | DYNAMIC:
-		retstr = ltos( atoi( arg1) > atoi( arg2)) ;
+	case UFGREATER:
+		retstr = ltos( atoi( argv[ 0]) > atoi( argv[ 1])) ;
 		break ;
-	case UFSEQUAL | DYNAMIC:
-		retstr = ltos( strcmp( arg1, arg2) == 0) ;
+	case UFSEQUAL:
+		retstr = ltos( strcmp( argv[ 0], argv[ 1]) == 0) ;
 		break ;
-	case UFSLESS | DYNAMIC:
-		retstr = ltos( strcmp( arg1, arg2) < 0) ;
+	case UFSLESS:
+		retstr = ltos( strcmp( argv[ 0], argv[ 1]) < 0) ;
 		break ;
-	case UFSGREAT | DYNAMIC:
-		retstr = ltos( strcmp( arg1, arg2) > 0) ;
+	case UFSGREAT:
+		retstr = ltos( strcmp( argv[ 0], argv[ 1]) > 0) ;
 		break ;
-	case UFIND | MONAMIC:
-		retstr = getval( arg1) ;
+	case UFIND:
+		retstr = getval( argv[ 0]) ;
 		sz = strlen( retstr) + 1 ;
 		if( sz > ressize) {
 			free( result) ;
@@ -508,123 +482,109 @@ static const char *gtfun( char *fname) {
 
 		retstr = strcpy( result, retstr) ;
 		break ;
-	case UFAND | DYNAMIC:
-		retstr = ltos( stol( arg1) && stol( arg2)) ;
+	case UFAND:
+		retstr = ltos( stol( argv[ 0]) && stol( argv[ 1])) ;
 		break ;
-	case UFOR | DYNAMIC:
-		retstr = ltos( stol( arg1) || stol( arg2)) ;
+	case UFOR:
+		retstr = ltos( stol( argv[ 0]) || stol( argv[ 1])) ;
 		break ;
-	case UFLENGTH | MONAMIC:
-		retstr = i_to_a( strlen( arg1)) ;
+	case UFLENGTH:
+		retstr = i_to_a( strlen( argv[ 0])) ;
 		break ;
-	case UFUPPER | MONAMIC:
-		sz = strlen( arg1) ;
+	case UFUPPER:
+		sz = strlen( argv[ 0]) ;
 		if( sz >= ressize) {
 			free( result) ;
 			result = malloc( sz + 1) ;
 			ressize = sz + 1 ;
 		}
 
-		retstr = mkupper( result, arg1) ;
+		retstr = mkupper( result, argv[ 0]) ;
 		break ;
-	case UFLOWER | MONAMIC:
-		sz = strlen( arg1) ;
+	case UFLOWER:
+		sz = strlen( argv[ 0]) ;
 		if( sz >= ressize) {
 			free( result) ;
 			result = malloc( sz + 1) ;
 			ressize = sz + 1 ;
 		}
 
-		strcpy( result, arg1) ;	/* result is at least as long as arg1 */
+		strcpy( result, argv[ 0]) ;	/* result is at least as long as argv[ 0] */
 		retstr = mklower( result) ;
 		break ;
-	case UFTRUTH | MONAMIC:
-		retstr = ltos( atoi( arg1) == 42) ;
+	case UFTRUTH:
+		retstr = ltos( atoi( argv[ 0]) == 42) ;
 		break ;
-	case UFASCII | MONAMIC: {
-		unicode_t	c ;
-		
-		utf8_to_unicode( arg1, 0, 4, &c) ;
+	case UFASCII:
+		utf8_to_unicode( argv[ 0], 0, 4, &c) ;
 		retstr = i_to_a( c) ;
+		break ;
+	case UFCHR:
+		c = atoi( argv[ 0]) ;
+		if( c > 0x10FFFF)
+			retstr = errorm ;
+		else {
+			sz = unicode_to_utf8( c, result) ;
+			result[ sz] = 0 ;
+			retstr = result ;
 		}
 
 		break ;
-	case UFCHR | MONAMIC: {
-			unicode_t c ;
-
-			c = atoi( arg1) ;
-			if( c > 0x10FFFF)
-				retstr = errorm ;
-			else {
-				sz = unicode_to_utf8( c, result) ;
-				result[ sz] = 0 ;
-				retstr = result ;
-			}
-		}
-
-		break ;
-	case UFGTKEY | NILNAMIC:
+	case UFGTKEY:
 		result[0] = tgetc();
 		result[1] = 0;
 		retstr = result ;
 		break ;
-	case UFRND | MONAMIC:
-		retstr = i_to_a( ernd( atoi( arg1))) ;
+	case UFRND:
+		retstr = i_to_a( ernd( atoi( argv[ 0]))) ;
 		break ;
-	case UFABS | MONAMIC:
-		retstr = i_to_a( abs( atoi( arg1))) ;
+	case UFABS:
+		retstr = i_to_a( abs( atoi( argv[ 0]))) ;
 		break ;
-	case UFSINDEX | DYNAMIC:
-		retstr = i_to_a( sindex( arg1, arg2)) ;
+	case UFSINDEX:
+		retstr = i_to_a( sindex( argv[ 0], argv[ 1])) ;
 		break ;
-	case UFENV | MONAMIC:
+	case UFENV:
 #if	ENVFUNC
-		retstr = getenv( arg1) ;
+		retstr = getenv( argv[ 0]) ;
 		if( retstr == NULL)
-			retstr = "" ;
-#else
-		retstr = "" ;
 #endif
+			retstr = "" ;
+
 		break ;
-	case UFBIND | MONAMIC:
-		retstr = transbind( arg1) ;
+	case UFBIND:
+		retstr = transbind( argv[ 0]) ;
 		break ;
-	case UFEXIST | MONAMIC:
-		retstr = ltos( fexist( arg1)) ;
+	case UFEXIST:
+		retstr = ltos( fexist( argv[ 0])) ;
 		break ;
-	case UFFIND | MONAMIC:
-		retstr = flook( arg1, TRUE) ;
+	case UFFIND:
+		retstr = flook( argv[ 0], TRUE) ;
 		if( retstr == NULL)
 			retstr = "" ;
 		break ;
-	case UFBAND | DYNAMIC:
-		retstr = i_to_a( atoi( arg1) & atoi( arg2)) ;
+	case UFBAND:
+		retstr = i_to_a( atoi( argv[ 0]) & atoi( argv[ 1])) ;
 		break ;
-	case UFBOR | DYNAMIC:
-		retstr = i_to_a( atoi( arg1) | atoi( arg2)) ;
+	case UFBOR:
+		retstr = i_to_a( atoi( argv[ 0]) | atoi( argv[ 1])) ;
 		break ;
-	case UFBXOR | DYNAMIC:
-		retstr = i_to_a( atoi( arg1) ^ atoi( arg2)) ;
+	case UFBXOR:
+		retstr = i_to_a( atoi( argv[ 0]) ^ atoi( argv[ 1])) ;
 		break ;
-	case UFBNOT | MONAMIC:
-		retstr = i_to_a( ~atoi( arg1)) ;
+	case UFBNOT:
+		retstr = i_to_a( ~atoi( argv[ 0])) ;
 		break ;
-	case UFXLATE | TRINAMIC:
-		retstr = xlat( arg1, arg2, arg3) ;
+	case UFXLATE:
+		retstr = xlat( argv[ 0], argv[ 1], argv[ 2]) ;
 		break ;
 	default:
 		assert( FALSE) ;	/* never should get here */
 		retstr = errorm ;
 	}
 
-	if( arg3)
-		free( arg3) ;
-
-	if( arg2)
-		free( arg2) ;
-
-	if( arg1)
-		free( arg1) ;
+	while( argc > 0)
+		free( argv[ --argc]) ;
 
 	return retstr ;
 }
@@ -795,7 +755,7 @@ static char *gtenv( char *vname) {
  */
 BINDABLE( setvar) {
 	int status;	/* status return */
-	struct variable_description vd;		/* variable num/type */
+	variable_description vd ;		/* variable num/type */
 	char var[NVSIZE + 2];	/* name of variable to fetch %1234567890\0 */
 	char *value ;			/* value to set variable to */
 
@@ -883,7 +843,7 @@ int mdbugout( char *fmt, ...) {
  * @vd: structure to hold type and pointer.
  * @size: size of variable array.
  */
-static void findvar(char *var, struct variable_description *vd, int size)
+static void findvar(char *var, variable_description *vd, int size)
 {
 	unsigned vnum = 0 ;	/* subscript in variable arrays */
 	int vtype;	/* type to return */
@@ -939,7 +899,7 @@ fvar:
  * @var: variable to set.
  * @value: value to set to.
  */
-static int svar(struct variable_description *var, char *value)
+static int svar( variable_description *var, char *value)
 {
 	int vnum;	/* ordinal number of var refrenced */
 	int vtype;	/* type of variable to set */
