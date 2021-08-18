@@ -21,8 +21,8 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 
-int ttrow = HUGE ;      /* Row location of HW cursor */
-int ttcol = HUGE ;      /* Column location of HW cursor */
+int ttrow = -1 ;    /* Row location of HW cursor */
+int ttcol = -1 ;	/* Column location of HW cursor */
 
 
 #if USG         /* System V */
@@ -139,8 +139,7 @@ void ttopen(void)
 
     /* on all screens we are not sure of the initial position
        of the cursor                                        */
-    ttrow = 999;
-    ttcol = 999;
+    ttrow = ttcol = -1 ;
 }
 
 /*

@@ -26,12 +26,11 @@
 #include "retcode.h"
 #include "utf8.h"
 
-int ttrow = HUGE ;		/* Row location of HW cursor */
-int ttcol = HUGE ;		/* Column location of HW cursor */
+int ttrow = -1 ;		/* Row location of HW cursor */
+int ttcol = -1 ;		/* Column location of HW cursor */
 
-/* Since Mac OS X's termios.h doesn't have the following 2 macros, define them.
- */
-#if BSD || defined(SYSV) && (defined(_DARWIN_C_SOURCE) || defined(_FREEBSD_C_SOURCE))
+/* Define missing macroes for BSD and CYGWIN environment */
+#if BSD
 #define OLCUC 0000002
 #define XCASE 0000004
 #endif
@@ -94,10 +93,8 @@ void ttopen(void)
 	kbdflgs = fcntl(0, F_GETFL, 0);
 	kbdpoll = FALSE;
 
-	/* on all screens we are not sure of the initial position
-	   of the cursor                                        */
-	ttrow = 999;
-	ttcol = 999;
+/* on all screens we are not sure of the initial position of the cursor */
+	ttrow = ttcol = -1 ;
 }
 
 /*
