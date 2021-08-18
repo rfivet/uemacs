@@ -7,12 +7,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "estruct.h"
-#include "random.h"
+#include "defines.h"
 #include "display.h"
 #include "file.h"
 #include "input.h"
 #include "mlout.h"
+#include "random.h"
 #include "search.h"
 #include "terminal.h"
 #include "window.h"

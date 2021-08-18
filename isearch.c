@@ -27,8 +27,8 @@
 
 #include "basic.h"
 #include "buffer.h"
+#include "defines.h"
 #include "display.h"
-#include "estruct.h"
 #include "exec.h"
 #include "input.h"
 #include "line.h"

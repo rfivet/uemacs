@@ -12,12 +12,13 @@
  */
 
 #include <errno.h>
+#include <locale.h>
 #include <stdarg.h>
 #include <string.h>
 #include <unistd.h>
 
 #include "buffer.h"
-#include "estruct.h"
+#include "defines.h"
 #include "input.h"
 #include "line.h"
 #include "termio.h"
@@ -50,15 +51,15 @@ static video_p *pscreen ;	/* Physical screen. */
 #endif
 
 static int displaying = TRUE ;
-#if UNIX
-# include <signal.h>
-#endif
 
 #ifdef SIGWINCH
 # include <sys/ioctl.h>
 /* for window size changes */
- int chg_width, chg_height ;
+  int chg_width, chg_height ;
+
+  static void sizesignal( int signr) ;
 #endif
+
 
 static int currow ;		/* Cursor row                   */
 static int curcol ;		/* Cursor column                */
@@ -105,6 +106,11 @@ static int newscreensize( int h, int w) ;
    completely redrawn on the first call to "update".
  */
 void vtinit( void) {
+#ifdef SIGWINCH
+	signal( SIGWINCH, sizesignal) ;
+#endif
+
+	setlocale( LC_CTYPE, "") ; /* expects $LANG like en_GB.UTF-8 */
 	TTopen() ;		/* open the screen */
 	TTkopen() ;		/* open the keyboard */
 	TTrev( FALSE) ;
@@ -1404,7 +1410,7 @@ void getscreensize( int *widthp, int *heightp) {
 }
 
 #ifdef SIGWINCH
-void sizesignal( int signr) {
+static void sizesignal( int signr) {
 	int w, h ;
 	int old_errno = errno ;
 

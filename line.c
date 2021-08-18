@@ -20,7 +20,7 @@
 #include <string.h>
 
 #include "buffer.h"
-#include "estruct.h"
+#include "defines.h"
 #include "mlout.h"
 #include "utf8.h"
 #include "window.h"

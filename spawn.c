@@ -12,11 +12,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "defines.h"
-
 #include "buffer.h"
+#include "defines.h"
 #include "display.h"
-#include "estruct.h"
 #include "exec.h"
 #include "file.h"
 #include "flook.h"
@@ -27,8 +25,6 @@
 
 #if	USG | BSD
 #include        <signal.h>
-#ifdef SIGWINCH
-#endif
 #endif
 
 

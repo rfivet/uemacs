@@ -9,8 +9,8 @@
 
 #include "basic.h"
 #include "buffer.h"
+#include "defines.h"
 #include "display.h"	/* upmode() */
-#include "estruct.h"
 #include "execute.h"
 #include "line.h"
 #include "mlout.h"

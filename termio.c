@@ -1,6 +1,7 @@
 /* termio.c -- implements termio.h */
 #include "termio.h"
 
+#include "defines.h"	/* POSIX */
 #ifndef POSIX
 
 /* The functions in this file negotiate with the operating system for
@@ -13,7 +14,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "estruct.h"
 #include "retcode.h"
 #include "utf8.h"
 

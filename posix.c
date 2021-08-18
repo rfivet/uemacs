@@ -1,6 +1,7 @@
 /* posix.c -- posix implementation of termio.h */
 #include "termio.h"
 
+#include "defines.h"	/* POSIX */
 #ifdef POSIX
 
 /* The functions in this file negotiate with the operating system for
@@ -22,7 +23,6 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include "estruct.h"
 #include "retcode.h"
 #include "utf8.h"
 

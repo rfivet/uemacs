@@ -4,7 +4,7 @@
 
 #include <stdarg.h>
 
-#include "estruct.h"
+#include "defines.h"		/* UNIX */
 #include "names.h"          /* BINDABLE() */
 #include "utf8.h"           /* unicode_t */
 
@@ -40,8 +40,6 @@ void getscreensize( int *widthp, int *heightp) ;
 # include <signal.h>
 # ifdef SIGWINCH
    extern int chg_width, chg_height ;
-
-   void sizesignal( int signr) ;
 # endif
 #endif
 

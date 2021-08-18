@@ -17,7 +17,6 @@
 #include "buffer.h"
 #include "defines.h"
 #include "display.h"
-#include "estruct.h"
 #include "execute.h"
 #include "fileio.h"
 #include "input.h"

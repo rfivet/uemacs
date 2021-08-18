@@ -12,7 +12,7 @@
 #include <stddef.h>
 
 #include "buffer.h"
-#include "estruct.h"
+#include "defines.h"
 #include "line.h"
 #include "mlout.h"
 #include "random.h"

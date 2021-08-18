@@ -1,8 +1,9 @@
 /* buffer.c -- implements buffer.h */
 #include "buffer.h"
 
-/*  Buffer management.  Some of the functions are internal, and some are actually attached to
-    user keys.  Like everyone else, they set hints for the display system.
+/* Buffer management.  Some of the functions are internal, and some are
+   actually attached to user keys.  Like everyone else, they set hints for
+   the display system.
 
     modified by Petri Kutvonen
  */
@@ -11,7 +12,6 @@
 #include <string.h>
 
 #include "defines.h"
-#include "estruct.h"
 #include "file.h"
 #include "input.h"
 #include "mlout.h"

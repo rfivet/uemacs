@@ -20,8 +20,8 @@
 #include <curses.h>
 #include <term.h>
 
+#include "defines.h"
 #include "display.h"
-#include "estruct.h"
 #include "termio.h"
 
 #if TERMCAP
