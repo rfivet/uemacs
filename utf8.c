@@ -1,16 +1,13 @@
 /* utf8.c -- implements utf8.h, conversion between unicode and UTF-8 */
 #include "utf8.h"
 
-#define _XOPEN_SOURCE   /* wcwidth in wchar.h */
-
 #include <assert.h>
-#include <wchar.h>
+#include <wchar.h>					/* either _XOPEN_SOURCE or _GNU_SOURCE */
 
 
 /* Display width of UTF-8 character */
 int _utf8_width( unicode_t c) {
-#if CYGWIN
-    assert( sizeof( wchar_t) == 2) ;    /* wcwidth only supports UTF-16 */
+#if __SIZEOF_WCHAR_T__ == 2		    /* wcwidth only supports UTF-16 */
     return (c < 0x10000) ? wcwidth( (wchar_t) c) : -1 ;
 #else
     return wcwidth( (wchar_t) c) ;

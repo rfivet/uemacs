@@ -1,15 +1,13 @@
 /* termio.c -- implements termio.h */
-#if !defined( POSIX)
-
 #include "termio.h"
 
-/*  TERMIO.C
- *
- * The functions in this file negotiate with the operating system for
- * characters, and write characters in a barely buffered fashion on the display.
- * All operating systems.
- *
- *  modified by Petri Kutvonen
+#ifndef POSIX
+
+/* The functions in this file negotiate with the operating system for
+   characters, and write characters in a barely buffered fashion on the
+   display.  All operating systems.
+
+   modified by Petri Kutvonen
  */
 
 #include <stdio.h>
@@ -258,14 +256,12 @@ int typahead( void)
     return kbdqp;
 #endif
 
-#if !UNIX
+#  if !UNIX
     return FALSE;
-#endif
+#  endif
 }
-#endif
+# endif
 
-#else
-typedef void _pedantic_empty_translation_unit ;
 #endif              /* not POSIX */
 
 /* end of termio.c */

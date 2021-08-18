@@ -25,15 +25,15 @@ WARNINGS=-pedantic -Wall -Wextra -Wstrict-prototypes -Wno-unused-parameter
 CFLAGS=-O2 $(WARNINGS)
 LDFLAGS=-s
 LIBS=-lcurses
-DEFINES=-DAUTOCONF -DPROGRAM=$(PROGRAM) # -DNDEBUG
-ifeq ($(uname_S),Linux)
- DEFINES += -DPOSIX -DUSG
-else ifeq ($(uname_S),CYGWIN)
- DEFINES += -DCYGWIN -DSYSV
-else ifeq ($(uname_S),MSYS)
- DEFINES += -DCYGWIN -DSYSV
-else ifeq ($(uname_S),NetBSD)
- DEFINES += -DPOSIX -DBSD=1
+DEFINES=-DAUTOCONF -DPROGRAM=$(PROGRAM) -D_GNU_SOURCE # -DNDEBUG
+ifeq ($(uname_S),Linux)			# __unix__ __linux__
+ DEFINES += -DUSG -DPOSIX
+else ifeq ($(uname_S),CYGWIN)	# __unix__ __CYGWIN__
+ DEFINES += -DSYSV # -DPOSIX
+else ifeq ($(uname_S),MSYS)		# __unix__ __CYGWIN__ __MSYS__
+ DEFINES += -DSYSV # -DPOSIX
+else ifeq ($(uname_S),NetBSD)	# __unix__ __NetBSD__
+ DEFINES += -DBSD=1 -DPOSIX
 else
  $(error $(uname_S) needs configuration)
 endif

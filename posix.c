@@ -1,18 +1,16 @@
 /* posix.c -- posix implementation of termio.h */
-#ifdef POSIX
-
 #include "termio.h"
 
-/*	posix.c
- *
- *      The functions in this file negotiate with the operating system for
- *      characters, and write characters in a barely buffered fashion on the
- *      display. All operating systems.
- *
- *	modified by Petri Kutvonen
- *
- *	based on termio.c, with all the old cruft removed, and
- *	fixed for termios rather than the old termio.. Linus Torvalds
+#ifdef POSIX
+
+/* The functions in this file negotiate with the operating system for
+   characters, and write characters in a barely buffered fashion on the
+   display.  All operating systems.
+
+   modified by Petri Kutvonen
+ 
+   based on termio.c, with all the old cruft removed, and
+   fixed for termios rather than the old termio.. Linus Torvalds
  */
 
 #include <errno.h>
@@ -38,7 +36,7 @@ int ttcol = HUGE ;		/* Column location of HW cursor */
 #define XCASE 0000004
 #endif
 
-#ifdef CYGWIN
+#ifdef __CYGWIN__			/* gcc predefined (see cpp -dM) */
 #define XCASE 0
 #define ECHOPRT 0
 #define PENDIN 0
@@ -247,8 +245,6 @@ int typahead(void)
 	return x;
 }
 
-#else
-typedef void _pedantic_empty_translation_unit ;
-#endif              /* not POSIX */
+#endif
 
 /* end of posix.c */
