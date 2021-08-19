@@ -207,7 +207,7 @@ static void vtputc( unicode_t c) {
 		c &= 0xFF ;
 
 	if( c == '\t') {
-		sane_vtputc( viewtab ? 0x226B : ' ') ;	/* 0x226B: '≫' */
+		sane_vtputc( viewtab ? 0xBB : ' ') ;	/* 0xBB: '»' */
 		while( ((vtcol + taboff) % tabwidth) != 0)
 			sane_vtputc( ' ') ;
 	} else if( c < 0x20 || c == 0x7F) {
