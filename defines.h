@@ -7,7 +7,7 @@
 # if __NetBSD__
 #  define BSD 1
 #  define POSIX 1
-# elsif __linux__
+# elif __linux__
 #  define USG 1
 #  define SVR4 1	/* locks */
 #  define POSIX 1
@@ -45,7 +45,7 @@
 # include <stdlib.h>
   void *allocate( size_t size) ;
   void release( void *ptr) ;
-  
+
 # define    malloc  allocate
 # define    free    release
 #endif

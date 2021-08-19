@@ -9,7 +9,7 @@
    display.  All operating systems.
 
    modified by Petri Kutvonen
- 
+
    based on termio.c, with all the old cruft removed, and
    fixed for termios rather than the old termio.. Linus Torvalds
  */
@@ -149,27 +149,28 @@ void ttflush(void)
 		exit(15);
 }
 
-/*
- * Read a character from the terminal, performing no editing and doing no echo
- * at all.
- * Very simple on CPM, because the system can do exactly what you want.
- */
-int ttgetc(void)
-{
-	static char buffer[32];
-	static int pending;
-	unicode_t c;
-	int count, bytes = 1, expected;
 
-	count = pending;
-	if (!count) {
-		count = read(0, buffer, sizeof(buffer));
-		if (count <= 0)
-			return 0;
-		pending = count;
+/* Read a character from the terminal, performing no editing and doing no
+   echo at all.
+ */
+int ttgetc( void) {
+	static char buffer[ 32] ;
+	static int pending ;
+	unicode_t c ;
+
+	int count = pending ;
+	if( !count) {
+		count = read( 0, buffer, sizeof( buffer)) ;
+		if( count <= 0)
+			return 0 ;
+
+		pending = count ;
 	}
 
-	c = (unsigned char) buffer[0];
+	int bytes = 1 ;
+	c = (unsigned char) buffer[ 0] ;
+#if 0	// temporary fix for wsl
+
 	if (c >= 32 && c < 128)
 		goto done;
 
@@ -186,7 +187,7 @@ int ttgetc(void)
 	 * delay for some *very* unusual utf8 character
 	 * input.
 	 */
-	expected = 2;
+	int expected = 2;
 	if ((c & 0xe0) == 0xe0)
 		expected = 6;
 
@@ -220,9 +221,10 @@ int ttgetc(void)
 	bytes = utf8_to_unicode(buffer, 0, pending, &c);
 
 done:
-	pending -= bytes;
-	memmove(buffer, buffer+bytes, pending);
-	return c;
+#endif
+	pending -= bytes ;
+	memmove( buffer, buffer + bytes, pending) ;
+	return c ;
 }
 
 /* typahead:	Check to see if any characters are already in the
