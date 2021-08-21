@@ -85,10 +85,10 @@ char *getkill( void) {
 }
 
 
-/* Move the cursor backwards by "n" characters.  If "n" is less than zero
-   call "forwchar" to actually do the move.  Otherwise compute the new
-   cursor location.  Error if you try and move out of the buffer.  Set the
-   flag if the line pointer for dot changes.
+/* Move the cursor backwards by "n" combined characters.  If "n" is less
+   than zero call "forwchar" to actually do the move.  Otherwise compute
+   the new cursor location.  Error if you try and move out of the buffer.
+   Set the flag if the line pointer for dot changes.
  */
 BBINDABLE( backchar) {
     assert( f == TRUE || n == 1) ;
@@ -105,9 +105,26 @@ BBINDABLE( backchar) {
             curwp->w_doto = llength( lp) ;
             curwp->w_flag |= WFMOVE ;
         } else {
-            unsigned pos = curwp->w_doto -= 1 ;
-            if( pos > 0)
-                curwp->w_doto -= utf8_revdelta( (unsigned char *) &( (curwp->w_dotp)->l_text[ pos]), pos) ;
+			unsigned pos ;
+		/* move back over combining unicode */
+		combined:
+            pos = curwp->w_doto -= 1 ;
+		/* check if at end of unicode */
+            if( pos > 0) {
+                unsigned delta = utf8_revdelta(
+					(unsigned char *) &( (curwp->w_dotp)->l_text[ pos]), pos) ;
+				if( delta != 0) {
+	                pos = curwp->w_doto -= delta ;
+					if( pos > 0) {	/* check if on combining unicode */
+						unicode_t unc ;
+				
+	        	        utf8_to_unicode( curwp->w_dotp->l_text, pos,
+												llength( curwp->w_dotp), &unc) ;
+		        	    if( utf8_width( unc) == 0)
+							goto combined ;
+					}
+				}
+			}
         }
     }
 
@@ -115,10 +132,11 @@ BBINDABLE( backchar) {
 }
 
 
-/* Move the cursor forwards by "n" characters.  If "n" is less than zero
-   call "backchar" to actually do the move.  Otherwise compute the new
-   cursor location, and move ".".  Error if you try and move off the end of
-   the buffer.  Set the flag if the line pointer for dot changes.
+/* Move the cursor forwards by "n" combined characters.  If "n" is less
+   than zero call "backchar" to actually do the move.  Otherwise compute
+   the new cursor location, and move ".".  Error if you try and move off
+   the end of the buffer.  Set the flag if the line pointer for dot
+   changes.
  */
 BBINDABLE( forwchar) {
     assert( f == TRUE || n == 1) ;
@@ -140,7 +158,7 @@ BBINDABLE( forwchar) {
             curwp->w_doto += utf8_to_unicode( curwp->w_dotp->l_text,
                                                     curwp->w_doto, len, &unc) ;
         /* check if next char is null width unicode */
-            while( curwp->w_doto != len) {
+            while( curwp->w_doto < len - 1) {
                 unsigned bytes = utf8_to_unicode( curwp->w_dotp->l_text,
                                                     curwp->w_doto, len, &unc) ;
                 if( utf8_width( unc) == 0)
@@ -495,36 +513,69 @@ int lnewline( void) {
     return TRUE;
 }
 
-int lgetchar( unicode_t *c) {
-    if( curwp->w_dotp->l_used == curwp->w_doto) {
-        *c = (curbp->b_mode & MDDOS) ? '\r' : '\n' ;
+
+/* lgetchar():
+ *  get unicode value and return UTF-8 size of character at dot.
+ */
+int lgetchar( unicode_t *cp) {
+    if( curwp->w_dotp->l_used == curwp->w_doto) {		/* at EOL? */
+        *cp = (curbp->b_mode & MDDOS) ? '\r' : '\n' ;
         return 1 ;
     } else
         return utf8_to_unicode( curwp->w_dotp->l_text, curwp->w_doto,
-                                                llength( curwp->w_dotp), c) ;
+                                                llength( curwp->w_dotp), cp) ;
 }
 
-/*
+
+/* lcombinedsize():
+ *  return total UTF-8 size of combined character at dot.
+ */
+static int lcombinedsize( void) {
+    if( curwp->w_dotp->l_used == curwp->w_doto)	/* EOL? */
+        return 1 ;
+    else {
+		unicode_t c ;
+
+		int pos = curwp->w_doto ;
+        unsigned bytes = utf8_to_unicode( curwp->w_dotp->l_text, pos,
+                                                llength( curwp->w_dotp), &c) ;
+	/* check if followed by combining unicode character */
+		pos += bytes ;
+		while( pos < llength( curwp->w_dotp) - 1) {		/* at least 2 bytes */
+			unsigned cnt = utf8_to_unicode( curwp->w_dotp->l_text, pos,
+                                                llength( curwp->w_dotp), &c) ;
+			if( utf8_width( c) == 0) {
+				bytes += cnt ;
+				pos += cnt ;
+			} else
+				break ;
+		}
+		
+		return bytes ;
+	}
+}
+
+
+/* ldelchar():
+ *  delete forward combined characters starting at dot.
+ *
  * ldelete() really fundamentally works on bytes, not characters.
  * It is used for things like "scan 5 words forwards, and remove
  * the bytes we scanned".
  *
  * If you want to delete characters, use ldelchar().
  */
-boolean ldelchar( long n, boolean kflag) {
+boolean ldelchar( long n, boolean kill_f) {
 /* testing for read only mode is done by ldelete() */
-    while( n-- > 0) {
-        unicode_t c;
-
-        if( !ldelete( lgetchar( &c), kflag))
+    while( n-- > 0)
+        if( !ldelete( lcombinedsize(), kill_f))
             return FALSE ;
-    }
 
     return TRUE ;
 }
 
-/*
- * This function deletes "n" bytes, starting at dot. It understands how do deal
+
+/* This function deletes "n" bytes, starting at dot. It understands how do deal
  * with end of lines, etc. It returns TRUE if all of the characters were
  * deleted, and FALSE if they were not (because dot ran into the end of the
  * buffer. The "kflag" is TRUE if the text should be put in the kill buffer.
