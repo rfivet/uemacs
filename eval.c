@@ -414,14 +414,20 @@ static const char *gtfun( char *fname) {
 		retstr = result ;
 		break ;
 	case UFRIGHT:
-		sz = atoi( argv[ 1]) ;
+		sz = strlen( argv[ 0]) ;
+		for( sz1 = atoi( argv[ 1]) ; sz1 > 0 && sz > 0 ; sz1--)
+			if( --sz > 0)
+				sz -= utf8_revdelta( (unsigned char *) &( argv[ 0])[ sz], sz) ;
+
+		retstr = &( argv[ 0])[ sz] ;
+		sz = strlen( retstr) ;
 		if( sz >= ressize) {
 			free( result) ;
-			result = malloc( sz + 1) ;
 			ressize = sz + 1 ;
+			result = malloc( ressize) ;
 		}
-		
-		retstr = strcpy( result, &(argv[ 0][ strlen( argv[ 0]) - sz])) ;
+
+		retstr = strcpy( result, retstr) ;
 		break ;
 	case UFMID:
 		sz1 = strlen( argv[ 0]) ;
