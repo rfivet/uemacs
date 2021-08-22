@@ -2,6 +2,7 @@
 #include "display.h"
 
 #define	REVSTA	1  /* Status line appears in reverse video         */
+#define MEMMAP	0
 
 /* The functions in this file handle redisplay.  There are two halves, the
    ones that update the virtual display screen, and the ones that make the
@@ -11,6 +12,7 @@
    Modified by Petri Kutvonen
  */
 
+#include <assert.h>
 #include <errno.h>
 #include <locale.h>
 #include <stdarg.h>
@@ -203,8 +205,9 @@ static void sane_vtputc( unicode_t c) {
 
 static void vtputc( unicode_t c) {
 	/* In case somebody passes us a signed char.. */
-	if( c > 0x10FFFF)	/* Let's assume this is due to sign extension */
-		c &= 0xFF ;
+//	if( c > 0x10FFFF)	/* Let's assume this is due to sign extension */
+//		c &= 0xFF ;
+	assert( c <= 0x10FFFF) ;
 
 	if( c == '\t') {
 		sane_vtputc( viewtab ? 0xBB : ' ') ;	/* 0xBB: '»' */

@@ -29,7 +29,6 @@
 #define MSDOS	0
 #define IBMPC	MSDOS
 #define COLOR	MSDOS
-#define MEMMAP	IBMPC
 
 
 #define FILOCK (SVR4 | BSD)
@@ -46,8 +45,8 @@
   void *allocate( size_t size) ;
   void release( void *ptr) ;
 
-# define    malloc  allocate
-# define    free    release
+# define malloc  allocate
+# define free    release
 #endif
 
 /* De-allocate memory always on exit (if the operating system or main
