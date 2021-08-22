@@ -14,11 +14,11 @@
    list of marks into the line.
  */
 typedef struct line {
-    struct line *l_fp ; /* Forward link to the next line        */
-    struct line *l_bp ; /* Backward link to the previous line   */
-    int l_size ;        /* Allocated size                       */
-    int l_used ;        /* Used size                            */
-    char l_text[ 1] ;   /* A bunch of characters                */
+    struct line *l_fp ;		/* Forward link to the next line        */
+    struct line *l_bp ;		/* Backward link to the previous line   */
+    int l_size ;			/* Allocated size                       */
+    int l_used ;			/* Used size                            */
+    char l_text[] ;			/* A bunch of characters                */
 } *line_p ;
 
 #define lforw(lp)       ((lp)->l_fp)
@@ -40,10 +40,10 @@ BBINDABLE( forwchar) ;
 void lfree( line_p lp) ;
 void lchange( int flag) ;
 int linstr( char *instr) ;
-int linsert( int n, unicode_t c) ;
+boolean linsert( int n, unicode_t c) ;
 boolean linsert_byte( int n, int c) ;
 int lover( char *ostr) ;
-int lnewline( void) ;
+boolean lnewline( void) ;
 boolean ldelete(  long n, boolean kflag) ;
 boolean ldelchar( long n, boolean kflag) ;
 int lgetchar( unicode_t *cref) ;

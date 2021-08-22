@@ -172,8 +172,8 @@ BBINDABLE( forwchar) {
     return TRUE ;
 }
 
-/*
- * This routine allocates a block of memory large enough to hold a struct line
+
+/* This routine allocates a block of memory large enough to hold a struct line
  * containing "used" characters. The block is always rounded up a bit. Return
  * a pointer to the new block, or NULL if there isn't any memory left. Print a
  * message in the message line if no space.
@@ -181,13 +181,13 @@ BBINDABLE( forwchar) {
 line_p lalloc( int used) {
 #define BLOCK_SIZE 16   /* Line block chunk size. */
 
-/* rounding down use masking instead or modulo when BLOCK_SIZE is power of 2 */
+/* rounding down use masking instead of modulo when BLOCK_SIZE is power of 2 */
 #if (BLOCK_SIZE & -BLOCK_SIZE) == BLOCK_SIZE
     int size = (used + BLOCK_SIZE) & ~(BLOCK_SIZE - 1) ;
 #else
     int size = used + BLOCK_SIZE - used % BLOCK_SIZE ;
 #endif
-    line_p lp = (line_p) malloc( offsetof( struct line, l_text) + size) ;
+    line_p lp = malloc( sizeof *lp + size) ;
     if( lp == NULL)
         mloutstr( "(OUT OF MEMORY)") ;
     else {
@@ -289,8 +289,7 @@ int linstr( char *instr) {
         unicode_t tmpc ;
 
         while( (tmpc = *instr++ & 0xFF)) {
-            status =
-                (tmpc == '\n' ? lnewline() : (int) linsert_byte( 1, tmpc)) ;
+            status = (tmpc == '\n') ? lnewline() : linsert_byte( 1, tmpc) ;
 
             /* Insertion error? */
             if( status != TRUE) {
@@ -393,7 +392,7 @@ boolean linsert_byte( int n, int c) {
     return TRUE;
 }
 
-int linsert( int n, unicode_t c) {
+boolean linsert( int n, unicode_t c) {
     assert( n >= 0) ;
     assert( !(curbp->b_mode & MDVIEW)) ;
 
@@ -421,7 +420,7 @@ int linsert( int n, unicode_t c) {
  *
  * int c ;  character to overwrite on current position
  */
-static int lowrite( int c) {
+static boolean lowrite( int c) {
     if( curwp->w_doto < curwp->w_dotp->l_used
     && (    lgetc( curwp->w_dotp, curwp->w_doto) != '\t'
         ||  (curwp->w_doto % tabwidth) == (tabwidth - 1)
@@ -431,9 +430,8 @@ static int lowrite( int c) {
     return linsert( 1, c) ;
 }
 
-/*
- * lover -- Overwrite a string at the current point
- */
+
+/* lover -- Overwrite a string at the current point */
 int lover( char *ostr) {
     int status = TRUE ;
 
@@ -444,7 +442,7 @@ int lover( char *ostr) {
             status = (tmpc == '\n' ? lnewline() : lowrite( tmpc)) ;
             if( status != TRUE) {   /* Insertion error? */
                 mloutstr( "%Out of memory while overwriting") ;
-                return status ;
+                break ;
             }
         }
     }
@@ -452,21 +450,15 @@ int lover( char *ostr) {
     return status ;
 }
 
-/*
- * Insert a newline into the buffer at the current location of dot in the
- * current window. The funny ass-backwards way it does things is not a botch;
- * it just makes the last line in the file not a special case. Return TRUE if
- * everything works out and FALSE on error (memory allocation failure). The
- * update of dot and mark is a bit easier then in the above case, because the
- * split forces more updating.
- */
-int lnewline( void) {
-    char *cp1;
-    char *cp2;
-    line_p lp1, lp2 ;
-    int doto;
-    struct window *wp;
 
+/* Insert a newline into the buffer at the current location of dot in the
+   current window.  The funny ass-backwards way it does things is not a
+   botch; it just makes the last line in the file not a special case.
+   Return TRUE if everything works out and FALSE on error (memory
+   allocation failure).  The update of dot and mark is a bit easier then in
+   the above case, because the split forces more updating.
+ */
+boolean lnewline( void) {
     assert( !(curbp->b_mode & MDVIEW)) ;
 
 #if SCROLLCODE
@@ -474,43 +466,39 @@ int lnewline( void) {
 #else
     lchange(WFHARD);
 #endif
-    lp1 = curwp->w_dotp;    /* Get the address and  */
-    doto = curwp->w_doto;   /* offset of "."        */
-    lp2 = lalloc( doto) ;   /* New first half line */
+    line_p lp1 = curwp->w_dotp ;	/* Get the address and	*/
+    int doto = curwp->w_doto ;		/* offset of "."        */
+    line_p lp2 = lalloc( doto) ;	/* New first half line	*/
     if( lp2 == NULL)
         return FALSE ;
 
-    cp1 = &lp1->l_text[0];  /* Shuffle text around  */
-    cp2 = &lp2->l_text[0];
-    while (cp1 != &lp1->l_text[doto])
-        *cp2++ = *cp1++;
-    cp2 = &lp1->l_text[0];
-    while (cp1 != &lp1->l_text[lp1->l_used])
-        *cp2++ = *cp1++;
-    lp1->l_used -= doto;
-    lp2->l_bp = lp1->l_bp;
-    lp1->l_bp = lp2;
-    lp2->l_bp->l_fp = lp2;
-    lp2->l_fp = lp1;
-    wp = wheadp;        /* Windows              */
-    while (wp != NULL) {
-        if (wp->w_linep == lp1)
-            wp->w_linep = lp2;
-        if (wp->w_dotp == lp1) {
-            if (wp->w_doto < doto)
-                wp->w_dotp = lp2;
+    memcpy( lp2->l_text, lp1->l_text, doto) ;
+    lp1->l_used -= doto ;
+	memcpy( lp1->l_text, &lp1->l_text[ doto], lp1->l_used) ;
+    lp2->l_fp = lp1 ;
+    lp2->l_bp = lp1->l_bp ;
+    lp1->l_bp = lp2 ;
+    lp2->l_bp->l_fp = lp2 ;
+    for( window_p wp = wheadp ; wp != NULL ; wp = wp->w_wndp) {
+        if( wp->w_linep == lp1)
+            wp->w_linep = lp2 ;
+
+        if( wp->w_dotp == lp1) {
+            if( wp->w_doto < doto)
+                wp->w_dotp = lp2 ;
             else
-                wp->w_doto -= doto;
+                wp->w_doto -= doto ;
         }
+
         if (wp->w_markp == lp1) {
-            if (wp->w_marko < doto)
-                wp->w_markp = lp2;
+            if( wp->w_marko < doto)
+                wp->w_markp = lp2 ;
             else
-                wp->w_marko -= doto;
+                wp->w_marko -= doto ;
         }
-        wp = wp->w_wndp;
     }
-    return TRUE;
+
+    return TRUE ;
 }
 
 
