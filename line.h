@@ -39,10 +39,10 @@ BBINDABLE( forwchar) ;
 
 void lfree( line_p lp) ;
 void lchange( int flag) ;
-int linstr( char *instr) ;
+boolean linstr( char *instr) ;
 boolean linsert( int n, unicode_t c) ;
 boolean linsert_byte( int n, int c) ;
-int lover( char *ostr) ;
+boolean lover( char *ostr) ;
 boolean lnewline( void) ;
 boolean ldelete(  long n, boolean kflag) ;
 boolean ldelchar( long n, boolean kflag) ;

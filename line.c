@@ -266,8 +266,8 @@ void lchange(int flag)
     }
 }
 
-/*
- * insert spaces forward into text
+
+/* insert spaces forward into text
  *
  * int f, n;        default flag and numeric argument
  */
@@ -278,23 +278,18 @@ BINDABLE( insspace) {
     return TRUE ;
 }
 
-/*
- * linstr -- Insert a string at the current point
- */
 
-int linstr( char *instr) {
-    int status = TRUE ;
-
+/* linstr -- Insert a string at the current point */
+boolean linstr( char *instr) {
+    boolean status = TRUE ;
     if( instr != NULL) {
-        unicode_t tmpc ;
+        int c ;
 
-        while( (tmpc = *instr++ & 0xFF)) {
-            status = (tmpc == '\n') ? lnewline() : linsert_byte( 1, tmpc) ;
-
-            /* Insertion error? */
-            if( status != TRUE) {
+        while( (c = (unsigned char) *instr++)) {
+            status = (c == '\n') ? lnewline() : linsert_byte( 1, c) ;
+            if( status != TRUE) {	/* Insertion error? */
                 mloutstr( "%Out of memory while inserting") ;
-                return status ;
+                break ;
             }
         }
     }
@@ -432,14 +427,13 @@ static boolean lowrite( int c) {
 
 
 /* lover -- Overwrite a string at the current point */
-int lover( char *ostr) {
-    int status = TRUE ;
-
+boolean lover( char *ostr) {
+    boolean status = TRUE ;
     if( ostr != NULL) {
-        char tmpc ;
+        int c ;
 
-        while( (tmpc = *ostr++)) {
-            status = (tmpc == '\n' ? lnewline() : lowrite( tmpc)) ;
+        while( (c = (unsigned char) *ostr++)) {
+            status = (c == '\n') ? lnewline() : lowrite( c) ;
             if( status != TRUE) {   /* Insertion error? */
                 mloutstr( "%Out of memory while overwriting") ;
                 break ;

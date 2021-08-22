@@ -837,7 +837,7 @@ static int adjustmode( int kind, int global) {
 }
 
 
-static int iovstring( int f, int n, const char *prompt, int (*fun)( char *)) {
+static int iovstring( int f, int n, const char *prompt, boolean (*fun)( char *)) {
     char *tstring ; /* string to add */
 
 /* ask for string to insert */
