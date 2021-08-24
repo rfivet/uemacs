@@ -12,7 +12,7 @@
 extern int macbug ;     /* macro debuging flag          */
 extern int cmdstatus ;  /* last command status          */
 extern int rval ;       /* return value of a subprocess */
-extern long envram ;    /* # of bytes current in use by malloc */
+extern unsigned envram ;    /* # of bytes current in use by malloc */
 
 int readfirst_f( void) ;
 int is_it_cmd( char *token) ;

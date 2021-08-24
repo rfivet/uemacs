@@ -65,7 +65,7 @@ int rval = 0 ;			/* return value of a subprocess */
 static int saveflag = 0 ;	/* Flags, saved with the $target var */
 
 
-long envram = 0l ;		/* # of bytes current in use by malloc */
+unsigned envram = 0 ;		/* # of bytes current in use by malloc */
 
 
 /* User variables ******************************************/

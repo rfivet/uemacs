@@ -6,6 +6,7 @@
  */
 
 #include <assert.h>
+#include <stdlib.h>		/* malloc(), free() */
 
 #include "basic.h"
 #include "buffer.h"
@@ -52,7 +53,7 @@ TBINDABLE( redraw) {
 
 /* The command make the next window (next => down the screen) the current
    window.  There are no real errors, although the command does nothing if
-   there is only 1 window on the screen.  Bound to "C-X C-N".
+   there is only 1 window on the screen.  Bound to "C-X O".
 
    with an argument this command finds the <n>th window from the top
  
@@ -318,7 +319,10 @@ BINDABLE( splitwind) {
 		return FALSE ;
 	}
 
-	wp = xmalloc( sizeof *wp) ;
+	wp = malloc( sizeof *wp) ;
+	if( wp == NULL)
+		return mloutfail( "Out of memory") ;
+
 	++curbp->b_nwnd;	/* Displayed twice.     */
 	wp->w_bufp = curbp;
 	wp->w_dotp = curwp->w_dotp;

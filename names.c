@@ -16,6 +16,7 @@
 #include "bind.h"
 #include "bindable.h"
 #include "buffer.h"
+#include "defines.h"	/* malloc/allocate */
 #include "display.h"
 #include "eval.h"
 #include "exec.h"

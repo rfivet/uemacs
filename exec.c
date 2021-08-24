@@ -13,6 +13,7 @@
 
 #include "buffer.h"
 #include "bind.h"
+#include "defines.h"	/* malloc/allocate, free/release */
 #include "eval.h"
 #include "file.h"
 #include "flook.h"

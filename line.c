@@ -37,18 +37,18 @@ static int ldelnewline( void) ;
  * was taken up by the keycode structure).
  */
 
-#define KBLOCK  250     /* sizeof kill buffer chunks    */
+#define KBLOCK  248				/* sizeof kill buffer chunks    */
 
 typedef struct kill {
-    struct kill *d_next;   /* Link to next chunk, NULL if last. */
-    char d_chunk[KBLOCK];  /* Deleted text. */
+    struct kill *d_next ;   	/* Link to next chunk, NULL if last. */
+    char d_chunk[ KBLOCK] ;		/* Deleted text. */
 } *kill_p ;
 
 static kill_p kbufp = NULL ;    /* current kill buffer chunk pointer */
 static kill_p kbufh = NULL ;    /* kill buffer header pointer */
 static int kused = KBLOCK ;     /* # of bytes used in kill buffer */
-static int klen ;                   /* length of kill buffer content */
-static char *value = NULL ;         /* temp buffer for value */
+static int klen ;               /* length of kill buffer content */
+static char *value = NULL ;     /* temp buffer for value */
 
 /*
  * return some of the contents of the kill buffer

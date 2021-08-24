@@ -40,17 +40,17 @@
 /*  Dynamic RAM tracking and reporting redefinitions    */
 #define RAMSIZE 0		/* dynamic RAM memory usage tracking */
 #if RAMSIZE
-# define RAMSHOW 1      /* auto dynamic RAM reporting */
-# include <stdlib.h>
+# define RAMSHOW 1		/* auto dynamic RAM reporting */
+# include <stdlib.h>	/* size_t */
   void *allocate( size_t size) ;
   void release( void *ptr) ;
 
-# define malloc  allocate
-# define free    release
+# define malloc( sz)	allocate(sz)
+# define free( ptr)		release( ptr)
 #endif
 
 /* De-allocate memory always on exit (if the operating system or main
-   program can not
+   program can not)
 */
 #define CLEAN 0			/* de-alloc memory on exit */
 #if CLEAN

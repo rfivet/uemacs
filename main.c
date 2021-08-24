@@ -347,80 +347,67 @@ static void edinit( char *bname) {
 	wp->w_flag = WFMODE | WFHARD;	/* Full.                */
 }
 
+
 /*****		Compiler specific Library functions	****/
 
-#if	RAMSIZE
-/*	These routines will allow me to track memory usage by placing
-	a layer on top of the standard system malloc() and free() calls.
-	with this code defined, the environment variable, $RAM, will
-	report on the number of bytes allocated via malloc.
+#if RAMSIZE 
 
-	with SHOWRAM defined, the number is also posted on the
-	end of the bottom mode line and is updated whenever it is changed.
+/* These routines will allow me to track memory usage by placing a layer on
+   top of the standard system malloc() and free() calls.  with this code
+   defined, the environment variable, $RAM, will report on the number of
+   bytes allocated via malloc.
+
+   with SHOWRAM defined, the number is also posted on the end of the bottom
+   mode line and is updated whenever it is changed.
 */
 
-static void dspram( void) ;
-
-#undef	malloc
-#undef	free
-#if 0
-char *allocate(nbytes)
-			    /* allocate nbytes and track */
-unsigned nbytes;		/* # of bytes to allocate */
-#endif
-void *allocate( size_t nbytes)
-{
-	char *mp;		/* ptr returned from malloc */
-/*	char *malloc(); */
-
-	mp = malloc(nbytes);
-	if (mp) {
-		envram += nbytes;
 #if	RAMSHOW
-		dspram();
+ static void dspram( void) ;
+#endif
+
+void *allocate( size_t nbytes) {
+	nbytes += sizeof nbytes ;			/* add overhead to track allocation */
+	size_t *mp = (malloc)( nbytes) ;	/* call the function not the macro */
+	if( mp) {
+		*mp++ = nbytes ;
+		envram += nbytes ;
+#if	RAMSHOW
+		dspram() ;
 #endif
 	}
 
-	return mp;
+	return mp ;
 }
 
-#if 0
-release(mp)
-    /* release malloced memory and track */
-char *mp;			/* chunk of RAM to release */
-#endif
-void release( void *mp)
-{
-	unsigned *lp;		/* ptr to the long containing the block size */
-
-	if (mp) {
+void release( void *mp) {
+	if( mp) {
+		size_t *sp = mp ;
+		sp-- ;
 		/* update amount of ram currently malloced */
-		lp = ((unsigned *) mp) - 1;
-		envram -= (long) *lp - 2;
-		free(mp);
+		envram -= *sp ;
+		(free)( sp) ;				/* call the function not the macro */
 #if	RAMSHOW
-		dspram();
+		dspram() ;
 #endif
 	}
 }
 
 #if	RAMSHOW
-static void dspram( void)
-{				/* display the amount of RAM currently malloced */
-	char mbuf[20];
-	char *sp;
+static void dspram( void) {	/* display the amount of RAM currently malloced */
+	char mbuf[ 20] ;
 
-	TTmove(term.t_nrow - 1, 70);
+	TTmove( term.t_nrow, term.t_ncol - 12) ;
 #if	COLOR
-	TTforg(7);
-	TTbacg(0);
+	TTforg( 7) ;
+	TTbacg(0) ;
 #endif
-	sprintf(mbuf, "[%lu]", envram);
-	sp = &mbuf[0];
-	while (*sp)
-		TTputc(*sp++);
-	TTmove(term.t_nrow, 0);
-	movecursor(term.t_nrow, 0);
+	sprintf( mbuf, "[%10u]", envram) ;
+	char *sp = mbuf ;
+	while( *sp)
+		TTputc( *sp++) ;
+
+	TTmove( term.t_nrow, 0) ;
+	movecursor( term.t_nrow, 0) ;
 }
 #endif
 #endif
@@ -461,7 +448,7 @@ void cexit( int status) {
 /* and the video buffers */
 	vtfree() ;
 
-	(exit)( status) ;
+	(exit)( status) ;	/* call the function, not the macro */
 }
 #endif
 

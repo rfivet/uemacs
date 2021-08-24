@@ -16,6 +16,8 @@
 #include <errno.h>
 #include <locale.h>
 #include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -26,7 +28,7 @@
 #include "termio.h"
 #include "terminal.h"
 #include "version.h"
-#include "wrapper.h"
+//#include "wrapper.h"
 #include "utf8.h"
 #include "window.h"
 
@@ -101,6 +103,19 @@ static int newscreensize( int h, int w) ;
 #endif
 
 
+/* xmalloc is used at early initialization before memory usage tracking is
+   enabled so it bypass the memory tracking macroes.
+*/
+static void *xmalloc( size_t size) {
+	void *ret = (malloc)( size) ;
+	if( !ret) {
+		fprintf( stderr, "fatal: Out of memory\n") ;
+		exit( EXIT_FAILURE) ;
+	}
+
+	return ret ;
+}
+
 /* Initialize the data structures used by the display code.  The edge
    vectors used to access the screens are set up.  The operating system's
    terminal I/O channel is set up.  All the other things get initialized at
@@ -140,16 +155,17 @@ void vtinit( void) {
 #if	CLEAN
 /* free up all the dynamically allocated video structures */
 void vtfree( void) {
+/* as xmalloc bypass the malloc macro, we need bypass the free macro too */
 	for( int i = 0 ; i < term.t_maxrow ; ++i ) {
-		free( vscreen[ i]) ;
+		(free)( vscreen[ i]) ;
 #if	MEMMAP == 0 || SCROLLCODE
-		free( pscreen[ i]) ;
+		(free)( pscreen[ i]) ;
 #endif
 	}
 
-	free( vscreen) ;
+	(free)( vscreen) ;
 #if	MEMMAP == 0 || SCROLLCODE
-	free( pscreen) ;
+	(free)( pscreen) ;
 #endif
 }
 #endif
