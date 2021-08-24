@@ -28,7 +28,6 @@
 #include "termio.h"
 #include "terminal.h"
 #include "version.h"
-//#include "wrapper.h"
 #include "utf8.h"
 #include "window.h"
 
@@ -122,6 +121,32 @@ static void *xmalloc( size_t size) {
    compile time.  The original window has "WFCHG" set, so that it will get
    completely redrawn on the first call to "update".
  */
+
+static int lastmrow ;		/* remember mrow for later free */
+
+static void vtalloc( int maxrow, int maxcol) {
+	lastmrow = maxrow ;		/* remember mrow for later free */
+	vscreen = xmalloc( maxrow * sizeof( video_p )) ;
+
+#if	MEMMAP == 0 || SCROLLCODE
+	pscreen = xmalloc( maxrow * sizeof( video_p )) ;
+#endif
+	for( int i = 0 ; i < maxrow ; ++i) {
+		video_p vp = xmalloc( sizeof *vp + maxcol * sizeof( unicode_t)) ;
+		vp->v_flag = 0 ;
+#if	COLOR
+		vp->v_rfcolor = 7 ;
+		vp->v_rbcolor = 0 ;
+#endif
+		vscreen[ i] = vp ;
+#if	MEMMAP == 0 || SCROLLCODE
+		vp = xmalloc( sizeof *vp + maxcol * sizeof( unicode_t)) ;
+		vp->v_flag = 0 ;
+		pscreen[ i] = vp ;
+#endif
+	}
+}
+
 void vtinit( void) {
 #ifdef SIGWINCH
 	signal( SIGWINCH, sizesignal) ;
@@ -131,32 +156,14 @@ void vtinit( void) {
 	TTopen() ;		/* open the screen */
 	TTkopen() ;		/* open the keyboard */
 	TTrev( FALSE) ;
-	vscreen = xmalloc( term.t_maxrow * sizeof( video_p )) ;
-
-#if	MEMMAP == 0 || SCROLLCODE
-	pscreen = xmalloc( term.t_maxrow * sizeof( video_p )) ;
-#endif
-	for( int i = 0 ; i < term.t_maxrow ; ++i) {
-		video_p vp = xmalloc( sizeof *vp + term.t_maxcol * sizeof( unicode_t)) ;
-		vp->v_flag = 0 ;
-#if	COLOR
-		vp->v_rfcolor = 7 ;
-		vp->v_rbcolor = 0 ;
-#endif
-		vscreen[ i] = vp ;
-#if	MEMMAP == 0 || SCROLLCODE
-		vp = xmalloc( sizeof *vp + term.t_maxcol * sizeof( unicode_t)) ;
-		vp->v_flag = 0 ;
-		pscreen[ i] = vp ;
-#endif
-	}
+	vtalloc( term.t_mrow, term.t_mcol) ;
 }
 
-#if	CLEAN
-/* free up all the dynamically allocated video structures */
+
+/* free up all the dynamically video structures allocated by vtalloc */
 void vtfree( void) {
 /* as xmalloc bypass the malloc macro, we need bypass the free macro too */
-	for( int i = 0 ; i < term.t_maxrow ; ++i ) {
+	for( int i = 0 ; i < lastmrow ; ++i ) {
 		(free)( vscreen[ i]) ;
 #if	MEMMAP == 0 || SCROLLCODE
 		(free)( pscreen[ i]) ;
@@ -168,7 +175,7 @@ void vtfree( void) {
 	(free)( pscreen) ;
 #endif
 }
-#endif
+
 
 
 /* Clean up the virtual terminal system, in anticipation for a return to
@@ -1455,6 +1462,8 @@ static int newscreensize( int h, int w) {
 	}
 
 	chg_width = chg_height = 0 ;
+	vtfree() ;
+	vtalloc( h, w) ;
 	if( h <= term.t_mrow)
 		newsize( TRUE, h) ;
 
