@@ -19,12 +19,12 @@ extern int gbcolor ;        /* global backgrnd color (black) */
 extern boolean viewtab ;    /* $viewtab = TRUE to visualize hardcoded tab */
 
 /* Bindable functions */
-BINDABLE( upscreen) ;
+TBINDABLE( upscreen) ;
 
 void vtinit( void) ;
 void vtfree( void) ;
 void vttidy( void) ;
-boolean update( boolean force_f) ;
+void update( boolean force_f) ;
 void upmode( void) ;
 void movecursor( int row, int col) ;
 void mlerase( void) ;

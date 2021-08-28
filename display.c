@@ -1,9 +1,6 @@
 /* display.c -- implements display.h */
 #include "display.h"
 
-#define	REVSTA	1  /* Status line appears in reverse video         */
-#define MEMMAP	0
-
 /* The functions in this file handle redisplay.  There are two halves, the
    ones that update the virtual display screen, and the ones that make the
    physical display screen the same as the virtual display screen.  These
@@ -49,16 +46,13 @@ typedef struct {
 #define	VFCOL	0x0010		/* color change requested       */
 
 static video_p *vscreen ;	/* Virtual screen. */
-#if	MEMMAP == 0 || SCROLLCODE
 static video_p *pscreen ;	/* Physical screen. */
-#endif
-
-static int displaying = TRUE ;
 
 #ifdef SIGWINCH
 # include <sys/ioctl.h>
 /* for window size changes */
   int chg_width, chg_height ;
+  static int displaying = TRUE ;
 
   static void sizesignal( int signr) ;
 #endif
@@ -90,15 +84,15 @@ static void upddex( void) ;
 static void updext( void) ;
 static void updgar( void) ;
 static void updpos( void) ;
-static int updateline( int row, video_p vp1, video_p vp2) ;
-static boolean updupd( boolean force_f) ;
+static void updateline( int row) ;
+static void updupd( boolean force_f) ;
 static void modeline( window_p wp) ;
 static void mlputi( int i, int r) ;
 static void mlputli( long l, int r) ;
 static void mlputf( int s) ;
 static void mlputs( const char *s) ;
 #if SIGWINCH
-static int newscreensize( int h, int w) ;
+static void newscreensize( int h, int w) ;
 #endif
 
 
@@ -127,10 +121,7 @@ static int lastmrow ;		/* remember mrow for later free */
 static void vtalloc( int maxrow, int maxcol) {
 	lastmrow = maxrow ;		/* remember mrow for later free */
 	vscreen = xmalloc( maxrow * sizeof( video_p )) ;
-
-#if	MEMMAP == 0 || SCROLLCODE
 	pscreen = xmalloc( maxrow * sizeof( video_p )) ;
-#endif
 	for( int i = 0 ; i < maxrow ; ++i) {
 		video_p vp = xmalloc( sizeof *vp + maxcol * sizeof( unicode_t)) ;
 		vp->v_flag = 0 ;
@@ -139,11 +130,9 @@ static void vtalloc( int maxrow, int maxcol) {
 		vp->v_rbcolor = 0 ;
 #endif
 		vscreen[ i] = vp ;
-#if	MEMMAP == 0 || SCROLLCODE
 		vp = xmalloc( sizeof *vp + maxcol * sizeof( unicode_t)) ;
 		vp->v_flag = 0 ;
 		pscreen[ i] = vp ;
-#endif
 	}
 }
 
@@ -165,17 +154,12 @@ void vtfree( void) {
 /* as xmalloc bypass the malloc macro, we need bypass the free macro too */
 	for( int i = 0 ; i < lastmrow ; ++i ) {
 		(free)( vscreen[ i]) ;
-#if	MEMMAP == 0 || SCROLLCODE
 		(free)( pscreen[ i]) ;
-#endif
 	}
 
 	(free)( vscreen) ;
-#if	MEMMAP == 0 || SCROLLCODE
 	(free)( pscreen) ;
-#endif
 }
-
 
 
 /* Clean up the virtual terminal system, in anticipation for a return to
@@ -226,7 +210,7 @@ static void sane_vtputc( unicode_t c) {
 	vtcol += 1 ;
 }
 
-static void vtputc( unicode_t c) {
+static void vtputuc( unicode_t c) {
 	/* In case somebody passes us a signed char.. */
 //	if( c > 0x10FFFF)	/* Let's assume this is due to sign extension */
 //		c &= 0xFF ;
@@ -258,7 +242,7 @@ static int vtputs( const char *s) {
 		unicode_t c ;
 		
 		s += utf8_to_unicode( s, 0, 4, &c) ;
-		vtputc( c) ;
+		vtputuc( c) ;
 		n += utf8_width( c) ;
 	}
 
@@ -276,11 +260,11 @@ static void vteeol( void) {
 		vcp[ vtcol++] = ' ' ;
 }
 
-/* upscreen:
+/* upscreen():
  *	user routine to force a screen update
  *	always finishes complete update
  */
-BINDABLE( upscreen) {
+TBINDABLE( upscreen) {
 	update( TRUE) ;
 	return TRUE ;
 }
@@ -298,23 +282,27 @@ static int scrflags ;
 
    boolean force_f ;		force update past type ahead?
  */
-boolean update( boolean force_f) {
+void update( boolean force_f) {
+	window_p wp ;
+
 #if	TYPEAH && ! PKCODE
 	if( force_f == FALSE && typahead())
-		return TRUE ;
+		return ;
 #endif
 #if	VISMAC == 0
 	if( force_f == FALSE && kbdmode == PLAY)
-		return TRUE ;
+		return ;
 #endif
 
+#if SIGWINCH
 	displaying = TRUE ;
+resize:
+#endif
 
 #if SCROLLCODE
 
 /* first, propagate mode line changes to all instances of a buffer displayed
  * in more than one window */
-	window_p wp ;
 	for( wp = wheadp ; wp != NULL ; wp = wp->w_wndp)
 		if( wp->w_flag & WFMODE
 		&&  wp->w_bufp->b_nwnd > 1)
@@ -352,11 +340,6 @@ boolean update( boolean force_f) {
 	/* recalc the current hardware cursor location */
 	updpos() ;
 
-#if	MEMMAP && ! SCROLLCODE
-	/* update the cursor and flush the buffers */
-	movecursor( currow, curcol - lbound) ;
-#endif
-
 	/* check for lines to de-extend */
 	upddex() ;
 
@@ -370,12 +353,15 @@ boolean update( boolean force_f) {
 	/* update the cursor and flush the buffers */
 	movecursor( currow, curcol - lbound) ;
 	TTflush() ;
-	displaying = FALSE ;
 #if SIGWINCH
-	while( chg_width || chg_height)
+	if( chg_width || chg_height) {
 		newscreensize( chg_height, chg_width) ;
+		force_f = TRUE ;
+		goto resize ;
+	}
+
+	displaying = FALSE ;
 #endif
-	return TRUE ;
 }
 
 
@@ -472,7 +458,7 @@ static void show_line( line_p lp) {
 	while( i < len) {
 		unicode_t c ;
 		i += utf8_to_unicode( lp->l_text, i, len, &c) ;
-		vtputc( c) ;
+		vtputuc( c) ;
 	}
 }
 
@@ -606,18 +592,14 @@ static void upddex( void) {
 static void updgar( void) {
 	for( int i = 0 ; i < term.t_nrow ; ++i) {
 		vscreen[ i]->v_flag |= VFCHG ;
-#if	REVSTA
 		vscreen[ i]->v_flag &= ~VFREV ;
-#endif
 #if	COLOR
 		vscreen[ i]->v_fcolor = gfcolor ;
 		vscreen[ i]->v_bcolor = gbcolor ;
 #endif
-#if	MEMMAP == 0 || SCROLLCODE
 		unicode_t *txt = pscreen[ i]->v_text ;
 		for( int j = 0 ; j < term.t_ncol ; ++j)
 			txt[ j] = ' ' ;
-#endif
 	}
 
 	movecursor( 0, 0) ;	/* Erase the screen. */
@@ -635,7 +617,7 @@ static void updgar( void) {
  *
  * int force;		forced update flag
  */
-static boolean updupd( boolean force_f) {
+static void updupd( boolean force_f) {
 #if SCROLLCODE
 	if( scrflags & WFKILLS)
 		scrolls( FALSE) ;
@@ -647,23 +629,15 @@ static boolean updupd( boolean force_f) {
 #endif
 
 	for( int i = 0 ; i < term.t_nrow ; ++i) {
-		video_p vp1 = vscreen[ i] ;
-
 	/* for each line that needs to be updated */
-		if( (vp1->v_flag & VFCHG) != 0) {
+		if( (vscreen[ i]->v_flag & VFCHG) != 0) {
 #if	TYPEAH && ! PKCODE
 			if( force_f == FALSE && typahead())
 				return TRUE ;
 #endif
-#if	MEMMAP && ! SCROLLCODE
-			updateline( i, vp1) ;
-#else
-			updateline( i, vp1, pscreen[ i]) ;
-#endif
+			updateline( i) ;
 		}
 	}
-
-	return TRUE ;
 }
 
 #if SCROLLCODE
@@ -765,12 +739,10 @@ static int scrolls( int inserts) {
 			vpp->v_flag = vpv->v_flag ;	/* XXX */
 			if( vpp->v_flag & VFREV) {
 				vpp->v_flag &= ~VFREV ;
-				vpp->v_flag |= ~VFREQ ;
+				vpp->v_flag |= VFREQ ;
 			}
-#if	MEMMAP
-			vscreen[ to + i]->v_flag &= ~VFCHG ;
-#endif
 		}
+
 		if( inserts) {
 			from = target ;
 			to = match ;
@@ -778,7 +750,7 @@ static int scrolls( int inserts) {
 			from = target + count ;
 			to = match + count ;
 		}
-#if	MEMMAP == 0
+
 		for( i = from ; i < to ; i++) {
 			unicode_t *txt ;
 			txt = pscreen[ i]->v_text ;
@@ -786,9 +758,10 @@ static int scrolls( int inserts) {
 				txt[ j] = ' ' ;
 			vscreen[ i]->v_flag |= VFCHG ;
 		}
-#endif
+
 		return TRUE ;
 	}
+
 	return FALSE ;
 }
 
@@ -857,114 +830,62 @@ static void updext( void) {
  * character sequences; we are using VT52 functionality. Update the physical
  * row and column variables. It does try an exploit erase to end of line.
  */
-#if	MEMMAP
-/*	UPDATELINE specific code for the IBM-PC and other compatables */
-
-static int updateline( int row, video_p vp1, video_p vp2) {
-#if	SCROLLCODE
-	unicode_t *cp1 ;
-	unicode_t *cp2 ;
-	int nch ;
-
-	cp1 = &vp1->v_text[ 0] ;
-	cp2 = &vp2->v_text[ 0] ;
-	nch = term.t_ncol ;
-	do {
-		*cp2 = *cp1 ;
-		++cp2 ;
-		++cp1 ;
-	}
-	while( --nch) ;
-#endif
-#if	COLOR
-	scwrite( row, vp1->v_text, vp1->v_rfcolor, vp1->v_rbcolor) ;
-	vp1->v_fcolor = vp1->v_rfcolor ;
-	vp1->v_bcolor = vp1->v_rbcolor ;
-#else
-	if( vp1->v_flag & VFREQ)
-		scwrite( row, vp1->v_text, 0, 7) ;
-	else
-		scwrite( row, vp1->v_text, 7, 0) ;
-#endif
-	vp1->v_flag &= ~(VFCHG | VFCOL) ;	/* flag this line as changed */
-}
-
-#else
 
 /* updateline()
  *
  * int row ;	row of screen to update
- * video_p vp1 ;	virtual screen image
- * video_p vp2 ;	physical screen image
  */
-static int updateline( int row, video_p vp1, video_p vp2) {
-/*	UPDATELINE code for all other versions		*/
-
-	unicode_t *cp1 ;
-	unicode_t *cp2 ;
-	unicode_t *cp3 ;
-	unicode_t *cp4 ;
-	unicode_t *cp5 ;
-	int nbflag ;	/* non-blanks to the right flag? */
-#if REVSTA
-	int rev ;			/* reverse video flag */
-#endif
-	int req = FALSE ;	/* reverse video request flag */
-
+static void updateline( int row) {
+	video_p vp1 = vscreen[ row] ;
+	vp1->v_flag &= ~VFCHG ;	/* flag this line as updated */
 
 	/* set up pointers to virtual and physical lines */
-	cp1 = &vp1->v_text[ 0] ;
-	cp2 = &vp2->v_text[ 0] ;
+	unicode_t *inp = vp1->v_text ;
+	unicode_t *out = pscreen[ row]->v_text ;
 
 #if	COLOR
 	TTforg( vp1->v_rfcolor) ;
 	TTbacg( vp1->v_rbcolor) ;
 #endif
 
-#if	REVSTA | COLOR
-	/* do a re-write of the entire line if it is reverse or there
-	** is a request to change the reverse status */
-	rev = (vp1->v_flag & VFREV) == VFREV ;
-	req = (vp1->v_flag & VFREQ) == VFREQ ;
-	if( req || (req != rev)
+/* do a re-write of the entire line if there is a request to toggle the
+ * reverse status */
+	int rev = (vp1->v_flag & VFREV) == VFREV ;
+	if( rev != ((vp1->v_flag & VFREQ) == VFREQ)
 #if	COLOR
-	    || (vp1->v_fcolor != vp1->v_rfcolor)
-	    || (vp1->v_bcolor != vp1->v_rbcolor)
+	||	(vp1->v_fcolor != vp1->v_rfcolor)
+	||	(vp1->v_bcolor != vp1->v_rbcolor)
 #endif
-	    ) {
+	) {
 		movecursor( row, 0) ;	/* Go to start of line. */
-		TTrev( req) ;		/* set needed rev video state */
+		TTrev( !rev) ;		/* set needed rev video state */
 
 		/* scan through the line and dump it to the screen and
 		   the virtual screen array                             */
 		while( ttcol < term.t_ncol) {
 		/* TODO: handle double width unicode char at last screen col */
-			unicode_t c = *cp1++ ;
+			unicode_t c = *out++ = *inp++ ;
 			TTputc( c) ;
-			ttcol += utf8_width( c) ;
-			*cp2++ = c ;
+			ttcol += _utf8_width( c) ;	/* filtered by vtputuc */
 		}
 
 		TTrev( FALSE) ;		/* turn rev video off */
 
 		/* update the needed flags */
-		vp1->v_flag &= ~VFCHG ;
-		if( req)
-			vp1->v_flag |= VFREV ;
-		else
-			vp1->v_flag &= ~VFREV ;
+		vp1->v_flag ^= VFREV ;
 #if	COLOR
 		vp1->v_fcolor = vp1->v_rfcolor ;
 		vp1->v_bcolor = vp1->v_rbcolor ;
 #endif
-		return TRUE ;
+		return ;
 	}
-#endif
 
 	/* advance past any common chars at the left */
-	while( cp1 != &vp1->v_text[ term.t_ncol] && cp1[ 0] == cp2[ 0]) {
-		++cp1 ;
-		++cp2 ;
+	unicode_t *end = &vp1->v_text[ term.t_ncol] ;
+	int startcol = 0 ;
+	while( inp != end && *inp == *out) {
+		startcol += _utf8_width( *inp++) ;	/* filtered by vtputuc */
+		++out ;
 	}
 
 /* This can still happen, even though we only call this routine on changed
@@ -974,97 +895,72 @@ static int updateline( int row, video_p vp1, video_p vp2) {
  * be hard operations that do a lot of update, so I don't really care.
  */
 	/* if both lines are the same, no update needs to be done */
-	if( cp1 == &vp1->v_text[ term.t_ncol]) {
-		vp1->v_flag &= ~VFCHG ;	/* flag this line is changed */
-		return TRUE ;
-	}
+	if( inp == end)
+		return ;
 
 	/* find out if there is a match on the right */
-	nbflag = FALSE ;
-	cp3 = &vp1->v_text[ term.t_ncol] ;
-	cp4 = &vp2->v_text[ term.t_ncol] ;
+	int nbflag = FALSE ;	/* non-blanks to the right flag? */
 
-	while( cp3[ -1] == cp4[ -1]) {
-		--cp3 ;
-		--cp4 ;
-		if( cp3[ 0] != ' ')	/* Note if any nonblank */
+	unicode_t *nbp = &pscreen[ row]->v_text[ term.t_ncol] ;
+	while( end[ -1] == nbp[ -1]) {
+		--end ;
+		--nbp ;
+		if( *end != ' ')	/* Note if any nonblank */
 			nbflag = TRUE ;	/* in right match. */
 	}
 
-	cp5 = cp3 ;
+	nbp = end ;
 
 	/* Erase to EOL ? */
-	if( nbflag == FALSE && eolexist == TRUE && (req != TRUE)) {
-		while( cp5 != cp1 && cp5[ -1] == ' ')
-			--cp5 ;
+	if( nbflag == FALSE && eolexist == TRUE && (rev != TRUE)) {
+		while( nbp != inp && nbp[ -1] == ' ')
+			--nbp ;
 
-		if( cp3 - cp5 <= 3)	/* Use only if erase is */
-			cp5 = cp3 ;	/* fewer characters. */
+		if( end - nbp <= 3)	/* Use only if erase is */
+			nbp = end ;		/* fewer characters. */
 	}
 
-	movecursor( row, cp1 - &vp1->v_text[ 0]) ;	/* Go to start of line. */
-#if	REVSTA
+	movecursor( row, startcol) ;	/* Go to start of line change */
 	TTrev( rev) ;
-#endif
 
-	while( cp1 != cp5) {	/* Ordinary. */
-		unicode_t c = *cp1++ ;
+	while( inp != nbp) {	/* Copy */
+		unicode_t c = *out++ = *inp++ ;
 		TTputc( c) ;
 		ttcol += utf8_width( c) ;
-		*cp2++ = c ;
 	}
 
-	if( cp5 != cp3) {	/* Erase. */
+	if( inp != end) {		/* Erase */
 		TTeeol() ;
-		while( cp1 != cp3)
-			*cp2++ = *cp1++ ;
+		do
+			*out++ = ' ' ;
+		while( ++inp != end) ;
 	}
-#if	REVSTA
+
 	TTrev( FALSE) ;
-#endif
-	vp1->v_flag &= ~VFCHG ;	/* flag this line as updated */
-	return TRUE ;
 }
-#endif
 
 
-/* Redisplay the mode line for the window pointed to by the "wp". This is the
- * only routine that has any idea of how the modeline is formatted. You can
- * change the modeline format by hacking at this routine. Called by "update"
- * any time there is a dirty window.
+/* Redisplay the mode line for the window pointed to by the "wp".  This is
+   the only routine that has any idea of how the modeline is formatted.
+   You can change the modeline format by hacking at this routine.  Called
+   by "update" any time there is a dirty window.
  */
 static void modeline( window_p wp) {
-	int n ;		/* cursor position count */
-	buffer_p bp ;
-	int i ;		/* loop index */
-	int lchar ;	/* character to draw line in buffer with */
-	int firstm ;	/* is this the first mode? */
+	char tline[] = "   % " ;	/* formatting buffer for percentage */
 
-	n = wp->w_toprow + wp->w_ntrows ;	/* Location. */
+	int n = wp->w_toprow + wp->w_ntrows ;			/* Location. */
 	vscreen[ n]->v_flag |= VFCHG | VFREQ | VFCOL ;	/* Redraw next time. */
 #if	COLOR
 	vscreen[ n]->v_rfcolor = 0 ;	/* black on */
 	vscreen[ n]->v_rbcolor = 7 ;	/* white..... */
 #endif
 	vtmove( n, 0) ;		/* Seek to right line. */
-	if( wp == curwp)	/* mark the current buffer */
-#if	PKCODE && REVSTA
-		lchar = '-' ;
-#else
-		lchar = '=' ;
-#endif
-	else
-#if	REVSTA
-	if( revexist)
-		lchar = ' ' ;
-	else
-#endif
-		lchar = '-' ;
+	int lchar = "-= -"[ 2 * revexist + (wp == curwp)] ;	/* pick bg character */
 
-	bp = wp->w_bufp ;
-	vtputc( ((bp->b_flag & BFTRUNC) != 0) ? '#' : lchar) ; /* truncated? */
-	vtputc( ((bp->b_flag & BFCHG) != 0)   ? '*' : lchar) ; /* changed? */
-	vtputc( ' ') ;
+	buffer_p bp = wp->w_bufp ;
+	vtputuc( ((bp->b_flag & BFTRUNC) != 0) ? '#' : lchar) ; /* truncated? */
+	vtputuc( ((bp->b_flag & BFCHG) != 0)   ? '*' : lchar) ; /* changed? */
+	vtputuc( ' ') ;
 
 	if( n == term.t_nrow - 1)
 		n = 3 + vtputs( PROGRAM_NAME_UTF8 " " VERSION ": ") ;
@@ -1074,105 +970,75 @@ static void modeline( window_p wp) {
 	n += vtputs( bp->b_bname) ;
 	n += vtputs( " (") ;
 
-	/* display the modes */
-
-	if( (bp->b_flag & BFTRUNC) != 0) {
-		firstm = FALSE ;
+/* display the modes */
+	int pos = n ;
+	if( (bp->b_flag & BFTRUNC) != 0)
 		n += vtputs( "Truncated") ;
-	} else
-		firstm = TRUE ;
 
-	for( i = 0 ; i < NUMMODES ; i++)	/* add in the mode flags */
+	for( int i = 0 ; i < NUMMODES ; i++)	/* add in the mode flags */
 		if( wp->w_bufp->b_mode & (1 << i)) {
-			if( firstm != TRUE)
-				n += vtputs( " ") ;
-			else
-				firstm = FALSE ;
+			if( n > pos) {
+				vtputuc( ' ') ;
+				n += 1 ;
+			}
 
 			n += vtputs( modename[ i]) ;
 		}
 
 	n += vtputs( ") ") ;
 
-#if	PKCODE
 	if( bp->b_fname[ 0] != 0 && strcmp( bp->b_bname, bp->b_fname) != 0) {
-#else
-	if( bp->b_fname[ 0] != 0) {	/* File name. */
-		n += vtputs( "File: ") ;
-#endif
 		n += vtputs( bp->b_fname) ;
-		vtputc(' ') ;
+		vtputuc( ' ') ;
 		++n ;
 	}
 
 	while( n < term.t_ncol) {	/* Pad to full width. */
-		vtputc( lchar) ;
+		vtputuc( lchar) ;
 		++n ;
 	}
 
-	{			/* determine if top line, bottom line, or both are visible */
-		line_p lp = wp->w_linep ;
-		int rows = wp->w_ntrows ;
-		char *msg = NULL ;
-		char tline[ 6] ;	/* buffer for part of mode line */
+/* determine if top line, bottom line, or both are visible */
+	char *msg = NULL ;
 
-		vtcol -= 7 ;	/* strlen(" top ") plus a couple */
-		while( rows--) {
+	if( wp->w_linep == wp->w_bufp->b_linep)
+			msg = "Empty" ;
+	else {
+		if( lback( wp->w_linep) == wp->w_bufp->b_linep)
+			msg = " Top " ;
+
+		line_p lp = wp->w_linep ;
+		for( int rows = wp->w_ntrows ; rows > 0 ; rows--) {
 			lp = lforw( lp) ;
 			if( lp == wp->w_bufp->b_linep) {
-				msg = " Bot " ;
+				msg = msg ? " All " : " End " ;
 				break ;
 			}
 		}
-		if( lback( wp->w_linep) == wp->w_bufp->b_linep) {
-			if( msg) {
-				if( wp->w_linep == wp->w_bufp->b_linep)
-					msg = " Emp " ;
-				else
-					msg = " All " ;
-			} else {
-				msg = " Top " ;
-			}
-		}
+
 		if( !msg) {
-			line_p lp ;
-			int numlines, predlines ;
-
-			lp = lforw( bp->b_linep) ;
-			numlines = 0 ;
-			predlines = 0 ;
-			while( lp != bp->b_linep) {
-				if( lp == wp->w_linep) {
-					predlines = numlines ;
-				}
-				++numlines ;
-				lp = lforw( lp) ;
+		/* buffer is not empty, both first and last line not in window */
+			n = 0 ;		/* count of lines in buffer */
+			pos = 0 ;	/* line number of the top line in window */
+			for( lp = lforw( bp->b_linep) ; lp != bp->b_linep ;
+															lp = lforw( lp)) {
+				n += 1 ;
+				if( lp == wp->w_linep)
+					pos = n ;
 			}
-			if( wp->w_dotp == bp->b_linep) {
-				msg = " Bot " ;
-			} else {
-				int ratio = 0 ;
 
-				if( numlines != 0)
-					ratio = (100L * predlines) / numlines ;
-				if( ratio > 99)
-					ratio = 99 ;
+			pos = (100L * pos) / n ;
+			tline[ 2] = pos % 10 + '0' ;
+			pos /= 10 ;
+			if( pos)
+				tline[ 1] = pos + '0' ;
 
-				tline[ 0] = ' ' ;
-				tline[ 1] = ratio / 10 + '0' ;
-				tline[ 2] = ratio % 10 + '0' ;
-				tline[ 3] = '%' ;
-				tline[ 4] = ' ' ;
-				tline[ 5] = 0 ;
-				if( tline[ 1] == '0')
-					tline[ 1] = ' ' ;
-
-				msg = tline ;
-			}
+			msg = tline ;
 		}
-
-		n += vtputs( msg) ;
 	}
+
+	vtcol -= 7 ;	/* strlen(" top ") plus a couple */
+	vtputs( msg) ;
 }
 
 void upmode( void) {				/* update all the mode lines */
@@ -1445,22 +1311,22 @@ static void sizesignal( int signr) {
 	if( h > 0 && w > 0) {
 		term.t_mrow = h = h < term.t_maxrow ? h : term.t_maxrow ;
 		term.t_mcol = w = w < term.t_maxcol ? w : term.t_maxcol ;
-		if( h - 1 != term.t_nrow || w != term.t_ncol)
-			newscreensize( h, w) ;
+		if( h - 1 != term.t_nrow || w != term.t_ncol) {
+			if( displaying) {
+				chg_width = w ;
+				chg_height = h ;
+			} else {
+				newscreensize( h, w) ;
+				update( TRUE) ;
+			}
+		}
 	}
 
 	signal( SIGWINCH, sizesignal) ;
 	errno = old_errno ;
 }
 
-static int newscreensize( int h, int w) {
-/* do the change later */
-	if( displaying) {
-		chg_width = w ;
-		chg_height = h ;
-		return FALSE ;
-	}
-
+static void newscreensize( int h, int w) {
 	chg_width = chg_height = 0 ;
 	vtfree() ;
 	vtalloc( h, w) ;
@@ -1469,11 +1335,7 @@ static int newscreensize( int h, int w) {
 
 	if( w <= term.t_mcol)
 		newwidth( TRUE, w) ;
-
-	update( TRUE) ;
-	return TRUE ;
 }
-
 #endif
 
 

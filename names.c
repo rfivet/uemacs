@@ -202,7 +202,7 @@ const name_bind names[] = {
 	{" unbind-key", unbindkey,					META | CTL_ | 'K'} ,
 	{" universal-argument", (fnp_t) unarg,		CTL_ | 'U'} ,
 	{" unmark-buffer", unmark,					META | '~'} ,
-	{" update-screen", upscreen, 0} ,
+	{" update-screen", (fnp_t) upscreen, 0} ,
 	{" view-file", viewfile, 					CTLX | CTL_ | 'V'} ,
 	{"!wrap-word", wrapword,					META | SPEC | 'W'} , /* hook */
 	{" write-file", filewrite,					CTLX | CTL_ | 'W'} ,
