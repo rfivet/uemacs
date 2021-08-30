@@ -1327,6 +1327,12 @@ static void sizesignal( int signr) {
 static void newscreensize( int h, int w) {
 	chg_width = chg_height = 0 ;
 	vtfree() ;
+	if( h < 3)
+		h = 3 ;
+
+	if( w < 10)
+		w = 10 ;
+
 	vtalloc( h, w) ;
 	if( h <= term.t_mrow)
 		newsize( TRUE, h) ;

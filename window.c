@@ -566,84 +566,80 @@ BINDABLE( restwnd) {
  * int f;	default flag
  * int n;	numeric argument
  */
-BINDABLE( newsize) {
-	window_p wp;		/* current window being examined */
-	window_p nextwp;	/* next window to scan */
-	window_p lastwp;	/* last window scanned */
-	int lastline;		/* screen line of last line of current window */
+BBINDABLE( newsize) {
+	window_p wp ;		/* current window being examined */
 
 	/* if the command defaults, assume the largest */
-	if (f == FALSE)
+	if( f == FALSE)
 		n = term.t_mrow ;
 
 	/* make sure it's in range */
 	if( n < 3 || n > term.t_mrow)
 		return mloutfail( "%%Screen size out of range") ;
 
-	if (term.t_nrow == n - 1)
-		return TRUE;
-	else if (term.t_nrow < n - 1) {
-
+	if( term.t_nrow == n - 1)
+	/* no change */
+		return TRUE ;
+	else if( term.t_nrow < n - 1) {
+	/* new size is bigger */
 		/* go to the last window */
-		wp = wheadp;
-		while (wp->w_wndp != NULL)
-			wp = wp->w_wndp;
+		for( wp = wheadp ; wp->w_wndp != NULL ; wp = wp->w_wndp)
+			;
 
 		/* and enlarge it as needed */
-		wp->w_ntrows = n - wp->w_toprow - 2;
-		wp->w_flag |= WFHARD | WFMODE;
-
+		wp->w_ntrows = n - wp->w_toprow - 2 ;
+		wp->w_flag |= WFHARD | WFMODE ;
 	} else {
-
+	/* new size is smaller */
 		/* rebuild the window structure */
 		assert( wheadp->w_toprow == 0) ;	/* proves coverity wrong */
-		nextwp = wheadp;
-		wp = NULL;
-		lastwp = NULL;
-		while (nextwp != NULL) {
-			wp = nextwp;
-			nextwp = wp->w_wndp;
+		window_p lastwp = NULL ;
+		for( window_p nextwp = wheadp ; nextwp != NULL ; ) {
+			wp = nextwp ;
+			nextwp = wp->w_wndp ;
+
+			if( wp->w_toprow == n - 2) {
+				lastwp->w_ntrows = n - lastwp->w_toprow - 2 ;
+				lastwp->w_flag |= WFHARD | WFMODE ;
+			}
 
 			/* get rid of it if it is too low */
-			if (wp->w_toprow > n - 2) {
-
+			if( wp->w_toprow >= n - 2) {
 				/* save the point/mark if needed */
-				if (--wp->w_bufp->b_nwnd == 0) {
-					wp->w_bufp->b_dotp = wp->w_dotp;
-					wp->w_bufp->b_doto = wp->w_doto;
-					wp->w_bufp->b_markp = wp->w_markp;
-					wp->w_bufp->b_marko = wp->w_marko;
+				if( --wp->w_bufp->b_nwnd == 0) {
+					wp->w_bufp->b_dotp = wp->w_dotp ;
+					wp->w_bufp->b_doto = wp->w_doto ;
+					wp->w_bufp->b_markp = wp->w_markp ;
+					wp->w_bufp->b_marko = wp->w_marko ;
 				}
 
 				/* update curwp and lastwp if needed */
-				if (wp == curwp)
-					curwp = wheadp;
-				curbp = curwp->w_bufp;
-				if (lastwp != NULL)
-					lastwp->w_wndp = NULL;
+				if( wp == curwp) {
+					curwp = wheadp ;
+					curbp = curwp->w_bufp ;
+				}
 
 				/* free the structure */
-				free((char *) wp);
-				wp = NULL;
-
+				free( wp) ;
+				lastwp->w_wndp = NULL ;
 			} else {
-				/* need to change this window size? */
-				lastline = wp->w_toprow + wp->w_ntrows - 1;
-				if (lastline >= n - 2) {
-					wp->w_ntrows =
-					    n - wp->w_toprow - 2;
-					wp->w_flag |= WFHARD | WFMODE;
+			/* need to change this window size? */
+				int lastline = wp->w_toprow + wp->w_ntrows - 1 ;
+				if( lastline >= n - 2) {
+					wp->w_ntrows = n - wp->w_toprow - 2 ;
+					assert( wp->w_ntrows) ;
+					wp->w_flag |= WFHARD | WFMODE ;
 				}
-			}
 
-			lastwp = wp;
+				lastwp = wp ;
+			}
 		}
 	}
 
 	/* screen is garbage */
-	term.t_nrow = n - 1;
-	sgarbf = TRUE;
-	return TRUE;
+	term.t_nrow = n - 1 ;
+	sgarbf = TRUE ;
+	return TRUE ;
 }
 
 

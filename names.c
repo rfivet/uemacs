@@ -50,7 +50,7 @@ const name_bind names[] = {
 	{"!case-word-lower", lowerword,					META | 'L'} ,
 	{"!case-word-upper", upperword,					META | 'U'} ,
 	{" change-file-name", filename,					CTLX | 'N'} ,
-	{" change-screen-size", newsize,				META | CTL_ | 'D'} , /* M^S */
+	{" change-screen-size", (fnp_t) newsize,		META | CTL_ | 'D'} , /* M^S */
 	{" change-screen-width", (fnp_t) newwidth,		META | CTL_ | 'T'} ,
 	{" clear-and-redraw", (fnp_t) redraw,			CTL_ | 'L'} ,
 	{" clear-message-line", (fnp_t) clrmes, 		0} ,
