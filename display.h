@@ -25,6 +25,7 @@ void vtinit( void) ;
 void vtfree( void) ;
 void vttidy( void) ;
 void update( boolean force_f) ;
+void updmargin( void) ;
 void upmode( void) ;
 void movecursor( int row, int col) ;
 void mlerase( void) ;

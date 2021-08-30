@@ -135,6 +135,14 @@ static void vtalloc( int maxrow, int maxcol) {
 	}
 }
 
+void updmargin( void) {
+	term.t_margin = term.t_ncol / 10 ;
+	if( term.t_margin < 3) /* t_margin - 1 enough for $ + prev before current */
+		term.t_margin = 3 ;
+
+	term.t_scrsiz = term.t_ncol - 2 * term.t_margin ;
+}
+
 void vtinit( void) {
 #ifdef SIGWINCH
 	signal( SIGWINCH, sizesignal) ;
@@ -142,6 +150,7 @@ void vtinit( void) {
 
 	setlocale( LC_CTYPE, "") ; /* expects $LANG like en_GB.UTF-8 */
 	TTopen() ;		/* open the screen */
+	updmargin() ;
 	TTkopen() ;		/* open the keyboard */
 	TTrev( FALSE) ;
 	vtalloc( term.t_mrow, term.t_mcol) ;

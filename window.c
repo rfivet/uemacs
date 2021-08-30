@@ -663,11 +663,7 @@ BBINDABLE( newwidth) {
 
 	/* otherwise, just re-width it (no big deal) */
 	term.t_ncol = n ;
-	term.t_margin = n / 10 ;
-	if( term.t_margin < 3)	/* t_margin -1 enough for $ + prev before current */
-		term.t_margin = 3 ;
-
-	term.t_scrsiz = n - (term.t_margin * 2) ;
+	updmargin() ;
 
 	/* force all windows to redraw */
 	for( window_p wp = wheadp ; wp; wp = wp->w_wndp)
