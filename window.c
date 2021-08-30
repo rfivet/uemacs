@@ -652,31 +652,29 @@ BINDABLE( newsize) {
  * int f;		default flag
  * int n;		numeric argument
  */
-BINDABLE( newwidth) {
-	window_p wp;
-
+BBINDABLE( newwidth) {
 	/* if the command defaults, assume the largest */
-	if (f == FALSE)
-		n = term.t_mcol;
+	if( f == FALSE)
+		n = term.t_mcol ;
 
 	/* make sure it's in range */
-	if (n < 10 || n > term.t_mcol)
+	if( n < 10 || n > term.t_mcol)
 		return mloutfail( "%%Screen width out of range") ;
 
 	/* otherwise, just re-width it (no big deal) */
-	term.t_ncol = n;
-	term.t_margin = n / 10;
-	term.t_scrsiz = n - (term.t_margin * 2);
+	term.t_ncol = n ;
+	term.t_margin = n / 10 ;
+	if( term.t_margin < 3)	/* t_margin -1 enough for $ + prev before current */
+		term.t_margin = 3 ;
 
-	/* florce all windows to redraw */
-	wp = wheadp;
-	while (wp) {
-		wp->w_flag |= WFHARD | WFMOVE | WFMODE;
-		wp = wp->w_wndp;
-	}
-	sgarbf = TRUE;
+	term.t_scrsiz = n - (term.t_margin * 2) ;
 
-	return TRUE;
+	/* force all windows to redraw */
+	for( window_p wp = wheadp ; wp; wp = wp->w_wndp)
+		wp->w_flag |= WFHARD | WFMOVE | WFMODE ;
+
+	sgarbf = TRUE ;
+	return TRUE ;
 }
 
 int getwpos(void)

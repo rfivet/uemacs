@@ -63,7 +63,6 @@ static int curcol ;		/* Cursor column                */
 static int vtrow = 0 ;	/* Row location of SW cursor */
 static int vtcol = 0 ;	/* Column location of SW cursor */
 static int lbound = 0 ;	/* leftmost column of current line being displayed */
-static int taboff = 0 ;	/* tab offset for display       */
 
 int mpresf = FALSE ;	/* TRUE if message in last line */
 int scrollcount = 1 ;	/* number of lines to scroll */
@@ -218,7 +217,7 @@ static void vtputuc( unicode_t c) {
 
 	if( c == '\t') {
 		sane_vtputc( viewtab ? 0xBB : ' ') ;	/* 0xBB: '»' */
-		while( ((vtcol + taboff) % tabwidth) != 0)
+		while( ((vtcol + lbound) % tabwidth) != 0)
 			sane_vtputc( ' ') ;
 	} else if( c < 0x20 || c == 0x7F) {
 		sane_vtputc( '^') ;
@@ -460,6 +459,8 @@ static void show_line( line_p lp) {
 		i += utf8_to_unicode( lp->l_text, i, len, &c) ;
 		vtputuc( c) ;
 	}
+
+	vteeol() ;
 }
 
 
@@ -469,9 +470,10 @@ static void show_line( line_p lp) {
  * window_p wp;		window to update current line in
  */
 static void updone( window_p wp) {
+	line_p lp ;
+
 /* search down the line we want */
 	int sline = wp->w_toprow ;	/* physical screen line to update */
-	line_p lp ;
 	for( lp = wp->w_linep ; lp != wp->w_dotp ; lp = lforw( lp))
 		++sline ;
 
@@ -484,7 +486,6 @@ static void updone( window_p wp) {
 	vscreen[ sline]->v_rfcolor = wp->w_fcolor ;
 	vscreen[ sline]->v_rbcolor = wp->w_bcolor ;
 #endif
-	vteeol() ;
 }
 
 
@@ -506,14 +507,14 @@ static void updall( window_p wp) {
 		/* if we are not at the end */
 			show_line( lp) ;
 			lp = lforw( lp) ;
-		}
+		} else
+			vteeol() ;
 
 	/* on to the next one */
 #if	COLOR
 		vscreen[ sline]->v_rfcolor = wp->w_fcolor ;
 		vscreen[ sline]->v_rbcolor = wp->w_bcolor ;
 #endif
-		vteeol() ;
 		++sline ;
 	}
 }
@@ -524,13 +525,12 @@ static void updall( window_p wp) {
     This is the only update for simple moves.
  */
 static void updpos( void) {
+	line_p lp ;
+
 /* find the current row */
-	line_p lp = curwp->w_linep ;
 	currow = curwp->w_toprow ;
-	while( lp != curwp->w_dotp) {
+	for( lp = curwp->w_linep ; lp != curwp->w_dotp ; lp = lforw( lp))
 		++currow ;
-		lp = lforw( lp) ;
-	}
 
 /* find the current column */
 	curcol = 0 ;
@@ -571,7 +571,6 @@ static void upddex( void) {
 				||  (curcol < term.t_ncol - 1)) {
 					vtmove( i, 0) ;
 					show_line( lp) ;
-					vteeol() ;
 
 				/* this line no longer is extended */
 					vscreen[ i]->v_flag &= ~VFEXT ;
@@ -798,30 +797,20 @@ static int endofline( unicode_t *s, int n) {
 
 
 /* updext:
- *	update the extended line which the cursor is currently
- *	on at a column greater than the terminal width. The line
- *	will be scrolled right or left to let the user see where
- *	the cursor is
+   update the extended line which the cursor is currently on at a column
+   greater than the terminal width.  The line will be scrolled right or
+   left to let the user see where the cursor is.
  */
 static void updext( void) {
-	int rcursor ;	/* real cursor location */
-	line_p lp ;	/* pointer to current line */
-
 	/* calculate what column the real cursor will end up in */
-	rcursor = ((curcol - term.t_ncol) % term.t_scrsiz) + term.t_margin ;
-	taboff = lbound = curcol - rcursor + 1 ;
+	lbound = curcol - ((curcol - term.t_ncol) % term.t_scrsiz + term.t_margin) ;
 
 	/* scan through the line outputing characters to the virtual screen */
 	/* once we reach the left edge                                  */
 	vtmove( currow, -lbound) ;	/* start scanning offscreen */
-	lp = curwp->w_dotp ;	/* line to output */
-	show_line( lp) ;
+	show_line( curwp->w_dotp) ;
 
-	/* truncate the virtual line, restore tab offset */
-	vteeol() ;
-	taboff = 0 ;
-
-	/* and put a '$' in column 1 */
+	/* put a '$' in column 1 */
 	vscreen[ currow]->v_text[ 0] = '$' ;
 }
 
