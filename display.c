@@ -136,9 +136,13 @@ static void vtalloc( int maxrow, int maxcol) {
 }
 
 void updmargin( void) {
+#define MINMARGIN 3	/* MINMARGIN - 1 enough for $ + prev before current */
+#if MINCOLS < 2 * MINMARGIN + 1
+# error	"MINCOLS and MINMARGIN are not consistent"
+#endif
 	term.t_margin = term.t_ncol / 10 ;
-	if( term.t_margin < 3) /* t_margin - 1 enough for $ + prev before current */
-		term.t_margin = 3 ;
+	if( term.t_margin < MINMARGIN)
+		term.t_margin = MINMARGIN ;
 
 	term.t_scrsiz = term.t_ncol - 2 * term.t_margin ;
 }
@@ -1327,11 +1331,11 @@ static void sizesignal( int signr) {
 static void newscreensize( int h, int w) {
 	chg_width = chg_height = 0 ;
 	vtfree() ;
-	if( h < 3)
-		h = 3 ;
+	if( h < MINROWS)
+		h = MINROWS ;
 
-	if( w < 10)
-		w = 10 ;
+	if( w < MINCOLS)
+		w = MINCOLS ;
 
 	vtalloc( h, w) ;
 	if( h <= term.t_mrow)

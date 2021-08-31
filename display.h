@@ -8,6 +8,9 @@
 #include "names.h"          /* BINDABLE() */
 #include "utf8.h"           /* unicode_t */
 
+#define MINROWS	3
+#define MINCOLS 10
+
 extern int mpresf ;         /* Stuff in message line */
 extern int scrollcount ;    /* number of lines to scroll */
 extern int discmd ;         /* display command flag         */

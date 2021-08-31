@@ -561,6 +561,11 @@ BINDABLE( restwnd) {
 }
 
 
+static void adjust( window_p wp, int screenrows) {
+	wp->w_ntrows = screenrows - wp->w_toprow - 2 ;
+	wp->w_flag |= WFHARD | WFMODE ;
+}
+
 /* resize the screen, re-writing the screen
  *
  * int f;	default flag
@@ -574,7 +579,7 @@ BBINDABLE( newsize) {
 		n = term.t_mrow ;
 
 	/* make sure it's in range */
-	if( n < 3 || n > term.t_mrow)
+	if( n < MINROWS || n > term.t_mrow)
 		return mloutfail( "%%Screen size out of range") ;
 
 	if( term.t_nrow == n - 1)
@@ -587,8 +592,7 @@ BBINDABLE( newsize) {
 			;
 
 		/* and enlarge it as needed */
-		wp->w_ntrows = n - wp->w_toprow - 2 ;
-		wp->w_flag |= WFHARD | WFMODE ;
+		adjust( wp, n) ;
 	} else {
 	/* new size is smaller */
 		/* rebuild the window structure */
@@ -598,10 +602,9 @@ BBINDABLE( newsize) {
 			wp = nextwp ;
 			nextwp = wp->w_wndp ;
 
-			if( wp->w_toprow == n - 2) {
-				lastwp->w_ntrows = n - lastwp->w_toprow - 2 ;
-				lastwp->w_flag |= WFHARD | WFMODE ;
-			}
+			/* expand previous window if current would have zero lines */
+			if( wp->w_toprow == n - 2)
+				adjust( lastwp, n) ;
 
 			/* get rid of it if it is too low */
 			if( wp->w_toprow >= n - 2) {
@@ -624,12 +627,8 @@ BBINDABLE( newsize) {
 				lastwp->w_wndp = NULL ;
 			} else {
 			/* need to change this window size? */
-				int lastline = wp->w_toprow + wp->w_ntrows - 1 ;
-				if( lastline >= n - 2) {
-					wp->w_ntrows = n - wp->w_toprow - 2 ;
-					assert( wp->w_ntrows) ;
-					wp->w_flag |= WFHARD | WFMODE ;
-				}
+				if( (wp->w_toprow + wp->w_ntrows - 1) >= n - 2)
+					adjust( wp, n) ;
 
 				lastwp = wp ;
 			}
@@ -654,7 +653,7 @@ BBINDABLE( newwidth) {
 		n = term.t_mcol ;
 
 	/* make sure it's in range */
-	if( n < 10 || n > term.t_mcol)
+	if( n < MINCOLS || n > term.t_mcol)
 		return mloutfail( "%%Screen width out of range") ;
 
 	/* otherwise, just re-width it (no big deal) */
