@@ -2,7 +2,8 @@
 
 #7 set $seed
 #execute-file maze.cmd
-execute-file floodmaz.cmd
+#execute-file floodmaz.cmd
+execute-file sharpmaz.cmd
 set %x 2
 set %y $curline
 end-of-line
