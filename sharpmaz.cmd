@@ -1,51 +1,53 @@
+## sharpmaz.cmd -- redraw a block maze using line characters
+
 execute-file maze.cmd
 
+set %meml $curline
+set %memc $curcol
 end-of-line
 set %ec &sub $curcol 1
 end-of-file
 set %el &sub $curline 1
-set $curline %el
+previous-line
 set %spaces $line
-set $curline 1
+beginning-of-file
 set %old $line
 set $line %spaces
-set %l 2
-!while &less %l %el
-	set $curline %l
-	set %c 1
-	!while &less %c %ec
-		set $curcol %c
+next-line
+!while &less $curline %el
+	set $curcol 1
+	!while &less $curcol %ec
 		!if &not &equ $curchar 32
 			set %v 0
-			set $curline &sub %l 1
-			set $curcol %c
+			previous-line
 			!if &not &equ $curchar 32
 				set %v &add %v 1
 			!endif
-			set $curline %l
-			set $curcol &sub %c 1
+			next-line
+			backward-character
 			!if &not &equ $curchar 32
 				set %v &add %v 2
 			!endif
-			set $curcol &add %c 1
+			2 forward-character
 			!if &not &equ $curchar 32
 				set %v &add %v 4
 			!endif
-			set $curline &add %l 1
-			set $curcol %c
+			next-line
+			backward-character
 			!if &not &equ $curchar 32
 				set %v &add %v 8
 			!endif
 
-			set $curline %l
-			set $curcol %c
-			set $curchar &asc &mid "╳╵╴┘╶└─┴╷│┐┤┌├┬┼" &add %v 1 1
+			previous-line
+			# alternatively use single width "╳╵╴┘╶└─┴╷│┐┤┌├┬┼"
+			set $curchar &asc &mid "╳╹╸┛╺┗━┻╻┃┓┫┏┣┳╋" &add %v 1 1
 		!endif
-		set %c &add %c 1
+		forward-character
 	!endwhile
-	set %l &add %l 1
+	next-line
 !endwhile
-set $curline 1
+
+beginning-of-file
 set $line %old
-set $curline 3
-set $curcol 1
+set $curline %meml
+set $curcol %memc

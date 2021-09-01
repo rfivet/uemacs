@@ -1,11 +1,13 @@
 ## blindmaz.cmd -- solve maze by walking a left-handed blind mouse
 
 #7 set $seed
-#execute-file maze.cmd
-#execute-file floodmaz.cmd
-execute-file sharpmaz.cmd
-set %x 2
-set %y $curline
+# either maze.cmd, sharpmaz.cmd or floodmaz.cmd
+execute-file floodmaz.cmd
+
+set %meml $curline	# save entrance location
+set %memc $curcol
+set %x &add %memc 1
+set %y %meml
 end-of-line
 set %stopcol &sub $curcol 1
 
@@ -18,7 +20,7 @@ set %DY2 0
 set %DX3 0
 set %DY3 -1
 
-set %dotc &asc "."
+set %dotc &asc "•"	# alternatively use "."
 
 store-procedure probe
 	set %OX &ind &cat "%DX" %nD
@@ -65,7 +67,6 @@ set %D 0		# looking EAST
 		!endif
 	!endif
 !endwhile
-beginning-of-file
-set $curline 3
-set $curcol 1
+set $curline %meml
+set $curcol %memc
 unmark-buffer

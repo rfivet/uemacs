@@ -1,7 +1,12 @@
+## floodmaz.cmd -- solve maze by painting right wall
+
 # 6 set $seed
-execute-file maze.cmd
+# either maze.cmd or sharpmaz.cmd
+execute-file sharpmaz.cmd
 
 set %thisbuf $cbufname
+set %meml $curline
+set %memc $curcol
 
 store-procedure pushxy				# push x y
 	set %x $curcol
@@ -27,6 +32,12 @@ store-procedure popxy				# pop x y
 	set $curcol %x
 !endm
 
+store-procedure probe
+	!if &not &or &equ $curchar %NC &equ $curchar 32
+		run pushxy
+	!endif
+!endm
+
 set $curline 1
 set $curcol 0
 run pushxy	#push stop position
@@ -40,27 +51,20 @@ set %NC &asc "█"
 	set %cc $curcol
 	set %ll $curline
 	set $curcol &add %cc 1
-	!if &equ $curchar %OC
-		run pushxy
-	!endif
+	run probe
 	set $curcol &add %cc -1
-	!if &equ $curchar %OC
-		run pushxy
-	!endif
+	run probe
 	set $curline &add %ll 1
 	set $curcol %cc
-	!if &equ $curchar %OC
-		run pushxy
-	!endif
+	run probe
 	set $curline &add %ll -1
 	set $curcol %cc
-	!if &equ $curchar %OC
-		run pushxy
-	!endif
+	run probe
 	run popxy	
 !endwhile
-set $curline 3
-set $curcol 1
+
+set $curline %meml
+set $curcol %memc
 select-buffer stack
 unmark-buffer
 select-buffer %thisbuf
