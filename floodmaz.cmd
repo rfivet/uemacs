@@ -8,7 +8,7 @@ set %thisbuf $cbufname
 set %meml $curline
 set %memc $curcol
 
-store-procedure pushxy				# push x y
+!store pushxy				# push x y
 	set %x $curcol
 	set %y $curline
 	select-buffer stack
@@ -20,7 +20,7 @@ store-procedure pushxy				# push x y
 	select-buffer %thisbuf
 !endm
 
-store-procedure popxy				# pop x y
+!store popxy				# pop x y
 	select-buffer stack
 	beginning-of-file
 	set %x $line
@@ -32,7 +32,7 @@ store-procedure popxy				# pop x y
 	set $curcol %x
 !endm
 
-store-procedure probe
+!store probe
 	!if &not &or &equ $curchar %NC &equ $curchar 32
 		run pushxy
 	!endif

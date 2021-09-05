@@ -22,7 +22,7 @@ set %DY3 -1
 
 set %dotc &asc "•"	# alternatively use "."
 
-store-procedure probe
+!store peep
 	set %OX &ind &cat "%DX" %nD
 	set %OY &ind &cat "%DY" %nD
 	set %nx &add %x %OX
@@ -54,14 +54,14 @@ store-procedure probe
 set %D 0		# looking EAST
 !while &les %x %stopcol
 	set %nD &mod &add %D 3 4				# Can go left?
-	run probe
-	!if &seq %res FALSE
+	run peep
+	!if &not %res
 		set %nD %D							# Can go straight?
-		run probe
-		!if &seq %res FALSE
+		run peep
+		!if &not %res
 			set %nD &mod &add %D 1 4		# Can go right?
-			run probe
-			!if &seq %res FALSE
+			run peep
+			!if &not %res
 				set %D &mod &add %D 2 4		# Go back!
 			!endif
 		!endif

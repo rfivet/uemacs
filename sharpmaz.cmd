@@ -14,30 +14,30 @@ beginning-of-file
 set %old $line
 set $line %spaces
 next-line
+
+!store check
+	!if &not &equ $curchar 32
+		set %v &add %v %inc
+	!endif
+	set %inc &tim %inc 2
+!endm
+
 !while &less $curline %el
 	set $curcol 1
 	!while &less $curcol %ec
 		!if &not &equ $curchar 32
 			set %v 0
+			set %inc 1
 			previous-line
-			!if &not &equ $curchar 32
-				set %v &add %v 1
-			!endif
+			run check
 			next-line
 			backward-character
-			!if &not &equ $curchar 32
-				set %v &add %v 2
-			!endif
+			run check
 			2 forward-character
-			!if &not &equ $curchar 32
-				set %v &add %v 4
-			!endif
+			run check
 			next-line
 			backward-character
-			!if &not &equ $curchar 32
-				set %v &add %v 8
-			!endif
-
+			run check
 			previous-line
 			# alternatively use single width "╳╵╴┘╶└─┴╷│┐┤┌├┬┼"
 			set $curchar &asc &mid "╳╹╸┛╺┗━┻╻┃┓┫┏┣┳╋" &add %v 1 1

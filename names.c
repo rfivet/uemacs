@@ -192,7 +192,7 @@ const name_bind names[] = {
 	{" shell-command", spawn,					CTLX | '!'} ,
 	{" shrink-window", shrinkwind,				CTLX | CTL_ | 'Z'} ,
 	{" split-current-window", splitwind,		CTLX | '2'} ,
-	{" store-macro", storemac, 0} ,
+	{" store-macro", (fnp_t) storemac, 0} ,
 	{" store-procedure", storeproc, 0} ,
 #if	BSD | SVR4
 	{" suspend-emacs", bktoshell,				CTLX | 'D'} , /* BSD MS */
