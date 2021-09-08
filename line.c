@@ -21,6 +21,7 @@
 
 #include "buffer.h"
 #include "defines.h"
+#include "list.h"
 #include "mlout.h"
 #include "utf8.h"
 #include "window.h"
@@ -198,47 +199,45 @@ line_p lalloc( int used) {
     return lp ;
 }
 
-/*
- * Delete line "lp". Fix all of the links that might point at it (they are
+
+/* Delete line "lp". Fix all of the links that might point at it (they are
  * moved to offset 0 of the next line. Unlink the line from whatever buffer it
  * might be in. Release the memory. The buffers are updated too; the magic
  * conditions described in the above comments don't hold here.
  */
 void lfree( line_p lp) {
-    buffer_p bp;
-    struct window *wp;
+    for( window_p wp = wheadp ; wp != NULL ; wp = wp->w_wndp) {
+        if( wp->w_linep == lp)
+            wp->w_linep = lp->l_fp ;
 
-    wp = wheadp;
-    while (wp != NULL) {
-        if (wp->w_linep == lp)
-            wp->w_linep = lp->l_fp;
-        if (wp->w_dotp == lp) {
-            wp->w_dotp = lp->l_fp;
-            wp->w_doto = 0;
+        if( wp->w_dotp == lp) {
+            wp->w_dotp = lp->l_fp ;
+            wp->w_doto = 0 ;
         }
-        if (wp->w_markp == lp) {
-            wp->w_markp = lp->l_fp;
-            wp->w_marko = 0;
+
+        if( wp->w_markp == lp) {
+            wp->w_markp = lp->l_fp ;
+            wp->w_marko = 0 ;
         }
-        wp = wp->w_wndp;
     }
-    bp = bheadp;
-    while (bp != NULL) {
-        if (bp->b_nwnd == 0) {
-            if (bp->b_dotp == lp) {
-                bp->b_dotp = lp->l_fp;
-                bp->b_doto = 0;
+
+    for( buffer_p bp = bheadp ; bp != NULL ; bp = bp->b_bufp) {
+        if( bp->b_nwnd == 0) {
+            if( bp->b_dotp == lp) {
+                bp->b_dotp = lp->l_fp ;
+                bp->b_doto = 0 ;
             }
-            if (bp->b_markp == lp) {
-                bp->b_markp = lp->l_fp;
-                bp->b_marko = 0;
+			
+            if( bp->b_markp == lp) {
+                bp->b_markp = lp->l_fp ;
+                bp->b_marko = 0 ;
             }
         }
-        bp = bp->b_bufp;
     }
-    lp->l_bp->l_fp = lp->l_fp;
-    lp->l_fp->l_bp = lp->l_bp;
-    free((char *) lp);
+
+    lp->l_bp->l_fp = lp->l_fp ;
+    lp->l_fp->l_bp = lp->l_bp ;
+    free( lp) ;
 }
 
 /*
@@ -747,28 +746,19 @@ static int ldelnewline( void) {
     return TRUE;
 }
 
-/*
- * Delete all of the text saved in the kill buffer. Called by commands when a
+
+/* Delete all of the text saved in the kill buffer. Called by commands when a
  * new kill context is being created. The kill buffer array is released, just
  * in case the buffer has grown to immense size. No errors.
  */
-void kdelete(void)
-{
-    kill_p kp;      /* ptr to scan kill buffer chunk list */
+void kdelete( void) {
+    if( kbufh != NULL) {
+    /* first, delete all the chunks */
+		freelist( (list_p) kbufh) ;
 
-    if (kbufh != NULL) {
-
-        /* first, delete all the chunks */
-        kbufp = kbufh;
-        while (kbufp != NULL) {
-            kp = kbufp->d_next;
-            free(kbufp);
-            kbufp = kp;
-        }
-
-        /* and reset all the kill buffer pointers */
-        kbufh = kbufp = NULL;
-        kused = KBLOCK;
+    /* and reset all the kill buffer pointers */
+        kbufh = kbufp = NULL ;
+        kused = KBLOCK ;
         klen = 0 ;
         if( value != NULL) {
             free( value) ;
