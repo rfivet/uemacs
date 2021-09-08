@@ -19,6 +19,7 @@
 #include "flook.h"
 #include "input.h"
 #include "line.h"
+#include "list.h"
 #include "mlout.h"
 #include "random.h"
 #include "util.h"
@@ -39,7 +40,13 @@ boolean clexec = FALSE ;    	/* command line execution flag  */
 #define DENDWHILE   7
 #define DBREAK      8
 #define DFORCE      9
+#define DGOSUB		10
 
+
+typedef struct caller {
+	struct caller *next ;
+	line_p caller ;
+} *caller_p ;
 
 /* The !WHILE directive in the execution language needs to
  * stack references to pending whiles. These are stored linked
@@ -47,10 +54,10 @@ boolean clexec = FALSE ;    	/* command line execution flag  */
  * the following structure.
 */
 typedef struct while_block {
+    struct while_block *w_next ;	/* next while */
     line_p w_begin ;				/* ptr to !while statement */
     line_p w_end ;					/* ptr to the !endwhile statement */
     int w_type ;					/* block type */
-    struct while_block *w_next ;	/* next while */
 } *while_p ;
 
 #define BTWHILE     1
@@ -60,7 +67,8 @@ typedef struct while_block {
 
 static const char *dname[] = {
     "if", 	"else", 	"endif",	"goto",		"return",
-	"endm", "while",	"endwhile", "break",	"force"
+	"endm", "while",	"endwhile", "break",	"force",
+	"gosub"
 } ;
 
 #define NUMDIRS     ARRAY_SIZE( dname)
@@ -185,8 +193,8 @@ static int docmd( char *cline) {
     return status ;
 }
 
-/*
- * new token:
+
+/* new token:
  *  chop a token off a string
  *  return a pointer past the token
  *
@@ -203,52 +211,45 @@ static char *newtoken( char *src, char **tokref) {
         ++src ;
 
     /* scan through the source string */
-    boolean quotef = FALSE ;	/* is the current string quoted? */
-    while( *src) {
-	    char c ;	/* temporary character */
+    boolean quote_f = FALSE ;	/* is the current string quoted? */
+	for( char c = *src ; c ; c = *++src) {
+    /* process special characters */
+        if( c == '~') {
+            c = *++src ;
+            if( c == 0)
+                break ;
 
-        /* process special characters */
-        if( *src == '~') {
-            ++src;
-            if (*src == 0)
-                break;
-            switch (*src++) {
+            switch( c) {
             case 'r':
-                c = 13;
-                break;
+                c = 13 ;
+                break ;
             case 'n':
-                c = 10;
-                break;
+                c = 10 ;
+                break ;
             case 't':
-                c = 9;
-                break;
+                c = 9 ;
+                break ;
             case 'b':
-                c = 8;
-                break;
+                c = 8 ;
+                break ;
             case 'f':
-                c = 12;
-                break;
-            default:
-                c = *(src - 1);
+                c = 12 ;
+                break ;
             }
         } else {
-            /* check for the end of the token */
-            if (quotef) {
-                if (*src == '"')
-                    break;
-            } else {
-                if (*src == ' ' || *src == '\t')
-                    break;
-            }
+        /* check for the end of the token: end of string or space separator */
+            if( quote_f) {
+                if( c == '"')
+                    break ;
+            } else if( c == ' ' || c == '\t')
+                break ;
 
-            /* set quote mode if quote found */
-            if (*src == '"')
-                quotef = TRUE;
-
-            /* record the character */
-            c = *src++;
+        /* set quote mode if quote found */
+            if( c == '"')
+                quote_f = TRUE ;
         }
 
+    /* record the character */
 		if( idx < size - 1)
 			tok[ idx++] = c ;
 		else if( size > 1) {
@@ -256,7 +257,7 @@ static char *newtoken( char *src, char **tokref) {
 			
 			tmptok = malloc( size + 32) ;
 			if( tmptok == NULL)
-				size = 0 ;
+				size = 0 ;			/* can't store more */
 			else {
 				memcpy( tmptok, tok, idx) ;
 				free( tok) ;
@@ -267,15 +268,11 @@ static char *newtoken( char *src, char **tokref) {
 		}
     }
 
-    /* terminate the token and exit */
-    if (*src)
-        ++src;
-
     if( tok != NULL)
         tok[ idx] = 0 ;
 
     *tokref = tok ;
-    return src;
+    return src + (*src != 0) ;
 }
 
 static char *token( char *srcstr, char *tok, int maxtoksize) {
@@ -488,19 +485,6 @@ BINDABLE( execbuf) {
 }
 
 
-/* free a list of while block pointers
- *
- * while_p wp;      head of structure to free
- */
-static void freewhile( while_p wp) {
-	while( wp != NULL) {
-		while_p next = wp->w_next ;
-		free( wp) ;
-		wp = next ;
-	}
-}
-
-
 static boolean storeline( char *eline, int linlen) {
 /* allocate the space for the line */
    	line_p mp = lalloc( linlen) ;
@@ -564,19 +548,10 @@ static int dobuf( buffer_p bp) {
 			if( *eline != ' ' && *eline != '\t')
 				break ;
 
-	/* empty blank and comment lines */
+	/* delete blank and comment lines */
 		if( eline == eol || *eline == '#' || *eline == ';') {
-			if( bp->b_nwnd != 0)
-				lp->l_used = 0 ;
-			else {
-			/* delete line if buffer is not displayed */
-				line_p curlp = lp ;
-				lp = lp->l_bp ;
-				lp->l_fp = curlp->l_fp ;
-				curlp->l_fp->l_bp = lp ;
-				free( curlp) ;
-			}
-	
+			lp = lp->l_bp ;
+			lfree( lp->l_fp) ;
 			continue ;
 		}
 
@@ -598,7 +573,9 @@ static int dobuf( buffer_p bp) {
 			} else if( !storeline( lp->l_text, lp->l_used))
 				goto failexit ;
 
-			lp->l_used = 0 ;
+		/* remove line */
+			lp = lp->l_bp ;
+			lfree( lp->l_fp) ;
 			continue ;			
 		}
 
@@ -618,8 +595,7 @@ static int dobuf( buffer_p bp) {
 		if( !strncmp( eline, "!store", 6)) {
 			if( lp->l_used < lp->l_size) {
 				eline[ lp->l_used] = 0 ;
-				execstr = &eline[ 6] ;
-				gettoken( &tkn[ 1], sizeof tkn - 1) ;
+				token( &eline[ 6], &tkn[ 1], sizeof tkn - 1) ;
 				char c = tkn[ 1] ;
 				if( c >= '1' && c <= '9') { /* number >= 1 */
 					if( !storemac( TRUE, atoi( &tkn[ 1])))
@@ -632,7 +608,9 @@ static int dobuf( buffer_p bp) {
 				}
 			}
 
-			lp->l_used = 0 ;
+		/* remove line */
+			lp = lp->l_bp ;
+			lfree( lp->l_fp) ;
 			continue ;
 		} else if( !strncmp( eline, "!while", 6)) {
     	/* if it is a while directive, make a block... */
@@ -693,8 +671,8 @@ static int dobuf( buffer_p bp) {
     /* while and endwhile should match! */
 		mloutfmt( "%%!WHILE with no matching !ENDWHILE in '%s'", bp->b_bname) ;
 	failexit:
-		freewhile( scanner) ;
-   	    freewhile( whlist) ;
+		freelist( (list_p) scanner) ;
+ 	    freelist( (list_p) whlist) ;
    	    return FALSE ;
     }
 
@@ -707,6 +685,7 @@ static int dobuf( buffer_p bp) {
 	int status = TRUE ;		/* status of command execution */
 	boolean done = FALSE ;
     int execlevel = 0 ;		/* execution IF level */
+	caller_p returnto = NULL ;
 	line_p lp = hlp->l_fp ;
     for( ; lp != hlp ; lp = lp->l_fp) {
 		if( einit) {
@@ -847,9 +826,10 @@ static int dobuf( buffer_p bp) {
 				break ;
             case DENDIF:	/* ENDIF directive */
                 if( execlevel)
-                    --execlevel;
+                    --execlevel ;
 
 				break ;
+			case DGOSUB:	/* GOSUB directive */
             case DGOTO:		/* GOTO directive */
             /* .....only if we are currently executing */
                 if( execlevel != 0)
@@ -865,6 +845,18 @@ static int dobuf( buffer_p bp) {
 						char c = *glp->l_text ;
                         if(	(c == '*' || c == ':')
 						&&	!strncmp( &glp->l_text[ 1], golabel, linlen)) {
+							if( dirnum == DGOSUB) {
+								caller_p cp = malloc( sizeof *cp) ;
+								if( cp == NULL) {
+									status = mloutfail( "OoM on !gosub") ;
+									break ;
+								} else {
+									cp->caller = lp ;
+									cp->next = returnto ;
+									returnto = cp ;
+								}
+							}
+
 							lp = glp ;
                             break ;
                         }
@@ -879,8 +871,15 @@ static int dobuf( buffer_p bp) {
 
 				break ;
             case DRETURN:   /* RETURN directive */
-                if( execlevel == 0)
-                    done = TRUE ;
+                if( execlevel == 0) {
+					if( returnto != NULL) {
+						caller_p cp = returnto ;
+						lp = returnto->caller ;
+						returnto = returnto->next ;
+						free( cp) ;
+					} else
+	                    done = TRUE ;
+				}
 
 				break ;
             case DENDWHILE: /* ENDWHILE directive */
@@ -929,7 +928,8 @@ static int dobuf( buffer_p bp) {
         bp->b_doto = 0 ;
     }
 
-    freewhile( whlist) ;
+	freelist( (list_p) returnto) ;
+    freelist( (list_p) whlist) ;
     if( einit)
 		free( einit) ;
 
