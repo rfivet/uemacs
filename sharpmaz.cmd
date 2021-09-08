@@ -15,13 +15,6 @@ set %old $line
 set $line %spaces
 next-line
 
-!store check
-	!if &not &equ $curchar 32
-		set %v &add %v %inc
-	!endif
-	set %inc &tim %inc 2
-!endm
-
 !while &less $curline %el
 	set $curcol 1
 	!while &less $curcol %ec
@@ -29,15 +22,15 @@ next-line
 			set %v 0
 			set %inc 1
 			previous-line
-			run check
+			!gosub check
 			next-line
 			backward-character
-			run check
+			!gosub check
 			2 forward-character
-			run check
+			!gosub check
 			next-line
 			backward-character
-			run check
+			!gosub check
 			previous-line
 			# alternatively use single width "╳╵╴┘╶└─┴╷│┐┤┌├┬┼"
 			set $curchar &asc &mid "╳╹╸┛╺┗━┻╻┃┓┫┏┣┳╋" &add %v 1 1
@@ -51,3 +44,11 @@ beginning-of-file
 set $line %old
 set $curline %meml
 set $curcol %memc
+!return
+
+:check
+	!if &not &equ $curchar 32
+		set %v &add %v %inc
+	!endif
+	set %inc &tim %inc 2
+!return
