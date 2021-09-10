@@ -8,6 +8,7 @@
    modified by Petri Kutvonen
  */
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -30,17 +31,17 @@ boolean clexec = FALSE ;    	/* command line execution flag  */
 
 /*  Directive definitions   */
 
-#define DIF     	0
-#define DELSE       1
-#define DENDIF      2
-#define DGOTO       3
-#define DRETURN     4
-#define DENDM       5
-#define DWHILE      6
-#define DENDWHILE   7
-#define DBREAK      8
-#define DFORCE      9
-#define DGOSUB		10
+#define DFORCE      0
+#define DGOTO       1
+#define DGOSUB		2
+#define DIF     	3
+#define DWHILE      4
+#define DBREAK      5
+#define DELSE       6
+#define DENDIF      7
+#define DENDM       8
+#define DENDWHILE   9
+#define DRETURN     10
 
 
 typedef struct caller {
@@ -66,9 +67,9 @@ typedef struct while_block {
 /* directive name table: holds the names of all the directives....  */
 
 static const char *dname[] = {
-    "if", 	"else", 	"endif",	"goto",		"return",
-	"endm", "while",	"endwhile", "break",	"force",
-	"gosub"
+	"force",	"goto",	"gosub",    "if",	"while",
+	"break",	"else",	"endif",	"endm",	"endwhile",
+	"return"
 } ;
 
 #define NUMDIRS     ARRAY_SIZE( dname)
@@ -528,6 +529,7 @@ static int dobuf( buffer_p bp) {
     while_p whtemp ;		/* temporary ptr to a struct while_block */
     char *eline ;       	/* text of line to execute */
     char tkn[ NSTRING] ;	/* buffer to evaluate an expression in */
+	int w_type ;			/* either while or break */
 
 /* clear IF level flags/while ptr */
     while_p whlist = NULL ;		/* ptr to !WHILE list */
@@ -570,7 +572,7 @@ static int dobuf( buffer_p bp) {
 			if( !strncmp( eline, "!endm", 5)) {
 				bstore = NULL ;
 				storing_f = FALSE ;
-			} else if( !storeline( lp->l_text, lp->l_used))
+			} else if( bstore && !storeline( lp->l_text, lp->l_used))
 				goto failexit ;
 
 		/* remove line */
@@ -593,19 +595,31 @@ static int dobuf( buffer_p bp) {
 			continue ;
 
 		if( !strncmp( eline, "!store", 6)) {
-			if( lp->l_used < lp->l_size) {
-				eline[ lp->l_used] = 0 ;
-				token( &eline[ 6], &tkn[ 1], sizeof tkn - 1) ;
-				char c = tkn[ 1] ;
-				if( c >= '1' && c <= '9') { /* number >= 1 */
-					if( !storemac( TRUE, atoi( &tkn[ 1])))
-						goto failexit ;
-				} else {	/* whatever */
-					*tkn = '*' ;
-					strcat( tkn, "*") ;
-					if( !setstore( tkn))
-						goto failexit ;
-				}
+		/* turn line into a string */
+			int size = lp->l_used - 6 ;
+			if( size)
+				memcpy( lp->l_text, &eline[ 6], size) ;
+
+			eline = lp->l_text ;
+			eline[ size] = 0 ;
+			lp->l_used = size ;
+
+		/* get procedure or macro name */
+			token( eline, &tkn[ 1], sizeof tkn - 1) ;
+			char c = tkn[ 1] ;
+			if( !c || c == '#' || c == ';') {
+			/* no name */
+				storing_f = TRUE ;	/* just throw away the lines (no bstore) */
+			} else if( c >= '1' && c <= '9') { /* number >= 1 */
+			/* macro number */
+				if( !storemac( TRUE, atoi( &tkn[ 1])))
+					goto failexit ;
+			} else {
+			/* whatever */
+				*tkn = '*' ;
+				strcat( tkn, "*") ;
+				if( !setstore( tkn))
+					goto failexit ;
 			}
 
 		/* remove line */
@@ -614,15 +628,16 @@ static int dobuf( buffer_p bp) {
 			continue ;
 		} else if( !strncmp( eline, "!while", 6)) {
     	/* if it is a while directive, make a block... */
+			w_type = BTWHILE ;
+		scan:
 	    	whtemp = malloc( sizeof *whtemp) ;
         	if( whtemp == NULL) {
-        	noram:
 				mloutstr( "%%Out of memory during while scan") ;
 				goto failexit ;
-        	}
+			}
 			
         	whtemp->w_begin = lp ;
-        	whtemp->w_type = BTWHILE ;
+        	whtemp->w_type = w_type ;
         	whtemp->w_next = scanner ;
         	scanner = whtemp ;
 		} else if( !strncmp( eline, "!break", 6)) {
@@ -632,14 +647,8 @@ static int dobuf( buffer_p bp) {
         		goto failexit ;
     		}
 
-        	whtemp = malloc( sizeof *whtemp) ;
-	        if( whtemp == NULL)
-    	        goto noram ;
-
-        	whtemp->w_begin = lp ;
-			whtemp->w_type = BTBREAK ;
-			whtemp->w_next = scanner ;
-			scanner = whtemp ;
+			w_type = BTBREAK ;
+			goto scan ;
 		} else if( !strncmp( eline, "!endwhile", 9)) {
 		/* if it is an endwhile directive, record the spot... */
 			if( scanner == NULL) {
@@ -682,28 +691,25 @@ static int dobuf( buffer_p bp) {
 
     /* starting at the beginning of the buffer */
     char *einit = NULL ;	/* initial value of eline */
+	int esize = 0 ;			/* size available for storage in einit */
 	int status = TRUE ;		/* status of command execution */
 	boolean done = FALSE ;
     int execlevel = 0 ;		/* execution IF level */
 	caller_p returnto = NULL ;
 	line_p lp = hlp->l_fp ;
     for( ; lp != hlp ; lp = lp->l_fp) {
-		if( einit) {
-			free( einit) ;
-			einit = NULL ;
-		}
-
     /* allocate eline and copy macro line to it */
         int linlen = lp->l_used ;
-		if( linlen == 0)
-			continue ;
+		if( esize <= linlen) {
+			esize = linlen + 1 ;
+	        einit = realloc( einit, esize) ;
+	        if( einit == NULL) {
+    	        status = mloutfail( "%%Out of Memory during macro execution") ;
+				break ;
+        	}
+		}
 
-        einit = eline = malloc( linlen + 1) ;
-        if( eline == NULL) {
-            status = mloutfail( "%%Out of Memory during macro execution") ;
-			break ;
-        }
-
+		eline = einit ;
 		memcpy( eline, lp->l_text, linlen) ;
 		eline[ linlen] = 0 ;
 
@@ -729,13 +735,16 @@ static int dobuf( buffer_p bp) {
 			if( !strncmp( eline, "!endm", 5)) {
                 storing_f = FALSE ;
                 bstore = NULL ;
+				lp = lp->l_bp ;
+				lfree( lp->l_fp) ;
 			} else {
 				status = storeline( eline, strlen( eline)) ;
 				if( status != TRUE)
 					break ;
 			}
 
-			lp->l_used = 0 ;
+			lp = lp->l_bp ;
+			lfree( lp->l_fp) ;
             continue ;
         }
 
@@ -759,74 +768,82 @@ static int dobuf( buffer_p bp) {
 				break ;
             }
 
-			--eline ;	/* restore the original eline.... */
-
 		/* now, execute directives */
-            /* skip past the directive */
-            while( *eline && *eline != ' ' && *eline != '\t')
-                ++eline ;
+            /* skip past the directives that takes arguments */
+			if( dirnum <= DWHILE) {
+	            while( *eline && *eline != ' ' && *eline != '\t')
+    	            ++eline ;
 
-            while( *eline && (*eline == ' ' || *eline == '\t'))
-                ++eline ;
+        	    while( *eline && (*eline == ' ' || *eline == '\t'))
+            	    ++eline ;
 
-            execstr = eline ;
+	            execstr = eline ;
+			}
+
             switch( dirnum) {
 			case DENDM:
 				if( execlevel == 0)
 					status = mloutfail( "!endm out of context") ;
 
 				break ;
-
             case DIF:   	/* IF directive */
-            /* grab the value of the logical exp */
                 if( execlevel == 0) {
+	            /* grab the value of the logical exp */
                     status = macarg( tkn, sizeof tkn) ;
                     if( status == TRUE && stol( tkn) == FALSE)
-                        ++execlevel ;
+                        execlevel = 1 ;	/* skip to else or endif */
                 } else
                     ++execlevel ;
 
                 break ;
-
-            case DWHILE:	/* WHILE directive */
-            /* grab the value of the logical exp */
-                if( execlevel == 0) {
-                    status = macarg( tkn, sizeof tkn) ;
-                    if( status != TRUE) {
-						break ;
-                    } else if( stol( tkn) == TRUE)
-						break ;
-                }
-            /* drop down and act just like !BREAK */
-
-				/* fallthrough */
-            case DBREAK:    /* BREAK directive */
-                if( dirnum == DBREAK && execlevel)
-                    continue ;
-
-                /* jump down to the endwhile */
-                /* find the right while loop */
-                for( whtemp = whlist ; whtemp ; whtemp = whtemp->w_next)
-                    if( whtemp->w_begin == lp)
-                        break ;
-
-                if( whtemp == NULL)
-                    status = mloutfail( "%%Internal While loop error") ;
-                else
-                /* reset the line pointer back.. */
-	                lp = whtemp->w_end ;
-
-				break ;
             case DELSE:		/* ELSE directive */
                 if( execlevel == 1)
-                    --execlevel ;
+                    execlevel = 0 ;	/* execute the else part */
                 else if( execlevel == 0)
-                    ++execlevel ;
+                    execlevel = 1 ;	/* skip to endif */
+				/* else keep skipping  */
 
 				break ;
             case DENDIF:	/* ENDIF directive */
                 if( execlevel)
                     --execlevel ;
+
+				break ;
+            case DWHILE:	/* WHILE directive */
+                if( execlevel == 0) {
+	            /* grab the value of the logical exp */
+                    status = macarg( tkn, sizeof tkn) ;
+					if( status != TRUE || stol( tkn) == TRUE)
+						break ;
+                }
+
+				/* fallthrough */
+            case DBREAK:    /* BREAK directive */
+            /* jump down to the endwhile */
+	            /* find the right while loop */
+	            for( whtemp = whlist ; whtemp ; whtemp = whtemp->w_next)
+	                if( whtemp->w_begin == lp) {
+	                /* reset the line pointer back.. */
+		                lp = whtemp->w_end ;
+	                    break ;
+					}
+
+	            if( whtemp == NULL)
+	                status = mloutfail( "%%Internal While loop error") ;
+
+				break ;
+            case DENDWHILE: /* ENDWHILE directive */
+				assert( execlevel == 0) ;
+                /* find the right while loop */
+                for( whtemp = whlist ; whtemp ; whtemp = whtemp->w_next)
+                    if( whtemp->w_type == BTWHILE && whtemp->w_end == lp) {
+    	            /* reset the line pointer back.. */
+	                    lp = whtemp->w_begin->l_bp ;
+                        break ;
+					}
+
+                if( whtemp == NULL)
+                    status = mloutfail( "%%Internal While loop error") ;
 
 				break ;
 			case DGOSUB:	/* GOSUB directive */
@@ -880,24 +897,6 @@ static int dobuf( buffer_p bp) {
 					} else
 	                    done = TRUE ;
 				}
-
-				break ;
-            case DENDWHILE: /* ENDWHILE directive */
-                if( execlevel)
-                    --execlevel ;
-                else {
-                /* find the right while loop */
-                    for( whtemp = whlist ; whtemp ; whtemp = whtemp->w_next)
-                        if( whtemp->w_type == BTWHILE
-                        &&	whtemp->w_end == lp)
-                            break ;
-
-                    if( whtemp == NULL)
-                        status = mloutfail( "%%Internal While loop error") ;
-                    else
-    	            /* reset the line pointer back.. */
-	                    lp = whtemp->w_begin->l_bp ;
-                }
 
 				break ;
             case DFORCE:		/* FORCE directive */
