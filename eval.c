@@ -44,7 +44,6 @@
 #define	TKSTR	9		/* quoted string literal        */
 #define	TKCMD	10		/* command name                 */
 
-static int gettyp( char *token) ;
 
 /* Emacs global flag bit definitions (for gflags). */
 /* if GFREAD is set, current buffer will be set on first file (read in) */
@@ -1112,116 +1111,103 @@ static char *i_to_a( int i) {
 	return sp ;
 }
 
-/*
- * find the type of a passed token
+
+/* find the type of a token based on first character
  *
- * char *token;		token to analyze
+ * char c ; 	first character of analyzed token
  */
-static int gettyp( char *token) {
-	char c;	/* first char in token */
-
-	/* grab the first char (this is all we need) */
-	c = *token;
-
-	switch (c) {
+static int gettyp( char c) {
+ 	switch( c) {
+	case '*':
+	case ':':
+		return TKLBL ;
 	case 0:	/* no blanks!!! */
 		return TKNUL ;
 	case '"':
-		return TKSTR;
-
+		return TKSTR ;
 	case '!':
-		return TKDIR;
+		return TKDIR ;
 	case '@':
-		return TKARG;
+		return TKARG ;
 	case '=':
-		return TKBUF;
+		return TKBUF ;
 	case '$':
-		return TKENV;
+		return TKENV ;
 	case '%':
-		return TKVAR;
+		return TKVAR ;
 	case '&':
-		return TKFUN;
-	case '*':
-		return TKLBL;
+		return TKFUN ;
 
 	default:
 		/* a numeric literal? */
 		if( (c >= '0' && c <= '9') || c == '-')
-			return TKLIT;
+			return TKLIT ;
 		else
-			return TKCMD;
+			return TKCMD ;
 	}
 }
 
 int is_it_cmd( char *token) {
-	return TKCMD == gettyp( token) ;
+	return TKCMD == gettyp( *token) ;
 }
 
-/*
- * find the value of a token
+
+/* find the value of a token
  *
  * char *token;		token to evaluate
  */
-const char *getval(char *token)
-{
-	int status;	/* error return */
-	struct buffer *bp;	/* temp buffer pointer */
-	unsigned blen ;	/* length of buffer argument */
-	int distmp;	/* temporary discmd flag */
-	static char buf[NSTRING];	/* string buffer for some returns */
+const char *getval( char *token) {
+	static char buf[ NSTRING] ;	/* string buffer for some returns */
 
-	switch (gettyp(token)) {
-	case TKNUL:
-		return "";
-
+	switch( gettyp( *token)) {
 	case TKARG:		/* interactive argument */
-		strcpy(token, getval(&token[1]));
-		distmp = discmd;	/* echo it always! */
-		discmd = TRUE;
-		status = getstring( token, buf, NSTRING, nlc) ;
-		discmd = distmp;
+		strcpy( token, getval( &token[ 1])) ;
+		int distmp = discmd ;	/* echo it always! */
+		discmd = TRUE ;
+		int status = getstring( token, buf, NSTRING, nlc) ;
+		discmd = distmp ;
 		if (status == ABORT)
-			return errorm;
-		return buf;
+			return errorm ;
+
+		return buf ;
 
 	case TKBUF:		/* buffer contents fetch */
-
-		/* grab the right buffer */
-		strcpy(token, getval(&token[1]));
-		bp = bfind(token, FALSE, 0);
+	/* grab the right buffer */
+		strcpy( token, getval( &token[ 1])) ;
+		buffer_p bp = bfind( token, FALSE, 0) ;
 		if (bp == NULL)
-			return errorm;
+			return errorm ;
 
-		/* if the buffer is displayed, get the window
-		   vars instead of the buffer vars */
+	/* if the buffer is displayed,
+	   get the window vars instead of the buffer vars */
 		if (bp->b_nwnd > 0) {
 			curbp->b_dotp = curwp->w_dotp;
 			curbp->b_doto = curwp->w_doto;
 		}
 
-		/* make sure we are not at the end */
+	/* make sure we are not at the end */
 		if (bp->b_linep == bp->b_dotp)
 			return errorm;
 
-		/* grab the line as an argument */
-		blen = bp->b_dotp->l_used - bp->b_doto;
+	/* grab the line as an argument */
+		unsigned blen = bp->b_dotp->l_used - bp->b_doto;
 		if( blen >= sizeof buf)
 			blen = sizeof buf - 1 ;
 
 		mystrscpy( buf, bp->b_dotp->l_text + bp->b_doto, blen + 1) ;
 
-		/* and step the buffer's line ptr ahead a line */
+	/* and step the buffer's line ptr ahead a line */
 		bp->b_dotp = bp->b_dotp->l_fp;
 		bp->b_doto = 0;
 
-		/* if displayed buffer, reset window ptr vars */
+	/* if displayed buffer, reset window ptr vars */
 		if (bp->b_nwnd > 0) {
 			curwp->w_dotp = curbp->b_dotp;
 			curwp->w_doto = 0;
 			curwp->w_flag |= WFMOVE;
 		}
 
-		/* and return the spoils */
+	/* and return the spoils */
 		return buf;
 
 	case TKVAR:
@@ -1230,18 +1216,19 @@ const char *getval(char *token)
 		return gtenv(token + 1);
 	case TKFUN:
 		return gtfun(token + 1);
-	case TKDIR:
-		return errorm;
-	case TKLBL:
-		return errorm;
 	case TKLIT:
 		return token;
 	case TKSTR:
 		return token + 1;
 	case TKCMD:
 		return token;
+	case TKDIR:
+	case TKLBL:
+	case TKNUL:
+		return "" ;
 	}
-	return errorm;
+
+	return errorm ;
 }
 
 /*

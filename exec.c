@@ -102,36 +102,12 @@ BINDABLE( namedcmd) {
     return kfunc( f, n) ;
 }
 
-static int docmd( char *cline) ;
-
-/* execcmd:
- *  Execute a command line command to be typed in
- *  by the user
- *
- * int f, n;        default Flag and Numeric argument
- */
-BINDABLE( execcmd) {
-    char *cmdstr ;	/* string holding command to execute */
-
-/* get the line wanted */
-    int status = newmlarg( &cmdstr, "execute-command-line: ", 0) ;
-    if( status != TRUE)
-        return status ;
-
-    while( status == TRUE && n-- > 0)
-        status = docmd( cmdstr) ;
-
-    free( cmdstr) ;
-    return status ;
-}
-
 /* docmd:
- *  take a passed string as a command line and translate
- *  it to be executed as a command. This function will be
- *  used by execute-command-line and by all source and
- *  startup files. Lastflag/thisflag is also updated.
- *
- *  format of the command line is:
+   take a passed string as a command line and translate it to be executed
+   as a command.  This function will be used by execute-command-line and by
+   all source and startup files.  Lastflag/thisflag is also updated.
+   
+ * format of the command line is:
  *
  *      {# arg} <command-name> {<argument string(s)>}
  *
@@ -139,6 +115,7 @@ BINDABLE( execcmd) {
  */
 static int docmd( char *cline) {
     char tkn[ NSTRING] ;	/* next token off of command line */
+	int status ;
 
     char *oldestr = execstr ;	/* save last ptr to string to execute */
     execstr = cline ;   		/* and set this one as current */
@@ -149,27 +126,22 @@ static int docmd( char *cline) {
     lastflag = thisflag ;
     thisflag = 0 ;
 
-    int status = macarg( tkn, sizeof tkn) ;
-    if( status != TRUE) {   /* and grab the first token */
-        execstr = oldestr;
-        return status;
-    }
+	for( ;;) {
+	/* evaluate next token */
+	    status = macarg( tkn, sizeof tkn) ;
+	    if( status != TRUE || !*tkn) {
+	        execstr = oldestr ;
+	        return status ;
+	    }
 
-    /* process leadin argument */
-    if( !is_it_cmd( tkn)) {
-        f = TRUE;
-/* macarg already includes a getval, skip for now
-		mystrscpy( tkn, getval( tkn), sizeof tkn) ;
-*/
-        n = atoi(tkn);
+	/* proceed if it is a command */
+		if( is_it_cmd( tkn))
+			break ;
 
-        /* and now get the command to execute */
-        status = macarg( tkn, sizeof tkn) ;
-        if( status != TRUE) {
-            execstr = oldestr ;
-            return status ;
-        }
-    }
+	/* otherwise set as argument of coming command */
+		f = TRUE ;
+		n = atoi( tkn) ;
+	}
 
     /* and match the token to see if it exists */
 	nbind_p nbp = fncmatch( tkn) ;
@@ -195,6 +167,26 @@ static int docmd( char *cline) {
 }
 
 
+/* execcmd:
+ *  Execute a command line command to be typed in by the user
+ *
+ * int f, n;        default Flag and Numeric argument
+ */
+BINDABLE( execcmd) {
+    char *cmdstr ;	/* string holding command to execute */
+
+/* get the line wanted */
+    int status = newmlarg( &cmdstr, "execute-command-line: ", 0) ;
+    if( status != TRUE)
+        return status ;
+
+    while( status == TRUE && n-- > 0)
+        status = docmd( cmdstr) ;
+
+    free( cmdstr) ;
+    return status ;
+}
+
 /* new token:
  *  chop a token off a string
  *  return a pointer past the token
@@ -213,7 +205,8 @@ static char *newtoken( char *src, char **tokref) {
 
     /* scan through the source string */
     boolean quote_f = FALSE ;	/* is the current string quoted? */
-	for( char c = *src ; c ; c = *++src) {
+	char c = *src ;
+	for( ; c ; c = *++src) {
     /* process special characters */
         if( c == '~') {
             c = *++src ;
@@ -238,12 +231,17 @@ static char *newtoken( char *src, char **tokref) {
                 break ;
             }
         } else {
-        /* check for the end of the token: end of string or space separator */
+        /* check for the end of the token: EOS, space or comment */
             if( quote_f) {
                 if( c == '"')
                     break ;
             } else if( c == ' ' || c == '\t')
                 break ;
+			else if( c == '#' || c == ';') {
+			/* comments act like EOS */
+				c = 0 ;
+				break ;
+			}
 
         /* set quote mode if quote found */
             if( c == '"')
@@ -273,7 +271,7 @@ static char *newtoken( char *src, char **tokref) {
         tok[ idx] = 0 ;
 
     *tokref = tok ;
-    return src + (*src != 0) ;
+    return src + (c != 0) ;
 }
 
 static char *token( char *srcstr, char *tok, int maxtoksize) {
@@ -607,7 +605,7 @@ static int dobuf( buffer_p bp) {
 		/* get procedure or macro name */
 			token( eline, &tkn[ 1], sizeof tkn - 1) ;
 			char c = tkn[ 1] ;
-			if( !c || c == '#' || c == ';') {
+			if( !c) {
 			/* no name */
 				storing_f = TRUE ;	/* just throw away the lines (no bstore) */
 			} else if( c >= '1' && c <= '9') { /* number >= 1 */
