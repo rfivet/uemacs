@@ -892,8 +892,10 @@ static int dobuf( buffer_p bp) {
 						lp = returnto->caller ;
 						returnto = returnto->next ;
 						free( cp) ;
-					} else
+					} else {
+						lp = lp->l_fp ;
 	                    done = TRUE ;
+					}
 				}
 
 				break ;
@@ -908,9 +910,8 @@ static int dobuf( buffer_p bp) {
 			break ;
 	}
 
-/* check for a command error */
-	if( status != TRUE) {
-    /* look if buffer is showing */
+/* refresh window if buffer is displayed */
+	if( bp->b_nwnd) {
        	for( window_p wp = wheadp ; wp != NULL ; wp = wp->w_wndp) {
            	if( wp->w_bufp == bp) {
             /* and point it */
@@ -919,11 +920,11 @@ static int dobuf( buffer_p bp) {
        	        wp->w_flag |= WFHARD ;
             }
         }
+	}
 
-    /* in any case set the buffer . */
-        bp->b_dotp = lp ;
-        bp->b_doto = 0 ;
-    }
+/* in any case set the buffer . */
+    bp->b_dotp = lp ;
+    bp->b_doto = 0 ;
 
 	freelist( (list_p) returnto) ;
     freelist( (list_p) whlist) ;
