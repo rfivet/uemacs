@@ -29,19 +29,28 @@
 static char *execstr = NULL ;	/* pointer to string to execute */
 boolean clexec = FALSE ;    	/* command line execution flag  */
 
-/*  Directive definitions   */
 
-#define DFORCE      0
-#define DGOTO       1
-#define DGOSUB		2
-#define DIF     	3
-#define DWHILE      4
-#define DBREAK      5
-#define DELSE       6
-#define DENDIF      7
-#define DENDM       8
-#define DENDWHILE   9
-#define DRETURN     10
+/*  Directive definitions   */
+#define DBREAK      0
+#define DELSE       1
+#define DENDIF      2
+#define DENDM       3
+#define DENDWHILE   4
+#define DFORCE      5
+#define DGOTO       6
+#define DGOSUB		7
+#define DIF     	8
+#define DRETURN     9
+#define DWHILE      10
+
+/* directive name table: holds the names of all the directives....  */
+static const char *dname[] = {
+	"break",	"else",	"endif",	"endm",	"endwhile",
+	"force",	"goto",	"gosub",    "if",	"return",
+	"while"
+} ;
+
+#define NUMDIRS     ARRAY_SIZE( dname)
 
 
 typedef struct caller {
@@ -63,16 +72,6 @@ typedef struct while_block {
 
 #define BTWHILE     1
 #define BTBREAK     2
-
-/* directive name table: holds the names of all the directives....  */
-
-static const char *dname[] = {
-	"force",	"goto",	"gosub",    "if",	"while",
-	"break",	"else",	"endif",	"endm",	"endwhile",
-	"return"
-} ;
-
-#define NUMDIRS     ARRAY_SIZE( dname)
 
 static char golabel[ NSTRING] = "" ;	/* current line to go to */
 static buffer_p bstore = NULL ;			/* buffer to store macro text to */
@@ -696,20 +695,28 @@ static int dobuf( buffer_p bp) {
 	caller_p returnto = NULL ;
 	line_p lp = hlp->l_fp ;
     for( ; lp != hlp ; lp = lp->l_fp) {
-    /* allocate eline and copy macro line to it */
-        int linlen = lp->l_used ;
-		if( esize <= linlen) {
-			esize = linlen + 1 ;
-	        einit = realloc( einit, esize) ;
-	        if( einit == NULL) {
-    	        status = mloutfail( "%%Out of Memory during macro execution") ;
-				break ;
-        	}
+    /* turns macro line into a string pointed by eline */
+        int length = lp->l_used ;
+		if( length < lp->l_size) {
+		/* there is space for EOS, let's use the line */
+			eline = lp->l_text ;
+		} else {
+		/* make a copy using (pre-)allocated storage */
+			if( esize <= length) {
+				esize = length + 1 ;
+	    	    char *newbuf = realloc( einit, esize) ;
+	        	if( newbuf == NULL) {
+	    	        status = mloutfail( "%%Out of Memory during macro execution") ;
+					break ;
+        		} else
+					einit = newbuf ;
+			}
+
+			eline = einit ;
+			memcpy( eline, lp->l_text, length) ;
 		}
 
-		eline = einit ;
-		memcpy( eline, lp->l_text, linlen) ;
-		eline[ linlen] = 0 ;
+		eline[ length] = 0 ;
 
 #if DEBUGM
         /* if $debug == TRUE, every line to execute
@@ -752,32 +759,27 @@ static int dobuf( buffer_p bp) {
 
     /* Parse directives here.... */
         if( *eline == '!') {
-		    unsigned dirnum ;			/* directive index */
-
         /* Find out which directive this is */
             ++eline ;
-            for( dirnum = 0 ; dirnum < NUMDIRS ; dirnum++)
-                if( !strncmp( eline, dname[ dirnum], strlen( dname[ dirnum])))
-                    break ;
+		    int dirnum = NUMDIRS ;
+            while( --dirnum >= 0) {
+				length = strlen( dname[ dirnum]) ;
+                if( !strncmp( eline, dname[ dirnum], length )) {
+					eline += length ;
+				/* either EOS, comment, space separator or FAIL */
+					if( !*eline || *eline == ';' || *eline == '#')
+	                    ;
+					else if( *eline == ' ' || *eline == '\t') {
+						eline += 1 ;
+					} else
+						dirnum = -1 ;
 
-        /* and bitch if it's illegal */
-            if( dirnum == NUMDIRS) {
-                status = mloutfail( "%%Unknown Directive") ;
-				break ;
-            }
-
-		/* now, execute directives */
-            /* skip past the directives that takes arguments */
-			if( dirnum <= DWHILE) {
-	            while( *eline && *eline != ' ' && *eline != '\t')
-    	            ++eline ;
-
-        	    while( *eline && (*eline == ' ' || *eline == '\t'))
-            	    ++eline ;
-
-	            execstr = eline ;
+		            execstr = eline ;	/* set source of token() and macarg() */
+					break ;
+				}
 			}
 
+		/* now, execute directives */
             switch( dirnum) {
 			case DENDM:
 				if( execlevel == 0)
@@ -855,11 +857,11 @@ static int dobuf( buffer_p bp) {
 
             	    /* grab label to jump to */
                     eline = token( eline, golabel, sizeof golabel) ;
-                    linlen = strlen( golabel) ;
+                    length = strlen( golabel) ;
                     for( glp = firstlbl ; glp != eolbl ; glp = glp->l_fp) {
 						char c = *glp->l_text ;
                         if(	(c == '*' || c == ':')
-						&&	!strncmp( &glp->l_text[ 1], golabel, linlen)) {
+						&&	!strncmp( &glp->l_text[ 1], golabel, length)) {
 							if( dirnum == DGOSUB) {
 								caller_p cp = malloc( sizeof *cp) ;
 								if( cp == NULL) {
@@ -902,6 +904,10 @@ static int dobuf( buffer_p bp) {
             case DFORCE:		/* FORCE directive */
 				if( execlevel == 0)
 					docmd( eline) ;		/* execute ignoring returned status */
+
+				break ;
+			default:
+                status = mloutfail( "%%Unknown Directive") ;
             }
 		} else if( execlevel == 0)
 			status = docmd( eline) ;	/* execute the statement */
