@@ -259,7 +259,7 @@ typedef struct {
 
 static void findvar( char *var, variable_description *vd, int size) ;
 static int svar( variable_description *var, char *value) ;
-static char *i_to_a( int i) ;
+static const char *i_to_a( int i) ;
 
 /*
  * putctext:
@@ -616,11 +616,37 @@ static char *gtusr( char *vname) {
 }
 
 
+/* getctext:    grab and return a string with the text of the current line */
+static const char *getctext( void) {
+    static int  rsize = 0 ;
+    static char *rline = NULL ;	/* line to return */
+
+/* find the contents of the current line and its length */
+    line_p lp = curwp->w_dotp ;	/* line to copy */
+    int size = lp->l_used ;		/* length of line to return */
+    if( size >= rsize) {
+	/* extend storage */
+        int newsize = size + 1 ;
+		char *newstr = realloc( rline, newsize) ;
+		if( newstr == NULL)
+			return "" ;
+
+		rline = newstr ;
+		rsize = newsize ;
+    }
+
+    /* copy it across */
+    memcpy( rline, lp->l_text, size) ;
+    rline[ size] = 0 ;
+    return rline ;
+}
+
+
 /* gtenv()
  *
  * char *vname;			name of environment variable to retrieve
  */
-static char *gtenv( char *vname) {
+static const char *gtenv( char *vname) {
 	unsigned vnum ;	/* ordinal number of var referenced */
 
 	/* scan the list, looking for the referenced name */
@@ -1085,7 +1111,7 @@ static int svar( variable_description *var, char *value)
  *
  * int i;		integer to translate to a string
  */
-static char *i_to_a( int i) {
+static const char *i_to_a( int i) {
 	unsigned u ;
 	int sign ;	/* sign of resulting number */
 	/* returns result string: sign digits null */

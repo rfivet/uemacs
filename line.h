@@ -29,15 +29,12 @@ typedef struct line {
 
 extern int tabwidth ;   /* Map to $tab, default to 8, can be set to [1, .. */
 
-char *getkill( void) ;
-
 /* Bindable functions */
 BBINDABLE( backchar) ;
 BBINDABLE( forwchar) ;
  BINDABLE( insspace) ;
  BINDABLE( yank) ;
 
-void lfree( line_p lp) ;
 void lchange( int flag) ;
 boolean linstr( char *instr) ;
 boolean linsert( int n, unicode_t c) ;
@@ -47,10 +44,11 @@ boolean lnewline( void) ;
 boolean ldelete(  long n, boolean kflag) ;
 boolean ldelchar( long n, boolean kflag) ;
 int lgetchar( unicode_t *cref) ;
-char *getctext( void) ;
 void kdelete( void) ;
 int kinsert( int c) ;
-line_p lalloc( int minsize) ;  /* Allocate a line of at least minsize chars. */
+line_p lalloc( int minsize) ; 	/* Allocate a line of at least minsize chars. */
+void lfree( line_p lp) ;		/* free a line, updating buffers and windows */
+const char *getkill( void) ;	/* get value of $kill */
 
 boolean rdonly( void) ;     /* Read Only error message */
 
