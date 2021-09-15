@@ -55,10 +55,7 @@ static int inspound( int n) {
 static int insbrace( int n, int c) {
 	int ch ;			/* last character before input */
 	int oc ;			/* caractere oppose a c */
-	int i, count ;
 	int target ;		/* column brace should go after */
-	struct line *oldlp ;
-	int oldoff ;
 
 /* if not called with {, acts as insertion */
 	if( c == '}')
@@ -67,16 +64,17 @@ static int insbrace( int n, int c) {
 		return linsert( n, c) ;
 
 /* scan to see if all preceding spaces are white spaces, if not, insert */
-	for( i = curwp->w_doto - 1 ; i >= 0 ; --i) {
+	for( int i = curwp->w_doto - 1 ; i >= 0 ; --i) {
 		ch = lgetc( curwp->w_dotp, i) ;
 		if( ch != ' ' && ch != '\t')
 			return linsert( n, c) ;
 	}
 
-	oldlp = curwp->w_dotp ;
-	oldoff = curwp->w_doto ;
+/* save the original cursor position */
+	line_p oldlp = curwp->w_dotp ;
+	int oldoff = curwp->w_doto ;
 
-	count = 1 ;
+	int count = 1 ;
 	do {
 		if( boundary( curwp->w_dotp, curwp->w_doto, REVERSE)) {
 		/* at beginning of buffer, no match to be found */
@@ -132,10 +130,6 @@ static int insbrace( int n, int c) {
  * char ch;			fence type to match against
  */
 static void fmatch( int ch) {
-	struct line *oldlp ;	/* original line pointer */
-	int oldoff ;			/* and offset */
-	struct line *toplp ;	/* top line in current window */
-	int count ;				/* current fence level count */
 	int opench ;			/* open fence */
 
 	/* $tpause <= 0 disable fmatch */
@@ -146,8 +140,8 @@ static void fmatch( int ch) {
 	update( FALSE) ;
 
 	/* save the original cursor position */
-	oldlp = curwp->w_dotp ;
-	oldoff = curwp->w_doto ;
+	line_p oldlp = curwp->w_dotp ;
+	int oldoff = curwp->w_doto ;
 
 	/* setup proper open fence for passed close fence */
 	if( ch == ')')
@@ -158,11 +152,11 @@ static void fmatch( int ch) {
 		opench = '[' ;
 
 	/* find the top line and set up for scan */
-	toplp = curwp->w_linep->l_bp ;
+	line_p toplp = curwp->w_linep->l_bp ;
 	backchar( FALSE, 1) ;	/* . was after the }, move back */
 
 	/* scan back until we find it, or reach past the top of the window */
-	count = 1 ;
+	int count = 1 ;				/* current fence level count */
 	do {
 		/* At beginning of window or buffer, no match to be found */
 		if( curwp->w_dotp == toplp
@@ -209,17 +203,14 @@ static void fmatch( int ch) {
  * int f, n;		not used
  */
 BINDABLE( getfence) {
-	struct line *oldlp;	/* original line pointer */
-	int oldoff;	/* and offset */
 	int sdir;	/* direction of search (1/-1) */
-	int count;	/* current fence level count */
 	char ch;	/* fence type to match against */
 	char ofence;	/* open fence */
 	char c;	/* current character in scan */
 
 	/* save the original cursor position */
-	oldlp = curwp->w_dotp;
-	oldoff = curwp->w_doto;
+	line_p oldlp = curwp->w_dotp ;
+	int oldoff = curwp->w_doto ;
 
 	/* get the current character */
 	if (oldoff == llength(oldlp))
@@ -259,7 +250,7 @@ BINDABLE( getfence) {
 	}
 
 	/* scan until we find a match, or reach the end of file */
-	count = 1 ;
+	int count = 1 ;	/* current fence level count */
 	do {
 		if( boundary( curwp->w_dotp, curwp->w_doto, sdir)) {
 		/* at buffer limit, no match to be found */
