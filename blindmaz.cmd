@@ -52,10 +52,9 @@ set %absD 0							# absolute direction: looking EAST
 		set %relD &mod &add %relD 1 4
 	!endwhile
 # else turn around
-	set %absD &mod &add %absD 2 4	#	 face back!
+	set %absD &mod &add %absD 2 4	# face back!
 :moveon
 !endwhile
 
-set $curline %y
-set $curcol  %x
+set $curcol  &add %x -1
 unmark-buffer
