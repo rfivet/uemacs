@@ -19,7 +19,7 @@
 -------------------------------------------------------------------------------
 =>                      THE VERY BASICS
 Notations: ^X means <Ctrl> and X. The <Meta> key is <Esc> on most systems.
-Exiting:   ^G aborts almost any operation. ^X ^C will get you out of uEmacs.
+Exiting:   ^G aborts almost any operation. ^X ^C will get you out of µEMACS.
 
 A BUFFER is a named area containing a FILE being edited. Many buffers may
 be active at once. Many WINDOWS may be active at once on the screen. All
@@ -37,7 +37,7 @@ Beginning of file ..... Meta  <         End of file ........... Meta  >
 -------------------------------------------------------------------------------
 =>                      FILE COMMANDS
 Find file .............   ^X ^F         Quick exit ............ Meta  Z
-View file .............   ^X ^V         Exit emacs ............   ^X ^C
+View file .............   ^X ^V         Exit µEMACS ...........   ^X ^C
 Insert file ...........   ^X ^I
 Change file name ......   ^X  N         Filter buffer .........   ^X  #
 Save file .............   ^X ^D
@@ -118,12 +118,12 @@ Query replace string .. Meta ^R     ::  Yes/no Y/N, replace rest !, cancel ^G.
 -------------------------------------------------------------------------------
 =>                      ACCESSING THE OPERATING SYSTEM
 Quick exit ............ Meta  Z     ::  Write out all changed buffers and exit.
-Exit emacs ............   ^X ^C     ::  Exit without automatic save.
+Exit µEMACS ...........   ^X ^C     ::  Exit without automatic save.
 I shell ...............   ^X  C     ::  Start a new command processor.
 Shell command .........   ^X  !     ::  Execute one operating system command.
-Pipe command ..........   ^X  @     ::  Pipe command results to a new buffer. *
-Filter buffer .........   ^X  #     ::  Filter buffer through a program.      *
-Execute program .......   ^X  $     ::  * Not under VMS.
+Pipe command ..........   ^X  @     ::  Pipe command results to a new buffer.
+Filter buffer .........   ^X  #     ::  Filter buffer through a program.
+Execute program .......   ^X  $     ::
 -------------------------------------------------------------------------------
 =>                      MACRO COMMANDS
 Begin macro ...........   ^X  (
