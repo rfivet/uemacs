@@ -1,6 +1,6 @@
 # README #
 
-µEMACS (ue) on Cygwin/Linux, based on uEmacs/PK (em) from [kernel.org](
+µEMACS (ue) on Cygwin/Linux/NetBSD, based on uEmacs/PK (em) from [kernel.org](
 https://git.kernel.org/pub/scm/editors/uemacs/uemacs.git/).
 
 ### Changes compare to uEmacs/PK ###
@@ -18,14 +18,14 @@ https://git.kernel.org/pub/scm/editors/uemacs/uemacs.git/).
 * Some defaults changed due to 'finger habits': ue instead of em, ^S in
   commands mapping...
 
+### Unicode (UTF-8) support ###
+
+* gcc limitation on Windows (__WCHAR_WIDTH__ 16).
+
+* Display of double and zero width characters ongoing.
+
 ### How to build ###
 
 * dependencies: gcc, gmake, ncurses-devel.
 
 * make
-
-### Badges ###
-
-[![Coverity Status](
- https://scan.coverity.com/projects/4449/badge.svg)](
- https://scan.coverity.com/projects/4449)
