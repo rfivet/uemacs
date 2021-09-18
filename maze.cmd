@@ -1,6 +1,7 @@
-# record seed
+## maze.cmd -- draw a block maze
+
 # 5 set $seed
-set %S $seed
+set %S $seed	# record seed
 
 # setup direction offsets
 set %D1 0

@@ -1,8 +1,9 @@
 /* buffer.c -- implements buffer.h */
 #include "buffer.h"
 
-/*  Buffer management.  Some of the functions are internal, and some are actually attached to
-    user keys.  Like everyone else, they set hints for the display system.
+/* Buffer management.  Some of the functions are internal, and some are
+   actually attached to user keys.  Like everyone else, they set hints for
+   the display system.
 
     modified by Petri Kutvonen
  */
@@ -11,9 +12,9 @@
 #include <string.h>
 
 #include "defines.h"
-#include "estruct.h"
 #include "file.h"
 #include "input.h"
+#include "list.h"
 #include "mlout.h"
 #include "utf8.h"
 #include "util.h"
@@ -326,13 +327,12 @@ static unsigned int utf8_disp_len( const char *s) {
 
 
 static int makelist( int iflag) {
-    buffer_p bp;
-    int s;
     char line[ FNAMSTART + sizeof( fname_t)] ;
 
     blistp->b_flag &= ~BFCHG;   /* Don't complain! Mute bclear() */
-    if ((s = bclear(blistp)) != TRUE)   /* Blow old text away   */
-        return s;
+    int s = bclear( blistp) ;   /* Blow old text away   */
+    if( s != TRUE)
+        return s ;
 
     blistp->b_fname[ 0] = 0 ;   /* in case of user override */
 
@@ -346,19 +346,15 @@ static int makelist( int iflag) {
         return FALSE ;
 
 /* output the list of buffers */
-    for( bp = bheadp ; bp != NULL ; bp = bp->b_bufp) {  /* For all buffers */
-        char *cp1, *cp2 ;
+    for( buffer_p bp = bheadp ; bp != NULL ; bp = bp->b_bufp) {
         int c ;
-        line_p lp ;
-        long nbytes ;       /* # of bytes in current buffer */
-        long nlines ;       /* # of lines in current buffer */
 
     /* skip invisible buffers if iflag is false */
         if (((bp->b_flag & BFINVS) != 0) && (iflag != TRUE))
             continue;
 
         do_layout( line, bp->b_mode) ;
-        cp1 = line ;    /* Start at left edge   */
+        char *cp1 = line ;    /* Start at left edge   */
 
     /* output status of ACTIVE flag ('@' when the file has been read in) */
         *cp1++ = (bp->b_active == TRUE) ? '@' : ' ' ;
@@ -370,9 +366,10 @@ static int makelist( int iflag) {
         *cp1 = ((bp->b_flag & BFCHG) != 0) ? '*' : ' ' ;
 
     /* Buffer size */
-        nbytes = 0L;    /* Count bytes in buf.  */
-        nlines = 0 ;
-        for( lp = lforw( bp->b_linep) ; lp != bp->b_linep ; lp = lforw( lp)) {
+        long nbytes = 0L;    /* Count bytes in buf.  */
+        long nlines = 0 ;
+        for( line_p lp = lforw( bp->b_linep) ; lp != bp->b_linep ;
+															lp = lforw( lp)) {
             nbytes += (long) llength(lp) + 1L;
             nlines += 1 ;
         }
@@ -385,8 +382,8 @@ static int makelist( int iflag) {
         *cp1++ = ' ' ;
 
     /* Display buffer name */
-        cp2 = &bp->b_bname[ 0] ;
-        while ((c = *cp2++) != 0)
+        char *cp2 = &bp->b_bname[ 0] ;
+        while( (c = *cp2++) != 0)
             *cp1++ = c;
 
     /* Pad with spaces to max buffer name length */
@@ -528,7 +525,6 @@ buffer_p bfind( const char *bname, boolean create_f, int flags) {
    updates that are required.  Return TRUE if everything looks good.
  */
 int bclear( buffer_p bp) {
-    line_p lp ;
     int s ;
 
     if( (bp->b_flag & (BFINVS | BFCHG)) == BFCHG    /* regular and changed */
@@ -536,13 +532,28 @@ int bclear( buffer_p bp) {
         return s ;
 
     bp->b_flag &= ~BFCHG ;      /* Not changed          */
-    while( (lp = lforw( bp->b_linep)) != bp->b_linep)
-        lfree( lp) ;
+	line_p lp = bp->b_linep ;
+	if( lp->l_fp != lp) {	/* non empty buffer */
+	/* turn line ring into a list and delete it */
+		lp->l_bp->l_fp = NULL ;
+		freelist( (list_p) lp->l_fp) ;
+		lp->l_fp = lp->l_bp = lp ;
 
-    bp->b_dotp = bp->b_linep ;  /* Fix "."              */
-    bp->b_doto = 0 ;
-    bp->b_markp = NULL ;        /* Invalidate "mark"    */
-    bp->b_marko = 0 ;
+	/* Fix dots and marks */
+	    bp->b_dotp = bp->b_linep ;  /* Fix "."              */
+    	bp->b_doto = 0 ;
+    	bp->b_markp = NULL ;        /* Invalidate "mark"    */
+    	bp->b_marko = 0 ;
+		if( bp->b_nwnd)	/* buffer is displayed */
+			for( window_p wp = wheadp ; wp ; wp = wp->w_wndp)
+				if( wp->w_bufp == bp) {
+	            	wp->w_linep = wp->w_dotp = lp ;
+    	        	wp->w_doto = 0 ;
+        	    	wp->w_markp = NULL ;
+            		wp->w_marko = 0 ;
+				}
+	}
+
     return TRUE ;
 }
 

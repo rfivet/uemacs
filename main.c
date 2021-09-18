@@ -62,14 +62,13 @@
  *
  */
 
-#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "estruct.h"	/* Global structures and defines. */
+#include "defines.h"	/* OS specific customization */
 #if UNIX
-#include <signal.h>
+# include <signal.h>
 #endif
 
 #include "basic.h"
@@ -91,9 +90,8 @@
 #include "window.h"
 
 #if UNIX
-static void emergencyexit(int signr)
-{
-	quickexit(FALSE, 0);
+static void emergencyexit( int signr) {
+	quickexit( FALSE, 0) ;
 	quit( TRUE, 0) ; /* If quickexit fails (to save changes), do a force quit */
 }
 #endif
@@ -124,13 +122,12 @@ static void usage( void) {
 }
 
 
-int main(int argc, char **argv)
-{
-	struct buffer *bp;	/* temp buffer pointer */
+int main( int argc, char *argv[]) {
+	buffer_p bp;	/* temp buffer pointer */
 	int firstfile;	/* first file flag */
 	int carg;	/* current arg to scan */
 	int startflag;	/* startup executed flag */
-	struct buffer *firstbp = NULL;	/* ptr to first buffer in cmd line */
+	buffer_p firstbp = NULL;	/* ptr to first buffer in cmd line */
 	int viewflag;		/* are we starting in view mode? */
 	int gotoflag;		/* do we need to goto a line at start? */
 	int gline = 0;		/* if so, what line? */
@@ -138,17 +135,10 @@ int main(int argc, char **argv)
 	int errflag;		/* C error processing? */
 	bname_t bname ;	/* buffer name of file to read */
 
-	setlocale( LC_CTYPE, "") ; /* expects $LANG like en_GB.UTF-8 */
-
 #if	PKCODE & BSD
 	sleep(1); /* Time for window manager. */
 #endif
 
-#if	UNIX
-#ifdef SIGWINCH
-	signal(SIGWINCH, sizesignal);
-#endif
-#endif
 	if( argc == 2) {
 		if( strcmp( argv[ 1], "--help") == 0) {
 			usage() ;
@@ -325,7 +315,7 @@ int main(int argc, char **argv)
  */
 static void edinit( char *bname) {
 	buffer_p bp;
-	struct window *wp;
+	window_p wp;
 
 	if( !init_bindings()	/* initialize mapping of function to name and key */
 	||  NULL == (bp = bfind( bname, TRUE, 0))				/* First buffer */
@@ -357,80 +347,67 @@ static void edinit( char *bname) {
 	wp->w_flag = WFMODE | WFHARD;	/* Full.                */
 }
 
+
 /*****		Compiler specific Library functions	****/
 
-#if	RAMSIZE
-/*	These routines will allow me to track memory usage by placing
-	a layer on top of the standard system malloc() and free() calls.
-	with this code defined, the environment variable, $RAM, will
-	report on the number of bytes allocated via malloc.
+#if RAMSIZE 
 
-	with SHOWRAM defined, the number is also posted on the
-	end of the bottom mode line and is updated whenever it is changed.
+/* These routines will allow me to track memory usage by placing a layer on
+   top of the standard system malloc() and free() calls.  with this code
+   defined, the environment variable, $RAM, will report on the number of
+   bytes allocated via malloc.
+
+   with SHOWRAM defined, the number is also posted on the end of the bottom
+   mode line and is updated whenever it is changed.
 */
 
-static void dspram( void) ;
-
-#undef	malloc
-#undef	free
-#if 0
-char *allocate(nbytes)
-			    /* allocate nbytes and track */
-unsigned nbytes;		/* # of bytes to allocate */
-#endif
-void *allocate( size_t nbytes)
-{
-	char *mp;		/* ptr returned from malloc */
-/*	char *malloc(); */
-
-	mp = malloc(nbytes);
-	if (mp) {
-		envram += nbytes;
 #if	RAMSHOW
-		dspram();
+ static void dspram( void) ;
+#endif
+
+void *allocate( size_t nbytes) {
+	nbytes += sizeof nbytes ;			/* add overhead to track allocation */
+	size_t *mp = (malloc)( nbytes) ;	/* call the function not the macro */
+	if( mp) {
+		*mp++ = nbytes ;
+		envram += nbytes ;
+#if	RAMSHOW
+		dspram() ;
 #endif
 	}
 
-	return mp;
+	return mp ;
 }
 
-#if 0
-release(mp)
-    /* release malloced memory and track */
-char *mp;			/* chunk of RAM to release */
-#endif
-void release( void *mp)
-{
-	unsigned *lp;		/* ptr to the long containing the block size */
-
-	if (mp) {
+void release( void *mp) {
+	if( mp) {
+		size_t *sp = mp ;
+		sp-- ;
 		/* update amount of ram currently malloced */
-		lp = ((unsigned *) mp) - 1;
-		envram -= (long) *lp - 2;
-		free(mp);
+		envram -= *sp ;
+		(free)( sp) ;				/* call the function not the macro */
 #if	RAMSHOW
-		dspram();
+		dspram() ;
 #endif
 	}
 }
 
 #if	RAMSHOW
-static void dspram( void)
-{				/* display the amount of RAM currently malloced */
-	char mbuf[20];
-	char *sp;
+static void dspram( void) {	/* display the amount of RAM currently malloced */
+	char mbuf[ 20] ;
 
-	TTmove(term.t_nrow - 1, 70);
+	TTmove( term.t_nrow, term.t_ncol - 12) ;
 #if	COLOR
-	TTforg(7);
-	TTbacg(0);
+	TTforg( 7) ;
+	TTbacg(0) ;
 #endif
-	sprintf(mbuf, "[%lu]", envram);
-	sp = &mbuf[0];
-	while (*sp)
-		TTputc(*sp++);
-	TTmove(term.t_nrow, 0);
-	movecursor(term.t_nrow, 0);
+	sprintf( mbuf, "[%10u]", envram) ;
+	char *sp = mbuf ;
+	while( *sp)
+		TTputc( *sp++) ;
+
+	TTmove( term.t_nrow, 0) ;
+	movecursor( term.t_nrow, 0) ;
 }
 #endif
 #endif
@@ -442,42 +419,36 @@ static void dspram( void)
 
 #if	CLEAN
 
-/*
- * cexit()
+/* cexit()
  *
  * int status;		return status of emacs
  */
 void cexit( int status) {
-	struct buffer *bp;	/* buffer list pointer */
-	struct window *wp;	/* window list pointer */
-	struct window *tp;	/* temporary window pointer */
-
-	/* first clean up the windows */
-	wp = wheadp;
-	while (wp) {
-		tp = wp->w_wndp;
-		free(wp);
-		wp = tp;
+/* first clean up the windows */
+	window_p wp = wheadp ;
+	while( wp) {
+		window_p tp = wp->w_wndp ;
+		free( wp) ;
+		wp = tp ;
 	}
-	wheadp = NULL;
+	
+	wheadp = NULL ;
 
-	/* then the buffers */
-	bp = bheadp;
-	while (bp) {
-		bp->b_nwnd = 0;
-		bp->b_flag = 0;	/* don't say anything about a changed buffer! */
-		zotbuf(bp);
-		bp = bheadp;
+/* then the buffers */
+	buffer_p bp ;
+	while( (bp = bheadp) != NULL) {
+		bp->b_nwnd = 0 ;
+		bp->b_flag = 0 ;	/* don't say anything about a changed buffer! */
+		zotbuf( bp) ;
 	}
 
-	/* and the kill buffer */
-	kdelete();
+/* and the kill buffer */
+	kdelete() ;
 
-	/* and the video buffers */
-	vtfree();
+/* and the video buffers */
+	vtfree() ;
 
-#undef	exit
-	exit(status);
+	(exit)( status) ;	/* call the function, not the macro */
 }
 #endif
 

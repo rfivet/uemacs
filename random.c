@@ -14,8 +14,8 @@
 
 #include "basic.h"
 #include "buffer.h"
+#include "defines.h"
 #include "display.h"
-#include "estruct.h"
 #include "execute.h"
 #include "input.h"
 #include "line.h"
@@ -219,29 +219,30 @@ boolean setccol( int pos) {
  */
 BBINDABLE( twiddle) {
     unicode_t   c ;
-    boolean eof_f = FALSE ;
 
     assert( !(curbp->b_mode & MDVIEW)) ;
 
     int len = llength( curwp->w_dotp) ;
-    if( len < 2 || curwp->w_doto == 0)  /* at least 2 chars & not bol */
+    if( len < 2 || curwp->w_doto == 0)  /* at least 2 bytes & not bol */
         return FALSE ;
 
-    if( curwp->w_doto == len) { /* at end of line */
+    if( curwp->w_doto == len) {	/* at end of line */
         backchar( FALSE, 1) ;
-        eof_f = TRUE ;
+        if( curwp->w_doto == 0) {
+        /* only one combined character on this line */
+            forwchar( FALSE, 1) ;
+            return FALSE ;
+        }
     }
 
-    len = lgetchar( &c) ;   /* len => unicode or extended ASCII */
-    ldelchar( 1, FALSE) ;
     backchar( FALSE, 1) ;
+    len = lgetchar( &c) ;      /* len => unicode or extended ASCII */
+    ldelchar( 1, FALSE) ;
+    forwchar( FALSE, 1) ;
     if( len == 1)
         linsert_byte( 1, c) ;
     else
         linsert( 1, c) ;
-
-    if( eof_f == TRUE)
-        forwchar( FALSE, 1) ;
 
     lchange( WFEDIT) ;
     return TRUE ;
@@ -836,7 +837,7 @@ static int adjustmode( int kind, int global) {
 }
 
 
-static int iovstring( int f, int n, const char *prompt, int (*fun)( char *)) {
+static int iovstring( int f, int n, const char *prompt, boolean (*fun)( char *)) {
     char *tstring ; /* string to add */
 
 /* ask for string to insert */

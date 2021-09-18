@@ -20,7 +20,8 @@
 #include <string.h>
 
 #include "buffer.h"
-#include "estruct.h"
+#include "defines.h"
+#include "list.h"
 #include "mlout.h"
 #include "utf8.h"
 #include "window.h"
@@ -37,58 +38,46 @@ static int ldelnewline( void) ;
  * was taken up by the keycode structure).
  */
 
-#define KBLOCK  250     /* sizeof kill buffer chunks    */
+#define KBLOCK  248				/* sizeof kill buffer chunks    */
 
 typedef struct kill {
-    struct kill *d_next;   /* Link to next chunk, NULL if last. */
-    char d_chunk[KBLOCK];  /* Deleted text. */
+    struct kill *d_next ;   	/* Link to next chunk, NULL if last. */
+    char d_chunk[ KBLOCK] ;		/* Deleted text. */
 } *kill_p ;
 
 static kill_p kbufp = NULL ;    /* current kill buffer chunk pointer */
 static kill_p kbufh = NULL ;    /* kill buffer header pointer */
 static int kused = KBLOCK ;     /* # of bytes used in kill buffer */
-static int klen ;                   /* length of kill buffer content */
-static char *value = NULL ;         /* temp buffer for value */
+static int klen ;               /* length of kill buffer content */
+static char *value = NULL ;     /* temp buffer for value */
 
 /*
  * return some of the contents of the kill buffer
  */
-char *getkill( void) {
-    kill_p kp ;
-    char *cp ;
-
-    if (kbufh == NULL)
-        /* no kill buffer....just a null string */
+const char *getkill( void) {
+/* no kill buffer or no memory .... just return a null string */
+    if( kbufh == NULL
+	|| (value = realloc( value, klen + 1)) == NULL)
         return "" ;
 
-    if( value != NULL)
-        free( value) ;
-
-    value = (char *) malloc( klen + 1) ;
-    cp = value ;
-    for( kp = kbufh ; kp != NULL ; kp = kp->d_next) {
-        int size ;
-
-        if( kp->d_next != NULL)
-            size = KBLOCK ;
-        else
-            size = kused ;
-
+    char *cp = value ;
+    for( kill_p kp = kbufh ; kp != NULL ; kp = kp->d_next) {
+        int size = (kp->d_next != NULL) ? KBLOCK : kused ;
         memcpy( cp, kp->d_chunk, size) ;
         cp += size ;
     }
 
     *cp = 0 ;
 
-    /* and return the constructed value */
-    return value;
+/* and return the constructed value */
+    return value ;
 }
 
 
-/* Move the cursor backwards by "n" characters.  If "n" is less than zero
-   call "forwchar" to actually do the move.  Otherwise compute the new
-   cursor location.  Error if you try and move out of the buffer.  Set the
-   flag if the line pointer for dot changes.
+/* Move the cursor backwards by "n" combined characters.  If "n" is less
+   than zero call "forwchar" to actually do the move.  Otherwise compute
+   the new cursor location.  Error if you try and move out of the buffer.
+   Set the flag if the line pointer for dot changes.
  */
 BBINDABLE( backchar) {
     assert( f == TRUE || n == 1) ;
@@ -105,9 +94,26 @@ BBINDABLE( backchar) {
             curwp->w_doto = llength( lp) ;
             curwp->w_flag |= WFMOVE ;
         } else {
-            unsigned pos = curwp->w_doto -= 1 ;
-            if( pos > 0)
-                curwp->w_doto -= utf8_revdelta( (unsigned char *) &( (curwp->w_dotp)->l_text[ pos]), pos) ;
+			unsigned pos ;
+		/* move back over combining unicode */
+		combined:
+            pos = curwp->w_doto -= 1 ;
+		/* check if at end of unicode */
+            if( pos > 0) {
+                unsigned delta = utf8_revdelta(
+					(unsigned char *) &( (curwp->w_dotp)->l_text[ pos]), pos) ;
+				if( delta != 0) {
+	                pos = curwp->w_doto -= delta ;
+					if( pos > 0) {	/* check if on combining unicode */
+						unicode_t unc ;
+				
+	        	        utf8_to_unicode( curwp->w_dotp->l_text, pos,
+												llength( curwp->w_dotp), &unc) ;
+		        	    if( utf8_width( unc) == 0)
+							goto combined ;
+					}
+				}
+			}
         }
     }
 
@@ -115,10 +121,11 @@ BBINDABLE( backchar) {
 }
 
 
-/* Move the cursor forwards by "n" characters.  If "n" is less than zero
-   call "backchar" to actually do the move.  Otherwise compute the new
-   cursor location, and move ".".  Error if you try and move off the end of
-   the buffer.  Set the flag if the line pointer for dot changes.
+/* Move the cursor forwards by "n" combined characters.  If "n" is less
+   than zero call "backchar" to actually do the move.  Otherwise compute
+   the new cursor location, and move ".".  Error if you try and move off
+   the end of the buffer.  Set the flag if the line pointer for dot
+   changes.
  */
 BBINDABLE( forwchar) {
     assert( f == TRUE || n == 1) ;
@@ -140,7 +147,7 @@ BBINDABLE( forwchar) {
             curwp->w_doto += utf8_to_unicode( curwp->w_dotp->l_text,
                                                     curwp->w_doto, len, &unc) ;
         /* check if next char is null width unicode */
-            while( curwp->w_doto != len) {
+            while( curwp->w_doto < len - 1) {
                 unsigned bytes = utf8_to_unicode( curwp->w_dotp->l_text,
                                                     curwp->w_doto, len, &unc) ;
                 if( utf8_width( unc) == 0)
@@ -154,8 +161,8 @@ BBINDABLE( forwchar) {
     return TRUE ;
 }
 
-/*
- * This routine allocates a block of memory large enough to hold a struct line
+
+/* This routine allocates a block of memory large enough to hold a struct line
  * containing "used" characters. The block is always rounded up a bit. Return
  * a pointer to the new block, or NULL if there isn't any memory left. Print a
  * message in the message line if no space.
@@ -163,13 +170,13 @@ BBINDABLE( forwchar) {
 line_p lalloc( int used) {
 #define BLOCK_SIZE 16   /* Line block chunk size. */
 
-/* rounding down use masking instead or modulo when BLOCK_SIZE is power of 2 */
+/* rounding down use masking instead of modulo when BLOCK_SIZE is power of 2 */
 #if (BLOCK_SIZE & -BLOCK_SIZE) == BLOCK_SIZE
     int size = (used + BLOCK_SIZE) & ~(BLOCK_SIZE - 1) ;
 #else
     int size = used + BLOCK_SIZE - used % BLOCK_SIZE ;
 #endif
-    line_p lp = (line_p) malloc( offsetof( struct line, l_text) + size) ;
+    line_p lp = malloc( sizeof *lp + size) ;
     if( lp == NULL)
         mloutstr( "(OUT OF MEMORY)") ;
     else {
@@ -180,76 +187,70 @@ line_p lalloc( int used) {
     return lp ;
 }
 
-/*
- * Delete line "lp". Fix all of the links that might point at it (they are
+
+/* Delete line "lp". Fix all of the links that might point at it (they are
  * moved to offset 0 of the next line. Unlink the line from whatever buffer it
  * might be in. Release the memory. The buffers are updated too; the magic
  * conditions described in the above comments don't hold here.
  */
 void lfree( line_p lp) {
-    buffer_p bp;
-    struct window *wp;
+    for( window_p wp = wheadp ; wp != NULL ; wp = wp->w_wndp) {
+        if( wp->w_linep == lp)
+            wp->w_linep = lp->l_fp ;
 
-    wp = wheadp;
-    while (wp != NULL) {
-        if (wp->w_linep == lp)
-            wp->w_linep = lp->l_fp;
-        if (wp->w_dotp == lp) {
-            wp->w_dotp = lp->l_fp;
-            wp->w_doto = 0;
+        if( wp->w_dotp == lp) {
+            wp->w_dotp = lp->l_fp ;
+            wp->w_doto = 0 ;
         }
-        if (wp->w_markp == lp) {
-            wp->w_markp = lp->l_fp;
-            wp->w_marko = 0;
+
+        if( wp->w_markp == lp) {
+            wp->w_markp = lp->l_fp ;
+            wp->w_marko = 0 ;
         }
-        wp = wp->w_wndp;
     }
-    bp = bheadp;
-    while (bp != NULL) {
-        if (bp->b_nwnd == 0) {
-            if (bp->b_dotp == lp) {
-                bp->b_dotp = lp->l_fp;
-                bp->b_doto = 0;
+
+    for( buffer_p bp = bheadp ; bp != NULL ; bp = bp->b_bufp) {
+        if( bp->b_nwnd == 0) {
+            if( bp->b_dotp == lp) {
+                bp->b_dotp = lp->l_fp ;
+                bp->b_doto = 0 ;
             }
-            if (bp->b_markp == lp) {
-                bp->b_markp = lp->l_fp;
-                bp->b_marko = 0;
+			
+            if( bp->b_markp == lp) {
+                bp->b_markp = lp->l_fp ;
+                bp->b_marko = 0 ;
             }
         }
-        bp = bp->b_bufp;
     }
-    lp->l_bp->l_fp = lp->l_fp;
-    lp->l_fp->l_bp = lp->l_bp;
-    free((char *) lp);
+
+    lp->l_bp->l_fp = lp->l_fp ;
+    lp->l_fp->l_bp = lp->l_bp ;
+    free( lp) ;
 }
 
-/*
- * This routine gets called when a character is changed in place in the current
+
+/* This routine gets called when a character is changed in place in the current
  * buffer. It updates all of the required flags in the buffer and window
  * system. The flag used is passed as an argument; if the buffer is being
- * displayed in more than 1 window we change EDIT t HARD. Set MODE if the
+ * displayed in more than 1 window we change EDIT to HARD. Set MODE if the
  * mode line needs to be updated (the "*" has to be set).
  */
-void lchange(int flag)
-{
-    struct window *wp;
+void lchange( int flag) {
+    if( curbp->b_nwnd != 1) /* Ensure hard.     */
+        flag = WFHARD ;
 
-    if (curbp->b_nwnd != 1) /* Ensure hard.     */
-        flag = WFHARD;
-    if ((curbp->b_flag & BFCHG) == 0) { /* First change, so     */
-        flag |= WFMODE; /* update mode lines.   */
-        curbp->b_flag |= BFCHG;
+    if( (curbp->b_flag & BFCHG) == 0) { /* First change, so     */
+        flag |= WFMODE ; /* update mode lines.   */
+        curbp->b_flag |= BFCHG ;
     }
-    wp = wheadp;
-    while (wp != NULL) {
-        if (wp->w_bufp == curbp)
-            wp->w_flag |= flag;
-        wp = wp->w_wndp;
-    }
+
+    for( window_p wp = wheadp ; wp != NULL ; wp = wp->w_wndp)
+        if( wp->w_bufp == curbp)
+            wp->w_flag |= flag ;
 }
 
-/*
- * insert spaces forward into text
+
+/* insert spaces forward into text
  *
  * int f, n;        default flag and numeric argument
  */
@@ -260,24 +261,18 @@ BINDABLE( insspace) {
     return TRUE ;
 }
 
-/*
- * linstr -- Insert a string at the current point
- */
 
-int linstr( char *instr) {
-    int status = TRUE ;
-
+/* linstr -- Insert a string at the current point */
+boolean linstr( char *instr) {
+    boolean status = TRUE ;
     if( instr != NULL) {
-        unicode_t tmpc ;
+        int c ;
 
-        while( (tmpc = *instr++ & 0xFF)) {
-            status =
-                (tmpc == '\n' ? lnewline() : (int) linsert_byte( 1, tmpc)) ;
-
-            /* Insertion error? */
-            if( status != TRUE) {
+        while( (c = (unsigned char) *instr++)) {
+            status = (c == '\n') ? lnewline() : linsert_byte( 1, c) ;
+            if( status != TRUE) {	/* Insertion error? */
                 mloutstr( "%Out of memory while inserting") ;
-                return status ;
+                break ;
             }
         }
     }
@@ -298,84 +293,88 @@ int linstr( char *instr) {
 boolean linsert_byte( int n, int c) {
     char *cp1;
     char *cp2;
-    line_p lp1, lp2, lp3 ;
-    int doto;
-    int i;
-    struct window *wp;
+    line_p lp2, lp3 ;
+	int i ;
 
     assert( (curbp->b_mode & MDVIEW) == 0) ;
 
-    lchange(WFEDIT);
-    lp1 = curwp->w_dotp;    /* Current line         */
-    if (lp1 == curbp->b_linep) {    /* At the end: special  */
-        if (curwp->w_doto != 0) {
-            mloutstr( "bug: linsert") ;
-            return FALSE;
-        }
+    lchange( WFEDIT) ;
+    line_p lp1 = curwp->w_dotp ;	/* Current line         */
+    if( lp1 == curbp->b_linep) {    /* At the end: special  */
+        if( curwp->w_doto != 0)
+            return mloutfail( "bug: linsert") ;
 
         lp2 = lalloc( n) ;  /* Allocate new line */
         if( lp2 == NULL)
             return FALSE ;
 
-        lp3 = lp1->l_bp;    /* Previous line        */
-        lp3->l_fp = lp2;    /* Link in              */
-        lp2->l_fp = lp1;
-        lp1->l_bp = lp2;
-        lp2->l_bp = lp3;
-        for (i = 0; i < n; ++i)
-            lp2->l_text[i] = c;
-        curwp->w_dotp = lp2;
-        curwp->w_doto = n;
-        return TRUE;
+        lp3 = lp1->l_bp ;	/* Previous line        */
+        lp3->l_fp = lp2 ;	/* Link in              */
+        lp2->l_fp = lp1 ;
+        lp1->l_bp = lp2 ;
+        lp2->l_bp = lp3 ;
+        for( i = 0 ; i < n ; ++i)
+            lp2->l_text[ i] = c ;
+
+        curwp->w_dotp = lp2 ;
+        curwp->w_doto = n ;
+        return TRUE ;
     }
-    doto = curwp->w_doto;   /* Save for later.      */
-    if (lp1->l_used + n > lp1->l_size) {    /* Hard: reallocate     */
+
+    int doto = curwp->w_doto ;	/* Save for later.      */
+    if( lp1->l_used + n > lp1->l_size) {    /* Hard: reallocate     */
         lp2 = lalloc( lp1->l_used + n) ;
         if( lp2 == NULL)
             return FALSE ;
 
-        cp1 = &lp1->l_text[0];
-        cp2 = &lp2->l_text[0];
-        while (cp1 != &lp1->l_text[doto])
-            *cp2++ = *cp1++;
-        cp2 += n;
-        while (cp1 != &lp1->l_text[lp1->l_used])
-            *cp2++ = *cp1++;
-        lp1->l_bp->l_fp = lp2;
-        lp2->l_fp = lp1->l_fp;
-        lp1->l_fp->l_bp = lp2;
-        lp2->l_bp = lp1->l_bp;
-        free((char *) lp1);
+        cp1 = &lp1->l_text[ 0] ;
+        cp2 = &lp2->l_text[ 0] ;
+        while( cp1 != &lp1->l_text[ doto])
+            *cp2++ = *cp1++ ;
+
+        cp2 += n ;
+        while( cp1 != &lp1->l_text[ lp1->l_used])
+            *cp2++ = *cp1++ ;
+
+        lp1->l_bp->l_fp = lp2 ;
+        lp2->l_fp = lp1->l_fp ;
+        lp1->l_fp->l_bp = lp2 ;
+        lp2->l_bp = lp1->l_bp ;
+        free( lp1) ;
     } else {        /* Easy: in place       */
-        lp2 = lp1;  /* Pretend new line     */
-        lp2->l_used += n;
-        cp2 = &lp1->l_text[lp1->l_used];
-        cp1 = cp2 - n;
-        while (cp1 != &lp1->l_text[doto])
-            *--cp2 = *--cp1;
+        lp2 = lp1 ; /* Pretend new line     */
+        lp2->l_used += n ;
+        cp2 = &lp1->l_text[ lp1->l_used] ;
+        cp1 = cp2 - n ;
+        while( cp1 != &lp1->l_text[ doto])
+            *--cp2 = *--cp1 ;
     }
-    for (i = 0; i < n; ++i) /* Add the characters       */
-        lp2->l_text[doto + i] = c;
-    wp = wheadp;        /* Update windows       */
-    while (wp != NULL) {
-        if (wp->w_linep == lp1)
-            wp->w_linep = lp2;
-        if (wp->w_dotp == lp1) {
-            wp->w_dotp = lp2;
-            if (wp == curwp || wp->w_doto > doto)
-                wp->w_doto += n;
+
+    for( i = 0 ; i < n ; ++i) /* Add the characters       */
+        lp2->l_text[ doto + i] = c ;
+
+/* Update windows */
+    for( window_p wp = wheadp ; wp != NULL ; wp = wp->w_wndp) {
+        if( wp->w_linep == lp1)
+            wp->w_linep = lp2 ;
+
+        if( wp->w_dotp == lp1) {
+            wp->w_dotp = lp2 ;
+            if( wp == curwp || wp->w_doto > doto)
+                wp->w_doto += n ;
         }
-        if (wp->w_markp == lp1) {
-            wp->w_markp = lp2;
-            if (wp->w_marko > doto)
-                wp->w_marko += n;
+
+        if( wp->w_markp == lp1) {
+            wp->w_markp = lp2 ;
+            if( wp->w_marko > doto)
+                wp->w_marko += n ;
         }
-        wp = wp->w_wndp;
     }
-    return TRUE;
+
+    return TRUE ;
 }
 
-int linsert( int n, unicode_t c) {
+boolean linsert( int n, unicode_t c) {
     assert( n >= 0) ;
     assert( !(curbp->b_mode & MDVIEW)) ;
 
@@ -403,7 +402,7 @@ int linsert( int n, unicode_t c) {
  *
  * int c ;  character to overwrite on current position
  */
-static int lowrite( int c) {
+static boolean lowrite( int c) {
     if( curwp->w_doto < curwp->w_dotp->l_used
     && (    lgetc( curwp->w_dotp, curwp->w_doto) != '\t'
         ||  (curwp->w_doto % tabwidth) == (tabwidth - 1)
@@ -413,20 +412,18 @@ static int lowrite( int c) {
     return linsert( 1, c) ;
 }
 
-/*
- * lover -- Overwrite a string at the current point
- */
-int lover( char *ostr) {
-    int status = TRUE ;
 
+/* lover -- Overwrite a string at the current point */
+boolean lover( char *ostr) {
+    boolean status = TRUE ;
     if( ostr != NULL) {
-        char tmpc ;
+        int c ;
 
-        while( (tmpc = *ostr++)) {
-            status = (tmpc == '\n' ? lnewline() : lowrite( tmpc)) ;
+        while( (c = (unsigned char) *ostr++)) {
+            status = (c == '\n') ? lnewline() : lowrite( c) ;
             if( status != TRUE) {   /* Insertion error? */
                 mloutstr( "%Out of memory while overwriting") ;
-                return status ;
+                break ;
             }
         }
     }
@@ -434,21 +431,15 @@ int lover( char *ostr) {
     return status ;
 }
 
-/*
- * Insert a newline into the buffer at the current location of dot in the
- * current window. The funny ass-backwards way it does things is not a botch;
- * it just makes the last line in the file not a special case. Return TRUE if
- * everything works out and FALSE on error (memory allocation failure). The
- * update of dot and mark is a bit easier then in the above case, because the
- * split forces more updating.
- */
-int lnewline( void) {
-    char *cp1;
-    char *cp2;
-    line_p lp1, lp2 ;
-    int doto;
-    struct window *wp;
 
+/* Insert a newline into the buffer at the current location of dot in the
+   current window.  The funny ass-backwards way it does things is not a
+   botch; it just makes the last line in the file not a special case.
+   Return TRUE if everything works out and FALSE on error (memory
+   allocation failure).  The update of dot and mark is a bit easier then in
+   the above case, because the split forces more updating.
+ */
+boolean lnewline( void) {
     assert( !(curbp->b_mode & MDVIEW)) ;
 
 #if SCROLLCODE
@@ -456,75 +447,104 @@ int lnewline( void) {
 #else
     lchange(WFHARD);
 #endif
-    lp1 = curwp->w_dotp;    /* Get the address and  */
-    doto = curwp->w_doto;   /* offset of "."        */
-    lp2 = lalloc( doto) ;   /* New first half line */
+    line_p lp1 = curwp->w_dotp ;	/* Get the address and	*/
+    int doto = curwp->w_doto ;		/* offset of "."        */
+    line_p lp2 = lalloc( doto) ;	/* New first half line	*/
     if( lp2 == NULL)
         return FALSE ;
 
-    cp1 = &lp1->l_text[0];  /* Shuffle text around  */
-    cp2 = &lp2->l_text[0];
-    while (cp1 != &lp1->l_text[doto])
-        *cp2++ = *cp1++;
-    cp2 = &lp1->l_text[0];
-    while (cp1 != &lp1->l_text[lp1->l_used])
-        *cp2++ = *cp1++;
-    lp1->l_used -= doto;
-    lp2->l_bp = lp1->l_bp;
-    lp1->l_bp = lp2;
-    lp2->l_bp->l_fp = lp2;
-    lp2->l_fp = lp1;
-    wp = wheadp;        /* Windows              */
-    while (wp != NULL) {
-        if (wp->w_linep == lp1)
-            wp->w_linep = lp2;
-        if (wp->w_dotp == lp1) {
-            if (wp->w_doto < doto)
-                wp->w_dotp = lp2;
+    memcpy( lp2->l_text, lp1->l_text, doto) ;
+    lp1->l_used -= doto ;
+	memcpy( lp1->l_text, &lp1->l_text[ doto], lp1->l_used) ;
+    lp2->l_fp = lp1 ;
+    lp2->l_bp = lp1->l_bp ;
+    lp1->l_bp = lp2 ;
+    lp2->l_bp->l_fp = lp2 ;
+    for( window_p wp = wheadp ; wp != NULL ; wp = wp->w_wndp) {
+        if( wp->w_linep == lp1)
+            wp->w_linep = lp2 ;
+
+        if( wp->w_dotp == lp1) {
+            if( wp->w_doto < doto)
+                wp->w_dotp = lp2 ;
             else
-                wp->w_doto -= doto;
+                wp->w_doto -= doto ;
         }
+
         if (wp->w_markp == lp1) {
-            if (wp->w_marko < doto)
-                wp->w_markp = lp2;
+            if( wp->w_marko < doto)
+                wp->w_markp = lp2 ;
             else
-                wp->w_marko -= doto;
+                wp->w_marko -= doto ;
         }
-        wp = wp->w_wndp;
     }
-    return TRUE;
+
+    return TRUE ;
 }
 
-int lgetchar( unicode_t *c) {
-    if( curwp->w_dotp->l_used == curwp->w_doto) {
-        *c = (curbp->b_mode & MDDOS) ? '\r' : '\n' ;
+
+/* lgetchar():
+ *  get unicode value and return UTF-8 size of character at dot.
+ */
+int lgetchar( unicode_t *cp) {
+    if( curwp->w_dotp->l_used == curwp->w_doto) {		/* at EOL? */
+        *cp = (curbp->b_mode & MDDOS) ? '\r' : '\n' ;
         return 1 ;
     } else
         return utf8_to_unicode( curwp->w_dotp->l_text, curwp->w_doto,
-                                                llength( curwp->w_dotp), c) ;
+                                                llength( curwp->w_dotp), cp) ;
 }
 
-/*
+
+/* lcombinedsize():
+ *  return total UTF-8 size of combined character at dot.
+ */
+static int lcombinedsize( void) {
+    if( curwp->w_dotp->l_used == curwp->w_doto)	/* EOL? */
+        return 1 ;
+    else {
+		unicode_t c ;
+
+		int pos = curwp->w_doto ;
+        unsigned bytes = utf8_to_unicode( curwp->w_dotp->l_text, pos,
+                                                llength( curwp->w_dotp), &c) ;
+	/* check if followed by combining unicode character */
+		pos += bytes ;
+		while( pos < llength( curwp->w_dotp) - 1) {		/* at least 2 bytes */
+			unsigned cnt = utf8_to_unicode( curwp->w_dotp->l_text, pos,
+                                                llength( curwp->w_dotp), &c) ;
+			if( utf8_width( c) == 0) {
+				bytes += cnt ;
+				pos += cnt ;
+			} else
+				break ;
+		}
+		
+		return bytes ;
+	}
+}
+
+
+/* ldelchar():
+ *  delete forward combined characters starting at dot.
+ *
  * ldelete() really fundamentally works on bytes, not characters.
  * It is used for things like "scan 5 words forwards, and remove
  * the bytes we scanned".
  *
  * If you want to delete characters, use ldelchar().
  */
-boolean ldelchar( long n, boolean kflag) {
+boolean ldelchar( long n, boolean kill_f) {
 /* testing for read only mode is done by ldelete() */
-    while( n-- > 0) {
-        unicode_t c;
-
-        if( !ldelete( lgetchar( &c), kflag))
+    while( n-- > 0)
+        if( !ldelete( lcombinedsize(), kill_f))
             return FALSE ;
-    }
 
     return TRUE ;
 }
 
-/*
- * This function deletes "n" bytes, starting at dot. It understands how do deal
+
+/* This function deletes "n" bytes, starting at dot. It understands how do deal
  * with end of lines, etc. It returns TRUE if all of the characters were
  * deleted, and FALSE if they were not (because dot ran into the end of the
  * buffer. The "kflag" is TRUE if the text should be put in the kill buffer.
@@ -533,101 +553,72 @@ boolean ldelchar( long n, boolean kflag) {
  * int kflag;        put killed text in kill buffer flag
  */
 boolean ldelete( long n, boolean kflag) {
-    char *cp1;
-    char *cp2;
-    line_p dotp;
-    int doto;
-    int chunk;
-    struct window *wp;
-
     assert( !(curbp->b_mode & MDVIEW)) ;
 
     while( n > 0) {
-        dotp = curwp->w_dotp;
-        doto = curwp->w_doto;
-        if (dotp == curbp->b_linep) /* Hit end of buffer.       */
-            return FALSE;
-        chunk = dotp->l_used - doto;    /* Size of chunk.       */
-        if (chunk > n)
-            chunk = n;
-        if (chunk == 0) {   /* End of line, merge.  */
+        line_p dotp = curwp->w_dotp ;
+        if( dotp == curbp->b_linep)	/* Hit end of buffer.       */
+            return FALSE ;
+
+        int doto = curwp->w_doto ;
+        int chunk = dotp->l_used - doto ;	/* Size of chunk.       */
+        if( chunk == 0) {   /* End of line, merge.  */
 #if SCROLLCODE
-            lchange(WFHARD | WFKILLS);
+            lchange( WFHARD | WFKILLS) ;
 #else
-            lchange(WFHARD);
+            lchange( WFHARD) ;
 #endif
-            if (ldelnewline() == FALSE
-                || (kflag != FALSE && kinsert('\n') == FALSE))
-                return FALSE;
-            --n;
-            continue;
-        }
-        lchange(WFEDIT);
-        cp1 = &dotp->l_text[doto];  /* Scrunch text.        */
-        cp2 = cp1 + chunk;
-        if (kflag != FALSE) {   /* Kill?                */
-            while (cp1 != cp2) {
-                if (kinsert(*cp1) == FALSE)
-                    return FALSE;
-                ++cp1;
-            }
-            cp1 = &dotp->l_text[doto];
-        }
-        while (cp2 != &dotp->l_text[dotp->l_used])
-            *cp1++ = *cp2++;
-        dotp->l_used -= chunk;
-        wp = wheadp;    /* Fix windows          */
-        while (wp != NULL) {
-            if (wp->w_dotp == dotp && wp->w_doto >= doto) {
-                wp->w_doto -= chunk;
-                if (wp->w_doto < doto)
-                    wp->w_doto = doto;
-            }
-            if (wp->w_markp == dotp && wp->w_marko >= doto) {
-                wp->w_marko -= chunk;
-                if (wp->w_marko < doto)
-                    wp->w_marko = doto;
-            }
-            wp = wp->w_wndp;
-        }
-        n -= chunk;
-    }
-    return TRUE;
-}
+            if( ldelnewline() == FALSE
+            || (kflag != FALSE && kinsert( '\n') == FALSE))
+                return FALSE ;
 
-/*
- * getctext:    grab and return a string with the text of
- *      the current line
- */
-char *getctext( void) {
-    line_p  lp ;    /* line to copy */
-    int size;   /* length of line to return */
-    static int  rsize = 0 ;
-    static char *rline ;    /* line to return */
+            --n ;
+            continue ;
+        } else if( chunk > n)
+            chunk = n ;
 
-    /* find the contents of the current line and its length */
-    lp = curwp->w_dotp;
-    size = lp->l_used;
-    if( size >= rsize) {
-        if( rsize)
-            free( rline) ;
+        lchange( WFEDIT) ;
+        char *cp1 = &dotp->l_text[ doto] ;	/* Scrunch text.        */
+        char *cp2 = cp1 + chunk ;
+        if( kflag != FALSE) {   /* Kill?                */
+            while( cp1 != cp2) {
+                if( kinsert( *cp1) == FALSE)
+                    return FALSE ;
+					
+                ++cp1 ;
+            }
 
-        rsize = size + 1 ;
-        rline = malloc( rsize) ;
-        if( rline == NULL) {
-            rsize = 0 ;
-            return "" ;
+            cp1 = &dotp->l_text[ doto] ;
         }
+
+        while( cp2 != &dotp->l_text[ dotp->l_used])
+            *cp1++ = *cp2++ ;
+
+        dotp->l_used -= chunk ;
+
+	/* Fix windows */
+        for( window_p wp = wheadp ; wp != NULL ; wp = wp->w_wndp) {
+            if( wp->w_dotp == dotp && wp->w_doto >= doto) {
+                wp->w_doto -= chunk ;
+                if( wp->w_doto < doto)
+                    wp->w_doto = doto ;
+            }
+
+            if( wp->w_markp == dotp && wp->w_marko >= doto) {
+                wp->w_marko -= chunk ;
+                if( wp->w_marko < doto)
+                    wp->w_marko = doto ;
+            }
+        }
+
+        n -= chunk ;
     }
 
-    /* copy it across */
-    memcpy( rline, lp->l_text, size) ;
-    rline[ size] = 0 ;
-    return rline ;
+    return TRUE ;
 }
 
-/*
- * Delete a newline. Join the current line with the next line. If the next line
+
+/* Delete a newline. Join the current line with the next line. If the next line
  * is the magic header line always return TRUE; merging the last line with the
  * header line can be thought of as always being a successful operation, even
  * if nothing is done, and this makes the kill buffer work "right". Easy cases
@@ -638,104 +629,101 @@ char *getctext( void) {
 static int ldelnewline( void) {
     char *cp1;
     char *cp2;
-    line_p lp1, lp2, lp3 ;
-    struct window *wp;
+	window_p wp ;
 
     assert( (curbp->b_mode & MDVIEW) == 0) ;
 
-    lp1 = curwp->w_dotp;
-    lp2 = lp1->l_fp;
-    if (lp2 == curbp->b_linep) {    /* At the buffer end.   */
-        if (lp1->l_used == 0)   /* Blank line.              */
-            lfree(lp1);
-        return TRUE;
+    line_p lp1 = curwp->w_dotp ;
+    line_p lp2 = lp1->l_fp ;
+    if( lp2 == curbp->b_linep) {    /* At the buffer end.   */
+        if( lp1->l_used == 0)   /* Blank line.              */
+            lfree( lp1) ;
+
+        return TRUE ;
     }
-    if (lp2->l_used <= lp1->l_size - lp1->l_used) {
-        cp1 = &lp1->l_text[lp1->l_used];
-        cp2 = &lp2->l_text[0];
-        while (cp2 != &lp2->l_text[lp2->l_used])
-            *cp1++ = *cp2++;
-        wp = wheadp;
-        while (wp != NULL) {
-            if (wp->w_linep == lp2)
-                wp->w_linep = lp1;
-            if (wp->w_dotp == lp2) {
-                wp->w_dotp = lp1;
-                wp->w_doto += lp1->l_used;
+	
+    if( lp2->l_used <= lp1->l_size - lp1->l_used) {
+        cp1 = &lp1->l_text[ lp1->l_used] ;
+        cp2 = lp2->l_text ;
+        while( cp2 != &lp2->l_text[ lp2->l_used])
+            *cp1++ = *cp2++ ;
+
+        for( wp = wheadp ; wp != NULL ; wp = wp->w_wndp) {
+            if( wp->w_linep == lp2)
+                wp->w_linep = lp1 ;
+
+            if( wp->w_dotp == lp2) {
+                wp->w_dotp = lp1 ;
+                wp->w_doto += lp1->l_used ;
             }
-            if (wp->w_markp == lp2) {
-                wp->w_markp = lp1;
-                wp->w_marko += lp1->l_used;
+
+            if( wp->w_markp == lp2) {
+                wp->w_markp = lp1 ;
+                wp->w_marko += lp1->l_used ;
             }
-            wp = wp->w_wndp;
         }
-        lp1->l_used += lp2->l_used;
-        lp1->l_fp = lp2->l_fp;
-        lp2->l_fp->l_bp = lp1;
-        free((char *) lp2);
-        return TRUE;
+
+        lp1->l_used += lp2->l_used ;
+        lp1->l_fp = lp2->l_fp ;
+        lp2->l_fp->l_bp = lp1 ;
+        free( lp2) ;
+        return TRUE ;
     }
 
-    lp3 = lalloc( lp1->l_used + lp2->l_used) ;
+    line_p lp3 = lalloc( lp1->l_used + lp2->l_used) ;
     if( lp3 == NULL)
         return FALSE ;
 
-    cp1 = &lp1->l_text[0];
-    cp2 = &lp3->l_text[0];
-    while (cp1 != &lp1->l_text[lp1->l_used])
-        *cp2++ = *cp1++;
-    cp1 = &lp2->l_text[0];
-    while (cp1 != &lp2->l_text[lp2->l_used])
-        *cp2++ = *cp1++;
-    lp1->l_bp->l_fp = lp3;
-    lp3->l_fp = lp2->l_fp;
-    lp2->l_fp->l_bp = lp3;
-    lp3->l_bp = lp1->l_bp;
-    wp = wheadp;
-    while (wp != NULL) {
-        if (wp->w_linep == lp1 || wp->w_linep == lp2)
-            wp->w_linep = lp3;
-        if (wp->w_dotp == lp1)
-            wp->w_dotp = lp3;
-        else if (wp->w_dotp == lp2) {
-            wp->w_dotp = lp3;
-            wp->w_doto += lp1->l_used;
+    cp1 = lp1->l_text ;
+    cp2 = lp3->l_text ;
+    while( cp1 != &lp1->l_text[ lp1->l_used])
+        *cp2++ = *cp1++ ;
+
+    cp1 = lp2->l_text ;
+    while( cp1 != &lp2->l_text[ lp2->l_used])
+        *cp2++ = *cp1++ ;
+
+    lp1->l_bp->l_fp = lp3 ;
+    lp3->l_fp = lp2->l_fp ;
+    lp2->l_fp->l_bp = lp3 ;
+    lp3->l_bp = lp1->l_bp ;
+    for( wp = wheadp ; wp != NULL ; wp = wp->w_wndp) {
+        if( wp->w_linep == lp1 || wp->w_linep == lp2)
+            wp->w_linep = lp3 ;
+
+        if( wp->w_dotp == lp1)
+            wp->w_dotp = lp3 ;
+        else if( wp->w_dotp == lp2) {
+            wp->w_dotp = lp3 ;
+            wp->w_doto += lp1->l_used ;
         }
-        if (wp->w_markp == lp1)
-            wp->w_markp = lp3;
-        else if (wp->w_markp == lp2) {
-            wp->w_markp = lp3;
-            wp->w_marko += lp1->l_used;
+
+        if( wp->w_markp == lp1)
+            wp->w_markp = lp3 ;
+        else if( wp->w_markp == lp2) {
+            wp->w_markp = lp3 ;
+            wp->w_marko += lp1->l_used ;
         }
-        wp = wp->w_wndp;
     }
-    free((char *) lp1);
-    free((char *) lp2);
-    return TRUE;
+
+    free( lp1) ;
+    free( lp2) ;
+    return TRUE ;
 }
 
-/*
- * Delete all of the text saved in the kill buffer. Called by commands when a
+
+/* Delete all of the text saved in the kill buffer. Called by commands when a
  * new kill context is being created. The kill buffer array is released, just
  * in case the buffer has grown to immense size. No errors.
  */
-void kdelete(void)
-{
-    kill_p kp;      /* ptr to scan kill buffer chunk list */
+void kdelete( void) {
+    if( kbufh != NULL) {
+    /* first, delete all the chunks */
+		freelist( (list_p) kbufh) ;
 
-    if (kbufh != NULL) {
-
-        /* first, delete all the chunks */
-        kbufp = kbufh;
-        while (kbufp != NULL) {
-            kp = kbufp->d_next;
-            free(kbufp);
-            kbufp = kp;
-        }
-
-        /* and reset all the kill buffer pointers */
-        kbufh = kbufp = NULL;
-        kused = KBLOCK;
+    /* and reset all the kill buffer pointers */
+        kbufh = kbufp = NULL ;
+        kused = KBLOCK ;
         klen = 0 ;
         if( value != NULL) {
             free( value) ;

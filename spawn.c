@@ -12,11 +12,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "defines.h"
-
 #include "buffer.h"
+#include "defines.h"
 #include "display.h"
-#include "estruct.h"
 #include "exec.h"
 #include "file.h"
 #include "flook.h"
@@ -27,8 +25,6 @@
 
 #if	USG | BSD
 #include        <signal.h>
-#ifdef SIGWINCH
-#endif
 #endif
 
 
@@ -173,97 +169,88 @@ BINDABLE( execprg) {
 
 
 /* Pipe a one line command into a window
- * Bound to ^X @
+ * Bound to pipe-command ^X @
  */
 BINDABLE( pipecmd) {
-	int s ;		/* return status from CLI */
-	struct window *wp ;	/* pointer to new window */
-	buffer_p bp ;		/* pointer to buffer to zot */
+	window_p wp ;	/* pointer to new window */
 	char *mlarg ;
-	char *line ;	/* command line send to shell */
-	static char bname[] = "command" ;
-	static char filnam[ NSTRING] = "command" ;
+	const char filnam[] = "command" ;
 
-	/* don't allow this command if restricted */
+/* don't allow this command if restricted */
 	if( restflag)
 		return resterr() ;
 
-	/* get the command to pipe in */
-	s = newmlarg( &mlarg, "@", 0) ;
+/* get the command to pipe in */
+	int s = newmlarg( &mlarg, "pipe-command: ", 0) ;
 	if( s != TRUE)
 		return s ;
 
-	line = malloc( strlen( mlarg) + strlen( filnam) + 2) ;
-	if( line == NULL) {
+	char *cmdline = malloc( strlen( mlarg) + strlen( filnam) + 4) ;
+	if( cmdline == NULL) {
 		free( mlarg) ;
 		return FALSE ;
 	}
 
-	strcpy( line, mlarg) ;
+	strcpy( cmdline, mlarg) ;
 	free( mlarg) ;
+	strcat( cmdline, " > ") ;
+	strcat( cmdline, filnam) ;
 
-	/* get rid of the command output buffer if it exists */
-	if ((bp = bfind(bname, FALSE, 0)) != FALSE) {
-		/* try to make sure we are off screen */
-		wp = wheadp;
-		while (wp != NULL) {
-			if (wp->w_bufp == bp) {
+/* get rid of the command output buffer if it exists */
+	buffer_p bp = bfind( filnam, FALSE, 0) ;
+	if( bp != NULL) {
+	/* try to make sure we are off screen */
+		for( wp = wheadp ; wp != NULL ; wp = wp->w_wndp) {
+			if( wp->w_bufp == bp) {
 #if	PKCODE
-				if (wp == curwp)
-					delwind(FALSE, 1);
+				if( wp == curwp)
+					delwind( FALSE, 1) ;
 				else
-					onlywind(FALSE, 1);
-				break;
+					onlywind( FALSE, 1) ;
+				break ;
 #else
-				onlywind(FALSE, 1);
-				break;
+				onlywind( FALSE, 1) ;
+				break ;
 #endif
 			}
-			wp = wp->w_wndp;
 		}
 
 		if( zotbuf( bp) != TRUE) {
-			free( line) ;
+			free( cmdline) ;
 			return FALSE ;
 		}
 	}
+
 #if	USG | BSD
 	TTflush();
 	TTclose();		/* stty to old modes    */
 	TTkclose();
-	strcat( line, ">") ;
-	strcat( line, filnam) ;
-	ue_system( line) ;
-	free( line) ;
+	ue_system( cmdline) ;
+	free( cmdline) ;
 	TTopen();
 	TTkopen();
 	TTflush();
 	sgarbf = TRUE;
 	s = TRUE;
 #else
-	if (s != TRUE)
+	if( s != TRUE)
 		return s;
 #endif
 
-	/* split the current window to make room for the command output */
-	if (splitwind(FALSE, 1) == FALSE)
-		return FALSE;
+/* split the current window to make room for the command output
+** and read the stuff in */
+	if( splitwind( FALSE, 1) == FALSE
+	||  getfile( filnam, FALSE) == FALSE)
+		return FALSE ;
 
-	/* and read the stuff in */
-	if (getfile(filnam, FALSE) == FALSE)
-		return FALSE;
+/* make this window in VIEW mode, update all mode lines */
+	curwp->w_bufp->b_mode |= MDVIEW ;
+	for( wp = wheadp ; wp != NULL ; wp = wp->w_wndp)
+		wp->w_flag |= WFMODE ;
 
-	/* make this window in VIEW mode, update all mode lines */
-	curwp->w_bufp->b_mode |= MDVIEW;
-	wp = wheadp;
-	while (wp != NULL) {
-		wp->w_flag |= WFMODE;
-		wp = wp->w_wndp;
-	}
-
-	/* and get rid of the temporary file */
-	unlink(filnam);
-	return TRUE;
+/* and get rid of the temporary file */
+	unlink( filnam) ;
+	return TRUE ;
 }
 
 

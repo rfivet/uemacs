@@ -65,8 +65,8 @@
 
 #include "basic.h"
 #include "buffer.h"
+#include "defines.h"
 #include "display.h"
-#include "estruct.h"
 #include "input.h"
 #include "isa.h"
 #include "line.h"

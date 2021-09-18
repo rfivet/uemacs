@@ -1,5 +1,4 @@
 /* wrapper.c -- implements wrapper.h */
-
 #include "wrapper.h"
 
 #include <stdio.h>
@@ -24,14 +23,6 @@ void xmkstemp( char *template) {
 
 	umask( o_mask) ;
 	close( fd) ;
-}
-
-void *xmalloc( size_t size) {
-	void *ret = malloc( size) ;
-	if( !ret)
-		die( "Out of memory") ;
-
-	return ret ;
 }
 
 /* end of wrapper.c */

@@ -16,6 +16,7 @@
 #include "bind.h"
 #include "bindable.h"
 #include "buffer.h"
+#include "defines.h"	/* malloc/allocate */
 #include "display.h"
 #include "eval.h"
 #include "exec.h"
@@ -49,8 +50,8 @@ const name_bind names[] = {
 	{"!case-word-lower", lowerword,					META | 'L'} ,
 	{"!case-word-upper", upperword,					META | 'U'} ,
 	{" change-file-name", filename,					CTLX | 'N'} ,
-	{" change-screen-size", newsize,				META | CTL_ | 'D'} , /* M^S */
-	{" change-screen-width", newwidth,				META | CTL_ | 'T'} ,
+	{" change-screen-size", (fnp_t) newsize,		META | CTL_ | 'D'} , /* M^S */
+	{" change-screen-width", (fnp_t) newwidth,		META | CTL_ | 'T'} ,
 	{" clear-and-redraw", (fnp_t) redraw,			CTL_ | 'L'} ,
 	{" clear-message-line", (fnp_t) clrmes, 		0} ,
 	{" copy-region", copyregion,					META | 'W'} ,
@@ -191,7 +192,7 @@ const name_bind names[] = {
 	{" shell-command", spawn,					CTLX | '!'} ,
 	{" shrink-window", shrinkwind,				CTLX | CTL_ | 'Z'} ,
 	{" split-current-window", splitwind,		CTLX | '2'} ,
-	{" store-macro", storemac, 0} ,
+	{" store-macro", (fnp_t) storemac, 0} ,
 	{" store-procedure", storeproc, 0} ,
 #if	BSD | SVR4
 	{" suspend-emacs", bktoshell,				CTLX | 'D'} , /* BSD MS */
@@ -201,7 +202,7 @@ const name_bind names[] = {
 	{" unbind-key", unbindkey,					META | CTL_ | 'K'} ,
 	{" universal-argument", (fnp_t) unarg,		CTL_ | 'U'} ,
 	{" unmark-buffer", unmark,					META | '~'} ,
-	{" update-screen", upscreen, 0} ,
+	{" update-screen", (fnp_t) upscreen, 0} ,
 	{" view-file", viewfile, 					CTLX | CTL_ | 'V'} ,
 	{"!wrap-word", wrapword,					META | SPEC | 'W'} , /* hook */
 	{" write-file", filewrite,					CTLX | CTL_ | 'W'} ,

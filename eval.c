@@ -8,7 +8,6 @@
  */
 
 #include <assert.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -16,8 +15,8 @@
 #include "basic.h"
 #include "bind.h"
 #include "buffer.h"
+#include "defines.h"
 #include "display.h"
-#include "estruct.h"
 #include "exec.h"
 #include "execute.h"
 #include "flook.h"
@@ -30,8 +29,6 @@
 #include "util.h"
 #include "version.h"
 #include "window.h"
-
-#define	MAXVARS	255
 
 /*	Macro argument token types					*/
 
@@ -47,7 +44,6 @@
 #define	TKSTR	9		/* quoted string literal        */
 #define	TKCMD	10		/* command name                 */
 
-static int gettyp( char *token) ;
 
 /* Emacs global flag bit definitions (for gflags). */
 /* if GFREAD is set, current buffer will be set on first file (read in) */
@@ -68,17 +64,19 @@ int rval = 0 ;			/* return value of a subprocess */
 static int saveflag = 0 ;	/* Flags, saved with the $target var */
 
 
-long envram = 0l ;		/* # of bytes current in use by malloc */
+unsigned envram = 0 ;		/* # of bytes current in use by malloc */
 
 
-/* Max #chars in a var name. */
-#define	NVSIZE	10
+/* User variables ******************************************/
+#define	MAXVARS	255
+#define	NVSIZE	10	/* Max #chars in a var name. */
 
 /* Structure to hold user variables and their definitions. */
-struct user_variable {
-	char u_name[NVSIZE + 1]; /* name of user variable */
-	char *u_value;		 /* value (string) */
-};
+static struct {
+	char u_name[ NVSIZE + 1] ;	/* name of user variable */
+	char *u_value ;				/* value (string) */
+} uv[ MAXVARS + 1] ;
+
 
 static char errorm[] = "ERROR" ;	/* error literal                */
 
@@ -129,6 +127,7 @@ static const char *envars[] = {
 	"rval",			/* child process return value */
 	"tab",			/* tab width, 1... */
 	"hardtab",		/* TRUE for hard coded tab, FALSE for soft ones */
+	"viewtab",		/* TRUE to visualize hard coded tabs */
 	"overlap",
 	"jump",
 #if SCROLLCODE
@@ -136,7 +135,7 @@ static const char *envars[] = {
 #endif
 };
 
-/* And its preprocesor definitions. */
+/* And its preprocessor definitions. */
 
 #define	EVFILLCOL	0
 #define	EVPAGELEN	1
@@ -177,9 +176,10 @@ static const char *envars[] = {
 #define	EVRVAL		36
 #define EVTAB		37
 #define EVHARDTAB	38
-#define EVOVERLAP	39
-#define EVSCROLLCOUNT	40
-#define EVSCROLL	41
+#define EVVIEWTAB	39
+#define EVOVERLAP	40
+#define EVSCROLLCOUNT	41
+#define EVSCROLL	42
 
 enum function_type {
 	NILNAMIC	= 0,
@@ -187,6 +187,9 @@ enum function_type {
 	DYNAMIC		= (2 << 6),
 	TRINAMIC	= (3 << 6)
 } ;
+
+#define ARGCOUNT( ft) (ft >> 6)
+#define FUNID( ft) (ft & ((1 << 6) - 1))
 
 enum function_code {
 	UFADD = 0,	UFSUB,		UFTIMES,	UFDIV,		UFMOD,		UFNEG,
@@ -202,7 +205,7 @@ enum function_code {
 static struct {
 	const char f_name[ 4] ;
 	const int  f_type ;
-} funcs[] = {
+} const funcs[] = {
 	{ "abs", UFABS		| MONAMIC },	/* absolute value of a number */
 	{ "add", UFADD		| DYNAMIC },	/* add two numbers together */
 	{ "and", UFAND		| DYNAMIC },	/* logical and */
@@ -212,7 +215,7 @@ static struct {
 	{ "bno", UFBNOT		| MONAMIC },	/* bitwise not */
 	{ "bor", UFBOR		| DYNAMIC },	/* bitwise or    9-10-87  jwm */
 	{ "bxo", UFBXOR		| DYNAMIC },	/* bitwise xor   9-10-87  jwm */
-	{ "cat", UFCAT		| DYNAMIC },	/* concatinate string */
+	{ "cat", UFCAT		| DYNAMIC },	/* concatenate string */
 	{ "chr", UFCHR		| MONAMIC },	/* integer to char conversion */
 	{ "div", UFDIV		| DYNAMIC },	/* division */
 	{ "env", UFENV		| MONAMIC },	/* retrieve a system environment var */
@@ -237,7 +240,7 @@ static struct {
 	{ "sgr", UFSGREAT	| DYNAMIC },	/* string logical greater than */
 	{ "sin", UFSINDEX	| DYNAMIC },	/* find the index of one string in another */
 	{ "sle", UFSLESS	| DYNAMIC },	/* string logical less than */
-	{ "sub", UFSUB		| DYNAMIC },	/* subtraction */
+	{ "sub", UFSUB		| DYNAMIC },	/* substraction */
 	{ "tim", UFTIMES	| DYNAMIC },	/* multiplication */
 	{ "tru", UFTRUTH	| MONAMIC },	/* Truth of the universe logical test */
 	{ "upp", UFUPPER	| MONAMIC },	/* uppercase string */
@@ -245,21 +248,18 @@ static struct {
 } ;
 
 
-/* User variables */
-static struct user_variable uv[MAXVARS + 1];
-
 /* When emacs' command interpetor needs to get a variable's name,
  * rather than it's value, it is passed back as a variable description
  * structure. The v_num field is a index into the appropriate variable table.
  */
-struct variable_description {
-	int v_type;  /* Type of variable. */
-	int v_num;   /* Ordinal pointer to variable in list. */
-};
+typedef struct {
+	int v_type ;	/* Type of variable. */
+	int v_num ;		/* Ordinal pointer to variable in list. */
+} variable_description ;
 
-static void findvar( char *var, struct variable_description *vd, int size) ;
-static int svar( struct variable_description *var, char *value) ;
-static char *i_to_a( int i) ;
+static void findvar( char *var, variable_description *vd, int size) ;
+static int svar( variable_description *var, char *value) ;
+static const char *i_to_a( int i) ;
 
 /*
  * putctext:
@@ -307,25 +307,22 @@ void varinit(void)
 	seed = time( NULL) ;
 }
 
-/*
- * Evaluate a function.
+
+/* Evaluate a function.
  *
  * @fname: name of function to evaluate.
  */
 static const char *gtfun( char *fname) {
-	unsigned fnum ;				/* index to function to eval */
-	char *arg1 ; 				/* value of first argument */
-	char *arg2 ; 				/* value of second argument */
-	char *arg3 ;				/* last argument */
-	const char *retstr ;				/* return value */
-	int	low, high ;				/* binary search indexes */
+	char *argv[ 3] ;
+	const char *retstr ;		/* return value */
+	int i ;
 
-	/* look the function up in the function table */
-	fname[3] = 0;		/* only first 3 chars significant */
-	mklower(fname);		/* and let it be upper or lower case */
-	fnum = ARRAY_SIZE( funcs) ;
-	low = 0 ;
-	high = fnum - 1 ;
+/* look the function up in the function table */
+	fname[ 3] = 0 ;		/* only first 3 chars significant */
+	mklower( fname) ;	/* and let it be upper or lower case */
+	unsigned fnum = ARRAY_SIZE( funcs) ;	/* index to function to eval */
+	int low = 0 ;				/* binary search low bound */
+	int high = fnum - 1 ;		/* binary search high bound */
 	do {
 		int s, cur ;
 
@@ -340,92 +337,70 @@ static const char *gtfun( char *fname) {
 			low = cur + 1 ;
 	} while( low <= high) ;
 
-	/* return errorm on a bad reference */
-	if (fnum == ARRAY_SIZE(funcs))
-		return errorm;
+/* return errorm on a bad reference */
+	if( fnum == ARRAY_SIZE( funcs))
+		return errorm ;
 
-	arg1 = arg2 = arg3 = NULL ;
+/* fetch arguments */
 	assert( clexec == TRUE) ; /* means macarg can be replaced by gettokval */
-	/* if needed, retrieve the first argument */
-	if (funcs[fnum].f_type >= MONAMIC) {
-		arg1 = getnewtokval() ;
-		if( arg1 == NULL)
-			return errorm;
+	int argc = ARGCOUNT( funcs[ fnum].f_type) ;
+	for( int i = 0 ; i < argc ; i++) {
+		argv[ i] = getnewtokval() ;
+		if( argv[ i] == NULL) {
+			while( i > 0)
+				free( argv[ --i]) ;
 
-		/* if needed, retrieve the second argument */
-		if (funcs[fnum].f_type >= DYNAMIC) {
-			arg2 = getnewtokval() ;
-			if( arg2 == NULL) {
-				free( arg1) ;
-				return errorm;
-			}
-
-			/* if needed, retrieve the third argument */
-			if (funcs[fnum].f_type >= TRINAMIC) {
-				arg3 = getnewtokval() ;
-				if( arg3 == NULL) {
-					free( arg1) ;
-					free( arg2) ;
-					return errorm;
-				}
-			}
+			return errorm ;
 		}
 	}
 
-	/* and now evaluate it! */
-	switch( funcs[ fnum].f_type) {
-		int sz ;
+/* and now evaluate it! */
+	switch( FUNID( funcs[ fnum].f_type)) {
+		int sz, sz1 ;
+		unicode_t c ;
 
-	case UFADD | DYNAMIC:
-		retstr = i_to_a( atoi( arg1) + atoi( arg2)) ;
+	case UFADD:
+		retstr = i_to_a( atoi( argv[ 0]) + atoi( argv[ 1])) ;
 		break ;
-	case UFSUB | DYNAMIC:
-		retstr = i_to_a( atoi( arg1) - atoi( arg2)) ;
+	case UFSUB:
+		retstr = i_to_a( atoi( argv[ 0]) - atoi( argv[ 1])) ;
 		break ;
-	case UFTIMES | DYNAMIC:
-		retstr = i_to_a( atoi( arg1) * atoi( arg2)) ;
+	case UFTIMES:
+		retstr = i_to_a( atoi( argv[ 0]) * atoi( argv[ 1])) ;
 		break ;
-	case UFDIV | DYNAMIC:
-		sz = atoi( arg2) ;
-		retstr = (sz == 0) ? errorm : i_to_a( atoi( arg1) / sz) ;
+	case UFDIV:
+		sz = atoi( argv[ 1]) ;
+		retstr = (sz == 0) ? errorm : i_to_a( atoi( argv[ 0]) / sz) ;
 		break ;
-	case UFMOD | DYNAMIC:
-		sz = atoi( arg2) ;
-		retstr = (sz == 0) ? errorm : i_to_a( atoi( arg1) % sz) ;
+	case UFMOD:
+		sz = atoi( argv[ 1]) ;
+		retstr = (sz == 0) ? errorm : i_to_a( atoi( argv[ 0]) % sz) ;
 		break ;
-	case UFNEG | MONAMIC:
-		retstr = i_to_a( -atoi( arg1)) ;
+	case UFNEG:
+		retstr = i_to_a( -atoi( argv[ 0])) ;
 		break ;
-	case UFCAT | DYNAMIC: {
-		int sz1 ;
-
-		sz1 = strlen( arg1) ;
-		sz = sz1 + strlen( arg2) + 1 ;
+	case UFCAT:
+		sz1 = strlen( argv[ 0]) ;
+		sz = sz1 + strlen( argv[ 1]) + 1 ;
 		if( sz > ressize) {
 			free( result) ;
 			result = malloc( sz) ;
 			ressize = sz ;
 		}
 
-		strcpy( result, arg1) ;
-		strcpy( &result[ sz1], arg2) ;
+		strcpy( result, argv[ 0]) ;
+		strcpy( &result[ sz1], argv[ 1]) ;
 		retstr = result ;
-	}
 		break ;
-	case UFLEFT | DYNAMIC: {
-		int	sz1, i ;
-
-		sz1 = strlen( arg1) ;
+	case UFLEFT:
+		sz1 = strlen( argv[ 0]) ;
 		sz = 0 ;
-		for( i = atoi( arg2) ; i > 0 ; i -= 1) {
+		for( int i = atoi( argv[ 1]) ; i > 0 ; i -= 1) {
 			unicode_t c ;
-			int bytc ;
 
-			bytc = utf8_to_unicode( arg1, sz, sz1, &c) ;
-			if( bytc == 0)
+			sz += utf8_to_unicode( argv[ 0], sz, sz1, &c) ;
+			if( sz == sz1)
 				break ;
-			else
-				sz += bytc ;
 		}
 
 		if( sz >= ressize) {
@@ -434,41 +409,40 @@ static const char *gtfun( char *fname) {
 			ressize = sz + 1 ;
 		}
 
-		mystrscpy( result, arg1, sz + 1) ;
+		mystrscpy( result, argv[ 0], sz + 1) ;
 		retstr = result ;
-	}
 		break ;
-	case UFRIGHT | DYNAMIC:
-		sz = atoi( arg2) ;
+	case UFRIGHT:
+		sz = strlen( argv[ 0]) ;
+		for( sz1 = atoi( argv[ 1]) ; sz1 > 0 && sz > 0 ; sz1--)
+			if( --sz > 0)
+				sz -= utf8_revdelta( (unsigned char *) &( argv[ 0])[ sz], sz) ;
+
+		retstr = &( argv[ 0])[ sz] ;
+		sz = strlen( retstr) ;
 		if( sz >= ressize) {
 			free( result) ;
-			result = malloc( sz + 1) ;
 			ressize = sz + 1 ;
+			result = malloc( ressize) ;
 		}
-		
-		retstr = strcpy( result, &arg1[ strlen( arg1) - sz]) ;
-		break ;
-	case UFMID | TRINAMIC: {
-		int sz1, start, i, bytc ;
-		unicode_t c ;
 
-		sz1 = strlen( arg1) ;
-		start = 0 ;
-		for( i = atoi( arg2) - 1 ; i > 0 ; i -= 1) {
-			bytc = utf8_to_unicode( arg1, start, sz1, &c) ;
-			if( bytc == 0)
+		retstr = strcpy( result, retstr) ;
+		break ;
+	case UFMID:
+		sz1 = strlen( argv[ 0]) ;
+		int start = 0 ;
+		for( i = atoi( argv[ 1]) - 1 ; i > 0 ; i -= 1) {
+			start +=  utf8_to_unicode( argv[ 0], start, sz1, &c) ;
+			if( start == sz1)
 				break ;
-			else
-				start += bytc ;
 		}
 
 		sz = start ;
-		for( i = atoi( arg3) ; i > 0 ; i -= 1) {
-			bytc = utf8_to_unicode( arg1, sz, sz1, &c) ;
-			if( bytc == 0)
+		if( sz < sz1)
+		for( i = atoi( argv[ 2]) ; i > 0 ; i -= 1) {
+			sz += utf8_to_unicode( argv[ 0], sz, sz1, &c) ;
+			if( sz == sz1)
 				break ;
-			else
-				sz += bytc ;
 		}
 
 		sz -= start ;
@@ -478,33 +452,32 @@ static const char *gtfun( char *fname) {
 			ressize = sz + 1 ;
 		}
 
-		mystrscpy( result, &arg1[ start], sz + 1) ;
+		mystrscpy( result, &(argv[ 0][ start]), sz + 1) ;
 		retstr = result ;
-	}
 		break ;
-	case UFNOT | MONAMIC:
-		retstr = ltos( stol( arg1) == FALSE) ;
+	case UFNOT:
+		retstr = ltos( stol( argv[ 0]) == FALSE) ;
 		break ;
-	case UFEQUAL | DYNAMIC:
-		retstr = ltos( atoi( arg1) == atoi( arg2)) ;
+	case UFEQUAL:
+		retstr = ltos( atoi( argv[ 0]) == atoi( argv[ 1])) ;
 		break ;
-	case UFLESS | DYNAMIC:
-		retstr = ltos( atoi( arg1) < atoi( arg2)) ;
+	case UFLESS:
+		retstr = ltos( atoi( argv[ 0]) < atoi( argv[ 1])) ;
 		break ;
-	case UFGREATER | DYNAMIC:
-		retstr = ltos( atoi( arg1) > atoi( arg2)) ;
+	case UFGREATER:
+		retstr = ltos( atoi( argv[ 0]) > atoi( argv[ 1])) ;
 		break ;
-	case UFSEQUAL | DYNAMIC:
-		retstr = ltos( strcmp( arg1, arg2) == 0) ;
+	case UFSEQUAL:
+		retstr = ltos( strcmp( argv[ 0], argv[ 1]) == 0) ;
 		break ;
-	case UFSLESS | DYNAMIC:
-		retstr = ltos( strcmp( arg1, arg2) < 0) ;
+	case UFSLESS:
+		retstr = ltos( strcmp( argv[ 0], argv[ 1]) < 0) ;
 		break ;
-	case UFSGREAT | DYNAMIC:
-		retstr = ltos( strcmp( arg1, arg2) > 0) ;
+	case UFSGREAT:
+		retstr = ltos( strcmp( argv[ 0], argv[ 1]) > 0) ;
 		break ;
-	case UFIND | MONAMIC:
-		retstr = getval( arg1) ;
+	case UFIND:
+		retstr = getval( argv[ 0]) ;
 		sz = strlen( retstr) + 1 ;
 		if( sz > ressize) {
 			free( result) ;
@@ -514,123 +487,109 @@ static const char *gtfun( char *fname) {
 
 		retstr = strcpy( result, retstr) ;
 		break ;
-	case UFAND | DYNAMIC:
-		retstr = ltos( stol( arg1) && stol( arg2)) ;
+	case UFAND:
+		retstr = ltos( stol( argv[ 0]) && stol( argv[ 1])) ;
 		break ;
-	case UFOR | DYNAMIC:
-		retstr = ltos( stol( arg1) || stol( arg2)) ;
+	case UFOR:
+		retstr = ltos( stol( argv[ 0]) || stol( argv[ 1])) ;
 		break ;
-	case UFLENGTH | MONAMIC:
-		retstr = i_to_a( strlen( arg1)) ;
+	case UFLENGTH:
+		retstr = i_to_a( strlen( argv[ 0])) ;
 		break ;
-	case UFUPPER | MONAMIC:
-		sz = strlen( arg1) ;
+	case UFUPPER:
+		sz = strlen( argv[ 0]) ;
 		if( sz >= ressize) {
 			free( result) ;
 			result = malloc( sz + 1) ;
 			ressize = sz + 1 ;
 		}
 
-		retstr = mkupper( result, arg1) ;
+		retstr = mkupper( result, argv[ 0]) ;
 		break ;
-	case UFLOWER | MONAMIC:
-		sz = strlen( arg1) ;
+	case UFLOWER:
+		sz = strlen( argv[ 0]) ;
 		if( sz >= ressize) {
 			free( result) ;
 			result = malloc( sz + 1) ;
 			ressize = sz + 1 ;
 		}
 
-		strcpy( result, arg1) ;	/* result is at least as long as arg1 */
+		strcpy( result, argv[ 0]) ;	/* result is at least as long as argv[ 0] */
 		retstr = mklower( result) ;
 		break ;
-	case UFTRUTH | MONAMIC:
-		retstr = ltos( atoi( arg1) == 42) ;
+	case UFTRUTH:
+		retstr = ltos( atoi( argv[ 0]) == 42) ;
 		break ;
-	case UFASCII | MONAMIC: {
-		unicode_t	c ;
-		
-		utf8_to_unicode( arg1, 0, 4, &c) ;
+	case UFASCII:
+		utf8_to_unicode( argv[ 0], 0, 4, &c) ;
 		retstr = i_to_a( c) ;
+		break ;
+	case UFCHR:
+		c = atoi( argv[ 0]) ;
+		if( c > 0x10FFFF)
+			retstr = errorm ;
+		else {
+			sz = unicode_to_utf8( c, result) ;
+			result[ sz] = 0 ;
+			retstr = result ;
 		}
 
 		break ;
-	case UFCHR | MONAMIC: {
-			unicode_t c ;
-
-			c = atoi( arg1) ;
-			if( c > 0x10FFFF)
-				retstr = errorm ;
-			else {
-				sz = unicode_to_utf8( c, result) ;
-				result[ sz] = 0 ;
-				retstr = result ;
-			}
-		}
-
-		break ;
-	case UFGTKEY | NILNAMIC:
+	case UFGTKEY:
 		result[0] = tgetc();
 		result[1] = 0;
 		retstr = result ;
 		break ;
-	case UFRND | MONAMIC:
-		retstr = i_to_a( ernd( atoi( arg1))) ;
+	case UFRND:
+		retstr = i_to_a( ernd( atoi( argv[ 0]))) ;
 		break ;
-	case UFABS | MONAMIC:
-		retstr = i_to_a( abs( atoi( arg1))) ;
+	case UFABS:
+		retstr = i_to_a( abs( atoi( argv[ 0]))) ;
 		break ;
-	case UFSINDEX | DYNAMIC:
-		retstr = i_to_a( sindex( arg1, arg2)) ;
+	case UFSINDEX:
+		retstr = i_to_a( sindex( argv[ 0], argv[ 1])) ;
 		break ;
-	case UFENV | MONAMIC:
+	case UFENV:
 #if	ENVFUNC
-		retstr = getenv( arg1) ;
+		retstr = getenv( argv[ 0]) ;
 		if( retstr == NULL)
-			retstr = "" ;
-#else
-		retstr = "" ;
 #endif
+			retstr = "" ;
+
 		break ;
-	case UFBIND | MONAMIC:
-		retstr = transbind( arg1) ;
+	case UFBIND:
+		retstr = transbind( argv[ 0]) ;
 		break ;
-	case UFEXIST | MONAMIC:
-		retstr = ltos( fexist( arg1)) ;
+	case UFEXIST:
+		retstr = ltos( fexist( argv[ 0])) ;
 		break ;
-	case UFFIND | MONAMIC:
-		retstr = flook( arg1, TRUE) ;
+	case UFFIND:
+		retstr = flook( argv[ 0], TRUE) ;
 		if( retstr == NULL)
 			retstr = "" ;
 		break ;
-	case UFBAND | DYNAMIC:
-		retstr = i_to_a( atoi( arg1) & atoi( arg2)) ;
+	case UFBAND:
+		retstr = i_to_a( atoi( argv[ 0]) & atoi( argv[ 1])) ;
 		break ;
-	case UFBOR | DYNAMIC:
-		retstr = i_to_a( atoi( arg1) | atoi( arg2)) ;
+	case UFBOR:
+		retstr = i_to_a( atoi( argv[ 0]) | atoi( argv[ 1])) ;
 		break ;
-	case UFBXOR | DYNAMIC:
-		retstr = i_to_a( atoi( arg1) ^ atoi( arg2)) ;
+	case UFBXOR:
+		retstr = i_to_a( atoi( argv[ 0]) ^ atoi( argv[ 1])) ;
 		break ;
-	case UFBNOT | MONAMIC:
-		retstr = i_to_a( ~atoi( arg1)) ;
+	case UFBNOT:
+		retstr = i_to_a( ~atoi( argv[ 0])) ;
 		break ;
-	case UFXLATE | TRINAMIC:
-		retstr = xlat( arg1, arg2, arg3) ;
+	case UFXLATE:
+		retstr = xlat( argv[ 0], argv[ 1], argv[ 2]) ;
 		break ;
 	default:
 		assert( FALSE) ;	/* never should get here */
 		retstr = errorm ;
 	}
 
-	if( arg3)
-		free( arg3) ;
-
-	if( arg2)
-		free( arg2) ;
-
-	if( arg1)
-		free( arg1) ;
+	while( argc > 0)
+		free( argv[ --argc]) ;
 
 	return retstr ;
 }
@@ -656,33 +615,55 @@ static char *gtusr( char *vname) {
 	return errorm;
 }
 
-/*
- * gtenv()
+
+/* getctext:    grab and return a string with the text of the current line */
+static const char *getctext( void) {
+    static int  rsize = 0 ;
+    static char *rline = NULL ;	/* line to return */
+
+/* find the contents of the current line and its length */
+    line_p lp = curwp->w_dotp ;	/* line to copy */
+    int size = lp->l_used ;		/* length of line to return */
+    if( size >= rsize) {
+	/* extend storage */
+        int newsize = size + 1 ;
+		char *newstr = realloc( rline, newsize) ;
+		if( newstr == NULL)
+			return "" ;
+
+		rline = newstr ;
+		rsize = newsize ;
+    }
+
+    /* copy it across */
+    memcpy( rline, lp->l_text, size) ;
+    rline[ size] = 0 ;
+    return rline ;
+}
+
+
+/* gtenv()
  *
  * char *vname;			name of environment variable to retrieve
  */
-static char *gtenv( char *vname) {
+static const char *gtenv( char *vname) {
 	unsigned vnum ;	/* ordinal number of var referenced */
 
 	/* scan the list, looking for the referenced name */
-	for (vnum = 0; vnum < ARRAY_SIZE(envars); vnum++)
-		if (strcmp(vname, envars[vnum]) == 0)
-			break;
+	for( vnum = 0 ; vnum < ARRAY_SIZE( envars) ; vnum++)
+		if( strcmp( vname, envars[ vnum]) == 0)
+			break ;
 
 	/* return errorm on a bad reference */
-	if (vnum == ARRAY_SIZE(envars))
+	if( vnum == ARRAY_SIZE( envars)) {
 #if	ENVFUNC
-	{
 		char *ename = getenv(vname);
 
-		if (ename != NULL)
-			return ename;
-		else
-			return errorm;
-	}
-#else
-		return errorm;
+		if( ename != NULL)
+			return ename ;
 #endif
+		return errorm ;
+	}
 
 	/* otherwise, fetch the appropriate value */
 	switch (vnum) {
@@ -778,6 +759,8 @@ static char *gtenv( char *vname) {
 		return i_to_a( tabwidth) ;
 	case EVHARDTAB:
 		return ltos( hardtab) ;
+	case EVVIEWTAB:
+		return ltos( viewtab) ;
 	case EVOVERLAP:
 		return i_to_a(overlap);
 	case EVSCROLLCOUNT:
@@ -803,7 +786,7 @@ static char *gtenv( char *vname) {
  */
 BINDABLE( setvar) {
 	int status;	/* status return */
-	struct variable_description vd;		/* variable num/type */
+	variable_description vd ;		/* variable num/type */
 	char var[NVSIZE + 2];	/* name of variable to fetch %1234567890\0 */
 	char *value ;			/* value to set variable to */
 
@@ -891,7 +874,7 @@ int mdbugout( char *fmt, ...) {
  * @vd: structure to hold type and pointer.
  * @size: size of variable array.
  */
-static void findvar(char *var, struct variable_description *vd, int size)
+static void findvar(char *var, variable_description *vd, int size)
 {
 	unsigned vnum = 0 ;	/* subscript in variable arrays */
 	int vtype;	/* type to return */
@@ -947,7 +930,7 @@ fvar:
  * @var: variable to set.
  * @value: value to set to.
  */
-static int svar(struct variable_description *var, char *value)
+static int svar( variable_description *var, char *value)
 {
 	int vnum;	/* ordinal number of var refrenced */
 	int vtype;	/* type of variable to set */
@@ -1100,6 +1083,9 @@ static int svar(struct variable_description *var, char *value)
 		case EVHARDTAB:
 			hardtab = stol( value) ;
 			break ;
+		case EVVIEWTAB:
+			viewtab = stol( value) ;
+			break ;
 		case EVOVERLAP:
 			overlap = atoi(value);
 			break;
@@ -1125,7 +1111,7 @@ static int svar(struct variable_description *var, char *value)
  *
  * int i;		integer to translate to a string
  */
-static char *i_to_a( int i) {
+static const char *i_to_a( int i) {
 	unsigned u ;
 	int sign ;	/* sign of resulting number */
 	/* returns result string: sign digits null */
@@ -1151,116 +1137,103 @@ static char *i_to_a( int i) {
 	return sp ;
 }
 
-/*
- * find the type of a passed token
+
+/* find the type of a token based on first character
  *
- * char *token;		token to analyze
+ * char c ; 	first character of analyzed token
  */
-static int gettyp( char *token) {
-	char c;	/* first char in token */
-
-	/* grab the first char (this is all we need) */
-	c = *token;
-
-	switch (c) {
+static int gettyp( char c) {
+ 	switch( c) {
+	case '*':
+	case ':':
+		return TKLBL ;
 	case 0:	/* no blanks!!! */
 		return TKNUL ;
 	case '"':
-		return TKSTR;
-
+		return TKSTR ;
 	case '!':
-		return TKDIR;
+		return TKDIR ;
 	case '@':
-		return TKARG;
+		return TKARG ;
 	case '=':
-		return TKBUF;
+		return TKBUF ;
 	case '$':
-		return TKENV;
+		return TKENV ;
 	case '%':
-		return TKVAR;
+		return TKVAR ;
 	case '&':
-		return TKFUN;
-	case '*':
-		return TKLBL;
+		return TKFUN ;
 
 	default:
 		/* a numeric literal? */
 		if( (c >= '0' && c <= '9') || c == '-')
-			return TKLIT;
+			return TKLIT ;
 		else
-			return TKCMD;
+			return TKCMD ;
 	}
 }
 
 int is_it_cmd( char *token) {
-	return TKCMD == gettyp( token) ;
+	return TKCMD == gettyp( *token) ;
 }
 
-/*
- * find the value of a token
+
+/* find the value of a token
  *
  * char *token;		token to evaluate
  */
-const char *getval(char *token)
-{
-	int status;	/* error return */
-	struct buffer *bp;	/* temp buffer pointer */
-	unsigned blen ;	/* length of buffer argument */
-	int distmp;	/* temporary discmd flag */
-	static char buf[NSTRING];	/* string buffer for some returns */
+const char *getval( char *token) {
+	static char buf[ NSTRING] ;	/* string buffer for some returns */
 
-	switch (gettyp(token)) {
-	case TKNUL:
-		return "";
-
+	switch( gettyp( *token)) {
 	case TKARG:		/* interactive argument */
-		strcpy(token, getval(&token[1]));
-		distmp = discmd;	/* echo it always! */
-		discmd = TRUE;
-		status = getstring( token, buf, NSTRING, nlc) ;
-		discmd = distmp;
+		strcpy( token, getval( &token[ 1])) ;
+		int distmp = discmd ;	/* echo it always! */
+		discmd = TRUE ;
+		int status = getstring( token, buf, NSTRING, nlc) ;
+		discmd = distmp ;
 		if (status == ABORT)
-			return errorm;
-		return buf;
+			return errorm ;
+
+		return buf ;
 
 	case TKBUF:		/* buffer contents fetch */
-
-		/* grab the right buffer */
-		strcpy(token, getval(&token[1]));
-		bp = bfind(token, FALSE, 0);
+	/* grab the right buffer */
+		strcpy( token, getval( &token[ 1])) ;
+		buffer_p bp = bfind( token, FALSE, 0) ;
 		if (bp == NULL)
-			return errorm;
+			return errorm ;
 
-		/* if the buffer is displayed, get the window
-		   vars instead of the buffer vars */
+	/* if the buffer is displayed,
+	   get the window vars instead of the buffer vars */
 		if (bp->b_nwnd > 0) {
 			curbp->b_dotp = curwp->w_dotp;
 			curbp->b_doto = curwp->w_doto;
 		}
 
-		/* make sure we are not at the end */
+	/* make sure we are not at the end */
 		if (bp->b_linep == bp->b_dotp)
 			return errorm;
 
-		/* grab the line as an argument */
-		blen = bp->b_dotp->l_used - bp->b_doto;
+	/* grab the line as an argument */
+		unsigned blen = bp->b_dotp->l_used - bp->b_doto;
 		if( blen >= sizeof buf)
 			blen = sizeof buf - 1 ;
 
 		mystrscpy( buf, bp->b_dotp->l_text + bp->b_doto, blen + 1) ;
 
-		/* and step the buffer's line ptr ahead a line */
+	/* and step the buffer's line ptr ahead a line */
 		bp->b_dotp = bp->b_dotp->l_fp;
 		bp->b_doto = 0;
 
-		/* if displayed buffer, reset window ptr vars */
+	/* if displayed buffer, reset window ptr vars */
 		if (bp->b_nwnd > 0) {
 			curwp->w_dotp = curbp->b_dotp;
 			curwp->w_doto = 0;
 			curwp->w_flag |= WFMOVE;
 		}
 
-		/* and return the spoils */
+	/* and return the spoils */
 		return buf;
 
 	case TKVAR:
@@ -1269,18 +1242,19 @@ const char *getval(char *token)
 		return gtenv(token + 1);
 	case TKFUN:
 		return gtfun(token + 1);
-	case TKDIR:
-		return errorm;
-	case TKLBL:
-		return errorm;
 	case TKLIT:
 		return token;
 	case TKSTR:
 		return token + 1;
 	case TKCMD:
 		return token;
+	case TKDIR:
+	case TKLBL:
+	case TKNUL:
+		return "" ;
 	}
-	return errorm;
+
+	return errorm ;
 }
 
 /*
@@ -1368,30 +1342,26 @@ static int ernd( int i) {
 	return (i <= 0) ? s : s % i + 1 ;
 }
 
-/*
- * find pattern within source
+
+/* find pattern within source
  *
  * char *source;	source string to search
  * char *pattern;	string to look for
  */
 static int sindex( char *source, char *pattern) {
-	char *sp;		/* ptr to current position to scan */
-
-	/* scanning through the source string */
-	sp = source;
+/* scanning through the source string */
+	char *sp = source ;		/* ptr to current position to scan */
 	int idx = 1 ;
 	int pos = 0 ;
 	int len = strlen( source) ;
 
-	while (*sp) {
-		char *csp;		/* ptr to source string during comparison */
-		char *cp;		/* ptr to place to check for equality */
+	while( *sp) {
 		char c ;
 		unicode_t uc ;
 		
 		/* scan through the pattern */
-		cp = pattern;
-		csp = sp;
+		char *cp = pattern ;		/* ptr to place to check for equality */
+		char *csp = sp ;			/* ptr to source string during comparison */
 
 		while( (c = *cp++) && eq( c, *csp))
 			csp++ ;
@@ -1406,7 +1376,7 @@ static int sindex( char *source, char *pattern) {
 	}
 
 	/* no match at all.. */
-	return 0;
+	return 0 ;
 }
 
 /*

@@ -2,7 +2,7 @@
 #ifndef _LOCK_H_
 #define _LOCK_H_
 
-#include "estruct.h"
+#include "defines.h"	/* BSD, SVR4 */
 
 #if BSD | SVR4
 int lockchk( const char *fname) ;

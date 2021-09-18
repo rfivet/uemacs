@@ -4,9 +4,12 @@
 
 #include <stdarg.h>
 
-#include "estruct.h"
+#include "defines.h"		/* UNIX */
 #include "names.h"          /* BINDABLE() */
 #include "utf8.h"           /* unicode_t */
+
+#define MINROWS	3
+#define MINCOLS 10
 
 extern int mpresf ;         /* Stuff in message line */
 extern int scrollcount ;    /* number of lines to scroll */
@@ -15,13 +18,17 @@ extern int disinp ;         /* display input characters (echo)  */
 extern int gfcolor ;        /* global forgrnd color (white) */
 extern int gbcolor ;        /* global backgrnd color (black) */
 
+/* global variables */
+extern boolean viewtab ;    /* $viewtab = TRUE to visualize hardcoded tab */
+
 /* Bindable functions */
-BINDABLE( upscreen) ;
+TBINDABLE( upscreen) ;
 
 void vtinit( void) ;
 void vtfree( void) ;
 void vttidy( void) ;
-boolean update( boolean force_f) ;
+void update( boolean force_f) ;
+void updmargin( void) ;
 void upmode( void) ;
 void movecursor( int row, int col) ;
 void mlerase( void) ;
@@ -37,8 +44,6 @@ void getscreensize( int *widthp, int *heightp) ;
 # include <signal.h>
 # ifdef SIGWINCH
    extern int chg_width, chg_height ;
-
-   void sizesignal( int signr) ;
 # endif
 #endif
 

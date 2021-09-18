@@ -1,18 +1,17 @@
 /* posix.c -- posix implementation of termio.h */
-#ifdef POSIX
-
 #include "termio.h"
 
-/*	posix.c
- *
- *      The functions in this file negotiate with the operating system for
- *      characters, and write characters in a barely buffered fashion on the
- *      display. All operating systems.
- *
- *	modified by Petri Kutvonen
- *
- *	based on termio.c, with all the old cruft removed, and
- *	fixed for termios rather than the old termio.. Linus Torvalds
+#include "defines.h"	/* POSIX */
+#ifdef POSIX
+
+/* The functions in this file negotiate with the operating system for
+   characters, and write characters in a barely buffered fashion on the
+   display.  All operating systems.
+
+   modified by Petri Kutvonen
+
+   based on termio.c, with all the old cruft removed, and
+   fixed for termios rather than the old termio.. Linus Torvalds
  */
 
 #include <errno.h>
@@ -24,21 +23,19 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include "estruct.h"
 #include "retcode.h"
 #include "utf8.h"
 
-int ttrow = HUGE ;		/* Row location of HW cursor */
-int ttcol = HUGE ;		/* Column location of HW cursor */
+int ttrow = -1 ;		/* Row location of HW cursor */
+int ttcol = -1 ;		/* Column location of HW cursor */
 
-/* Since Mac OS X's termios.h doesn't have the following 2 macros, define them.
- */
-#if BSD || defined(SYSV) && (defined(_DARWIN_C_SOURCE) || defined(_FREEBSD_C_SOURCE))
+/* Define missing macroes for BSD and CYGWIN environment */
+#if BSD
 #define OLCUC 0000002
 #define XCASE 0000004
 #endif
 
-#ifdef CYGWIN
+#ifdef __CYGWIN__			/* gcc predefined (see cpp -dM) */
 #define XCASE 0
 #define ECHOPRT 0
 #define PENDIN 0
@@ -96,10 +93,8 @@ void ttopen(void)
 	kbdflgs = fcntl(0, F_GETFL, 0);
 	kbdpoll = FALSE;
 
-	/* on all screens we are not sure of the initial position
-	   of the cursor                                        */
-	ttrow = 999;
-	ttcol = 999;
+/* on all screens we are not sure of the initial position of the cursor */
+	ttrow = ttcol = -1 ;
 }
 
 /*
@@ -154,27 +149,28 @@ void ttflush(void)
 		exit(15);
 }
 
-/*
- * Read a character from the terminal, performing no editing and doing no echo
- * at all.
- * Very simple on CPM, because the system can do exactly what you want.
- */
-int ttgetc(void)
-{
-	static char buffer[32];
-	static int pending;
-	unicode_t c;
-	int count, bytes = 1, expected;
 
-	count = pending;
-	if (!count) {
-		count = read(0, buffer, sizeof(buffer));
-		if (count <= 0)
-			return 0;
-		pending = count;
+/* Read a character from the terminal, performing no editing and doing no
+   echo at all.
+ */
+int ttgetc( void) {
+	static char buffer[ 32] ;
+	static int pending ;
+	unicode_t c ;
+
+	int count = pending ;
+	if( !count) {
+		count = read( 0, buffer, sizeof( buffer)) ;
+		if( count <= 0)
+			return 0 ;
+
+		pending = count ;
 	}
 
-	c = (unsigned char) buffer[0];
+	int bytes = 1 ;
+	c = (unsigned char) buffer[ 0] ;
+#if 0	// temporary fix for wsl
+
 	if (c >= 32 && c < 128)
 		goto done;
 
@@ -191,7 +187,7 @@ int ttgetc(void)
 	 * delay for some *very* unusual utf8 character
 	 * input.
 	 */
-	expected = 2;
+	int expected = 2;
 	if ((c & 0xe0) == 0xe0)
 		expected = 6;
 
@@ -225,9 +221,10 @@ int ttgetc(void)
 	bytes = utf8_to_unicode(buffer, 0, pending, &c);
 
 done:
-	pending -= bytes;
-	memmove(buffer, buffer+bytes, pending);
-	return c;
+#endif
+	pending -= bytes ;
+	memmove( buffer, buffer + bytes, pending) ;
+	return c ;
 }
 
 /* typahead:	Check to see if any characters are already in the
@@ -247,8 +244,6 @@ int typahead(void)
 	return x;
 }
 
-#else
-typedef void _pedantic_empty_translation_unit ;
-#endif              /* not POSIX */
+#endif
 
 /* end of posix.c */

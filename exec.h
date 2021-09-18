@@ -12,13 +12,13 @@ boolean gettokval( char *tok, int maxtoksize) ;
 char *getnewtokval( void) ;
 
 /* Bindable functions */
-BINDABLE( execbuf) ;
-BINDABLE( execcmd) ;
-BINDABLE( execfile) ;
-BINDABLE( execproc) ;
-BINDABLE( namedcmd) ;
-BINDABLE( storemac) ;
-BINDABLE( storeproc) ;
+ BINDABLE( execbuf) ;
+ BINDABLE( execcmd) ;
+ BINDABLE( execfile) ;
+ BINDABLE( execproc) ;
+ BINDABLE( namedcmd) ;
+BBINDABLE( storemac) ;
+ BINDABLE( storeproc) ;
 BINDABLE( cbuf1) ;
 BINDABLE( cbuf2) ;
 BINDABLE( cbuf3) ;

@@ -1,13 +1,17 @@
 ## blindmaz.cmd -- solve maze by walking a left-handed blind mouse
 
 #7 set $seed
-#execute-file maze.cmd
+# either maze.cmd, sharpmaz.cmd or floodmaz.cmd
 execute-file floodmaz.cmd
-set %x 2
+
+set %dotc &asc "•"	# alternatively use "."
+set $curchar %dotc
+set %x &add $curcol 1
 set %y $curline
 end-of-line
 set %stopcol &sub $curcol 1
 
+# X-Y offset for absolute direction: east, south, west, north
 set %DX0 1
 set %DY0 0
 set %DX1 0
@@ -17,54 +21,40 @@ set %DY2 0
 set %DX3 0
 set %DY3 -1
 
-set %dotc &asc "."
-
-store-procedure probe
-	set %OX &ind &cat "%DX" %nD
-	set %OY &ind &cat "%DY" %nD
-	set %nx &add %x %OX
-	set %ny &add %y %OY
-	set $curline %ny
-	set $curcol %nx
-	!if &or &equ $curchar 32 &equ $curchar %dotc
-		!if &equ $curchar 32
-			set %C %dotc
-		!else
-			set %C &asc " "		# erase when backtracking (or highlight)
-		!endif
-		set %D %nD
-		set $curchar %C
-		set $curline %y
-		set $curcol %x
-		set $curchar %C
-		set %x &add %nx %OX
-		set %y &add %ny %OY
-		set $curline %y
-		set $curcol %x
-		set %res TRUE
-	!else
-		set %res FALSE
-	!endif
-	update-screen
-!endm
-
-set %D 0		# looking EAST
+set %absD 0							# absolute direction: looking EAST
 !while &les %x %stopcol
-	set %nD &mod &add %D 3 4				# Can go left?
-	run probe
-	!if &seq %res FALSE
-		set %nD %D							# Can go straight?
-		run probe
-		!if &seq %res FALSE
-			set %nD &mod &add %D 1 4		# Can go right?
-			run probe
-			!if &seq %res FALSE
-				set %D &mod &add %D 2 4		# Go back!
+# try move on left, right or front
+	set %relD 3						# 3, 0, 1, 2 == left, front, right, back
+	!while &not &equ %relD 2
+		set %newD &mod &add %absD %relD 4
+		set %offX &ind &cat "%DX" %newD
+		set %offY &ind &cat "%DY" %newD
+		set %nx &add %x %offX
+		set %ny &add %y %offY
+		set $curline %ny
+		set $curcol  %nx
+		!if &or &equ $curchar 32 &equ $curchar %dotc
+			!if &equ $curchar 32
+				set %C %dotc
+			!else
+				set %C &asc " "		# erase (or highlight) when backtracking
 			!endif
+			set %absD %newD
+			set $curchar %C
+			set $curline %y
+			set $curcol  %x
+			set $curchar %C
+			set %x &add %nx %offX
+			set %y &add %ny %offY
+			update-screen
+			!goto moveon
 		!endif
-	!endif
+		set %relD &mod &add %relD 1 4
+	!endwhile
+# else turn around
+	set %absD &mod &add %absD 2 4	# face back!
+:moveon
 !endwhile
-beginning-of-file
-set $curline 3
-set $curcol 1
+
+set $curcol  &add %x -1
 unmark-buffer

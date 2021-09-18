@@ -6,11 +6,12 @@
  */
 
 #include <assert.h>
+#include <stdlib.h>		/* malloc(), free() */
 
 #include "basic.h"
 #include "buffer.h"
+#include "defines.h"
 #include "display.h"	/* upmode() */
-#include "estruct.h"
 #include "execute.h"
 #include "line.h"
 #include "mlout.h"
@@ -52,7 +53,7 @@ TBINDABLE( redraw) {
 
 /* The command make the next window (next => down the screen) the current
    window.  There are no real errors, although the command does nothing if
-   there is only 1 window on the screen.  Bound to "C-X C-N".
+   there is only 1 window on the screen.  Bound to "C-X O".
 
    with an argument this command finds the <n>th window from the top
  
@@ -318,7 +319,10 @@ BINDABLE( splitwind) {
 		return FALSE ;
 	}
 
-	wp = xmalloc( sizeof *wp) ;
+	wp = malloc( sizeof *wp) ;
+	if( wp == NULL)
+		return mloutfail( "Out of memory") ;
+
 	++curbp->b_nwnd;	/* Displayed twice.     */
 	wp->w_bufp = curbp;
 	wp->w_dotp = curwp->w_dotp;
@@ -557,89 +561,84 @@ BINDABLE( restwnd) {
 }
 
 
+static void adjust( window_p wp, int screenrows) {
+	wp->w_ntrows = screenrows - wp->w_toprow - 2 ;
+	wp->w_flag |= WFHARD | WFMODE ;
+}
+
 /* resize the screen, re-writing the screen
  *
  * int f;	default flag
  * int n;	numeric argument
  */
-BINDABLE( newsize) {
-	window_p wp;		/* current window being examined */
-	window_p nextwp;	/* next window to scan */
-	window_p lastwp;	/* last window scanned */
-	int lastline;		/* screen line of last line of current window */
+BBINDABLE( newsize) {
+	window_p wp ;		/* current window being examined */
 
 	/* if the command defaults, assume the largest */
-	if (f == FALSE)
+	if( f == FALSE)
 		n = term.t_mrow ;
 
 	/* make sure it's in range */
-	if( n < 3 || n > term.t_mrow)
+	if( n < MINROWS || n > term.t_mrow)
 		return mloutfail( "%%Screen size out of range") ;
 
-	if (term.t_nrow == n - 1)
-		return TRUE;
-	else if (term.t_nrow < n - 1) {
-
+	if( term.t_nrow == n - 1)
+	/* no change */
+		return TRUE ;
+	else if( term.t_nrow < n - 1) {
+	/* new size is bigger */
 		/* go to the last window */
-		wp = wheadp;
-		while (wp->w_wndp != NULL)
-			wp = wp->w_wndp;
+		for( wp = wheadp ; wp->w_wndp != NULL ; wp = wp->w_wndp)
+			;
 
 		/* and enlarge it as needed */
-		wp->w_ntrows = n - wp->w_toprow - 2;
-		wp->w_flag |= WFHARD | WFMODE;
-
+		adjust( wp, n) ;
 	} else {
-
+	/* new size is smaller */
 		/* rebuild the window structure */
 		assert( wheadp->w_toprow == 0) ;	/* proves coverity wrong */
-		nextwp = wheadp;
-		wp = NULL;
-		lastwp = NULL;
-		while (nextwp != NULL) {
-			wp = nextwp;
-			nextwp = wp->w_wndp;
+		window_p lastwp = NULL ;
+		for( window_p nextwp = wheadp ; nextwp != NULL ; ) {
+			wp = nextwp ;
+			nextwp = wp->w_wndp ;
+
+			/* expand previous window if current would have zero lines */
+			if( wp->w_toprow == n - 2)
+				adjust( lastwp, n) ;
 
 			/* get rid of it if it is too low */
-			if (wp->w_toprow > n - 2) {
-
+			if( wp->w_toprow >= n - 2) {
 				/* save the point/mark if needed */
-				if (--wp->w_bufp->b_nwnd == 0) {
-					wp->w_bufp->b_dotp = wp->w_dotp;
-					wp->w_bufp->b_doto = wp->w_doto;
-					wp->w_bufp->b_markp = wp->w_markp;
-					wp->w_bufp->b_marko = wp->w_marko;
+				if( --wp->w_bufp->b_nwnd == 0) {
+					wp->w_bufp->b_dotp = wp->w_dotp ;
+					wp->w_bufp->b_doto = wp->w_doto ;
+					wp->w_bufp->b_markp = wp->w_markp ;
+					wp->w_bufp->b_marko = wp->w_marko ;
 				}
 
 				/* update curwp and lastwp if needed */
-				if (wp == curwp)
-					curwp = wheadp;
-				curbp = curwp->w_bufp;
-				if (lastwp != NULL)
-					lastwp->w_wndp = NULL;
+				if( wp == curwp) {
+					curwp = wheadp ;
+					curbp = curwp->w_bufp ;
+				}
 
 				/* free the structure */
-				free((char *) wp);
-				wp = NULL;
-
+				free( wp) ;
+				lastwp->w_wndp = NULL ;
 			} else {
-				/* need to change this window size? */
-				lastline = wp->w_toprow + wp->w_ntrows - 1;
-				if (lastline >= n - 2) {
-					wp->w_ntrows =
-					    n - wp->w_toprow - 2;
-					wp->w_flag |= WFHARD | WFMODE;
-				}
-			}
+			/* need to change this window size? */
+				if( (wp->w_toprow + wp->w_ntrows - 1) >= n - 2)
+					adjust( wp, n) ;
 
-			lastwp = wp;
+				lastwp = wp ;
+			}
 		}
 	}
 
 	/* screen is garbage */
-	term.t_nrow = n - 1;
-	sgarbf = TRUE;
-	return TRUE;
+	term.t_nrow = n - 1 ;
+	sgarbf = TRUE ;
+	return TRUE ;
 }
 
 
@@ -648,31 +647,25 @@ BINDABLE( newsize) {
  * int f;		default flag
  * int n;		numeric argument
  */
-BINDABLE( newwidth) {
-	window_p wp;
-
+BBINDABLE( newwidth) {
 	/* if the command defaults, assume the largest */
-	if (f == FALSE)
-		n = term.t_mcol;
+	if( f == FALSE)
+		n = term.t_mcol ;
 
 	/* make sure it's in range */
-	if (n < 10 || n > term.t_mcol)
+	if( n < MINCOLS || n > term.t_mcol)
 		return mloutfail( "%%Screen width out of range") ;
 
 	/* otherwise, just re-width it (no big deal) */
-	term.t_ncol = n;
-	term.t_margin = n / 10;
-	term.t_scrsiz = n - (term.t_margin * 2);
+	term.t_ncol = n ;
+	updmargin() ;
 
-	/* florce all windows to redraw */
-	wp = wheadp;
-	while (wp) {
-		wp->w_flag |= WFHARD | WFMOVE | WFMODE;
-		wp = wp->w_wndp;
-	}
-	sgarbf = TRUE;
+	/* force all windows to redraw */
+	for( window_p wp = wheadp ; wp; wp = wp->w_wndp)
+		wp->w_flag |= WFHARD | WFMOVE | WFMODE ;
 
-	return TRUE;
+	sgarbf = TRUE ;
+	return TRUE ;
 }
 
 int getwpos(void)

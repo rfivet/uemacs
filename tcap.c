@@ -20,8 +20,8 @@
 #include <curses.h>
 #include <term.h>
 
+#include "defines.h"
 #include "display.h"
-#include "estruct.h"
 #include "termio.h"
 
 #if TERMCAP
@@ -83,7 +83,7 @@ static char *_UP, _PC, *CM, *CE, *CL, *SO, *SE;
    static char *CS, *DL, *AL, *SF, *SR;
 # endif
 
-struct terminal term = {
+terminal_t term = {
 	480,	/* actual 479 on 2560x1440 landscape terminal window */
 	2550,	/* actual 2541 */
 	0,		/* These four values are set dynamically at open time. */
@@ -231,16 +231,14 @@ static void tcapclose(void)
 }
 # endif
 
-static void tcapkopen(void)
-{
+static void tcapkopen( void) {
 # if PKCODE
-	putpad(TI);
-	ttflush();
-	ttrow = 999;
-	ttcol = 999;
-	sgarbf = TRUE;
+	putpad( TI) ;
+	ttflush() ;
+	ttrow = ttcol = -1 ;
+	sgarbf = TRUE ;
 # endif
-	strcpy(sres, "NORMAL");
+	strcpy(sres, "NORMAL") ;
 }
 
 static void tcapkclose(void)

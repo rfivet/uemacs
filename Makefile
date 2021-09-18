@@ -13,11 +13,6 @@ else
 endif
 export E Q
 
-uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
-# for windows based target, insure we strip the variant part
-# CYGWIN_NT-6.1, CYGWIN_NT-6.1-WOW, CYGWIN_NT-6.1-WOW64, MSYS_NT-10.0-19042
-uname_S := $(shell sh -c 'echo $(uname_S) | sed s/_.*$$//')
-
 PROGRAM=ue
 
 CC=gcc
@@ -25,18 +20,7 @@ WARNINGS=-pedantic -Wall -Wextra -Wstrict-prototypes -Wno-unused-parameter
 CFLAGS=-O2 $(WARNINGS)
 LDFLAGS=-s
 LIBS=-lcurses
-DEFINES=-DAUTOCONF -DPROGRAM=$(PROGRAM) # -DNDEBUG
-ifeq ($(uname_S),Linux)
- DEFINES += -DPOSIX -DUSG
-else ifeq ($(uname_S),CYGWIN)
- DEFINES += -DCYGWIN -DSYSV
-else ifeq ($(uname_S),MSYS)
- DEFINES += -DCYGWIN -DSYSV
-else ifeq ($(uname_S),NetBSD)
- DEFINES += -DPOSIX -DBSD=1
-else
- $(error $(uname_S) needs configuration)
-endif
+DEFINES=-DPROGRAM=$(PROGRAM) -D_GNU_SOURCE # -DNDEBUG
 
 BINDIR=/usr/bin
 LIBDIR=/usr/lib

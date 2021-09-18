@@ -13,8 +13,8 @@
 #include <unistd.h>
 
 #include "bind.h"
-#include "estruct.h"
 #include "bindable.h"
+#include "defines.h"
 #include "display.h"	/* rubout(), echos(), echoc(), update() */
 #include "exec.h"
 #include "isa.h"

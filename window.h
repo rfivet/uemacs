@@ -55,8 +55,8 @@ extern window_p wheadp ;    /* Head of list of windows      */
  BINDABLE( enlargewind) ;
  BINDABLE( mvdnwind) ;
  BINDABLE( mvupwind) ;
- BINDABLE( newsize) ;
- BINDABLE( newwidth) ;
+BBINDABLE( newsize) ;
+BBINDABLE( newwidth) ;
  BINDABLE( nextwind) ;
  BINDABLE( onlywind) ;
  BINDABLE( prevwind) ;

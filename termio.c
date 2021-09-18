@@ -1,21 +1,19 @@
 /* termio.c -- implements termio.h */
-#if !defined( POSIX)
-
 #include "termio.h"
 
-/*  TERMIO.C
- *
- * The functions in this file negotiate with the operating system for
- * characters, and write characters in a barely buffered fashion on the display.
- * All operating systems.
- *
- *  modified by Petri Kutvonen
+#include "defines.h"	/* POSIX */
+#ifndef POSIX
+
+/* The functions in this file negotiate with the operating system for
+   characters, and write characters in a barely buffered fashion on the
+   display.  All operating systems.
+
+   modified by Petri Kutvonen
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "estruct.h"
 #include "retcode.h"
 #include "utf8.h"
 
@@ -23,8 +21,8 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 
-int ttrow = HUGE ;      /* Row location of HW cursor */
-int ttcol = HUGE ;      /* Column location of HW cursor */
+int ttrow = -1 ;    /* Row location of HW cursor */
+int ttcol = -1 ;	/* Column location of HW cursor */
 
 
 #if USG         /* System V */
@@ -141,8 +139,7 @@ void ttopen(void)
 
     /* on all screens we are not sure of the initial position
        of the cursor                                        */
-    ttrow = 999;
-    ttcol = 999;
+    ttrow = ttcol = -1 ;
 }
 
 /*
@@ -258,14 +255,12 @@ int typahead( void)
     return kbdqp;
 #endif
 
-#if !UNIX
+#  if !UNIX
     return FALSE;
-#endif
+#  endif
 }
-#endif
+# endif
 
-#else
-typedef void _pedantic_empty_translation_unit ;
 #endif              /* not POSIX */
 
 /* end of termio.c */

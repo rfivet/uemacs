@@ -8,16 +8,19 @@
    modified by Petri Kutvonen
  */
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "buffer.h"
 #include "bind.h"
+#include "defines.h"	/* malloc/allocate, free/release */
 #include "eval.h"
 #include "file.h"
 #include "flook.h"
 #include "input.h"
 #include "line.h"
+#include "list.h"
 #include "mlout.h"
 #include "random.h"
 #include "util.h"
@@ -26,19 +29,34 @@
 static char *execstr = NULL ;	/* pointer to string to execute */
 boolean clexec = FALSE ;    	/* command line execution flag  */
 
-/*  Directive definitions   */
 
-#define DIF     	0
+/*  Directive definitions   */
+#define DBREAK      0
 #define DELSE       1
 #define DENDIF      2
-#define DGOTO       3
-#define DRETURN     4
-#define DENDM       5
-#define DWHILE      6
-#define DENDWHILE   7
-#define DBREAK      8
-#define DFORCE      9
+#define DENDM       3
+#define DENDWHILE   4
+#define DFORCE      5
+#define DGOTO       6
+#define DGOSUB		7
+#define DIF     	8
+#define DRETURN     9
+#define DWHILE      10
 
+/* directive name table: holds the names of all the directives....  */
+static const char *dname[] = {
+	"break",	"else",	"endif",	"endm",	"endwhile",
+	"force",	"goto",	"gosub",    "if",	"return",
+	"while"
+} ;
+
+#define NUMDIRS     ARRAY_SIZE( dname)
+
+
+typedef struct caller {
+	struct caller *next ;
+	line_p caller ;
+} *caller_p ;
 
 /* The !WHILE directive in the execution language needs to
  * stack references to pending whiles. These are stored linked
@@ -46,28 +64,18 @@ boolean clexec = FALSE ;    	/* command line execution flag  */
  * the following structure.
 */
 typedef struct while_block {
+    struct while_block *w_next ;	/* next while */
     line_p w_begin ;				/* ptr to !while statement */
     line_p w_end ;					/* ptr to the !endwhile statement */
     int w_type ;					/* block type */
-    struct while_block *w_next ;	/* next while */
 } *while_p ;
 
 #define BTWHILE     1
 #define BTBREAK     2
 
-/* directive name table: holds the names of all the directives....  */
-
-static const char *dname[] = {
-    "if", 	"else", 	"endif",	"goto",		"return",
-	"endm", "while",	"endwhile", "break",	"force"
-} ;
-
-#define NUMDIRS     ARRAY_SIZE( dname)
-
 static char golabel[ NSTRING] = "" ;	/* current line to go to */
-static int execlevel = 0 ;				/* execution IF level */
 static buffer_p bstore = NULL ;			/* buffer to store macro text to */
-static int mstore = FALSE ;				/* storing text to macro flag */
+static int storing_f = FALSE ;			/* storing text to macro flag */
 
 static int dobuf( buffer_p bp) ;
 static int macarg( char *tok, int toksz) ;
@@ -93,53 +101,23 @@ BINDABLE( namedcmd) {
     return kfunc( f, n) ;
 }
 
-static int docmd( char *cline) ;
-
-/* execcmd:
- *  Execute a command line command to be typed in
- *  by the user
- *
- * int f, n;        default Flag and Numeric argument
- */
-BINDABLE( execcmd) {
-    char *cmdstr ;	/* string holding command to execute */
-
-/* get the line wanted */
-    int status = newmlarg( &cmdstr, "execute-command-line: ", 0) ;
-    if( status != TRUE)
-        return status ;
-
-    execlevel = 0 ;
-    while( status == TRUE && n-- > 0)
-        status = docmd( cmdstr) ;
-
-    free( cmdstr) ;
-    return status ;
-}
-
 /* docmd:
- *  take a passed string as a command line and translate
- *  it to be executed as a command. This function will be
- *  used by execute-command-line and by all source and
- *  startup files. Lastflag/thisflag is also updated.
- *
- *  format of the command line is:
+   take a passed string as a command line and translate it to be executed
+   as a command.  This function will be used by execute-command-line and by
+   all source and startup files.  Lastflag/thisflag is also updated.
+   
+ * format of the command line is:
  *
  *      {# arg} <command-name> {<argument string(s)>}
  *
  * char *cline;     command line to execute
  */
 static int docmd( char *cline) {
-    boolean oldcle ;	/* old contents of clexec flag */
-    char *oldestr ;     /* original exec string */
-    char tkn[NSTRING] ; /* next token off of command line */
+    char tkn[ NSTRING] ;	/* next token off of command line */
+	int status ;
 
-    /* if we are scanning and not executing..go back here */
-    if (execlevel)
-        return TRUE ;
-
-    oldestr = execstr ;	/* save last ptr to string to execute */
-    execstr = cline ;   /* and set this one as current */
+    char *oldestr = execstr ;	/* save last ptr to string to execute */
+    execstr = cline ;   		/* and set this one as current */
 
     /* first set up the default command values */
     int f = FALSE ;
@@ -147,27 +125,22 @@ static int docmd( char *cline) {
     lastflag = thisflag ;
     thisflag = 0 ;
 
-    int status = macarg( tkn, sizeof tkn) ;
-    if( status != TRUE) {   /* and grab the first token */
-        execstr = oldestr;
-        return status;
-    }
+	for( ;;) {
+	/* evaluate next token */
+	    status = macarg( tkn, sizeof tkn) ;
+	    if( status != TRUE || !*tkn) {
+	        execstr = oldestr ;
+	        return status ;
+	    }
 
-    /* process leadin argument */
-    if( !is_it_cmd( tkn)) {
-        f = TRUE;
-/* macarg already includes a getval, skip for now
-		mystrscpy( tkn, getval( tkn), sizeof tkn) ;
-*/
-        n = atoi(tkn);
+	/* proceed if it is a command */
+		if( is_it_cmd( tkn))
+			break ;
 
-        /* and now get the command to execute */
-        status = macarg( tkn, sizeof tkn) ;
-        if( status != TRUE) {
-            execstr = oldestr;
-            return status;
-        }
-    }
+	/* otherwise set as argument of coming command */
+		f = TRUE ;
+		n = atoi( tkn) ;
+	}
 
     /* and match the token to see if it exists */
 	nbind_p nbp = fncmatch( tkn) ;
@@ -181,19 +154,39 @@ static int docmd( char *cline) {
 		status = rdonly() ;
 	else {
 	    /* save the arguments and go execute the command */
-    	oldcle = clexec;    /* save old clexec flag */
-    	clexec = TRUE;      /* in cline execution */
-	    status = fnc( f, n) ;	/* call the function */
-	    clexec = oldcle;    /* restore clexec flag */
-    	execstr = oldestr;
+    	boolean oldcle = clexec ;    /* save old clexec flag */
+    	clexec = TRUE ;      		/* in cline execution */
+	    status = fnc( f, n) ;		/* call the function */
+	    clexec = oldcle ;    		/* restore clexec flag */
+    	execstr = oldestr ;
 	}
 
-    cmdstatus = status; /* save the status */
-    return status;
+    cmdstatus = status ; /* save the status */
+    return status ;
 }
 
-/*
- * new token:
+
+/* execcmd:
+ *  Execute a command line command to be typed in by the user
+ *
+ * int f, n;        default Flag and Numeric argument
+ */
+BINDABLE( execcmd) {
+    char *cmdstr ;	/* string holding command to execute */
+
+/* get the line wanted */
+    int status = newmlarg( &cmdstr, "execute-command-line: ", 0) ;
+    if( status != TRUE)
+        return status ;
+
+    while( status == TRUE && n-- > 0)
+        status = docmd( cmdstr) ;
+
+    free( cmdstr) ;
+    return status ;
+}
+
+/* new token:
  *  chop a token off a string
  *  return a pointer past the token
  *
@@ -210,52 +203,51 @@ static char *newtoken( char *src, char **tokref) {
         ++src ;
 
     /* scan through the source string */
-    boolean quotef = FALSE ;	/* is the current string quoted? */
-    while( *src) {
-	    char c ;	/* temporary character */
+    boolean quote_f = FALSE ;	/* is the current string quoted? */
+	char c = *src ;
+	for( ; c ; c = *++src) {
+    /* process special characters */
+        if( c == '~') {
+            c = *++src ;
+            if( c == 0)
+                break ;
 
-        /* process special characters */
-        if( *src == '~') {
-            ++src;
-            if (*src == 0)
-                break;
-            switch (*src++) {
+            switch( c) {
             case 'r':
-                c = 13;
-                break;
+                c = 13 ;
+                break ;
             case 'n':
-                c = 10;
-                break;
+                c = 10 ;
+                break ;
             case 't':
-                c = 9;
-                break;
+                c = 9 ;
+                break ;
             case 'b':
-                c = 8;
-                break;
+                c = 8 ;
+                break ;
             case 'f':
-                c = 12;
-                break;
-            default:
-                c = *(src - 1);
+                c = 12 ;
+                break ;
             }
         } else {
-            /* check for the end of the token */
-            if (quotef) {
-                if (*src == '"')
-                    break;
-            } else {
-                if (*src == ' ' || *src == '\t')
-                    break;
-            }
+        /* check for the end of the token: EOS, space or comment */
+            if( quote_f) {
+                if( c == '"')
+                    break ;
+            } else if( c == ' ' || c == '\t')
+                break ;
+			else if( c == '#' || c == ';') {
+			/* comments act like EOS */
+				c = 0 ;
+				break ;
+			}
 
-            /* set quote mode if quote found */
-            if (*src == '"')
-                quotef = TRUE;
-
-            /* record the character */
-            c = *src++;
+        /* set quote mode if quote found */
+            if( c == '"')
+                quote_f = TRUE ;
         }
 
+    /* record the character */
 		if( idx < size - 1)
 			tok[ idx++] = c ;
 		else if( size > 1) {
@@ -263,7 +255,7 @@ static char *newtoken( char *src, char **tokref) {
 			
 			tmptok = malloc( size + 32) ;
 			if( tmptok == NULL)
-				size = 0 ;
+				size = 0 ;			/* can't store more */
 			else {
 				memcpy( tmptok, tok, idx) ;
 				free( tok) ;
@@ -274,15 +266,11 @@ static char *newtoken( char *src, char **tokref) {
 		}
     }
 
-    /* terminate the token and exit */
-    if (*src)
-        ++src;
-
     if( tok != NULL)
         tok[ idx] = 0 ;
 
     *tokref = tok ;
-    return src;
+    return src + (c != 0) ;
 }
 
 static char *token( char *srcstr, char *tok, int maxtoksize) {
@@ -359,10 +347,9 @@ static int macarg( char *tok, int toksz) {
 	return status ;
 }
 
-/*
- * storemac:
- *  Set up a macro buffer and flag to store all
- *  executed command lines there
+
+/* storemac:
+ *  Set up a macro buffer and start recording all command lines until !endm
  *
  * int f;       default flag
  * int n;       macro number to use
@@ -370,7 +357,24 @@ static int macarg( char *tok, int toksz) {
 static char macbufname[] = "*Macro xx*" ;
 #define MACDIGITPOS 7
 
-BINDABLE( storemac) {
+static boolean setstore( char *bufname) {
+/* set up the new macro buffer */
+    bstore = bfind( bufname, TRUE, BFINVS) ;
+    if( bstore == NULL) {
+		storing_f = FALSE ;	/* should be already the case as we are executing */
+        return mloutfail( "Can not create macro") ;
+	}
+
+/* and make sure it is empty */
+    bclear( bstore) ;
+
+/* start recording */
+    storing_f = TRUE ;
+    return TRUE ;
+}
+
+
+BBINDABLE( storemac) {
 /* must have a numeric argument to this function */
     if( f == FALSE)
         return mloutfail( "No macro number specified");
@@ -383,22 +387,11 @@ BINDABLE( storemac) {
     macbufname[ MACDIGITPOS]     = '0' + (n / 10) ;
     macbufname[ MACDIGITPOS + 1] = '0' + (n % 10) ;
 
-/* set up the new macro buffer */
-    buffer_p bp = bfind( macbufname, TRUE, BFINVS) ;
-    if( bp == NULL)
-        return mloutfail( "Can not create macro") ;
-
-/* and make sure it is empty */
-    bclear( bp) ; 
-
-/* and set the macro store pointers to it */
-    mstore = TRUE ;
-    bstore = bp ;
-    return TRUE ;
+	return setstore( macbufname) ;
 }
 
-/*
-**  exec -- execute a buffer
+
+/*  exec -- execute a buffer
 **	common to execute buffer, procedure and macro
 */
 static int exec( int n, char *bufname, char *errstr) {
@@ -417,10 +410,9 @@ static int exec( int n, char *bufname, char *errstr) {
     return status ;
 }
 
-/*
- * storeproc:
- *  Set up a procedure buffer and flag to store all
- *  executed command lines there
+
+/* storeproc:
+ *  Set up a procedure buffer and start recording all command lines until !endm
  *
  * int f;       default flag
  * int n;       macro number to use
@@ -429,7 +421,7 @@ BINDABLE( storeproc) {
     bname_t bname ;		/* name of buffer to use */
     char *name ;
 
-    /* a numeric argument means its a numbered macro */
+    /* a numeric argument means it is a numbered macro */
     if( f == TRUE)
         return storemac( f, n) ;
 
@@ -444,22 +436,11 @@ BINDABLE( storeproc) {
     strcat( bname, "*") ;
 	free( name) ;
 
-    /* set up the new macro buffer */
-    buffer_p bp = bfind( bname, TRUE, BFINVS) ;
-    if( bp == NULL)
-        return mloutfail( "Can not create macro") ;
-
-    /* and make sure it is empty */
-    bclear( bp) ;
-
-    /* and set the macro store pointers to it */
-    mstore = TRUE ;
-    bstore = bp ;
-    return TRUE ;
+	return setstore( bname) ;
 }
 
-/*
- * execproc:
+
+/* execproc:
  *  Execute a procedure
  *
  * int f, n;        default flag and numeric arg
@@ -492,7 +473,7 @@ BINDABLE( execbuf) {
     char *bufn ;		/* name of buffer to execute */
 
 /* find out what buffer the user wants to execute */
-    int status = newmlarg( &bufn, "Execute buffer: ", sizeof( bname_t)) ;
+    int status = newmlarg( &bufn, "execute-buffer: ", sizeof( bname_t)) ;
     if( status != TRUE)
         return status ;
 
@@ -502,22 +483,26 @@ BINDABLE( execbuf) {
 }
 
 
-/* free a list of while block pointers
- *
- * while_p wp;      head of structure to free
- */
-static void freewhile( while_p wp) {
-	while( wp != NULL) {
-		while_p next = wp->w_next ;
-		free( wp) ;
-		wp = next ;
-	}
+static boolean storeline( char *eline, int linlen) {
+/* allocate the space for the line */
+   	line_p mp = lalloc( linlen) ;
+   	if( mp == NULL)
+   		return mloutfail( "Out of memory while storing macro") ;
+
+/* copy the text into the new line */
+	memcpy( mp->l_text, eline, linlen) ; /* lalloc has set lp->l_used */
+
+/* attach the line to the end of the buffer */
+    bstore->b_linep->l_bp->l_fp = mp ;
+    mp->l_bp = bstore->b_linep->l_bp ;
+    bstore->b_linep->l_bp = mp ;
+    mp->l_fp = bstore->b_linep ;
+	return TRUE ;
 }
 
 
 /* dobuf:
- *  execute the contents of the buffer pointed to
- *  by the passed BP
+ *  execute the contents of the buffer pointed to by the passed BP
  *
  *  Directives start with a "!" and include:
  *
@@ -531,135 +516,207 @@ static void freewhile( while_p wp) {
  *  !while (cond)   Execute a loop if the condition is true
  *  !endwhile
  *
- *  Line Labels begin with a "*" as the first nonblank char, like:
+ *  Line Labels begin with a "*" or ':' as the first nonblank char, like:
  *
- *  *LBL01
+ *  *LBL01 or :LBL01
  *
  * buffer_p bp;       buffer to execute
  */
 static int dobuf( buffer_p bp) {
-    int linlen ;    		/* length of line to execute */
-    int i ;         		/* index */
     while_p whtemp ;		/* temporary ptr to a struct while_block */
     char *eline ;       	/* text of line to execute */
     char tkn[ NSTRING] ;	/* buffer to evaluate an expression in */
+	int w_type ;			/* either while or break */
 
 /* clear IF level flags/while ptr */
-    execlevel = 0 ;
     while_p whlist = NULL ;		/* ptr to !WHILE list */
     while_p scanner = NULL ;	/* ptr during scan */
 
-/* scan the buffer to execute, building WHILE header blocks */
-    line_p hlp = bp->b_linep ;	/* pointer to line header */
+/* range of lines with labels, initially no lines in range */
+	line_p firstlbl = NULL ;
+	line_p eolbl = firstlbl ;
+
+/* parse the buffer to execute, building WHILE header blocks */
+	storing_f = FALSE ;
+    const line_p hlp = bp->b_linep ;	/* pointer to line header */
     for( line_p lp = hlp->l_fp ; lp != hlp ; lp = lp->l_fp) {
     /* scan the current line */
         eline = lp->l_text ;
-        i = lp->l_used ;
+		char const *eol = &eline[ lp->l_used] ;
+		for( ; eline < eol ; eline++)
+			if( *eline != ' ' && *eline != '\t')
+				break ;
 
-    /* trim leading whitespace */
-        while (i-- > 0 && (*eline == ' ' || *eline == '\t'))
-            ++eline;
+	/* delete blank and comment lines */
+		if( eline == eol || *eline == '#' || *eline == ';') {
+			lp = lp->l_bp ;
+			lfree( lp->l_fp) ;
+			continue ;
+		}
 
-    /* if theres nothing here, don't bother */
-        if( i <= 0)
-            continue ;
+	/* remove leading spaces */
+		if( eline != lp->l_text) {
+			int size = lp->l_used = eol - eline ;
+			if( size)
+				memcpy( lp->l_text, eline, size) ;
 
-    /* if it is a while directive, make a block... */
-        if(	eline[0] == '!'
-		&&	eline[1] == 'w'
-		&&	eline[2] == 'h') {
-            whtemp = malloc( sizeof *whtemp) ;
-            if( whtemp == NULL) {
-            noram:
+			eline = lp->l_text ;
+			eol = &lp->l_text[ size] ;
+		}
+
+	/* handle storing */
+		if( storing_f) {
+			if( !strncmp( eline, "!endm", 5)) {
+				bstore = NULL ;
+				storing_f = FALSE ;
+			} else if( bstore && !storeline( lp->l_text, lp->l_used))
+				goto failexit ;
+
+		/* remove line */
+			lp = lp->l_bp ;
+			lfree( lp->l_fp) ;
+			continue ;			
+		}
+
+	/* process labels, update the range of lines containing labels */
+		if( *eline == ':' || *eline == '*') {
+			if( firstlbl == NULL)
+				firstlbl = lp ;
+
+			eolbl = lp->l_fp ;
+			continue ;
+		}
+
+	/* process directives, skip others */
+		if( *eline != '!')
+			continue ;
+
+		if( !strncmp( eline, "!store", 6)) {
+		/* turn line into a string */
+			int size = lp->l_used - 6 ;
+			if( size)
+				memcpy( lp->l_text, &eline[ 6], size) ;
+
+			eline = lp->l_text ;
+			eline[ size] = 0 ;
+			lp->l_used = size ;
+
+		/* get procedure or macro name */
+			token( eline, &tkn[ 1], sizeof tkn - 1) ;
+			char c = tkn[ 1] ;
+			if( !c) {
+			/* no name */
+				storing_f = TRUE ;	/* just throw away the lines (no bstore) */
+			} else if( c >= '1' && c <= '9') { /* number >= 1 */
+			/* macro number */
+				if( !storemac( TRUE, atoi( &tkn[ 1])))
+					goto failexit ;
+			} else {
+			/* whatever */
+				*tkn = '*' ;
+				strcat( tkn, "*") ;
+				if( !setstore( tkn))
+					goto failexit ;
+			}
+
+		/* remove line */
+			lp = lp->l_bp ;
+			lfree( lp->l_fp) ;
+			continue ;
+		} else if( !strncmp( eline, "!while", 6)) {
+    	/* if it is a while directive, make a block... */
+			w_type = BTWHILE ;
+		scan:
+	    	whtemp = malloc( sizeof *whtemp) ;
+        	if( whtemp == NULL) {
 				mloutstr( "%%Out of memory during while scan") ;
-            failexit:
-				freewhile( scanner) ;
-                freewhile( whlist) ;
-                return FALSE ;
-            }
+				goto failexit ;
+			}
 			
-            whtemp->w_begin = lp ;
-            whtemp->w_type = BTWHILE ;
-            whtemp->w_next = scanner ;
-            scanner = whtemp ;
-        }
+        	whtemp->w_begin = lp ;
+        	whtemp->w_type = w_type ;
+        	whtemp->w_next = scanner ;
+        	scanner = whtemp ;
+		} else if( !strncmp( eline, "!break", 6)) {
+		/* if is a BREAK directive, make a block... */
+			if( scanner == NULL) {
+    			mloutstr( "%%!BREAK outside of any !WHILE loop") ;
+        		goto failexit ;
+    		}
 
-        /* if is a BREAK directive, make a block... */
-        if(	eline[0] == '!'
-		&&	eline[1] == 'b'
-		&& 	eline[2] == 'r') {
-            if (scanner == NULL) {
-                mloutstr( "%%!BREAK outside of any !WHILE loop") ;
-                goto failexit ;
-            }
-
-            whtemp = malloc( sizeof *whtemp) ;
-            if( whtemp == NULL)
-                goto noram ;
-
-            whtemp->w_begin = lp;
-            whtemp->w_type = BTBREAK;
-            whtemp->w_next = scanner;
-            scanner = whtemp;
-        }
-
-        /* if it is an endwhile directive, record the spot... */
-        if(	eline[0] == '!'
-		&& strncmp( &eline[1], "endw", 4) == 0) {
-            if (scanner == NULL) {
-                mloutfmt( "%%!ENDWHILE with no preceding !WHILE in '%s'",
+			w_type = BTBREAK ;
+			goto scan ;
+		} else if( !strncmp( eline, "!endwhile", 9)) {
+		/* if it is an endwhile directive, record the spot... */
+			if( scanner == NULL) {
+				mloutfmt( "%%!ENDWHILE with no preceding !WHILE in '%s'",
 																bp->b_bname) ;
-                goto failexit ;
-            }
-			
-            /* move top records from the scanner list to the
-               whlist until we have moved all BREAK records
-               and one WHILE record */
-            do {
-                scanner->w_end = lp ;
-                whtemp = whlist ;
-                whlist = scanner ;
-                scanner = scanner->w_next ;
-                whlist->w_next = whtemp ;
+				goto failexit ;
+			}
+	
+        /* move top records from the scanner list to the whlist until we
+           have moved all BREAK records and one WHILE record */
+        	do {
+            	scanner->w_end = lp ;
+            	whtemp = whlist ;
+            	whlist = scanner ;
+            	scanner = scanner->w_next ;
+            	whlist->w_next = whtemp ;
             } while( whlist->w_type == BTBREAK) ;
         }
     }
 
-    /* while and endwhile should match! */
+/* check consistency after parsing */
+	if( storing_f) {
+	/* missing !endm */
+		mloutstr( "!store without !endm") ;
+		goto failexit ;
+	}
+	
     if( scanner != NULL) {
+    /* while and endwhile should match! */
 		mloutfmt( "%%!WHILE with no matching !ENDWHILE in '%s'", bp->b_bname) ;
-        goto failexit ;
+	failexit:
+		freelist( (list_p) scanner) ;
+ 	    freelist( (list_p) whlist) ;
+   	    return FALSE ;
     }
 
+/* execute the parsed buffer */
     /* let the first command inherit the flags from the last one.. */
     thisflag = lastflag;
 
     /* starting at the beginning of the buffer */
-    hlp = bp->b_linep ;
     char *einit = NULL ;	/* initial value of eline */
+	int esize = 0 ;			/* size available for storage in einit */
 	int status = TRUE ;		/* status of command execution */
 	boolean done = FALSE ;
-    for( line_p lp = hlp->l_fp ; !done && (lp != hlp) ; lp = lp->l_fp) {
-		if( einit)
-			free( einit) ;
+    int execlevel = 0 ;		/* execution IF level */
+	caller_p returnto = NULL ;
+	line_p lp = hlp->l_fp ;
+    for( ; lp != hlp ; lp = lp->l_fp) {
+    /* turns macro line into a string pointed by eline */
+        int length = lp->l_used ;
+		if( length < lp->l_size) {
+		/* there is space for EOS, let's use the line */
+			eline = lp->l_text ;
+		} else {
+		/* make a copy using (pre-)allocated storage */
+			if( esize <= length) {
+				esize = length + 1 ;
+	    	    char *newbuf = realloc( einit, esize) ;
+	        	if( newbuf == NULL) {
+	    	        status = mloutfail( "%%Out of Memory during macro execution") ;
+					break ;
+        		} else
+					einit = newbuf ;
+			}
 
-    /* allocate eline and copy macro line to it */
-        linlen = lp->l_used ;
-        einit = eline = malloc( linlen + 1) ;
-        if( eline == NULL) {
-            status = mloutfail( "%%Out of Memory during macro execution") ;
-			break ;
-        }
+			eline = einit ;
+			memcpy( eline, lp->l_text, length) ;
+		}
 
-        mystrscpy( eline, lp->l_text, linlen + 1) ;
-
-    /* trim leading whitespace */
-        while( *eline == ' ' || *eline == '\t')
-            ++eline ;
-
-    /* dump comments and blank lines */
-        if( *eline == ';' || *eline == '#' || *eline == 0)
-            continue ;
+		eline[ length] = 0 ;
 
 #if DEBUGM
         /* if $debug == TRUE, every line to execute
@@ -667,10 +724,8 @@ static int dobuf( buffer_p bp) {
            ^G will abort the command */
 
 		if( macbug) {
-			int c ;
-        	
-            /* debug macro name, if levels and lastly the line */
-			c = mdbugout( "<<<%s:%d:%s>>>", bp->b_bname, execlevel, eline) ;
+        /* debug macro name, if levels and lastly the line */
+			int c = mdbugout( "<<<%s:%d:%s>>>", bp->b_bname, execlevel, eline) ;
         	if( c == abortc) {
                 status = FALSE ;
 				break ;
@@ -680,208 +735,205 @@ static int dobuf( buffer_p bp) {
         }
 #endif
 
+        /* if macro store is on, just salt this away */
+        if( storing_f) {
+			if( !strncmp( eline, "!endm", 5)) {
+                storing_f = FALSE ;
+                bstore = NULL ;
+				lp = lp->l_bp ;
+				lfree( lp->l_fp) ;
+			} else {
+				status = storeline( eline, strlen( eline)) ;
+				if( status != TRUE)
+					break ;
+			}
+
+			lp = lp->l_bp ;
+			lfree( lp->l_fp) ;
+            continue ;
+        }
+
+        /* skip labels */
+        if( *eline == '*' || *eline == ':')
+            continue ;
+
     /* Parse directives here.... */
-	    unsigned dirnum = NUMDIRS ;     /* directive index */
         if( *eline == '!') {
         /* Find out which directive this is */
             ++eline ;
-            for( dirnum = 0 ; dirnum < NUMDIRS ; dirnum++)
-                if( !strncmp( eline, dname[ dirnum], strlen( dname[ dirnum])))
-                    break ;
+		    int dirnum = NUMDIRS ;
+            while( --dirnum >= 0) {
+				length = strlen( dname[ dirnum]) ;
+                if( !strncmp( eline, dname[ dirnum], length )) {
+					eline += length ;
+				/* either EOS, comment, space separator or FAIL */
+					if( !*eline || *eline == ';' || *eline == '#')
+	                    ;
+					else if( *eline == ' ' || *eline == '\t') {
+						eline += 1 ;
+					} else
+						dirnum = -1 ;
 
-        /* and bitch if it's illegal */
-            if( dirnum == NUMDIRS) {
-                status = mloutfail( "%%Unknown Directive") ;
-				break ;
-            }
+		            execstr = eline ;	/* set source of token() and macarg() */
+					break ;
+				}
+			}
 
-            /* service only the !ENDM macro here */
-            if( dirnum == DENDM) {
-                mstore = FALSE ;
-                bstore = NULL ;
-                continue ;
-            }
-
-            /* restore the original eline.... */
-            --eline ;
-        }
-
-        /* if macro store is on, just salt this away */
-        if( mstore) {
-        /* allocate the space for the line */
-            linlen = strlen( eline) ;
-            line_p mp = lalloc( linlen) ;
-            if( mp == NULL) {
-                status =  mloutfail( "Out of memory while storing macro") ;
-				break ;
-            }
-
-            /* copy the text into the new line */
-            for( i = 0 ; i < linlen ; ++i)
-                lputc( mp, i, eline[ i]) ;
-
-            /* attach the line to the end of the buffer */
-            bstore->b_linep->l_bp->l_fp = mp ;
-            mp->l_bp = bstore->b_linep->l_bp ;
-            bstore->b_linep->l_bp = mp ;
-            mp->l_fp = bstore->b_linep ;
-            continue ;
-        }
-
-        int force = FALSE ;		/* force TRUE result? */
-
-        /* dump comments */
-        if( *eline == '*')
-            continue ;
-
-        /* now, execute directives */
-        if( dirnum != NUMDIRS) {
-            /* skip past the directive */
-            while( *eline && *eline != ' ' && *eline != '\t')
-                ++eline ;
-
-            execstr = eline;
+		/* now, execute directives */
             switch( dirnum) {
+			case DENDM:
+				if( execlevel == 0)
+					status = mloutfail( "!endm out of context") ;
+
+				break ;
             case DIF:   	/* IF directive */
-            /* grab the value of the logical exp */
                 if( execlevel == 0) {
-                    if( macarg( tkn, sizeof tkn) != TRUE)
-                        done = TRUE ;
-                    else if( stol( tkn) == FALSE)
-                        ++execlevel ;
+	            /* grab the value of the logical exp */
+                    status = macarg( tkn, sizeof tkn) ;
+                    if( status == TRUE && stol( tkn) == FALSE)
+                        execlevel = 1 ;	/* skip to else or endif */
                 } else
                     ++execlevel ;
 
-                continue ;
+                break ;
+            case DELSE:		/* ELSE directive */
+                if( execlevel == 1)
+                    execlevel = 0 ;	/* execute the else part */
+                else if( execlevel == 0)
+                    execlevel = 1 ;	/* skip to endif */
+				/* else keep skipping  */
 
+				break ;
+            case DENDIF:	/* ENDIF directive */
+                if( execlevel)
+                    --execlevel ;
+
+				break ;
             case DWHILE:	/* WHILE directive */
-            /* grab the value of the logical exp */
                 if( execlevel == 0) {
-                    if( macarg( tkn, sizeof tkn) != TRUE) {
-                        done = TRUE ;
-						continue ;
-                    } else if( stol( tkn) == TRUE)
-                        continue ;
+	            /* grab the value of the logical exp */
+                    status = macarg( tkn, sizeof tkn) ;
+					if( status != TRUE || stol( tkn) == TRUE)
+						break ;
                 }
-            /* drop down and act just like !BREAK */
 
 				/* fallthrough */
             case DBREAK:    /* BREAK directive */
-                if( dirnum == DBREAK && execlevel)
-                    continue ;
+            /* jump down to the endwhile */
+	            /* find the right while loop */
+	            for( whtemp = whlist ; whtemp ; whtemp = whtemp->w_next)
+	                if( whtemp->w_begin == lp) {
+	                /* reset the line pointer back.. */
+		                lp = whtemp->w_end ;
+	                    break ;
+					}
 
-                /* jump down to the endwhile */
+	            if( whtemp == NULL)
+	                status = mloutfail( "%%Internal While loop error") ;
+
+				break ;
+            case DENDWHILE: /* ENDWHILE directive */
+				assert( execlevel == 0) ;
                 /* find the right while loop */
                 for( whtemp = whlist ; whtemp ; whtemp = whtemp->w_next)
-                    if( whtemp->w_begin == lp)
+                    if( whtemp->w_type == BTWHILE && whtemp->w_end == lp) {
+    	            /* reset the line pointer back.. */
+	                    lp = whtemp->w_begin->l_bp ;
                         break ;
+					}
 
-                if( whtemp == NULL) {
+                if( whtemp == NULL)
                     status = mloutfail( "%%Internal While loop error") ;
-					done = TRUE ;
-                } else
-                /* reset the line pointer back.. */
-	                lp = whtemp->w_end ;
 
-                continue ;
-
-            case DELSE:		/* ELSE directive */
-                if( execlevel == 1)
-                    --execlevel ;
-                else if( execlevel == 0)
-                    ++execlevel ;
-
-                continue ;
-
-            case DENDIF:	/* ENDIF directive */
-                if (execlevel)
-                    --execlevel;
-
-                continue ;
-
+				break ;
+			case DGOSUB:	/* GOSUB directive */
             case DGOTO:		/* GOTO directive */
             /* .....only if we are currently executing */
-                if( execlevel == 0) {
+                if( execlevel != 0)
+					break ;
+
+				if( firstlbl != NULL) {
 				    line_p glp ;   /* line to goto */
 
-                /* grab label to jump to */
+            	    /* grab label to jump to */
                     eline = token( eline, golabel, sizeof golabel) ;
-                    linlen = strlen( golabel) ;
-                    for( glp = hlp->l_fp ; glp != hlp ; glp = glp->l_fp) {
-                        if(	*glp->l_text == '*'
-						&&	!strncmp( &glp->l_text[ 1], golabel, linlen)) {
+                    length = strlen( golabel) ;
+                    for( glp = firstlbl ; glp != eolbl ; glp = glp->l_fp) {
+						char c = *glp->l_text ;
+                        if(	(c == '*' || c == ':')
+						&&	!strncmp( &glp->l_text[ 1], golabel, length)) {
+							if( dirnum == DGOSUB) {
+								caller_p cp = malloc( sizeof *cp) ;
+								if( cp == NULL) {
+									status = mloutfail( "OoM on !gosub") ;
+									break ;
+								} else {
+									cp->caller = lp ;
+									cp->next = returnto ;
+									returnto = cp ;
+								}
+							}
+
+							lp = glp ;
                             break ;
                         }
                     }
 
-					if( glp == hlp) {
-        	            status =  mloutfail( "%%No such label") ;
-						done = TRUE ;
-					} else
-						lp = glp ;
-                }
+					if( glp == eolbl)
+						goto nolabel ;
+				} else {
+				nolabel:
+       	            status =  mloutfail( "%%No such label") ;
+				}
 
-                continue ;
-
+				break ;
             case DRETURN:   /* RETURN directive */
-                if( execlevel == 0)
-                    done = TRUE ;
+                if( execlevel == 0) {
+					if( returnto != NULL) {
+						caller_p cp = returnto ;
+						lp = returnto->caller ;
+						returnto = returnto->next ;
+						free( cp) ;
+					} else {
+						lp = lp->l_fp ;
+	                    done = TRUE ;
+					}
+				}
 
-                continue ;
+				break ;
+            case DFORCE:		/* FORCE directive */
+				if( execlevel == 0)
+					docmd( eline) ;		/* execute ignoring returned status */
 
-            case DENDWHILE: /* ENDWHILE directive */
-                if( execlevel) {
-                    --execlevel ;
-                    continue ;
-                } else {
-                /* find the right while loop */
-                    for( whtemp = whlist ; whtemp ; whtemp = whtemp->w_next)
-                        if( whtemp->w_type == BTWHILE
-                        &&	whtemp->w_end == lp)
-                            break ;
-
-                    if( whtemp == NULL) {
-                        status = mloutfail( "%%Internal While loop error") ;
-						done = TRUE ;
-                    } else
-    	            /* reset the line pointer back.. */
-	                    lp = whtemp->w_begin->l_bp ;
-
-                    continue ;
-                }
-
-            case DFORCE:    /* FORCE directive */
-                force = TRUE ;
-
+				break ;
+			default:
+                status = mloutfail( "%%Unknown Directive") ;
             }
-        }
+		} else if( execlevel == 0)
+			status = docmd( eline) ;	/* execute the statement */
 
-    /* execute the statement */
-        status = docmd( eline) ;
-        if( force)  /* force the status */
-			status = TRUE ;
-
-    /* check for a command error */
-        if( status != TRUE) {
-        /* look if buffer is showing */
-            for( window_p wp = wheadp ; wp != NULL ; wp = wp->w_wndp) {
-                if( wp->w_bufp == bp) {
-                /* and point it */
-                    wp->w_dotp = lp ;
-                    wp->w_doto = 0 ;
-                    wp->w_flag |= WFHARD ;
-                }
-            }
-
-            /* in any case set the buffer . */
-            bp->b_dotp = lp ;
-            bp->b_doto = 0 ;
+   	    if( done || status != TRUE)
 			break ;
-        }
-    }
+	}
 
-    execlevel = 0 ;
-    freewhile( whlist) ;
+/* refresh window if buffer is displayed */
+	if( bp->b_nwnd) {
+       	for( window_p wp = wheadp ; wp != NULL ; wp = wp->w_wndp) {
+           	if( wp->w_bufp == bp) {
+            /* and point it */
+                wp->w_dotp = lp ;
+   	            wp->w_doto = 0 ;
+       	        wp->w_flag |= WFHARD ;
+            }
+        }
+	}
+
+/* in any case set the buffer . */
+    bp->b_dotp = lp ;
+    bp->b_doto = 0 ;
+
+	freelist( (list_p) returnto) ;
+    freelist( (list_p) whlist) ;
     if( einit)
 		free( einit) ;
 
@@ -896,7 +948,7 @@ static int dobuf( buffer_p bp) {
 BINDABLE( execfile) {
     char *fname ;	/* name of file to execute */
 
-    int status = newmlarg( &fname, "Execute file: ", 0) ;
+    int status = newmlarg( &fname, "execute-file: ", 0) ;
     if( status != TRUE)
         return status ;
 
@@ -945,21 +997,6 @@ int dofile( const char *fname) {
 	}
 
 	return status ;
-#if 0
-    if( status != TRUE)
-        return status ;
-
-/* go execute it! */
-    status = dobuf( bp) ;
-    if( status != TRUE)
-        return status ;
-
-    /* if not displayed, remove the now unneeded buffer and exit */
-    if( bp->b_nwnd == 0)
-        zotbuf( bp) ;
-
-    return TRUE ;
-#endif
 }
 
 /* cbuf:

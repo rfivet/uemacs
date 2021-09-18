@@ -14,7 +14,7 @@
 
 #include "basic.h"
 #include "buffer.h"
-#include "estruct.h"
+#include "defines.h"
 #include "isa.h"
 #include "line.h"
 #include "mlout.h"
