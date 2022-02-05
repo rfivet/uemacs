@@ -1,5 +1,5 @@
 # Makefile -- µEMACS
-# Copyright © 2013-2021 Renaud Fivet
+# Copyright © 2013-2022 Renaud Fivet
 
 # Make the build silent by default
 V =
@@ -15,7 +15,7 @@ export E Q
 
 PROGRAM=ue
 
-CC=gcc
+CC=cc
 WARNINGS=-pedantic -Wall -Wextra -Wstrict-prototypes -Wno-unused-parameter
 CFLAGS=-O2 $(WARNINGS)
 LDFLAGS=-s
@@ -26,15 +26,14 @@ BINDIR=/usr/bin
 LIBDIR=/usr/lib
 
 SRCS = $(sort $(wildcard *.c))
-OBJS = $(SRCS:.c=.o)
 
-$(PROGRAM): $(OBJS)
-	$(E) "  LINK    " $@
-	$(Q) $(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
+$(PROGRAM): $(SRCS:.c=.o)
+	$(E) "  LINK  " $@
+	$(Q) $(CC) $(LDFLAGS) -o $@ $+ $(LIBS)
 
 clean:
 	$(E) "  CLEAN"
-	$(Q) rm -f $(PROGRAM) depend.mak *.o
+	$(Q) rm -f $(PROGRAM) *.dep *.o
 
 install: $(PROGRAM)
 	strip $(PROGRAM)
@@ -45,13 +44,15 @@ install: $(PROGRAM)
 	chmod 644 ${LIBDIR}/emacs.hlp ${LIBDIR}/.emacsrc
 
 .c.o:
-	$(E) "  CC      " $@
-	$(Q) ${CC} ${CFLAGS} ${DEFINES} -c $*.c
+	$(E) "  CC    " $@
+	$(Q) $(CC) $(CFLAGS) $(DEFINES) -c $*.c
 
-depend.mak: $(wildcard *.h)
-	$(E) "  DEPEND"
-	$(Q) $(CC) $(DEFINES) -MM $(SRCS) > depend.mak
+%.dep: %.c
+	$(E) "  DEPEND" $@
+	$(Q) $(CC) $(DEFINES) -MM $< > $@
 
-include depend.mak
+ifneq ($(MAKECMDGOALS),clean)
+include $(SRCS:.c=.dep)
+endif
 
 # end of Makefile
