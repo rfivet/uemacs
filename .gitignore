@@ -1,4 +1,4 @@
-depend.mak
 ue
 *.o
 *.exe
+*.dep
