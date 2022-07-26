@@ -69,6 +69,8 @@ BINDABLE( spawncli) {
 	term.t_nrow = term.t_ncol = 0;
 #endif
 	return TRUE;
+#else
+        return FALSE;
 #endif
 }
 
@@ -100,14 +102,14 @@ void rtfrmshell(void)
  * done. Bound to "C-X !".
  */
 BINDABLE( spawn) {
-	int s ;
-	char *line ;
 
 	/* don't allow this command if restricted */
 	if( restflag)
 		return resterr();
 
 #if	USG | BSD
+	int s ;
+	char *line ;
 	s = newmlarg( &line, "!", 0) ;
 	if( s != TRUE)
 		return s ;
@@ -129,6 +131,8 @@ BINDABLE( spawn) {
 	TTkopen();
 	sgarbf = TRUE;
 	return TRUE;
+#else
+	return FALSE;
 #endif
 }
 
@@ -139,14 +143,14 @@ BINDABLE( spawn) {
  */
 
 BINDABLE( execprg) {
-	int s ;
-	char *line ;
 
 	/* don't allow this command if restricted */
 	if( restflag)
 		return resterr() ;
 
 #if	USG | BSD
+	int s ;
+	char *line ;
 	s = newmlarg( &line, "$", 0) ;
 	if( s != TRUE)
 		return s ;
@@ -164,6 +168,8 @@ BINDABLE( execprg) {
 	while ((s = tgetc()) != '\r' && s != ' ');
 	sgarbf = TRUE;
 	return TRUE;
+#else
+	return FALSE;
 #endif
 }
 
