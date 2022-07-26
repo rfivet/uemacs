@@ -6,6 +6,8 @@
  *	modified by Petri Kutvonen
  */
 
+#if TERMCAP
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -23,8 +25,6 @@
 #include "defines.h"
 #include "display.h"
 #include "termio.h"
-
-#if TERMCAP
 
 boolean eolexist = TRUE ;	/* does clear to EOL exist      */
 boolean revexist = FALSE ;	/* does reverse video exist?    */

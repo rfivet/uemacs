@@ -693,10 +693,12 @@ int getstring( const char *prompt, char *buf, int nbuf, int eolchar)
     }
 
 	TTflush() ;
+#if UNIX
 	if( tmpf != NULL) {
 		fclose( tmpf) ;
 		unlink( tmp) ;
 	}
+#endif
 
 	return retval ;
 }
