@@ -69,6 +69,7 @@
 #include "defines.h"	/* OS specific customization */
 #if UNIX
 # include <signal.h>
+# include <unistd.h>
 #endif
 
 #include "basic.h"
