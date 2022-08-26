@@ -455,7 +455,7 @@ boolean lnewline( void) {
 
     memcpy( lp2->l_text, lp1->l_text, doto) ;
     lp1->l_used -= doto ;
-	memcpy( lp1->l_text, &lp1->l_text[ doto], lp1->l_used) ;
+	memmove( lp1->l_text, &lp1->l_text[ doto], lp1->l_used) ;
     lp2->l_fp = lp1 ;
     lp2->l_bp = lp1->l_bp ;
     lp1->l_bp = lp2 ;

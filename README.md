@@ -1,7 +1,7 @@
 # README #
 
-µEMACS (ue) on Cygwin/Linux/NetBSD, based on uEmacs/PK (em) from [kernel.org](
-https://git.kernel.org/pub/scm/editors/uemacs/uemacs.git/).
+µEMACS (ue) on Cygwin/MSYS2/Linux/NetBSD/OpenBSD, based on uEmacs/PK (em)
+from [kernel.org](https://git.kernel.org/pub/scm/editors/uemacs/uemacs.git/).
 
 ### Changes compare to uEmacs/PK ###
 
@@ -26,6 +26,6 @@ https://git.kernel.org/pub/scm/editors/uemacs/uemacs.git/).
 
 ### How to build ###
 
-* dependencies: gcc, gmake, ncurses-devel.
+* dependencies: (gcc || clang) && gmake && ncurses-devel.
 
 * make

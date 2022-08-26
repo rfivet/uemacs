@@ -12,11 +12,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
-#ifdef SVR4
 #include <string.h>
-#else
-#include <strings.h>
-#endif
 #include <errno.h>
 
 #include "util.h"
