@@ -31,8 +31,12 @@ int ttcol = -1 ;		/* Column location of HW cursor */
 
 /* Define missing macroes for BSD and CYGWIN environment */
 #if BSD
-#define OLCUC 0000002
-#define XCASE 0000004
+# ifndef OLCUC
+#  define OLCUC 0000002
+# endif
+# ifndef XCASE
+#  define XCASE 0000004
+# endif
 #endif
 
 #ifdef __CYGWIN__			/* gcc predefined (see cpp -dM) */

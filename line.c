@@ -293,7 +293,7 @@ boolean linstr( char *instr) {
 boolean linsert_byte( int n, int c) {
     char *cp1;
     char *cp2;
-    line_p lp2, lp3 ;
+    line_p lp2 ;
 	int i ;
 
     assert( (curbp->b_mode & MDVIEW) == 0) ;
@@ -308,16 +308,34 @@ boolean linsert_byte( int n, int c) {
         if( lp2 == NULL)
             return FALSE ;
 
-        lp3 = lp1->l_bp ;	/* Previous line        */
-        lp3->l_fp = lp2 ;	/* Link in              */
+	/* Insert after previous line */
+        lp1->l_bp->l_fp = lp2 ;
         lp2->l_fp = lp1 ;
+        lp2->l_bp = lp1->l_bp ;
         lp1->l_bp = lp2 ;
-        lp2->l_bp = lp3 ;
         for( i = 0 ; i < n ; ++i)
             lp2->l_text[ i] = c ;
 
+	/* update point of current window */
         curwp->w_dotp = lp2 ;
         curwp->w_doto = n ;
+
+	/* update all windows displaying current buffer */
+		for( window_p wp = wheadp ; wp != NULL ; wp = wp->w_wndp)
+			if( wp->w_bufp == curbp) {
+			/* update top window line */
+				if( wp->w_linep == lp1)
+					wp->w_linep = lp2 ;
+
+			/* dot at end of buffer is now at beginning of new line */
+				if( wp->w_dotp == lp1)
+					wp->w_dotp = lp2 ;
+
+			/* mark at end of buffer is now at beginning of new line */
+				if( wp->w_markp == lp1)
+					wp->w_markp = lp2 ;
+			}
+
         return TRUE ;
     }
 
@@ -455,29 +473,30 @@ boolean lnewline( void) {
 
     memcpy( lp2->l_text, lp1->l_text, doto) ;
     lp1->l_used -= doto ;
-	memcpy( lp1->l_text, &lp1->l_text[ doto], lp1->l_used) ;
+	memmove( lp1->l_text, &lp1->l_text[ doto], lp1->l_used) ;
     lp2->l_fp = lp1 ;
     lp2->l_bp = lp1->l_bp ;
     lp1->l_bp = lp2 ;
     lp2->l_bp->l_fp = lp2 ;
-    for( window_p wp = wheadp ; wp != NULL ; wp = wp->w_wndp) {
-        if( wp->w_linep == lp1)
-            wp->w_linep = lp2 ;
+    for( window_p wp = wheadp ; wp != NULL ; wp = wp->w_wndp)
+		if( wp->w_bufp == curbp) {
+	        if( wp->w_linep == lp1)
+    	        wp->w_linep = lp2 ;
 
-        if( wp->w_dotp == lp1) {
-            if( wp->w_doto < doto)
-                wp->w_dotp = lp2 ;
-            else
-                wp->w_doto -= doto ;
-        }
+			if( wp->w_dotp == lp1) {
+            	if( wp == curwp || wp->w_doto > doto)
+	                wp->w_doto -= doto ;
+				else
+                	wp->w_dotp = lp2 ;
+    	    }
 
-        if (wp->w_markp == lp1) {
-            if( wp->w_marko < doto)
-                wp->w_markp = lp2 ;
-            else
-                wp->w_marko -= doto ;
-        }
-    }
+   	    	if( wp->w_markp == lp1) {
+       	    	if( wp->w_marko > doto)
+   	            	wp->w_marko -= doto ;
+            	else
+           	    	wp->w_markp = lp2 ;
+       		}
+		}
 
     return TRUE ;
 }

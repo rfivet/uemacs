@@ -557,9 +557,7 @@ static int dobuf( buffer_p bp) {
 	/* remove leading spaces */
 		if( eline != lp->l_text) {
 			int size = lp->l_used = eol - eline ;
-			if( size)
-				memcpy( lp->l_text, eline, size) ;
-
+			memmove( lp->l_text, eline, size) ;
 			eline = lp->l_text ;
 			eol = &lp->l_text[ size] ;
 		}
@@ -595,7 +593,7 @@ static int dobuf( buffer_p bp) {
 		/* turn line into a string */
 			int size = lp->l_used - 6 ;
 			if( size)
-				memcpy( lp->l_text, &eline[ 6], size) ;
+				memmove( lp->l_text, &eline[ 6], size) ;
 
 			eline = lp->l_text ;
 			eline[ size] = 0 ;

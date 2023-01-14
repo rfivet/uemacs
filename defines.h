@@ -2,9 +2,9 @@
 #ifndef __DEFINES_H__
 #define __DEFINES_H__
 
-#if __unix__
+#if __unix__ || (defined(__APPLE__) && defined(__MACH__))
 # define UNIX 1
-# if __NetBSD__
+# if __NetBSD__ || __OpenBSD__ || (defined(__APPLE__) && defined(__MACH__))
 #  define BSD 1
 #  define POSIX 1
 # elif __linux__
