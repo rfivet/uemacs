@@ -395,13 +395,8 @@ static const char *gtfun( char *fname) {
 	case UFLEFT:
 		sz1 = strlen( argv[ 0]) ;
 		sz = 0 ;
-		for( int i = atoi( argv[ 1]) ; i > 0 ; i -= 1) {
-			unicode_t c ;
-
+		for( int i = atoi( argv[ 1]) ; sz < sz1 && i > 0 ; i -= 1)
 			sz += utf8_to_unicode( argv[ 0], sz, sz1, &c) ;
-			if( sz == sz1)
-				break ;
-		}
 
 		if( sz >= ressize) {
 			free( result) ;
@@ -431,19 +426,12 @@ static const char *gtfun( char *fname) {
 	case UFMID:
 		sz1 = strlen( argv[ 0]) ;
 		int start = 0 ;
-		for( i = atoi( argv[ 1]) - 1 ; i > 0 ; i -= 1) {
+		for( i = atoi( argv[ 1]) - 1 ; start < sz1 && i > 0 ; i -= 1)
 			start +=  utf8_to_unicode( argv[ 0], start, sz1, &c) ;
-			if( start == sz1)
-				break ;
-		}
 
 		sz = start ;
-		if( sz < sz1)
-		for( i = atoi( argv[ 2]) ; i > 0 ; i -= 1) {
+		for( i = atoi( argv[ 2]) ; sz < sz1 && i > 0 ; i -= 1)
 			sz += utf8_to_unicode( argv[ 0], sz, sz1, &c) ;
-			if( sz == sz1)
-				break ;
-		}
 
 		sz -= start ;
 		if( sz >= ressize) {
