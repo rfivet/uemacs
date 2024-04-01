@@ -42,7 +42,7 @@ static unsigned getgoal( line_p dlp) {
             col += tabwidth - col % tabwidth ;
         else if( c < 0x20 || c == 0x7F)     /* ^x */
             col += 2 ;
-        else if( c >= 0x80 && c <= 0xA0)    /* \xx */
+        else if( c >= 0x80 && c < 0xA0)    /* \xx */
             col += 3 ;
         else
             col += utf8_width( c) ;

@@ -235,7 +235,7 @@ static void vtputuc( unicode_t c) {
 	} else if( c < 0x20 || c == 0x7F) {
 		sane_vtputc( '^') ;
 		sane_vtputc( c ^ 0x40) ;
-	} else if( c >= 0x80 && c <= 0xA0) {
+	} else if( c >= 0x80 && c < 0xA0) {
 		static const char hex[] = "0123456789abcdef" ;
 		sane_vtputc( '\\') ;
 		sane_vtputc( hex[ c >> 4]) ;
@@ -556,7 +556,7 @@ static void updpos( void) {
 			curcol += tabwidth - curcol % tabwidth ;
 		else if( c < 0x20 || c == 0x7F)
 			curcol += 2 ;	/* displayed as ^c */
-		else if( c >= 0x80 && c <= 0xA0)
+		else if( c >= 0x80 && c < 0xA0)
 			curcol += 3 ;	/* displayed as \xx */
 		else
 			curcol += utf8_width( c) ;	/* non printable are displayed as \u */
