@@ -38,11 +38,11 @@ static int ldelnewline( void) ;
  * was taken up by the keycode structure).
  */
 
-#define KBLOCK  248				/* sizeof kill buffer chunks    */
+#define KBLOCK  248             /* sizeof kill buffer chunks    */
 
 typedef struct kill {
-    struct kill *d_next ;   	/* Link to next chunk, NULL if last. */
-    char d_chunk[ KBLOCK] ;		/* Deleted text. */
+    struct kill *d_next ;       /* Link to next chunk, NULL if last. */
+    unsigned char d_chunk[ KBLOCK] ;     /* Deleted text. */
 } *kill_p ;
 
 static kill_p kbufp = NULL ;    /* current kill buffer chunk pointer */
@@ -57,7 +57,7 @@ static char *value = NULL ;     /* temp buffer for value */
 const char *getkill( void) {
 /* no kill buffer or no memory .... just return a null string */
     if( kbufh == NULL
-	|| (value = realloc( value, klen + 1)) == NULL)
+    || (value = realloc( value, klen + 1)) == NULL)
         return "" ;
 
     char *cp = value ;
@@ -94,26 +94,26 @@ BBINDABLE( backchar) {
             curwp->w_doto = llength( lp) ;
             curwp->w_flag |= WFMOVE ;
         } else {
-			unsigned pos ;
-		/* move back over combining unicode */
-		combined:
+            unsigned pos ;
+        /* move back over combining unicode */
+        combined:
             pos = curwp->w_doto -= 1 ;
-		/* check if at end of unicode */
+        /* check if at end of unicode */
             if( pos > 0) {
                 unsigned delta = utf8_revdelta(
-					(unsigned char *) &( (curwp->w_dotp)->l_text[ pos]), pos) ;
-				if( delta != 0) {
-	                pos = curwp->w_doto -= delta ;
-					if( pos > 0) {	/* check if on combining unicode */
-						unicode_t unc ;
-				
-	        	        utf8_to_unicode( curwp->w_dotp->l_text, pos,
-												llength( curwp->w_dotp), &unc) ;
-		        	    if( utf8_width( unc) == 0)
-							goto combined ;
-					}
-				}
-			}
+                    (unsigned char *) &( (curwp->w_dotp)->l_text[ pos]), pos) ;
+                if( delta != 0) {
+                    pos = curwp->w_doto -= delta ;
+                    if( pos > 0) {  /* check if on combining unicode */
+                        unicode_t unc ;
+
+                        utf8_to_unicode( curwp->w_dotp->l_text, pos,
+                                                llength( curwp->w_dotp), &unc) ;
+                        if( utf8_width( unc) == 0)
+                            goto combined ;
+                    }
+                }
+            }
         }
     }
 
@@ -215,7 +215,7 @@ void lfree( line_p lp) {
                 bp->b_dotp = lp->l_fp ;
                 bp->b_doto = 0 ;
             }
-			
+
             if( bp->b_markp == lp) {
                 bp->b_markp = lp->l_fp ;
                 bp->b_marko = 0 ;
@@ -270,7 +270,7 @@ boolean linstr( char *instr) {
 
         while( (c = (unsigned char) *instr++)) {
             status = (c == '\n') ? lnewline() : linsert_byte( 1, c) ;
-            if( status != TRUE) {	/* Insertion error? */
+            if( status != TRUE) {   /* Insertion error? */
                 mloutstr( "%Out of memory while inserting") ;
                 break ;
             }
@@ -294,12 +294,12 @@ boolean linsert_byte( int n, int c) {
     char *cp1;
     char *cp2;
     line_p lp2 ;
-	int i ;
+    int i ;
 
     assert( (curbp->b_mode & MDVIEW) == 0) ;
 
     lchange( WFEDIT) ;
-    line_p lp1 = curwp->w_dotp ;	/* Current line         */
+    line_p lp1 = curwp->w_dotp ;    /* Current line         */
     if( lp1 == curbp->b_linep) {    /* At the end: special  */
         if( curwp->w_doto != 0)
             return mloutfail( "bug: linsert") ;
@@ -308,7 +308,7 @@ boolean linsert_byte( int n, int c) {
         if( lp2 == NULL)
             return FALSE ;
 
-	/* Insert after previous line */
+    /* Insert after previous line */
         lp1->l_bp->l_fp = lp2 ;
         lp2->l_fp = lp1 ;
         lp2->l_bp = lp1->l_bp ;
@@ -316,30 +316,30 @@ boolean linsert_byte( int n, int c) {
         for( i = 0 ; i < n ; ++i)
             lp2->l_text[ i] = c ;
 
-	/* update point of current window */
+    /* update point of current window */
         curwp->w_dotp = lp2 ;
         curwp->w_doto = n ;
 
-	/* update all windows displaying current buffer */
-		for( window_p wp = wheadp ; wp != NULL ; wp = wp->w_wndp)
-			if( wp->w_bufp == curbp) {
-			/* update top window line */
-				if( wp->w_linep == lp1)
-					wp->w_linep = lp2 ;
+    /* update all windows displaying current buffer */
+        for( window_p wp = wheadp ; wp != NULL ; wp = wp->w_wndp)
+            if( wp->w_bufp == curbp) {
+            /* update top window line */
+                if( wp->w_linep == lp1)
+                    wp->w_linep = lp2 ;
 
-			/* dot at end of buffer is now at beginning of new line */
-				if( wp->w_dotp == lp1)
-					wp->w_dotp = lp2 ;
+            /* dot at end of buffer is now at beginning of new line */
+                if( wp->w_dotp == lp1)
+                    wp->w_dotp = lp2 ;
 
-			/* mark at end of buffer is now at beginning of new line */
-				if( wp->w_markp == lp1)
-					wp->w_markp = lp2 ;
-			}
+            /* mark at end of buffer is now at beginning of new line */
+                if( wp->w_markp == lp1)
+                    wp->w_markp = lp2 ;
+            }
 
         return TRUE ;
     }
 
-    int doto = curwp->w_doto ;	/* Save for later.      */
+    int doto = curwp->w_doto ;  /* Save for later.      */
     if( lp1->l_used + n > lp1->l_size) {    /* Hard: reallocate     */
         lp2 = lalloc( lp1->l_used + n) ;
         if( lp2 == NULL)
@@ -465,38 +465,48 @@ boolean lnewline( void) {
 #else
     lchange(WFHARD);
 #endif
-    line_p lp1 = curwp->w_dotp ;	/* Get the address and	*/
-    int doto = curwp->w_doto ;		/* offset of "."        */
-    line_p lp2 = lalloc( doto) ;	/* New first half line	*/
+    line_p lp1 = curwp->w_dotp ;    /* Get the address and  */
+    int doto = curwp->w_doto ;      /* offset of "."        */
+
+/* at end of last line of non empty buffer */
+    if( lp1->l_fp == curbp->b_linep && lp1 != curbp->b_linep &&
+                                                        doto == lp1->l_used) {
+    /* move dot at end of buffer, no nl inserted */
+        curwp->w_dotp = curbp->b_linep ;
+        curwp->w_doto = 0 ;
+        return TRUE ;
+    }
+
+    line_p lp2 = lalloc( doto) ;    /* New first half line  */
     if( lp2 == NULL)
         return FALSE ;
 
     memcpy( lp2->l_text, lp1->l_text, doto) ;
     lp1->l_used -= doto ;
-	memmove( lp1->l_text, &lp1->l_text[ doto], lp1->l_used) ;
+    memmove( lp1->l_text, &lp1->l_text[ doto], lp1->l_used) ;
     lp2->l_fp = lp1 ;
     lp2->l_bp = lp1->l_bp ;
     lp1->l_bp = lp2 ;
     lp2->l_bp->l_fp = lp2 ;
     for( window_p wp = wheadp ; wp != NULL ; wp = wp->w_wndp)
-		if( wp->w_bufp == curbp) {
-	        if( wp->w_linep == lp1)
-    	        wp->w_linep = lp2 ;
+        if( wp->w_bufp == curbp) {
+            if( wp->w_linep == lp1) /* adjust top line of window */
+                wp->w_linep = lp2 ;
 
-			if( wp->w_dotp == lp1) {
-            	if( wp == curwp || wp->w_doto > doto)
-	                wp->w_doto -= doto ;
-				else
-                	wp->w_dotp = lp2 ;
-    	    }
+            if( wp->w_dotp == lp1) {
+                if( wp == curwp || wp->w_doto > doto)
+                    wp->w_doto -= doto ;
+                else
+                    wp->w_dotp = lp2 ;
+            }
 
-   	    	if( wp->w_markp == lp1) {
-       	    	if( wp->w_marko > doto)
-   	            	wp->w_marko -= doto ;
-            	else
-           	    	wp->w_markp = lp2 ;
-       		}
-		}
+            if( wp->w_markp == lp1) {
+                if( wp->w_marko > doto)
+                    wp->w_marko -= doto ;
+                else
+                    wp->w_markp = lp2 ;
+            }
+        }
 
     return TRUE ;
 }
@@ -506,7 +516,7 @@ boolean lnewline( void) {
  *  get unicode value and return UTF-8 size of character at dot.
  */
 int lgetchar( unicode_t *cp) {
-    if( curwp->w_dotp->l_used == curwp->w_doto) {		/* at EOL? */
+    if( curwp->w_dotp->l_used == curwp->w_doto) {       /* at EOL? */
         *cp = (curbp->b_mode & MDDOS) ? '\r' : '\n' ;
         return 1 ;
     } else
@@ -519,28 +529,28 @@ int lgetchar( unicode_t *cp) {
  *  return total UTF-8 size of combined character at dot.
  */
 static int lcombinedsize( void) {
-    if( curwp->w_dotp->l_used == curwp->w_doto)	/* EOL? */
+    if( curwp->w_dotp->l_used == curwp->w_doto) /* EOL? */
         return 1 ;
     else {
-		unicode_t c ;
+        unicode_t c ;
 
-		int pos = curwp->w_doto ;
+        int pos = curwp->w_doto ;
         unsigned bytes = utf8_to_unicode( curwp->w_dotp->l_text, pos,
                                                 llength( curwp->w_dotp), &c) ;
-	/* check if followed by combining unicode character */
-		pos += bytes ;
-		while( pos < llength( curwp->w_dotp) - 1) {		/* at least 2 bytes */
-			unsigned cnt = utf8_to_unicode( curwp->w_dotp->l_text, pos,
+    /* check if followed by combining unicode character */
+        pos += bytes ;
+        while( pos < llength( curwp->w_dotp) - 1) {     /* at least 2 bytes */
+            unsigned cnt = utf8_to_unicode( curwp->w_dotp->l_text, pos,
                                                 llength( curwp->w_dotp), &c) ;
-			if( utf8_width( c) == 0) {
-				bytes += cnt ;
-				pos += cnt ;
-			} else
-				break ;
-		}
-		
-		return bytes ;
-	}
+            if( utf8_width( c) == 0) {
+                bytes += cnt ;
+                pos += cnt ;
+            } else
+                break ;
+        }
+
+        return bytes ;
+    }
 }
 
 
@@ -576,11 +586,11 @@ boolean ldelete( long n, boolean kflag) {
 
     while( n > 0) {
         line_p dotp = curwp->w_dotp ;
-        if( dotp == curbp->b_linep)	/* Hit end of buffer.       */
+        if( dotp == curbp->b_linep) /* Hit end of buffer.       */
             return FALSE ;
 
         int doto = curwp->w_doto ;
-        int chunk = dotp->l_used - doto ;	/* Size of chunk.       */
+        int chunk = dotp->l_used - doto ;   /* Size of chunk.       */
         if( chunk == 0) {   /* End of line, merge.  */
 #if SCROLLCODE
             lchange( WFHARD | WFKILLS) ;
@@ -597,13 +607,13 @@ boolean ldelete( long n, boolean kflag) {
             chunk = n ;
 
         lchange( WFEDIT) ;
-        char *cp1 = &dotp->l_text[ doto] ;	/* Scrunch text.        */
+        char *cp1 = &dotp->l_text[ doto] ;  /* Scrunch text.        */
         char *cp2 = cp1 + chunk ;
         if( kflag != FALSE) {   /* Kill?                */
             while( cp1 != cp2) {
                 if( kinsert( *cp1) == FALSE)
                     return FALSE ;
-					
+
                 ++cp1 ;
             }
 
@@ -615,7 +625,7 @@ boolean ldelete( long n, boolean kflag) {
 
         dotp->l_used -= chunk ;
 
-	/* Fix windows */
+    /* Fix windows */
         for( window_p wp = wheadp ; wp != NULL ; wp = wp->w_wndp) {
             if( wp->w_dotp == dotp && wp->w_doto >= doto) {
                 wp->w_doto -= chunk ;
@@ -648,7 +658,7 @@ boolean ldelete( long n, boolean kflag) {
 static int ldelnewline( void) {
     char *cp1;
     char *cp2;
-	window_p wp ;
+    window_p wp ;
 
     assert( (curbp->b_mode & MDVIEW) == 0) ;
 
@@ -660,7 +670,7 @@ static int ldelnewline( void) {
 
         return TRUE ;
     }
-	
+
     if( lp2->l_used <= lp1->l_size - lp1->l_used) {
         cp1 = &lp1->l_text[ lp1->l_used] ;
         cp2 = lp2->l_text ;
@@ -738,7 +748,7 @@ static int ldelnewline( void) {
 void kdelete( void) {
     if( kbufh != NULL) {
     /* first, delete all the chunks */
-		freelist( (list_p) kbufh) ;
+        freelist( (list_p) kbufh) ;
 
     /* and reset all the kill buffer pointers */
         kbufh = kbufp = NULL ;
@@ -789,40 +799,28 @@ int kinsert( int c) {
  * check for errors. Bound to "C-Y".
  */
 BINDABLE( yank) {
-    int c;
-    int i;
-    char *sp;   /* pointer into string to insert */
-    kill_p kp;      /* pointer into kill buffer */
-
     assert( !(curbp->b_mode & MDVIEW)) ;
 
     if (n < 0)
         return FALSE;
-    /* make sure there is something to yank */
+
+/* make sure there is something to yank */
     if (kbufh == NULL)
         return TRUE;    /* not an error, just nothing */
 
-    /* for each time.... */
+/* for each time.... */
     while (n--) {
-        kp = kbufh;
-        while (kp != NULL) {
-            if (kp->d_next == NULL)
-                i = kused;
-            else
-                i = KBLOCK;
-            sp = kp->d_chunk;
+        for( kill_p kp = kbufh ; kp != NULL ; kp = kp->d_next) {
+            unsigned char *sp = kp->d_chunk ;
+            int i = (kp->d_next == NULL) ? kused : KBLOCK ;
             while (i--) {
-                if ((c = *sp++) == '\n') {
-                    if (lnewline() == FALSE)
-                        return FALSE;
-                } else {
-                    if (linsert_byte(1, c) == FALSE)
-                        return FALSE;
-                }
+                int c = *sp++ ;
+                if( FALSE == (( c == '\n') ? lnewline() : linsert_byte( 1, c)))
+                    return FALSE ;
             }
-            kp = kp->d_next;
         }
     }
+
     return TRUE;
 }
 
