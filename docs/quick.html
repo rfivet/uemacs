@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+    <meta charset="UTF-8">
+    <title>Quick µEMACS build and install</title>
+    <style>
+        body {
+            width: 1024px ;
+            margin-left: auto ;
+            margin-right: auto ;
+        }
+        pre {
+            background-color: #F3F6FA ;
+            margin-left: 1% ;
+            margin-right: 25% ;
+        }
+    </style>
+ </head>
+ <body>
+<h1>Quick µEMACS build and install</h1>
+
+<h2>Dependencies and build environment</h2>
+
+To build µEMACS, you need to have gcc, GNU make and ncurses development
+library installed.
+
+<h2>Checking environment</h2>
+
+gcc and GNU make are often preinstalled with GNU make set as the default
+make. Use your favorite package manager to check their availability.
+
+<pre>
+% which gcc make
+/usr/bin/gcc
+/usr/bin/make
+% apt list gcc make
+gcc/focal,now 4:9.3.0-1ubuntu2 amd64 [installed]
+make/focal,now 4.2.1-1.2 amd64 [installed]
+</pre>
+
+Use your favorite package manager if they need to be installed.
+
+<pre>% sudo apt install gcc make</pre>
+
+To check that make is actually GNU make:
+
+<pre>
+% make --version
+GNU Make 4.2.1
+Built for x86_64-pc-linux-gnu
+Copyright (C) 1988-2016 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later http://gnu.org/licenses/gpl.html
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+</pre>
+
+ncurses development library usually need to be installed. Query your
+favorite package manager to check which packages are available for
+installation:
+
+<pre>% apt search libncurses</pre>
+
+Use your favorite package manager to install the needed package:
+
+<pre>% sudo apt install libncurses-dev</pre>
+
+On Ubuntu, apt will select the package that matches your architecture
+(amd64 or i386).
+
+<h2>Getting the sources</h2>
+
+µEMACS source code is available on
+<a href="https://github.com/rfivet/uemacs">github</a> and mirrored at
+<a href="https://git.sdf.org/rfivet/uemacs">git.sdf.org</a>. From github, you
+can either clone the
+<a href="https://github.com/rfivet/uemacs.git">git repository</a> or download a
+<a href="https://github.com/rfivet/uemacs/archive/master.zip">zip archive</a>.
+<p>
+Move to working directory and clone:
+
+<pre>
+% mkdir ~/Projects
+% cd ~/Projects
+% git clone https://github.com/rfivet/uemacs.git
+</pre>
+
+<h2>Building</h2>
+
+<pre>
+% cd ~/Projects/uemacs
+% make
+</pre>
+
+If <b>GNU make</b> is not set as the default make you will have to call it
+explicitly
+
+<pre>% gmake</pre>
+
+<h2>Testing</h2>
+
+Start the editor:
+
+<pre>% ./ue</pre>
+
+To leave the editor type CTL-X CTL-C
+<p>
+Execute a sample script:
+
+<pre>% ./ue -x screensize.cmd</pre>
+
+<img src="img/ue_screensize.png" alt="Executing script screensize.cmd">
+
+    <hr>© 2020-2024 Renaud Fivet
+ </body>
+</html>
