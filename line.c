@@ -517,7 +517,7 @@ boolean lnewline( void) {
  */
 int lgetchar( unicode_t *cp) {
     if( curwp->w_dotp->l_used == curwp->w_doto) {       /* at EOL? */
-        *cp = (curbp->b_mode & MDDOS) ? '\r' : '\n' ;
+        *cp = (curbp->b_mode & (MDDOS | MDMAC)) ? '\r' : '\n' ;
         return 1 ;
     } else
         return utf8_to_unicode( curwp->w_dotp->l_text, curwp->w_doto,

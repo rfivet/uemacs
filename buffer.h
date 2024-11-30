@@ -44,7 +44,7 @@ extern buffer_p blistp ;    /* Buffer for C-X C-B           */
 #define BFTRUNC 0x04        /* buffer was truncated when read */
 
 /*  mode flags  */
-#define NUMMODES    9       /* # of defined modes           */
+#define NUMMODES    10      /* # of defined modes           */
 
 #define MDWRAP  0x0001      /* word wrap                    */
 #define MDCMOD  0x0002      /* C indentation and fence match */
@@ -55,6 +55,7 @@ extern buffer_p blistp ;    /* Buffer for C-X C-B           */
 #define MDASAVE 0x0040      /* auto-save mode               */
 #define MDUTF8  0x0080      /* utf8 mode                    */
 #define MDDOS   0x0100      /* CRLF eol mode                */
+#define MDMAC   0x0200      /* CR eol mode                  */
 
 extern const char *modename[ NUMMODES] ;    /* text names of modes */
 extern int gmode ;                          /* global editor mode */

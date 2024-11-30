@@ -28,7 +28,7 @@ buffer_p blistp ;       /* Buffer for C-X C-B           */
 const char *modename[ NUMMODES] = { /* name of modes */
     "Wrap", "Cmode", "Exact", "View", "Over",
     "Magic",
-    "Asave", "Utf-8", "Dos"
+    "Asave", "Utf-8", "Dos", "Mac"
 } ;
 
 int gmode = 0 ;         /* global editor mode           */
@@ -293,9 +293,9 @@ BINDABLE( listbuffers) {
 
    int iflag;       list hidden buffer flag
  */
-/* Layout: "ACT MODES          Size Buffer          File"
-            AAA MMMMMMMMMSSSSSSSSSS BBBBBBBBBBBBBBB FFF...
-   FNAMSTART ---------------------------------------^
+/* Layout: "ACT MODES           Size Buffer          File"
+            AAA MMMMMMMMMMSSSSSSSSSS BBBBBBBBBBBBBBB FFF...
+   FNAMSTART ----------------------------------------^
 */
 #define FNAMSTART (3 + 1 + NUMMODES + 10 + 1 + (sizeof( bname_t) - 1) + 1)
 
@@ -303,7 +303,7 @@ static void do_layout( char *line, int mode) {
     int i ;
 
     /* build line to report global mode settings */
-    strcpy( line, "    WCEVOMAUD           Global Modes") ;
+    strcpy( line, "    WCEVOmAUDM           Global Modes") ;
 
     /* output the mode codes */
     for( i = 0 ; i < NUMMODES ; i++)
@@ -336,8 +336,8 @@ static int makelist( int iflag) {
 
     blistp->b_fname[ 0] = 0 ;   /* in case of user override */
 
-    if(	addline("ACT MODES          Size Buffer          File") == FALSE
-    ||	addline("‾‾‾ ‾‾‾‾‾          ‾‾‾‾ ‾‾‾‾‾‾          ‾‾‾‾") == FALSE)
+    if( addline("ACT MODES           Size Buffer          File") == FALSE
+    ||  addline("‾‾‾ ‾‾‾‾‾           ‾‾‾‾ ‾‾‾‾‾‾          ‾‾‾‾") == FALSE)
         return FALSE ;
 
 /* report global mode settings */
@@ -369,7 +369,7 @@ static int makelist( int iflag) {
         long nbytes = 0L;    /* Count bytes in buf.  */
         long nlines = 0 ;
         for( line_p lp = lforw( bp->b_linep) ; lp != bp->b_linep ;
-															lp = lforw( lp)) {
+                                                            lp = lforw( lp)) {
             nbytes += (long) llength(lp) + 1L;
             nlines += 1 ;
         }
@@ -377,8 +377,8 @@ static int makelist( int iflag) {
         if( bp->b_mode & MDDOS)
             nbytes += nlines ;
 
-        l_to_a( &line[ 13], 10 + 1, nbytes) ;   /* "%10d" formatted numbers */
-        cp1 = &line[ 23] ;
+        l_to_a( &line[ 14], 10 + 1, nbytes) ;   /* "%10d" formatted numbers */
+        cp1 = &line[ 24] ;
         *cp1++ = ' ' ;
 
     /* Display buffer name */

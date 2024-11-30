@@ -310,6 +310,7 @@ int readin( const char *fname, boolean lockfl) {
             break ;
         case FTYPE_MAC:
             found_eol = EOL_MAC ;
+            curbp->b_mode |= MDMAC ;
             break ;
         case FTYPE_NONE:
             found_eol = EOL_NONE ;
@@ -474,7 +475,7 @@ int writeout( const char *fn) {
 
         mloutstr( "(Writing...)") ; /* tell us we are writing */
         for( lp = lforw( curbp->b_linep) ; lp != curbp->b_linep ; lp = lforw( lp)) {
-            s = ffputline( lp->l_text, llength( lp), curbp->b_mode & MDDOS) ;
+            s = ffputline( lp->l_text, llength( lp), curbp->b_mode >> 8) ; // Mack Hack
             if( s != FIOSUC)
                 break ;
 

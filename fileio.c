@@ -66,13 +66,14 @@ fio_code ffclose( void) {
    buffer, and the "nbuf" is its length, less the free newline.  Return the
    status.  Check only at the newline.
  */
-fio_code ffputline( char *buf, int nbuf, int dosflag) {
+fio_code ffputline( char *buf, int nbuf, int eolflag) {
     fwrite( buf, 1, nbuf, ffp) ;
 
-    if( dosflag)
+    if( eolflag)        // DOS and Mac
         fputc( '\r', ffp) ;
 
-    fputc( '\n', ffp) ;
+    if( eolflag != 2)   // Not Mac
+        fputc( '\n', ffp) ;
 
     if( ferror( ffp))
         return FIOERR ;

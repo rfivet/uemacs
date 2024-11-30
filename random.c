@@ -814,10 +814,17 @@ static int adjustmode( int kind, int global) {
         if( strcasecmp( cbuf, modename[ i]) == 0) {
             /* finding a match, we process it */
             if (kind == TRUE)
-                if (global)
+                if (global) {
+                    if( i > 7)  // Mac Hack
+                        gmode &= 0xFF ;
+
                     gmode |= (1 << i);
-                else
+                } else {
+                    if( i > 7)  //Mac Hack
+                        curbp->b_mode &= 0xFF ;
+
                     curbp->b_mode |= (1 << i);
+                }
             else if (global)
                 gmode &= ~(1 << i);
             else
