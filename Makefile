@@ -1,5 +1,5 @@
 # Makefile -- µEMACS
-# Copyright © 2013-2022 Renaud Fivet
+# Copyright © 2013-2025 Renaud Fivet
 
 # Make the build silent by default
 V =
@@ -15,12 +15,16 @@ export E Q
 
 PROGRAM=ue
 
+NCWCFG=ncursesw6-config
+NCWFLGS !=$(NCWCFG) --cflags
+NCWLIBS !=$(NCWCFG) --libs
+
 CC=cc
 WARNINGS=-pedantic -Wall -Wextra -Wstrict-prototypes -Wno-unused-parameter
 CFLAGS=-O2 $(WARNINGS)
 LDFLAGS=-s
-LIBS=-lcurses
-DEFINES=-DPROGRAM=$(PROGRAM) -D_GNU_SOURCE # -DNDEBUG
+LIBS=$(NCWLIBS)
+DEFINES=-DPROGRAM=$(PROGRAM) $(NCWFLGS) # -DNDEBUG
 
 BINDIR=/usr/bin
 LIBDIR=/usr/lib
