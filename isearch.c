@@ -263,6 +263,7 @@ static BINDABLE( isearch) {
 			cmd_buff[--cmd_offset] = '\0';	/* Yes, delete last char   */
 			curwp->w_dotp = curline;	/* Reset the line pointer     */
 			curwp->w_doto = curoff;	/*  and the offset            */
+			curwp->w_flag |= WFMOVE ;	/* Say we've moved            */
 			n = init_direction;	/* Reset the search direction */
 			mystrscpy( pat, pat_save, sizeof pat) ;	/* Restore the old search str */
 			cmd_reexecute = 0;	/* Start the whole mess over  */
