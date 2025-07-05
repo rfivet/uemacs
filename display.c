@@ -230,7 +230,7 @@ static void vtputuc( unicode_t c) {
 
 	if( c == '\t') {
 		sane_vtputc( viewtab ? 0xBB : ' ') ;	/* 0xBB: '»' */
-		while( ((vtcol + lbound) % tabwidth) != 0)
+		while( vtcol % tabwidth)
 			sane_vtputc( ' ') ;
 	} else if( c < 0x20 || c == 0x7F) {
 		sane_vtputc( '^') ;
