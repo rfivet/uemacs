@@ -153,4 +153,5 @@ bind-to-key	newline	^J
 	add-global-mode "utf-8"
 !endif
 
+write-message "[F1] for help index"
 set $discmd TRUE

@@ -1,4 +1,6 @@
 /* defines.h -- customization based on gcc predefined macroes */
+/* reminder how to list: gcc -x c /dev/null -dM -E            */
+
 #ifndef __DEFINES_H__
 #define __DEFINES_H__
 
